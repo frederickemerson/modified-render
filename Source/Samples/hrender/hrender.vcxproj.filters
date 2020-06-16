@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="hrender.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="hrender.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CommonPasses">
+      <UniqueIdentifier>{37451d6e-20e2-450e-a3a6-dad2a516e914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{0b52c825-e6bc-4c0b-9af9-8052bbb5839f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils">
+      <UniqueIdentifier>{01635f05-a550-454c-ac47-9afc80b7a50d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoCommonUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadows.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadowsUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGI.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGIUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+  </ItemGroup>
+</Project>

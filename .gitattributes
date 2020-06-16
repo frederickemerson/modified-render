@@ -1,0 +1,4 @@
+*.hdr filter=lfs diff=lfs merge=lfs -text
+*.fbx filter=lfs diff=lfs merge=lfs -text
+WoodFloor.jpg filter=lfs diff=lfs merge=lfs -text
+WoodFloor_BaseColor.png filter=lfs diff=lfs merge=lfs -text
