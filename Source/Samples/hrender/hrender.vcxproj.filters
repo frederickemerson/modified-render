@@ -2,9 +2,21 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">

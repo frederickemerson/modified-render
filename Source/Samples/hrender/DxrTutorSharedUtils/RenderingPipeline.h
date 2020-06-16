@@ -21,7 +21,7 @@
 #include "RenderPass.h"
 #include "ResourceManager.h"
 
-class RenderingPipeline : public Renderer, inherit_shared_from_this<Renderer, RenderingPipeline>
+class RenderingPipeline : public IRenderer, inherit_shared_from_this<IRenderer, RenderingPipeline>
 {
 public:
     using SharedPtr = std::shared_ptr<RenderingPipeline>;
@@ -54,15 +54,15 @@ public:
 	static void run(RenderingPipeline *pipe, SampleConfig &config);
 
 	// Overloaded methods from MyRenderer
-	virtual void onLoad(SampleCallbacks* pSample, const RenderContext::SharedPtr &pRenderContext) override;
-	virtual void onFrameRender(SampleCallbacks* pSample, const RenderContext::SharedPtr &pRenderContext, const Fbo::SharedPtr &pTargetFbo) override;
-	virtual void onShutdown(SampleCallbacks* pSample) override;
-	virtual void onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height) override;
-	virtual void onDataReload(SampleCallbacks* pSample) override {}
-	virtual bool onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent) override;
-	virtual bool onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent) override;
-	virtual void onGuiRender(SampleCallbacks* pSample, Gui* pGui) override;
-	virtual void onDroppedFile(SampleCallbacks* pSample, const std::string& filename) override {}
+	virtual void onLoad(RenderContext* pRenderContext) override;
+	virtual void onFrameRender(RenderContext* pRenderContext, const std::shared_ptr<Fbo>& pTargetFbo) override;
+	virtual void onShutdown() override;
+	virtual void onResizeSwapChain(uint32_t width, uint32_t height) override;
+	virtual void onHotReload(HotReloadFlags reloaded) override {}
+	virtual bool onKeyEvent(const KeyboardEvent& keyEvent) override;
+	virtual bool onMouseEvent(const MouseEvent& mouseEvent) override;
+	virtual void onGuiRender(Gui* pGui) override;
+	virtual void onDroppedFile(const std::string& filename) override {}
     
 protected:
 	/** When a new scene is loaded, this gets called to let any passes in this pipeline know there's a new scene.
@@ -75,7 +75,7 @@ protected:
 
     /** Returns the last known swap chain size.
     */
-    glm::uint2 getSwapChainSize() const { return mLastKnownSize; }
+    uint2 getSwapChainSize() const { return mLastKnownSize; }
 
 	/** Allows the developer to add a description to be displayed about the pass list
 	*/
@@ -84,7 +84,7 @@ protected:
 private:
 
 	// On the first execution of onFrameRender(), we're calling this
-	void onFirstRun(SampleCallbacks* pSample);
+	void onFirstRun();
 
 	// Want to remove a pass from the list?  
 	void removePassFromPipeline(uint32_t passNum);
@@ -129,16 +129,13 @@ private:
 	bool mDoProfiling = false;
     bool mProfileToggle = false;
 	bool mFirstFrame = true;
-	bool mUseSceneCameraPath = false;
-	bool mFreezeTime = true;
 	bool mGlobalPipeRefresh = false;
 	ResourceManager::SharedPtr mpResourceManager;
 	int32_t mOutputBufferIndex = 0;
 	Scene::SharedPtr mpScene = nullptr;                     ///< Stash a copy of our scene
-	CameraController::SharedPtr mpCameraControl;
 	GraphicsState::SharedPtr mpDefaultGfxState;
 	std::vector< std::string > mPipeDescription;            ///< Can store a description of the pipeline for display in the UI
-	std::vector< HashedString > mProfileNames;
+	std::vector< std::string > mProfileNames;
 	std::vector< double > mProfileGPUTimes;
     std::vector< double > mProfileLastGPUTimes;
 
@@ -167,6 +164,9 @@ private:
 	Gui::DropdownList mMinTDropdown = { { 0, "0.1" }, { 1, "0.01" }, { 2, "0.001" },{ 3, "1e-4" }, { 4, "1e-5" }, { 5, "1e-6" }, { 6, "1e-7" }, {7, "0"} };
 	float             mMinTArray[8] = { 0.1f, 0.01f, 0.001f, 1e-4f, 1e-5f, 1e-6f, 1e-7f, 0.0f };
 	uint32_t          mMinTSelection = 3;
+
+    // Flags used for render pass gui windows
+    Gui::WindowFlags  mPassWindowFlags = Gui::WindowFlags::ShowTitleBar | Gui::WindowFlags::AllowMove | Gui::WindowFlags::SetFocus;
 
     std::string mTmpStr = "";
 };

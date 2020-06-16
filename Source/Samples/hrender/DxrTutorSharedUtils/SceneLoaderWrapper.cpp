@@ -21,21 +21,18 @@
 using namespace Falcor;
 
 namespace {
-    // Required for later versions of Falcor (post 3.1.0)
-    //const FileDialogFilterVec kSceneExtensions = { {"fscene"} };
-    //const FileDialogFilterVec kTextureExtensions = { { "hdr" }, { "png" }, { "jpg" }, { ".bmp" } };
+    const FileDialogFilterVec kTextureExtensions = { { "hdr" }, { "png" }, { "jpg" }, { "bmp" } };
 };
 
-Falcor::RtScene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename )
+Scene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename )
 {
-	RtScene::SharedPtr pScene;
+	Scene::SharedPtr pScene;
 
 	// If we didn't request a file to load, open a dialog box, asking which scene to load; on failure, return invalid scene
 	std::string filename;
 	if (!defaultFilename)
 	{
-        //if (!openFileDialog(kSceneExtensions, filename))
-        if (!openFileDialog("All supported formats\0*.fscene\0Falcor scene (*.fscene)\0\0", filename))
+        if (!openFileDialog(Scene::kFileExtensionFilters, filename))
 			return pScene;
 	}
 	else
@@ -50,57 +47,44 @@ Falcor::RtScene::SharedPtr loadScene( uint2 currentScreenSize, const char *defau
 	}
 
 	// Create a loading bar while loading a scene
-	ProgressBar::SharedPtr pBar = ProgressBar::create("Loading Scene", 100);
+	ProgressBar::SharedPtr pBar = ProgressBar::show("Loading Scene", 100);
 
 	// Load a scene
-	if (hasSuffix(filename, ".fscene", false))
+    SceneBuilder::SharedPtr pBuilder = SceneBuilder::create(filename);
+
+	// If we have a valid scene, do some sanity checking; set some defaults
+	if (pBuilder)
 	{
-		pScene = RtScene::loadFromFile(filename, RtBuildFlags::None, Model::LoadFlags::RemoveInstancing);
+        // Check to ensure the scene has at least one light.  If not, create a simple directional light
+        if (pBuilder->getLightCount() == 0)
+        {
+            DirectionalLight::SharedPtr pDirLight = DirectionalLight::create();
+            pDirLight->setWorldDirection(float3(-0.189f, -0.861f, -0.471f));
+            pDirLight->setIntensity(float3(1, 1, 0.985f) * 10.0f);
+            pDirLight->setName("DirLight");  // In case we need to display it in a GUI
+            pBuilder->addLight(pDirLight);
+        }
 
-		// If we have a valid scene, do some sanity checking; set some defaults
-		if (pScene)
-		{
-			// Bind a sampler to all scene textures using linear filtering.  Note this is only used if 
-			//    you use Falcor's built-in shading system.  Otherwise, you may have to specify your own sampler elsewhere.
-			Sampler::Desc desc;
-			desc.setFilterMode(Sampler::Filter::Linear, Sampler::Filter::Linear, Sampler::Filter::Linear);
-			Sampler::SharedPtr pSampler = Sampler::create(desc);
-			pScene->bindSampler(pSampler);
+        // Finalize the SceneBuilder's Scene
+        pScene = pBuilder->getScene();
 
-			// Check to ensure the scene has at least one light.  If not, create a simple directional light
-			if (pScene->getLightCount() == 0)
-			{
-				DirectionalLight::SharedPtr pDirLight = DirectionalLight::create();
-				pDirLight->setWorldDirection(float3(-0.189f, -0.861f, -0.471f));
-				pDirLight->setIntensity(float3(1, 1, 0.985f) * 10.0f);
-				pDirLight->setName("DirLight");  // In case we need to display it in a GUI
-				pScene->addLight(pDirLight);
-			}
+		// Bind a sampler to all scene textures using linear filtering.  Note this is only used if 
+		//    you use Falcor's built-in shading system.  Otherwise, you may have to specify your own sampler elsewhere.
+		Sampler::Desc desc;
+		desc.setFilterMode(Sampler::Filter::Linear, Sampler::Filter::Linear, Sampler::Filter::Linear);
+		Sampler::SharedPtr pSampler = Sampler::create(desc);
+		pScene->bindSamplerToMaterials(pSampler);
+        // TODO: Check if light probes really need this sampler. This is here because from
+        // Falcor 3.2.1 -> 4.0.0, Scene now only has a single light probe instead of multiple,
+        // and the Scene::bindSampler() method was removed.
+        auto& pLightProbe = pScene->getLightProbe();
+        if (pLightProbe) pLightProbe->setSampler(pSampler);
 
-			// If scene doesn't have a camera, create one
-			Camera::SharedPtr pCamera = pScene->getActiveCamera();
-			if (!pCamera)
-			{
-				pCamera = Camera::create();
+		// Set the aspect ratio of the camera appropriately
+        pScene->getCamera()->setAspectRatio((float)currentScreenSize.x / (float)currentScreenSize.y);
 
-				// Set the created camera to a reasonable position based on scene bounding box.
-				pCamera->setPosition(pScene->getCenter() + float3(0, 0, 3.f * pScene->getRadius()));
-				pCamera->setTarget(pScene->getCenter());
-				pCamera->setUpVector(float3(0, 1, 0));
-				pCamera->setDepthRange(std::max(0.1f, pScene->getRadius() / 750.0f), pScene->getRadius() * 10.f);
-
-				// Attach the camera to the scene (as the active camera); change camera motion to something reasonable
-				pScene->setActiveCamera(pScene->addCamera(pCamera));
-				pScene->setCameraSpeed(pScene->getRadius() * 0.25f);
-			}
-
-			// Set the aspect ratio of the camera appropriately
-			pCamera->setAspectRatio((float)currentScreenSize.x / (float)currentScreenSize.y);
-
-			// If scene has a camera path, disable from starting animation at load.
-			if (pScene->getPathCount())
-				pScene->getPath(0)->detachObject(pScene->getActiveCamera());
-		}
+		// If scene has a camera animation, disable from starting animation at load.
+        pScene->toggleCameraAnimation(false);
 	}
 
 	// We're done.  Return whatever scene we might have
@@ -111,8 +95,7 @@ std::string getTextureLocation(bool &isValid)
 {
 	// Open a dialog box, asking which scene to load; on failure, return invalid scene
 	std::string filename;
-    if (!openFileDialog("All supported formats\0*.hdr;*.png;*.jpg;*.bmp\0\0", filename))
-	//if (!openFileDialog(kTextureExtensions, filename))
+    if (!openFileDialog(kTextureExtensions, filename))
 	{
 		isValid = false;
 		return std::string("");

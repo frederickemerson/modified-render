@@ -18,7 +18,6 @@
 
 #include "Falcor.h"
 #include "RenderingPipeline.h"
-#include "Externals/dear_imgui/imgui.h"
 #include "SceneLoaderWrapper.h"
 #include <algorithm>
 
@@ -29,7 +28,7 @@ namespace {
 
 
 RenderingPipeline::RenderingPipeline() 
-	: Renderer()
+	: IRenderer()
 {
 }
 
@@ -40,13 +39,10 @@ uint32_t RenderingPipeline::addPass(::RenderPass::SharedPtr pNewPass)
 	return uint32_t(id);
 }
 
-void RenderingPipeline::onLoad(SampleCallbacks* pSample, const RenderContext::SharedPtr &pRenderContext)
+void RenderingPipeline::onLoad(RenderContext* pRenderContext)
 {
-	// Give the GUI some heft, so we don't need to resize all the time
-	pSample->setDefaultGuiSize(300, 800);
-
 	// Create our resource manager
-	mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y, pSample);
+	mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y, gpFramework);
 	mOutputBufferIndex = mpResourceManager->requestTextureResource(ResourceManager::kOutputChannel);
 
 	// Initialize all of the RenderPasses we have available to select for our pipeline
@@ -55,7 +51,7 @@ void RenderingPipeline::onLoad(SampleCallbacks* pSample, const RenderContext::Sh
 		if (mAvailPasses[i])
 		{
 			// Initialize.  If failure, remove this pass from the list.
-			bool initialized = mAvailPasses[i]->onInitialize(pRenderContext.get(), mpResourceManager);
+			bool initialized = mAvailPasses[i]->onInitialize(pRenderContext, mpResourceManager);
 			if (!initialized) mAvailPasses[i] = nullptr;
 		}
 	}
@@ -80,12 +76,8 @@ void RenderingPipeline::onLoad(SampleCallbacks* pSample, const RenderContext::Sh
 	{
 		char buf[256];
 		sprintf_s(buf, "Pass_%d", i);
-		mProfileNames.push_back( HashedString(std::string(buf)) );
+		mProfileNames.push_back( std::string(buf) );
 	}
-
-	// Create a camera controller
-	mpCameraControl = CameraController::SharedPtr(new FirstPersonCameraController);
-	mpCameraControl->attachCamera(nullptr);
 
 	// We're going to create a default graphics state
 	mpDefaultGfxState = GraphicsState::create();
@@ -116,8 +108,8 @@ void RenderingPipeline::onLoad(SampleCallbacks* pSample, const RenderContext::Sh
 
 	}
 
-	// Set the samples freeze-time setting appropriately
-	pSample->freezeTime(mFreezeTime);
+    // By default, we freeze animation on load
+    gpFramework->getGlobalClock().stop();
 
 	// When we initialize, we have a new pipe, so we need to give data to the passes
 	updatePipelineRequirementFlags();
@@ -211,39 +203,43 @@ bool RenderingPipeline::isPassValid(::RenderPass::SharedPtr pCheckPass, uint32_t
 	return true;
 }
 
-void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
+void RenderingPipeline::onGuiRender(Gui* pGui)
 {
     //Falcor::ProfilerEvent _profileEvent("renderGUI");
 
-	pGui->addSeparator();
+    Gui::Window w(pGui, "Falcor", { 300, 800 });
+    gpFramework->renderGlobalUI(pGui);
+
+    w.separator();
 
 	// Add a button to allow the user to load a scene
 	if (mPipeRequiresScene)
 	{
-		pGui->addText("Need to open a new scene?  Click below:");
-		pGui->addText("     ");
-		if (pGui->addButton("Load Scene", true))
+		w.text("Need to open a new scene?  Click below:");
+		w.text("     ");
+		if (w.button("Load Scene", true))
 		{
 			// A wrapper function to open a window, load a UI, and do some sanity checking
-			Fbo::SharedPtr outputFBO = pSample->getCurrentFbo();
-			RtScene::SharedPtr loadedScene = loadScene(uint2(outputFBO->getWidth(), outputFBO->getHeight()));
+            // TODO: Can this be replaced with mLastKnownSize?
+            Fbo::SharedPtr outputFBO = gpFramework->getTargetFbo();
+			Scene::SharedPtr loadedScene = loadScene(uint2(outputFBO->getWidth(), outputFBO->getHeight()));
 
 			// We have a method that explicitly initializes all render passes given our new scene.
 			if (loadedScene)
 			{
-				onInitNewScene(pSample->getRenderContext().get(), loadedScene);
+				onInitNewScene(gpFramework->getRenderContext(), loadedScene);
 				mGlobalPipeRefresh = true;
 			}
 		}
-		pGui->addSeparator();
+		w.separator();
 	}
 
 	if (mPipeUsesEnvMap)
 	{
 		uint32_t selection = 0;
-		pGui->addText( "Current environment map:" );
-		pGui->addText("     ");
-		if (pGui->addDropdown("##envMapSelector", mEnvMapSelector, selection, true))
+		w.text( "Current environment map:" );
+		w.text("     ");
+		if (w.dropdown("##envMapSelector", mEnvMapSelector, selection, true))
 		{
 			if (selection == 1)  // Then we've asked to load a new map
 			{
@@ -272,19 +268,19 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 			}
 			mGlobalPipeRefresh = true;
 		}
-		pGui->addSeparator();
+		w.separator();
 	}
 
 	if (mPipeRequiresRayTracing && mpResourceManager)
 	{
-		pGui->addText("Set ray tracing min traversal distance:");
-		pGui->addText("     ");
-		if (pGui->addDropdown("##minTSelector", mMinTDropdown, mMinTSelection, true))
+		w.text("Set ray tracing min traversal distance:");
+        w.text("     ");
+        if (w.dropdown("##minTSelector", mMinTDropdown, mMinTSelection, true))
 		{
 			mpResourceManager->setMinTDist(mMinTArray[mMinTSelection]);
 			mGlobalPipeRefresh = true;
 		}
-		pGui->addSeparator();
+        w.separator();
 	}
 
 	// To avoid putting GUIs on top of each other, offset later passes
@@ -296,16 +292,16 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		// Print all the lines in the instructions / help message
 		for (auto line : mPipeDescription)
 		{
-			pGui->addText(line.c_str());
+			w.text(line.c_str());
 		}
 
 		// Add a blank line.
-		pGui->addText(""); 
+		w.text(""); 
 	}
 
-	pGui->addText("");
-	pGui->addText("Ordered list of passes in rendering pipeline:");
-	pGui->addText("       (Click the boxes at left to toggle GUIs)");
+    w.text("");
+    w.text("Ordered list of passes in rendering pipeline:");
+    w.text("       (Click the boxes at left to toggle GUIs)");
 	for (uint32_t i = 0; i < mPassSelectors.size(); i++)
 	{
 		char buf[128];
@@ -313,11 +309,13 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		// Draw a button that enables/disables showing this pass' GUI window
 		sprintf_s(buf, "##enable.pass.%d", i);
 		bool enableGui = mEnablePassGui[i];
-		if (pGui->addCheckBox(buf, enableGui)) mEnablePassGui[i] = enableGui;
+        if (w.checkbox(buf, enableGui)) mEnablePassGui[i] = enableGui;
+        // TODO: Check if this works fine, then the previous two lines can be simplified
+        //w.checkbox(buf, mEnablePassGui[i]);
 
 		// Draw the selectable list of passes we can add at this stage in the pipeline
 		sprintf_s(buf, "##selector.pass.%d", i);
-		if (pGui->addDropdown(buf, mPassSelectors[i], mPassId[i], true))
+		if (w.dropdown(buf, mPassSelectors[i], mPassId[i], true))
 		{
 			::RenderPass::SharedPtr selectedPass = (mPassId[i] != kNullPassId) ? mAvailPasses[mPassId[i]] : nullptr;
 			changePass(i, selectedPass);
@@ -340,11 +338,11 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 			guiPos.y = glm::min(guiPos.y, int(mLastKnownSize.y) - 100);
 
 			// Create a window.  Note: RS4 version does more; that doesn't work with recent Falcor; this is OK for just tutorials.
-            pGui->pushWindow(mActivePasses[i]->getGuiName().c_str(),guiSz.x, guiSz.y, guiPos.x, guiPos.y, true, true);
+            Gui::Window passWindow(pGui, mActivePasses[i]->getGuiName().c_str(), { guiSz.x, guiSz.y }, { guiPos.x, guiPos.y }, mPassWindowFlags);
 
 			// Render the pass' GUI to this new UI window, then pop the new UI window.
 			mActivePasses[i]->onRenderGui(pGui);
-			pGui->popWindow();
+			passWindow.release();
 		}
 
 		// Offset the next GUI by the current one's height
@@ -352,37 +350,13 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 			yGuiOffset += mActivePasses[i]->getGuiSize().y; 
 	}
 
-	pGui->addText("");
+    w.text("");
+    w.separator();
+    w.text(Falcor::gProfileEnabled ? "Press (P):  Hide profiling window" : "Press (P):  Show profiling window");
+    w.separator();
 
-	// Enable an option to enable/disable binding of the camera to a path
-	if (mpScene && mpScene->getPathCount() && mPipeHasAnimation)
-	{
-		if (pGui->addCheckBox("Animated camera path?", mUseSceneCameraPath))
-		{
-			if (mUseSceneCameraPath)
-			{
-				mpScene->getPath(0)->attachObject(mpScene->getActiveCamera());
-			}
-			else
-			{
-				mpScene->getPath(0)->detachObject(mpScene->getActiveCamera());
-			}
-		}
-	}
-
-	// Allow control over any scene animation
-	if (mPipeHasAnimation)
-	{
-		if (pGui->addCheckBox("Freeze all scene animations", mFreezeTime))
-		{
-			pSample->freezeTime(mFreezeTime);
-		}
-	}
-
-    pGui->addText("");
-    pGui->addSeparator();
-    pGui->addText(Falcor::gProfileEnabled ? "Press (P):  Hide profiling window" : "Press (P):  Show profiling window");
-    pGui->addSeparator();
+    w.text("");
+    if (mpScene) mpScene->renderUI(w);
 }
 
 void RenderingPipeline::removePassFromPipeline(uint32_t passNum)
@@ -596,26 +570,23 @@ void RenderingPipeline::changePass(uint32_t passNum, ::RenderPass::SharedPtr pNe
 	mPipelineChanged = true;
 }
 
-void RenderingPipeline::onFirstRun(SampleCallbacks* pSample)
+void RenderingPipeline::onFirstRun()
 {
 	// Did the user ask for us to load a scene by default?
 	if (mPipeNeedsDefaultScene)
 	{
-		RtScene::SharedPtr loadedScene = loadScene(mLastKnownSize, mpResourceManager->getDefaultSceneName().c_str());
-		if (loadedScene) onInitNewScene(pSample->getRenderContext().get(), loadedScene);
+		Scene::SharedPtr loadedScene = loadScene(mLastKnownSize, mpResourceManager->getDefaultSceneName().c_str());
+		if (loadedScene) onInitNewScene(gpFramework->getRenderContext(), loadedScene);
 	}
 
 	mFirstFrame = false;
 }
 
-void RenderingPipeline::onFrameRender(SampleCallbacks* pSample, const RenderContext::SharedPtr &pRenderContext, const Fbo::SharedPtr &pTargetFbo)
+void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::shared_ptr<Fbo>& pTargetFbo)
 {
 	// Is this the first time we've run onFrameRender()?  If som take care of things that happen on first execution.
-	if (mFirstFrame) onFirstRun(pSample);
-
-	// Bind our default state to the graphics pipe
-	pRenderContext->pushGraphicsState(mpDefaultGfxState);
-
+	if (mFirstFrame) onFirstRun();
+    
 	// Check to ensure we have all our resources initialized.  (This should be superfluous) 
 	if (!mpResourceManager->isInitialized())
 	{
@@ -625,9 +596,8 @@ void RenderingPipeline::onFrameRender(SampleCallbacks* pSample, const RenderCont
 	// If we have a scene, make sure to update the current camera based on any UI controls
 	if (mpScene)
 	{
-		// Make sure we're updateing the correct camera, then update the scene
-		mpCameraControl->attachCamera(mpScene->getActiveCamera() ? mpScene->getActiveCamera() : nullptr);
-		mpScene->update(pSample->getCurrentTime(), mpCameraControl.get());
+		// Update the scene
+		mpScene->update(pRenderContext, gpFramework->getGlobalClock().getTime());
 	}
 
 	// Check if the pipeline has changed since last frame and needs updating
@@ -672,11 +642,11 @@ void RenderingPipeline::onFrameRender(SampleCallbacks* pSample, const RenderCont
                 // Insert a per-pass profiling event.  
                 assert(passNum < mProfileNames.size());
                 Falcor::ProfilerEvent _profileEvent(mActivePasses[passNum]->getName().c_str());
-                mActivePasses[passNum]->onExecute(pRenderContext.get());
+                mActivePasses[passNum]->onExecute(pRenderContext, mpDefaultGfxState.get());
             }
             else
             {
-                mActivePasses[passNum]->onExecute(pRenderContext.get());
+                mActivePasses[passNum]->onExecute(pRenderContext, mpDefaultGfxState.get());
             }
         }
     }
@@ -689,16 +659,16 @@ void RenderingPipeline::onFrameRender(SampleCallbacks* pSample, const RenderCont
 
 	// Once we're done rendering, clear the pipeline dirty state.
 	mPipelineChanged = false;
-
-	// Get rid of our default state
-	pRenderContext->popGraphicsState();
 }
 
 void RenderingPipeline::onInitNewScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
-	// Stash the scene in the pipeline
-	if (pScene) 
-		mpScene = pScene;
+    if (pScene) {
+        // Stash the scene in the pipeline
+        mpScene = pScene;
+        // Create a camera controller
+        mpScene->setCameraController(Scene::CameraControllerType::FirstPerson);
+    }
 
 	// When a new scene is loaded, we'll tell all our passes about it (not just active passes)
 	for (uint32_t i = 0; i < mAvailPasses.size(); i++)
@@ -710,7 +680,7 @@ void RenderingPipeline::onInitNewScene(RenderContext* pRenderContext, Scene::Sha
 	}
 }
 
-void RenderingPipeline::onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height)
+void RenderingPipeline::onResizeSwapChain(uint32_t width, uint32_t height)
 {
 	// Stash the current size, so if we need it later, we'll have access.
 	mLastKnownSize = uint2(width, height);
@@ -735,7 +705,7 @@ void RenderingPipeline::onResizeSwapChain(SampleCallbacks* pSample, uint32_t wid
 	}
 }
 
-void RenderingPipeline::onShutdown(SampleCallbacks* pSample)
+void RenderingPipeline::onShutdown()
 {
 	// On program shutdown, call the shutdown callback on all the render passes.
     // We do not have to worry about double-deletion etc. It is currently enforced that a pass is only bound to one pipeline.
@@ -748,7 +718,7 @@ void RenderingPipeline::onShutdown(SampleCallbacks* pSample)
 	}
 }
 
-bool RenderingPipeline::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
+bool RenderingPipeline::onKeyEvent(const KeyboardEvent& keyEvent)
 {
 	// Let all of the currently active render passes process any keyboard events
 	for (uint32_t i = 0; i < mActivePasses.size(); i++)
@@ -759,13 +729,14 @@ bool RenderingPipeline::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent
 		}
 	}
 
-	return mpCameraControl->onKeyEvent(keyEvent);
+	return mpScene->onKeyEvent(keyEvent);
 }
 
-bool RenderingPipeline::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent)
+bool RenderingPipeline::onMouseEvent(const MouseEvent& mouseEvent)
 {
 	// Some odd cases where this gets called by Falcor error message boxes.  Ignore these.
-	if (!pSample || !mpCameraControl) return false;
+    // TODO: Verify that this doesn't break anything, !mpScene might need to be removed?
+	if (!gpFramework || !mpScene) return false;
 
 	// Let all of the currently active render passes process any mouse events
 	for (uint32_t i = 0; i < mActivePasses.size(); i++)
@@ -776,7 +747,7 @@ bool RenderingPipeline::onMouseEvent(SampleCallbacks* pSample, const MouseEvent&
 		}
 	}
 
-	return mpCameraControl->onMouseEvent(mouseEvent);
+	return mpScene->onMouseEvent(mouseEvent);
 }
 
 bool RenderingPipeline::canRemovePass(uint32_t passNum)
@@ -882,9 +853,9 @@ void RenderingPipeline::extractProfilingData(void)
 	}
 }
 
-
 void RenderingPipeline::run(RenderingPipeline *pipe, SampleConfig &config)
 {
 	pipe->updatePipelineRequirementFlags();
-	Sample::run(config, std::unique_ptr<Renderer>(pipe));
+    auto uPtrToPipe = std::unique_ptr<IRenderer>(pipe);
+	Sample::run(config, uPtrToPipe);
 }

@@ -11,9 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />
+    <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
     <ClInclude Include="hrender.h" />
   </ItemGroup>
   <ItemGroup>
