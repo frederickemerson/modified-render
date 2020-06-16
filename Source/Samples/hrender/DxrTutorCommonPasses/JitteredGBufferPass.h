@@ -1,6 +1,6 @@
 #pragma once
-#include "../DxrTutorSharedUtils/SimpleRenderPass.h"
-#include "../DxrTutorSharedUtils/RasterPass.h"
+#include "../SharedUtils/SimpleRenderPass.h"
+#include "../SharedUtils/RasterPass.h"
 #include <random>
 
 class JitteredGBufferPass : public RenderPass, inherit_shared_from_this<RenderPass, JitteredGBufferPass>
@@ -38,5 +38,5 @@ protected:
 	std::mt19937 mRng;                                  ///< Our random number generate.  Set up in initialize()
 
 	// What's our background color?
-	vec3  mBgColor = vec3(0.5f, 0.5f, 1.0f);            ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+	float3  mBgColor = float3(0.5f, 0.5f, 1.0f);            ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
 };

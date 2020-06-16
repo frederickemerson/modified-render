@@ -182,12 +182,12 @@ RayLaunch::SimpleVarsVector &RayLaunch::getHitVars(uint32_t rayType)
 	return mpHitVars[rayType];
 }
 
-void RayLaunch::execute(RenderContext::SharedPtr pRenderContext, uvec2 rayLaunchDimensions, Camera::SharedPtr viewCamera)
+void RayLaunch::execute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera)
 {
     this->execute(pRenderContext.get(), rayLaunchDimensions, viewCamera);
 }
 
-void RayLaunch::execute(RenderContext* pRenderContext, uvec2 rayLaunchDimensions, Camera::SharedPtr viewCamera)
+void RayLaunch::execute(RenderContext* pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera)
 {
 	// Ok.  We're executing.  If we still have an invalid shader variable reflector, we'd better get one now!
 	if (mInvalidVarReflector) createRayTracingVariables();
@@ -209,14 +209,14 @@ void RayLaunch::execute(RenderContext* pRenderContext, uvec2 rayLaunchDimensions
 	}
 
 	// Ok.  We're ready and have done all our error checking.  Launch the ray tracing!
-	mpSceneRenderer->renderScene(pRenderContext, mpRayVars, mpRayState, uvec3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), camPtr);
+	mpSceneRenderer->renderScene(pRenderContext, mpRayVars, mpRayState, uint3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), camPtr);
 }
 
-void RayLaunch::experimentalExecute(RenderContext::SharedPtr pRenderContext, uvec2 rayLaunchDimensions)
+void RayLaunch::experimentalExecute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions)
 {
 	// We need our shader variable reflector in order to execute!
 	if (!mpRayVars) return;
 
 	// Ok.  We're ready and have done all our error checking.  Launch the ray tracing!
-	mpSceneRenderer->renderScene(pRenderContext.get(), mpRayVars, mpRayState, uvec3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), nullptr);
+	mpSceneRenderer->renderScene(pRenderContext.get(), mpRayVars, mpRayState, uint3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), nullptr);
 }

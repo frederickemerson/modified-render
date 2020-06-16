@@ -63,7 +63,7 @@ bool LightProbeGBufferPass::initialize(RenderContext* pRenderContext, ResourceMa
 	mRng = std::mt19937(uint32_t(timeInMillisec.time_since_epoch().count()));
 
 	// Our GUI needs more space than other passes, so enlarge the GUI window.
-	setGuiSize(ivec2(250, 220));
+	setGuiSize(int2(250, 220));
 
     return true;
 }
@@ -107,12 +107,12 @@ void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
 	if (!mpRays || !mpRays->readyToRender()) return;
 
 	// Load our textures, but ask the resource manager to clear them to black before returning them
-	Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", vec4(0, 0, 0, 0));
-	Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", vec4(0, 0, 0, 0));
-	Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", vec4(0, 0, 0, 0));
-	Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", vec4(0, 0, 0, 0));
-	Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", vec4(0, 0, 0, 0));
-	Texture::SharedPtr matEmit = mpResManager->getClearedTexture("Emissive", vec4(0, 0, 0, 0));
+	Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", float4(0, 0, 0, 0));
+	Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", float4(0, 0, 0, 0));
+	Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", float4(0, 0, 0, 0));
+	Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", float4(0, 0, 0, 0));
+	Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", float4(0, 0, 0, 0));
+	Texture::SharedPtr matEmit = mpResManager->getClearedTexture("Emissive", float4(0, 0, 0, 0));
 	mLightProbe = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
 	// Compute parameters based on our user-exposed controls
@@ -129,7 +129,7 @@ void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
 
 	// Pass our background color down to our miss shader
 	auto missVars = mpRays->getMissVars(0);
-	missVars["MissShaderCB"]["gEnvMapRes"] = uvec2(mLightProbe->getWidth(), mLightProbe->getHeight());
+	missVars["MissShaderCB"]["gEnvMapRes"] = uint2(mLightProbe->getWidth(), mLightProbe->getHeight());
 	missVars["gEnvMap"] = mLightProbe;
 
 	// Pass our camera parameters to the ray generation shader
@@ -146,16 +146,16 @@ void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
 		float yOff = mUseRandomJitter ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1] * 0.0625f;
 
 		// Set our shader and the scene camera to use the computed jitter
-		rayGenVars["RayGenCB"]["gPixelJitter"] = vec2( xOff + 0.5f, yOff + 0.5f );
+		rayGenVars["RayGenCB"]["gPixelJitter"] = float2( xOff + 0.5f, yOff + 0.5f );
 		mpScene->getActiveCamera()->setJitter(xOff / float(wsPos->getWidth()), yOff / float(wsPos->getHeight()));
 	}
 	else
 	{
 		// No jitter, so sent our shader values that mean "use center of pixel"
-		rayGenVars["RayGenCB"]["gPixelJitter"] = vec2(0.5f, 0.5f);
+		rayGenVars["RayGenCB"]["gPixelJitter"] = float2(0.5f, 0.5f);
 		mpScene->getActiveCamera()->setJitter(0,0);
 	}
 
 	// Launch our ray tracing
-	mpRays->execute( pRenderContext, uvec2(wsPos->getWidth(),wsPos->getHeight()) );
+	mpRays->execute( pRenderContext, uint2(wsPos->getWidth(),wsPos->getHeight()) );
 }

@@ -75,7 +75,7 @@ protected:
 
     /** Returns the last known swap chain size.
     */
-    glm::uvec2 getSwapChainSize() const { return mLastKnownSize; }
+    glm::uint2 getSwapChainSize() const { return mLastKnownSize; }
 
 	/** Allows the developer to add a description to be displayed about the pass list
 	*/
@@ -123,7 +123,7 @@ private:
 	std::vector< uint32_t > mPassId;                        ///< Stores UI variables for currently selected passes.
 	std::vector< bool > mEnablePassGui;                     ///< Stores whether the UI window for each pass is enabled
 	std::vector< int32_t > mEnableAddRemove;                ///< Stores whether the UI allows adding after this pass or removing this pass
-	uvec2 mLastKnownSize = uvec2(0);                        ///< Last known size sent to onResizeSwapChain().
+	uint2 mLastKnownSize = uint2(0);                        ///< Last known size sent to onResizeSwapChain().
 	bool mPipelineChanged = true;                           ///< A flag to keep track of pipeline changes
 	bool mIsInitialized = false;
 	bool mDoProfiling = false;

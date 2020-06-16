@@ -64,7 +64,7 @@ void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::S
 void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
 {
 	// Get the output buffer we're writing into
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(ResourceManager::kOutputChannel, vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(ResourceManager::kOutputChannel, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -79,7 +79,7 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
 	rayGenVars["gOutput"]      = pDstTex;
 
 	// Shoot our rays and shade our primary hit points
-	mpRays->execute( pRenderContext, uvec2(pDstTex->getWidth(), pDstTex->getHeight()) );
+	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
 

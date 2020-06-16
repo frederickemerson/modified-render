@@ -155,19 +155,19 @@ public:
 
     /** Set position in pixels of the UI window in the application window's client area.
     */
-    void setGuiPosition(const glm::ivec2& guiPos) { mGuiPosition = guiPos; }
+    void setGuiPosition(const int2& guiPos) { mGuiPosition = guiPos; }
 
     /** Get position in pixels of the UI window in the application window's client area.
     */
-    glm::ivec2 getGuiPosition() const { return mGuiPosition; }
+    int2 getGuiPosition() const { return mGuiPosition; }
 
     /** Set size in pixels of the UI window in the application window's client area.
     */
-    void setGuiSize(const glm::ivec2& guiSize) { mGuiSize = guiSize; }
+    void setGuiSize(const int2& guiSize) { mGuiSize = guiSize; }
 
     /** Get size in pixels of the UI window in the application window's client area.
     */
-    glm::ivec2 getGuiSize() const { return mGuiSize; }
+    int2 getGuiSize() const { return mGuiSize; }
 
     /** Returns true if render pass is successfully initialized.
     */
@@ -208,8 +208,8 @@ private:
     // Internal state
     std::string mName;                          ///< Name of the render pass.
     std::string mGuiName;                       ///< Name of the GUI group/window for this render pass.
-    glm::ivec2 mGuiPosition = { -270, 30 };     ///< Position in pixels of the UI window in the application window's client area.
-    glm::ivec2 mGuiSize = { 250, 160 };         ///< Size in pixels of the UI window in the application window's client area.
+    int2 mGuiPosition = { -270, 30 };     ///< Position in pixels of the UI window in the application window's client area.
+    int2 mGuiSize = { 250, 160 };         ///< Size in pixels of the UI window in the application window's client area.
 
     bool mIsInitialized = false;                ///< Set to true upon successful intialization.
     bool mRefreshFlag = true;                   ///< User flag that is automatically reset after execute().

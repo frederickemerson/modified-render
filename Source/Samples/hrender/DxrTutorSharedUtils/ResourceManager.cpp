@@ -47,7 +47,7 @@ void ResourceManager::resize(uint32_t width, uint32_t height)
 	for (int32_t i = 0; i < int32_t(mTextures.size()); i++)
 	{
 		// Only resize textures that are defined to be screensize
-		if (mTextureSizes[i] != ivec2(-1, -1)) continue;
+		if (mTextureSizes[i] != int2(-1, -1)) continue;
 
 		// Recreate our texture with the new size
 		mTextures[i] = Texture::create2D(mWidth, mHeight, mTextureFormat[i], 1u, 1u, nullptr, mTextureFlags[i]);
@@ -80,7 +80,7 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	if (filename == "")
 	{
 		Texture::SharedPtr tmpEnv = Texture::create2D(128, 128, ResourceFormat::RGBA32Float, 1u, 1u, nullptr, ResourceManager::kDefaultFlags);
-		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), vec4(0.5f, 0.5f, 0.8f, 1.0f));
+		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.5f, 0.5f, 0.8f, 1.0f));
 		manageTextureResource(ResourceManager::kEnvironmentMap, tmpEnv);
 		mUpdatedFlag = true;
 		return true;
@@ -88,7 +88,7 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	else if (filename == "Black")
 	{
 		Texture::SharedPtr tmpEnv = Texture::create2D(128, 128, ResourceFormat::RGBA32Float, 1u, 1u, nullptr, ResourceManager::kDefaultFlags);
-		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), vec4(0.0f, 0.0f, 0.0f, 1.0f));
+		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.0f, 0.0f, 0.0f, 1.0f));
 		manageTextureResource(ResourceManager::kEnvironmentMap, tmpEnv);
 		mUpdatedFlag = true;
 		return true;
@@ -110,12 +110,12 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	return false;
 }
 
-uvec2 ResourceManager::getEnvironmentMapSize() const
+uint2 ResourceManager::getEnvironmentMapSize() const
 {
 	int32_t existingIndex = getTextureIndex(ResourceManager::kEnvironmentMap);
-	if (existingIndex < 0) return uvec2(0, 0);
+	if (existingIndex < 0) return uint2(0, 0);
 
-	return uvec2( mTextureSizes[existingIndex] );
+	return uint2( mTextureSizes[existingIndex] );
 }
 
 int32_t ResourceManager::manageTextureResource(const std::string &channelName, Texture::SharedPtr sharedTex)
@@ -128,7 +128,7 @@ int32_t ResourceManager::manageTextureResource(const std::string &channelName, T
 	{
 		existingIndex = int32_t(mTextures.size());
 		mTextures.push_back(nullptr);
-		mTextureSizes.push_back(ivec2(-1, -1));
+		mTextureSizes.push_back(int2(-1, -1));
 		mTextureNames.push_back(channelName);
 		mTextureFlags.push_back(kDefaultFlags);
 		mTextureFormat.push_back(sharedTex->getFormat());
@@ -136,7 +136,7 @@ int32_t ResourceManager::manageTextureResource(const std::string &channelName, T
 
 	// Override requested resolution and format based on the incoming texture
 	mTextureFormat[existingIndex] = sharedTex->getFormat();
-	mTextureSizes[existingIndex] = ivec2(sharedTex->getWidth(), sharedTex->getHeight());
+	mTextureSizes[existingIndex] = int2(sharedTex->getWidth(), sharedTex->getHeight());
 
 	// Store our texture pointer
 	mTextures[existingIndex] = sharedTex;
@@ -175,7 +175,7 @@ Texture::SharedPtr ResourceManager::getTexture(const std::string &channelName)
 	return getTexture(getTextureIndex(channelName));
 }
 
-Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channelName, vec4 &clearColor)
+Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channelName, float4 &clearColor)
 {
 	Texture::SharedPtr channel = getTexture(channelName);
 	if (!channel) return nullptr;
@@ -184,7 +184,7 @@ Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channel
 	return channel;
 }
 
-Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, vec4 &clearColor)
+Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, float4 &clearColor)
 {
 	Texture::SharedPtr channel = getTexture(channelIdx);
 	if (!channel) return nullptr;
@@ -193,7 +193,7 @@ Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, vec4 &
 	return channel;
 }
 
-void ResourceManager::clearTexture(Texture::SharedPtr &tex, const vec4 &clearColor)
+void ResourceManager::clearTexture(Texture::SharedPtr &tex, const float4 &clearColor)
 {
 	// Figure out what type of texture this is
 	Resource::BindFlags flags = tex->getBindFlags();
@@ -217,7 +217,7 @@ int32_t ResourceManager::requestTextureResource(const std::string &channelName,
 	{
 		// Check for mismatches that might mean requestors for this buffer have conflicting needs
 		if (channelFormat != mTextureFormat[existingIndex]) return -1;
-		if (mTextureSizes[existingIndex] != ivec2(channelWidth, channelHeight)) return -1;
+		if (mTextureSizes[existingIndex] != int2(channelWidth, channelHeight)) return -1;
 
 		// If we've asked for more usage types than anyone else, update the resource
 		mTextureFlags[existingIndex] |= usageFlags;
@@ -229,7 +229,7 @@ int32_t ResourceManager::requestTextureResource(const std::string &channelName,
 	// No existing resource with that name.  Create one.
 	existingIndex = int32_t(mTextures.size());
 	mTextures.push_back(nullptr);    // We'll actually create the resource in initializeResources()
-	mTextureSizes.push_back(ivec2(channelWidth, channelHeight));
+	mTextureSizes.push_back(int2(channelWidth, channelHeight));
 	mTextureNames.push_back(channelName);
 	mTextureFlags.push_back(usageFlags);
 	mTextureFormat.push_back(channelFormat);
@@ -325,9 +325,9 @@ void ResourceManager::updateTextureSize(int32_t channelIdx, int32_t newWidth, in
 		return;
 
 	// If either the dimensions < 0, treat this as a window-sized resource
-	ivec2 newSize = ivec2(newWidth, newHeight);
+	int2 newSize = int2(newWidth, newHeight);
 	if (newWidth < 0 || newHeight < 0)
-		newSize = ivec2(-1, -1);
+		newSize = int2(-1, -1);
 
 	// If we haven't changed sizes, there's no reason to deallocate and reallocate the texture
 	if (mTextureSizes[channelIdx] == newSize) return;

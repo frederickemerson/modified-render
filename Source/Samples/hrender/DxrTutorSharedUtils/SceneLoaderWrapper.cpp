@@ -26,7 +26,7 @@ namespace {
     //const FileDialogFilterVec kTextureExtensions = { { "hdr" }, { "png" }, { "jpg" }, { ".bmp" } };
 };
 
-Falcor::RtScene::SharedPtr loadScene( uvec2 currentScreenSize, const char *defaultFilename )
+Falcor::RtScene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename )
 {
 	RtScene::SharedPtr pScene;
 
@@ -71,8 +71,8 @@ Falcor::RtScene::SharedPtr loadScene( uvec2 currentScreenSize, const char *defau
 			if (pScene->getLightCount() == 0)
 			{
 				DirectionalLight::SharedPtr pDirLight = DirectionalLight::create();
-				pDirLight->setWorldDirection(vec3(-0.189f, -0.861f, -0.471f));
-				pDirLight->setIntensity(vec3(1, 1, 0.985f) * 10.0f);
+				pDirLight->setWorldDirection(float3(-0.189f, -0.861f, -0.471f));
+				pDirLight->setIntensity(float3(1, 1, 0.985f) * 10.0f);
 				pDirLight->setName("DirLight");  // In case we need to display it in a GUI
 				pScene->addLight(pDirLight);
 			}
@@ -84,9 +84,9 @@ Falcor::RtScene::SharedPtr loadScene( uvec2 currentScreenSize, const char *defau
 				pCamera = Camera::create();
 
 				// Set the created camera to a reasonable position based on scene bounding box.
-				pCamera->setPosition(pScene->getCenter() + vec3(0, 0, 3.f * pScene->getRadius()));
+				pCamera->setPosition(pScene->getCenter() + float3(0, 0, 3.f * pScene->getRadius()));
 				pCamera->setTarget(pScene->getCenter());
-				pCamera->setUpVector(vec3(0, 1, 0));
+				pCamera->setUpVector(float3(0, 1, 0));
 				pCamera->setDepthRange(std::max(0.1f, pScene->getRadius() / 750.0f), pScene->getRadius() * 10.f);
 
 				// Attach the camera to the scene (as the active camera); change camera motion to something reasonable

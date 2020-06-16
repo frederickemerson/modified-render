@@ -61,8 +61,8 @@ protected:
 	std::mt19937 mRng;                                  ///< Our random number generate.  Set up in initialize()
 
 	// A texture containing our environment map
-	vec3      mBgColor = vec3(0.5f, 0.5f, 1.0f);
+	float3    mBgColor = float3(0.5f, 0.5f, 1.0f);
 
 	// A counter to initialize our thin-lens random numbers each frame; incremented by 1 each frame
-	uint32_t   mFrameCount = 0xdeadbeef;    // Should use a different start value than other passes
+	uint32_t  mFrameCount = 0xdeadbeef;    // Should use a different start value than other passes
 };

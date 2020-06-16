@@ -41,7 +41,7 @@ bool SimpleAccumulationPass::initialize(RenderContext* pRenderContext, ResourceM
 	mpAccumShader = FullscreenLaunch::create(kAccumShader);
 
 	// Our GUI needs less space than other passes, so shrink the GUI window.
-	setGuiSize(ivec2(250, 135));
+	setGuiSize(int2(250, 135));
 
 	return true;
 }

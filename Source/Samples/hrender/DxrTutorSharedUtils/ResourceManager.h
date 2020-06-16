@@ -64,11 +64,11 @@ public:
 	Texture::SharedPtr getTexture(int32_t channelIdx);
 
 	// Get a pointer to requested texture, but before returning, clear the channel
-	Texture::SharedPtr getClearedTexture(const std::string &channelName, vec4 &clearColor);
-	Texture::SharedPtr getClearedTexture(int32_t channelIdx, vec4 &clearColor);
+	Texture::SharedPtr getClearedTexture(const std::string &channelName, float4 &clearColor);
+	Texture::SharedPtr getClearedTexture(int32_t channelIdx, float4 &clearColor);
 
 	// If you have a texture, you can clear it here
-	void clearTexture(Texture::SharedPtr &tex, const vec4 &clearColor);
+	void clearTexture(Texture::SharedPtr &tex, const float4 &clearColor);
 
 	// Returns the name of the texture with the specified index
 	std::string getTextureName(int32_t channelIdx);
@@ -87,7 +87,7 @@ public:
 	// Get details about the internally managerd environment map
 	std::string  getEnvironmentMapName(void) const { return mEnvMapFilename; }
 	Texture::SharedPtr getEnvironmentMap() { return getTexture( kEnvironmentMap );  }
-	uvec2 getEnvironmentMapSize() const;
+	uint2 getEnvironmentMapSize() const;
 
 	// Creates a framebuffer from a set of resources managed by the ResourceManager.  
 	//    -> Note:  This FBO remains valid until haveResourcesChanged() is true, at which point the user needs to recreate it
@@ -127,7 +127,7 @@ public:
     // Get the resolution of fullscreen channels.
     uint32_t getWidth() const      { return mWidth; }
     uint32_t getHeight() const     { return mHeight; }
-	uvec2    getScreenSize() const { return uvec2(mWidth, mHeight); }
+	uint2    getScreenSize() const { return uint2(mWidth, mHeight); }
 
 	// If resources have changed since last frame (and previous resource pointers may be invalid), this will return true
 	bool haveResourcesChanged() const { return mUpdatedFlag; }
@@ -162,7 +162,7 @@ protected:
     // The internal texture resources.  These could be combined into an AoS rather than a SoA, but I was lazy.  Does it matter?
     std::vector<Texture::SharedPtr>   mTextures;         ///< The texture resources managed by this class
 	std::vector<std::string>          mTextureNames;     ///< std::string-based names for the textures
-	std::vector<glm::ivec2>           mTextureSizes;     ///< Stored separately from internal texture data so we can distinguish between fixed & fullscreen textures
+	std::vector<glm::int2>            mTextureSizes;     ///< Stored separately from internal texture data so we can distinguish between fixed & fullscreen textures
 	std::vector<Resource::BindFlags>  mTextureFlags;     ///< Expected usage flags
 	std::vector<ResourceFormat>       mTextureFormat;    ///< Expected texture format
 

@@ -89,7 +89,7 @@ void SimpleDiffuseGIPass::renderGui(Gui* pGui)
 void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext)
 {
 	// Get the output buffer we're writing into
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputBuf, vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputBuf, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -113,7 +113,7 @@ void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext)
 	missVars["gEnvMap"] = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
 	// Execute our shading pass and shoot indirect rays
-	mpRays->execute( pRenderContext, uvec2(pDstTex->getWidth(), pDstTex->getHeight()) );
+	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
 

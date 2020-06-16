@@ -113,11 +113,11 @@ public:
 	void setMaxRecursionDepth(uint32_t maxDepth);
 
 	// Launch our ray tracing with the specified number of rays.  If viewCamera is null, uses the scene's active camera
-	void execute(RenderContext::SharedPtr pRenderContext, uvec2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
-    void execute(RenderContext* pRenderContext, uvec2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
+	void execute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
+    void execute(RenderContext* pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
 
 	// NOTE: Experimental functionality.  Probably do not use. Beware!
-	void experimentalExecute(RenderContext::SharedPtr pRenderContext, uvec2 rayLaunchDimensions );
+	void experimentalExecute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions );
 
 	// Get syntactic sugar to access global variables
 	SimpleVars::SharedPtr getGlobalVars();

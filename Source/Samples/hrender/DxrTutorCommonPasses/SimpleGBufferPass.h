@@ -47,5 +47,5 @@ protected:
 	RasterLaunch::SharedPtr     mpRaster;               ///< A wrapper managing the shader for our g-buffer creation
 
 	// What's our "background" color?
-	vec3                        mBgColor = vec3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+	float3                      mBgColor = float3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
 };

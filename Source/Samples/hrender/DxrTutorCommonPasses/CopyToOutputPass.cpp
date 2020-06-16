@@ -55,7 +55,7 @@ void CopyToOutputPass::execute(RenderContext* pRenderContext)
 	// If we have selected an invalid texture, clear our output to black and return.
 	if (!inTex || mSelectedBuffer == uint32_t(-1))
 	{
-		pRenderContext->clearRtv(outTex->getRTV().get(), vec4(0.0f,0.0f,0.0f, 1.0f));
+		pRenderContext->clearRtv(outTex->getRTV().get(), float4(0.0f,0.0f,0.0f, 1.0f));
 		return;
 	}
 	

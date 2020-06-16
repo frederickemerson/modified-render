@@ -86,10 +86,10 @@ void JitteredGBufferPass::execute(RenderContext::SharedPtr pRenderContext)
 	}
 
 	// Clear our g-buffer.  All color buffers to (0,0,0,0), depth to 1, stencil to 0
-	pRenderContext->clearFbo(outputFbo.get(), vec4(0, 0, 0, 0), 1.0f, 0);
+	pRenderContext->clearFbo(outputFbo.get(), float4(0, 0, 0, 0), 1.0f, 0);
 
 	// Separately clear our diffuse color buffer to the background color, rather than black
-	pRenderContext->clearUAV(outputFbo->getColorTexture(2)->getUAV().get(), vec4(mBgColor, 1.0f));
+	pRenderContext->clearUAV(outputFbo->getColorTexture(2)->getUAV().get(), float4(mBgColor, 1.0f));
 
 	// Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
 	mpRaster->execute(pRenderContext, mpGfxState, outputFbo);

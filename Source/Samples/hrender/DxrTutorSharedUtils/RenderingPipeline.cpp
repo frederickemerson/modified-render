@@ -226,7 +226,7 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		{
 			// A wrapper function to open a window, load a UI, and do some sanity checking
 			Fbo::SharedPtr outputFBO = pSample->getCurrentFbo();
-			RtScene::SharedPtr loadedScene = loadScene(uvec2(outputFBO->getWidth(), outputFBO->getHeight()));
+			RtScene::SharedPtr loadedScene = loadScene(uint2(outputFBO->getWidth(), outputFBO->getHeight()));
 
 			// We have a method that explicitly initializes all render passes given our new scene.
 			if (loadedScene)
@@ -327,8 +327,8 @@ void RenderingPipeline::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		if (mEnablePassGui[i] && mActivePasses[i])
 		{
 			// Find out where to put the GUI for this pass
-			ivec2 guiPos = mActivePasses[i]->getGuiPosition();
-			ivec2 guiSz = mActivePasses[i]->getGuiSize();
+			int2 guiPos = mActivePasses[i]->getGuiPosition();
+			int2 guiSz = mActivePasses[i]->getGuiSize();
 
 			// If the GUI position is negative, attach to right/bottom on screen
 			guiPos.x = (guiPos.x < 0) ? (mLastKnownSize.x + guiPos.x) : guiPos.x;
@@ -713,7 +713,7 @@ void RenderingPipeline::onInitNewScene(RenderContext* pRenderContext, Scene::Sha
 void RenderingPipeline::onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height)
 {
 	// Stash the current size, so if we need it later, we'll have access.
-	mLastKnownSize = uvec2(width, height);
+	mLastKnownSize = uint2(width, height);
 
 	// If we're getting zeros for width or height, we're don't have a real screen yet and we're
 	//    going to get lots of resource resizing issues.  Stop until we have a reasonable size

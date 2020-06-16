@@ -76,7 +76,7 @@ void AmbientOcclusionPass::renderGui(Gui* pGui)
 void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 {
 	// Get our output buffer; clear it to black.
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, vec4(0.0f, 0.0f, 0.0f, 0.0f));
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -92,7 +92,7 @@ void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 	rayGenVars["gOutput"] = pDstTex;
 
 	// Shoot our AO rays
-	mpRays->execute( pRenderContext, uvec2(pDstTex->getWidth(), pDstTex->getHeight()) );
+	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
 
