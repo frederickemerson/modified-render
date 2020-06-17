@@ -5,7 +5,13 @@
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
   </ItemGroup>
@@ -14,7 +20,13 @@
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderPass.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
   </ItemGroup>

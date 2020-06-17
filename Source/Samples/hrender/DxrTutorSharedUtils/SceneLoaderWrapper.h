@@ -34,6 +34,8 @@
 
 #include "Falcor.h"
 
+using namespace Falcor;
+
 // Load a scene, with an aspect ratio determined by the specified size.  If a filename is specified,
 //    load that scene.  If no filename specified, a dialog box is opened so the user can select a file to load.
 Scene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename = 0 );

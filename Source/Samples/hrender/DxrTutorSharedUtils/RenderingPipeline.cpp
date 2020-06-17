@@ -42,7 +42,7 @@ uint32_t RenderingPipeline::addPass(::RenderPass::SharedPtr pNewPass)
 void RenderingPipeline::onLoad(RenderContext* pRenderContext)
 {
 	// Create our resource manager
-	mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y, gpFramework);
+	mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y);
 	mOutputBufferIndex = mpResourceManager->requestTextureResource(ResourceManager::kOutputChannel);
 
 	// Initialize all of the RenderPasses we have available to select for our pipeline
@@ -157,7 +157,7 @@ void RenderingPipeline::createDropdownGuiForPass(uint32_t passOrder, Gui::Dropdo
 	outputList.resize(0);
 
 	// Add an item to allow selecting a null pass.
-	outputList.push_back({ int32_t(kNullPassId), kNullPassDescriptor });
+	outputList.push_back({ kNullPassId, kNullPassDescriptor });
 
 	//outputList.push_back({ int32_t(passOrder), mAvailPasses[passOrder]->getName() });
 	
@@ -169,7 +169,7 @@ void RenderingPipeline::createDropdownGuiForPass(uint32_t passOrder, Gui::Dropdo
 		if (!isPassValid(mAvailPasses[i], passOrder)) continue;
 
 		// Ok.  The pass exists and is able to be selected for pass number <passOrder>.  Insert it into the list.
-		outputList.push_back({ int32_t(i), mAvailPasses[i]->getName() });
+		outputList.push_back({ i, mAvailPasses[i]->getName() });
 	}
 	
 }
@@ -180,7 +180,7 @@ void RenderingPipeline::createDefaultDropdownGuiForPass(uint32_t passOrder, Gui:
 	outputList.resize(0);
 
 	// Add an item to allow selecting a null pass.
-	outputList.push_back({ int32_t(kNullPassId), kNullPassDescriptor });
+	outputList.push_back({ kNullPassId, kNullPassDescriptor });
 
 	//outputList.push_back({ int32_t(passOrder), mAvailPasses[passOrder]->getName() });
 
@@ -192,7 +192,7 @@ void RenderingPipeline::createDefaultDropdownGuiForPass(uint32_t passOrder, Gui:
 		if (!isPassValid(mAvailPasses[i], passOrder)) continue;
 
 		// Ok.  The pass exists and is able to be selected for pass number <passOrder>.  Insert it into the list.
-		outputList.push_back({ int32_t(i), mAvailPasses[i]->getName() });
+		outputList.push_back({ i, mAvailPasses[i]->getName() });
 	}
 }
 
@@ -417,10 +417,10 @@ void RenderingPipeline::setPass(uint32_t passNum, ::RenderPass::SharedPtr pTarge
 
 	// Create a GUI dropdown for this new pass
 	mPassSelectors[passNum].resize(0);
-	mPassSelectors[passNum].push_back({ int32_t(kNullPassId), kNullPassDescriptor });
+	mPassSelectors[passNum].push_back({ kNullPassId, kNullPassDescriptor });
 	if (pTargetPass && passIdx != kNullPassId)
 	{
-		mPassSelectors[passNum].push_back({ int32_t(passIdx), mAvailPasses[passIdx]->getName() });
+		mPassSelectors[passNum].push_back({ passIdx, mAvailPasses[passIdx]->getName() });
 	}
 
     // Update the settings for the specified active pass.
@@ -457,7 +457,7 @@ void RenderingPipeline::setPassOptions(uint32_t passNum, std::vector<::RenderPas
 
 	// Create a GUI dropdown for this new pass
 	mPassSelectors[passNum].resize(0);
-	mPassSelectors[passNum].push_back({ int32_t(kNullPassId), kNullPassDescriptor });
+	mPassSelectors[passNum].push_back({ kNullPassId, kNullPassDescriptor });
 
 	// Update the settings for the specified active pass.
 	mEnableAddRemove[passNum] = 0x0u; 
@@ -480,7 +480,7 @@ void RenderingPipeline::setPassOptions(uint32_t passNum, std::vector<::RenderPas
 
 			if (passIdx != kNullPassId)
 			{
-				mPassSelectors[passNum].push_back({ int32_t(passIdx), mAvailPasses[passIdx]->getName() });
+				mPassSelectors[passNum].push_back({ passIdx, mAvailPasses[passIdx]->getName() });
 			}
 		}
 

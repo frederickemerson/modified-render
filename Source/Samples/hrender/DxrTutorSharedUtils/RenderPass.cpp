@@ -17,7 +17,7 @@
 **********************************************************************************************************************/
 
 #include "RenderPass.h"
-#include "Externals/dear_imgui/imgui.h"
+#include "dear_imgui/imgui.h"
 
 using namespace Falcor;
 
@@ -44,10 +44,10 @@ void ::RenderPass::onRenderGui(Gui* pGui)
     renderGui(pGui);
 }
 
-void ::RenderPass::onExecute(RenderContext* pRenderContext)
+void ::RenderPass::onExecute(RenderContext* pRenderContext, Falcor::GraphicsState* pGfxState)
 { 
 	mRefreshFlag = false;     // Did come afterwards, but that prevents discovery of a required refresh while rendering
-    execute(pRenderContext);
+    execute(pRenderContext, pGfxState);
 }
 
 void ::RenderPass::onShutdown()

@@ -22,9 +22,9 @@
 const std::string ResourceManager::kOutputChannel  = "PipelineOutput";
 const std::string ResourceManager::kEnvironmentMap = "EnvironmentMap";
 
-ResourceManager::SharedPtr ResourceManager::create(uint32_t width, uint32_t height, SampleCallbacks *callbacks)
+ResourceManager::SharedPtr ResourceManager::create(uint32_t width, uint32_t height)
 {
-	return SharedPtr(new ResourceManager(width, height, callbacks));
+	return SharedPtr(new ResourceManager(width, height));
 }
 
 void ResourceManager::resize(uint32_t width, uint32_t height)
@@ -80,7 +80,7 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	if (filename == "")
 	{
 		Texture::SharedPtr tmpEnv = Texture::create2D(128, 128, ResourceFormat::RGBA32Float, 1u, 1u, nullptr, ResourceManager::kDefaultFlags);
-		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.5f, 0.5f, 0.8f, 1.0f));
+		gpFramework->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.5f, 0.5f, 0.8f, 1.0f));
 		manageTextureResource(ResourceManager::kEnvironmentMap, tmpEnv);
 		mUpdatedFlag = true;
 		return true;
@@ -88,7 +88,7 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	else if (filename == "Black")
 	{
 		Texture::SharedPtr tmpEnv = Texture::create2D(128, 128, ResourceFormat::RGBA32Float, 1u, 1u, nullptr, ResourceManager::kDefaultFlags);
-		mpAppCallbacks->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.0f, 0.0f, 0.0f, 1.0f));
+        gpFramework->getRenderContext()->clearUAV(tmpEnv->getUAV().get(), float4(0.0f, 0.0f, 0.0f, 1.0f));
 		manageTextureResource(ResourceManager::kEnvironmentMap, tmpEnv);
 		mUpdatedFlag = true;
 		return true;
@@ -96,7 +96,7 @@ bool ResourceManager::updateEnvironmentMap(const std::string &filename)
 	else
 	{
 		// Non null file?  Try to load it.
-		Texture::SharedPtr envMap = createTextureFromFile(filename, false, false);
+        Texture::SharedPtr envMap = Texture::createFromFile(filename, false, false);
 		if (envMap)
 		{
 			// Success.  Update the filename we loaded and remember to manage this texture we just loaded.
@@ -180,7 +180,7 @@ Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channel
 	Texture::SharedPtr channel = getTexture(channelName);
 	if (!channel) return nullptr;
 
-	mpAppCallbacks->getRenderContext()->clearUAV(channel->getUAV().get(), clearColor);
+	gpFramework->getRenderContext()->clearUAV(channel->getUAV().get(), clearColor);
 	return channel;
 }
 
@@ -189,7 +189,7 @@ Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, float4
 	Texture::SharedPtr channel = getTexture(channelIdx);
 	if (!channel) return nullptr;
 
-	mpAppCallbacks->getRenderContext()->clearUAV(channel->getUAV().get(), clearColor);
+    gpFramework->getRenderContext()->clearUAV(channel->getUAV().get(), clearColor);
 	return channel;
 }
 
@@ -200,11 +200,11 @@ void ResourceManager::clearTexture(Texture::SharedPtr &tex, const float4 &clearC
 
 	// Clear as appropriate.  If a depth texture, clear the depth with the red channel of the clear color
 	if ((flags & Resource::BindFlags::RenderTarget) == Resource::BindFlags::RenderTarget)
-		mpAppCallbacks->getRenderContext()->clearRtv(tex->getRTV().get(), clearColor);
+        gpFramework->getRenderContext()->clearRtv(tex->getRTV().get(), clearColor);
 	else if ((flags & Resource::BindFlags::UnorderedAccess) == Resource::BindFlags::UnorderedAccess)
-		mpAppCallbacks->getRenderContext()->clearUAV(tex->getUAV().get(), clearColor);
+        gpFramework->getRenderContext()->clearUAV(tex->getUAV().get(), clearColor);
 	else if ((flags & Resource::BindFlags::DepthStencil) == Resource::BindFlags::DepthStencil)
-		mpAppCallbacks->getRenderContext()->clearDsv(tex->getDSV().get(), clearColor.r, 0);
+        gpFramework->getRenderContext()->clearDsv(tex->getDSV().get(), clearColor.r, 0);
 }
 
 int32_t ResourceManager::requestTextureResource(const std::string &channelName, 
@@ -349,7 +349,7 @@ Fbo::SharedPtr ResourceManager::createFbo(uint32_t width, uint32_t height, Resou
 	if (hasDepthStencil)
 		desc.setDepthStencilTarget(ResourceFormat::D24UnormS8); 
 
-	return FboHelper::create2D(width, height, desc);
+	return Fbo::create2D(width, height, desc);
 }
 
 Fbo::SharedPtr ResourceManager::createFbo(uint32_t width, uint32_t height, std::vector<ResourceFormat> colorFormats, bool hasDepthStencil)
@@ -367,5 +367,5 @@ Fbo::SharedPtr ResourceManager::createFbo(uint32_t width, uint32_t height, std::
 	if (hasDepthStencil)
 		desc.setDepthStencilTarget(ResourceFormat::D24UnormS8);
 
-	return FboHelper::create2D(width, height, desc);
+	return Fbo::create2D(width, height, desc);
 }

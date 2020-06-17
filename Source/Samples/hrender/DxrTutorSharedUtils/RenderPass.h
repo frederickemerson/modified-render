@@ -43,7 +43,7 @@ protected:
 	virtual bool processKeyEvent(const Falcor::KeyboardEvent& keyEvent) { return false; }
 	virtual bool processMouseEvent(const Falcor::MouseEvent& mouseEvent) { return false; }
 	virtual void renderGui(Falcor::Gui* pGui) {}
-	virtual void execute(Falcor::RenderContext* pRenderContext) = 0;
+	virtual void execute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState* pGfxState) = 0;
 	virtual void shutdown() {}
 	virtual void stateRefreshed() {}
 	virtual void activatePass() {}
@@ -114,8 +114,9 @@ public:
 
     /** Callback for executing render pass.
         \param[in] context Provides the current context to initialize resources for your renderer
+        \param[in] pGfxState Provides the state required for a draw call
     */
-    void onExecute(Falcor::RenderContext* pRenderContext);
+    void onExecute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState* pGfxState);
 
     /** Callback executed when closing the application.
     */

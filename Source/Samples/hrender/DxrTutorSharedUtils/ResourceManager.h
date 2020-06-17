@@ -33,7 +33,7 @@ public:
 	static const std::string kEnvironmentMap;
 
 	// Public ctors and dtors
-	static SharedPtr create(uint32_t width, uint32_t height, SampleCallbacks *callbacks);
+	static SharedPtr create(uint32_t width, uint32_t height);
 	virtual ~ResourceManager() = default;
 
 	// Set a default set of resource flags for managed textures.  (Default allows SRV, UAV, and RTV access, though this may be somewhat less performant)
@@ -110,7 +110,7 @@ public:
 	static Fbo::SharedPtr createFbo(uint32_t width, uint32_t height, std::vector<ResourceFormat> colorFormats, bool hasDepthStencil = false);
 
 	// Get the default system FBO.  You should not write to this, but you can use it if you need to bind an FBO.
-	Fbo::SharedPtr getDefaultFbo() { return mpAppCallbacks->getCurrentFbo(); }
+    Fbo::SharedPtr getDefaultFbo() { return gpFramework->getTargetFbo(); }
 
 	// Did someone specify the default scene to load?
 	std::string getDefaultSceneName() { return mDefaultSceneName; }    // Return the default scene name
@@ -140,7 +140,7 @@ public:
 	void  setMinTDist(float newMinT) { mMinT = newMinT; }
 
 protected:
-	ResourceManager(uint32_t width, uint32_t height, SampleCallbacks *callbacks) : mWidth(width), mHeight(height), mpAppCallbacks(callbacks) {}
+	ResourceManager(uint32_t width, uint32_t height) : mWidth(width), mHeight(height) {}
 
     // Various internal state
     uint32_t mWidth = 0;    
@@ -155,9 +155,6 @@ protected:
 	// Can specify the default scene to load
 	std::string mDefaultSceneName = "Media/Arcade/Arcade.fscene";
 	bool        mUserSetDefaultScene = false;    // If the developer changes the default scene, assume they want it loaded.
-
-	// Falcor's callbacks structure to access basic resources of the application
-	SampleCallbacks *mpAppCallbacks;
 
     // The internal texture resources.  These could be combined into an AoS rather than a SoA, but I was lazy.  Does it matter?
     std::vector<Texture::SharedPtr>   mTextures;         ///< The texture resources managed by this class
