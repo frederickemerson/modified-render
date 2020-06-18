@@ -385,7 +385,7 @@ namespace Falcor
             if (controlsGroup.var("Time", t, 0.f, FLT_MAX)) mClock.setTime(double(t));
             if (controlsGroup.button("Reset")) mClock.setTime(0.0);
             bool timePaused = mClock.isPaused();
-            if (controlsGroup.button(timePaused ? "Play" : "Pause", true)) timePaused ? mClock.pause() : mClock.play();
+            if (controlsGroup.button(timePaused ? "Play" : "Pause", true)) timePaused ? mClock.play() : mClock.pause();
             if (controlsGroup.button("Stop", true)) mClock.stop();
 
             float scale = (float)mClock.getTimeScale();

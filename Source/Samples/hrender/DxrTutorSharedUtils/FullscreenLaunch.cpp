@@ -28,94 +28,32 @@ FullscreenLaunch::SharedPtr FullscreenLaunch::FullscreenLaunch::create(const cha
 FullscreenLaunch::FullscreenLaunch(const char *fragShader)
 { 
 	mpPass = FullScreenPass::create(fragShader);
-	mpVars = GraphicsVars::create( mpPass->getProgram()->getActiveVersion()->getReflector() );
-	mInvalidVarReflector = true;
 }
 
-void FullscreenLaunch::execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState)
+void FullscreenLaunch::execute(RenderContext::SharedPtr pRenderContext, Fbo::SharedPtr pTargetFbo)
 {
-    this->execute(pRenderContext.get(), pGfxState);
+    this->execute(pRenderContext.get(), pTargetFbo);
 }
 
-void FullscreenLaunch::execute(RenderContext* pRenderContext, Falcor::GraphicsState::SharedPtr pGfxState)
+void FullscreenLaunch::execute(RenderContext* pRenderContext, Fbo::SharedPtr pTargetFbo)
 {
-	// Ok.  We're executing.  If we still have an invalid shader variable reflector, we'd better get one now!
-	if (mInvalidVarReflector) createGraphicsVariables();
-
-	if (mpPass && mpVars && pGfxState && pRenderContext)
+	if (mpPass && pTargetFbo && pRenderContext)
 	{
-		pRenderContext->pushGraphicsState(pGfxState);
-		pRenderContext->pushGraphicsVars(mpVars);
-			mpPass->execute(pRenderContext);
-		pRenderContext->popGraphicsVars();
-		pRenderContext->popGraphicsState();
+        mpPass->execute(pRenderContext, pTargetFbo);
 	}
 }
 
-void FullscreenLaunch::createGraphicsVariables()
+Falcor::GraphicsVars::SharedPtr FullscreenLaunch::getVars()
 {
-	// Do we need to recreate our variables?  Do we also have a valid shader?
-	if (mInvalidVarReflector && mpPass && mpPass->getProgram())
-	{
-		mpVars       = GraphicsVars::create(mpPass->getProgram()->getActiveVersion()->getReflector());
-		mpSimpleVars = SimpleVars::create(mpVars.get());
-		mInvalidVarReflector = false;
-	}
-}
-
-SimpleVars::SharedPtr FullscreenLaunch::getVars()
-{
-	if (mInvalidVarReflector)
-		createGraphicsVariables();
-
-	return mpSimpleVars;
+	return mpPass->getVars();
 }
 
 void FullscreenLaunch::addDefine(const std::string& name, const std::string& value)
 {
 	mpPass->getProgram()->addDefine(name, value);
-	mInvalidVarReflector = true;
 }
 
 void FullscreenLaunch::removeDefine(const std::string& name)
 {
 	mpPass->getProgram()->removeDefine(name);
-	mInvalidVarReflector = true;
 }
-
-
-void FullscreenLaunch::setCamera(Falcor::Camera::SharedPtr pActiveCamera)
-{
-	// Shouldn't need to change unless Falcor internals do
-	const char*__internalCB = "InternalPerFrameCB";
-	const char*__internalVarName = "gCamera";
-
-	// Actually set the internals
-	ConstantBuffer::SharedPtr perFrameCB = mpVars[__internalCB];
-	if (perFrameCB)
-	{
-		pActiveCamera->setIntoConstantBuffer(perFrameCB.get(), __internalVarName);
-	}
-}
-
-void FullscreenLaunch::setLights(const std::vector< Falcor::Light::SharedPtr > &pLights)
-{
-	// Shouldn't need to change unless Falcor internals do
-	const char*__internalCB = "InternalPerFrameCB";
-	const char*__internalCountName = "gLightsCount";
-	const char*__internalLightsName = "gLights";
-
-	// Actually set the internals
-	ConstantBuffer::SharedPtr perFrameCB = mpVars[__internalCB];
-	if (perFrameCB)
-	{
-		perFrameCB[__internalCountName] = uint32_t(pLights.size());
-		const auto& pLightOffset = perFrameCB->getBufferReflector()->findMember(__internalLightsName);
-		size_t lightOffset = pLightOffset ? pLightOffset->getOffset() : ConstantBuffer::kInvalidOffset;
-		for (uint32_t i = 0; i < uint32_t(pLights.size()); i++)
-		{
-			pLights[i]->setIntoProgramVars(mpVars.get(), perFrameCB.get(), i * Light::getShaderStructSize() + lightOffset);
-		}
-	}
-}
-

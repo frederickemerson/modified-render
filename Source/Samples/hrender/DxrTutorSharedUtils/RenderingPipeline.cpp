@@ -207,7 +207,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
 {
     //Falcor::ProfilerEvent _profileEvent("renderGUI");
 
-    Gui::Window w(pGui, "Falcor", { 300, 800 });
+    Gui::Window w(pGui, "Falcor", { 300, 800 }, { 10, 80 });
     gpFramework->renderGlobalUI(pGui);
 
     w.separator();
@@ -341,7 +341,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
             Gui::Window passWindow(pGui, mActivePasses[i]->getGuiName().c_str(), { guiSz.x, guiSz.y }, { guiPos.x, guiPos.y }, mPassWindowFlags);
 
 			// Render the pass' GUI to this new UI window, then pop the new UI window.
-			mActivePasses[i]->onRenderGui(pGui);
+			mActivePasses[i]->onRenderGui(pGui, &passWindow);
 			passWindow.release();
 		}
 
@@ -659,6 +659,9 @@ void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::
 
 	// Once we're done rendering, clear the pipeline dirty state.
 	mPipelineChanged = false;
+
+    // Print the FPS
+    TextRenderer::render(pRenderContext, gpFramework->getFrameRate().getMsg(), pTargetFbo, { 20, 20 });
 }
 
 void RenderingPipeline::onInitNewScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
@@ -728,8 +731,7 @@ bool RenderingPipeline::onKeyEvent(const KeyboardEvent& keyEvent)
 			return true;
 		}
 	}
-
-	return mpScene->onKeyEvent(keyEvent);
+    return mpScene ? mpScene->onKeyEvent(keyEvent) : false;
 }
 
 bool RenderingPipeline::onMouseEvent(const MouseEvent& mouseEvent)

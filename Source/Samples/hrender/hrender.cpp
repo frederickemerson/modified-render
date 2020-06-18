@@ -26,6 +26,10 @@
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
 #include "hrender.h"
+#include "DxrTutorSharedUtils/RenderingPipeline.h"
+#include "DxrTutorTestPasses/SinusoidRasterPass.h"
+#include "DxrTutorTestPasses/ConstantColorPass.h"
+
 uint32_t mSampleGuiWidth = 250;
 uint32_t mSampleGuiHeight = 200;
 uint32_t mSampleGuiPositionX = 20;
@@ -76,10 +80,19 @@ void hrender::onResizeSwapChain(uint32_t width, uint32_t height)
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    hrender::UniquePtr pRenderer = std::make_unique<hrender>();
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
+
+    // Add passes into our pipeline
+    pipeline->setPass(0, SinusoidRasterPass::create());   // This pass displays a time-varying sinusoidal function
+    pipeline->setPass(1, ConstantColorPass::create());   // Displays a user-selectable color on the screen
+
+    // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = "Falcor Project Template";
+    config.windowDesc.title = "Tutorial 2:  Running a simple raster pass to generate some more interesting imagry";
     config.windowDesc.resizableWindow = true;
-    Sample::run(config, pRenderer);
+
+    // Start our program!
+    RenderingPipeline::run(pipeline, config);
     return 0;
 }

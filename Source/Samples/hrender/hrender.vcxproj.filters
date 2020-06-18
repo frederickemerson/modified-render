@@ -14,6 +14,15 @@
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp">
+      <Filter>TestPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp">
+      <Filter>TestPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -29,6 +38,15 @@
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h">
+      <Filter>TestPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h">
+      <Filter>TestPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -39,6 +57,12 @@
     </Filter>
     <Filter Include="SharedUtils">
       <UniqueIdentifier>{01635f05-a550-454c-ac47-9afc80b7a50d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestPasses">
+      <UniqueIdentifier>{72e7a820-7958-4fbd-9818-81f368e351ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestPasses\Shaders">
+      <UniqueIdentifier>{cd6e49c7-44eb-4463-9c29-1cce9c2eeb75}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +107,9 @@
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli">
       <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl">
+      <Filter>TestPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
 </Project>

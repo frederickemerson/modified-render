@@ -30,7 +30,7 @@ bool ::RenderPass::onInitialize(RenderContext* pRenderContext, ResourceManager::
     return mIsInitialized;
 }
 
-void ::RenderPass::onRenderGui(Gui* pGui)
+void ::RenderPass::onRenderGui(Gui* pGui, Gui::Window* passWindow)
 {
     // Record current UI pos/size
     ImVec2 pos = ImGui::GetWindowPos();
@@ -41,13 +41,13 @@ void ::RenderPass::onRenderGui(Gui* pGui)
     mGuiSize.x = std::max(32, (int)std::round(size.x));
     mGuiSize.y = std::max(32, (int)std::round(size.y));
 
-    renderGui(pGui);
+    renderGui(pGui, passWindow);
 }
 
-void ::RenderPass::onExecute(RenderContext* pRenderContext, Falcor::GraphicsState* pGfxState)
+void ::RenderPass::onExecute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState)
 { 
 	mRefreshFlag = false;     // Did come afterwards, but that prevents discovery of a required refresh while rendering
-    execute(pRenderContext, pGfxState);
+    execute(pRenderContext, pDefaultGfxState);
 }
 
 void ::RenderPass::onShutdown()

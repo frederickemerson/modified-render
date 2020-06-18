@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Falcor.h"
-#include "SimpleVars.h"
 
 /** This is a very light wrapper around Falcor::FullScreenPass that removes some of the boilerplate of
 calling and initializing a FullScreenPass pass and uses the SimpleVars wrapper to access variables, 
@@ -50,33 +49,16 @@ public:
 	static SharedPtr create(const char *fragShader);
 
 	// Execute the full-screen shader
-	void execute(Falcor::RenderContext::SharedPtr pRenderContext, Falcor::GraphicsState::SharedPtr pGfxState);
-    void execute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState::SharedPtr pGfxState);
+	void execute(Falcor::RenderContext::SharedPtr pRenderContext, Falcor::Fbo::SharedPtr pTargetFbo);
+    void execute(Falcor::RenderContext* pRenderContext, Falcor::Fbo::SharedPtr pTargetFbo);
 
-	// Want to send variables to your HLSL code?  You do that via the SimpleVars wrapper
-	SimpleVars::SharedPtr getVars();
+    Falcor::GraphicsVars::SharedPtr getVars();
 
-	// Some internal Falcor state is not automatically set when using full-screen passes, in particular
-	//     data related to the scene (since there is not necessarily a "scene" for a full-screen pass).
-	//     If you want to use Falcor data like 'gCamera' and 'gLights[]' in HLSL, you can call these methods
-	void setCamera(Falcor::Camera::SharedPtr pActiveCamera);
-	void setLights(const std::vector< Falcor::Light::SharedPtr > &pLights);
-
-	// Falcor allows programmatically adding #defines to your HLSL shader.  If you use this class, you
-	//     should set them using the following methods (rather than default Falcor methods) to ensure
-	//     the syntactic sugar for setting variables remains valid.
-	// Note: When adding/removing defines, assume all previous HLSL variables you bound are invalidated
 	void addDefine(const std::string& name, const std::string& value);
 	void removeDefine(const std::string& name);
 
 protected:
 	FullscreenLaunch(const char *fragShader);
 
-	// Called to recreate our variable reflectors when creating a program (or the old ones are invalidated)
-	void createGraphicsVariables();
-
-	bool                              mInvalidVarReflector = true;
-	Falcor::FullScreenPass::UniquePtr mpPass;
-	Falcor::GraphicsVars::SharedPtr   mpVars;
-	SimpleVars::SharedPtr             mpSimpleVars;
+	Falcor::FullScreenPass::SharedPtr mpPass;
 };
