@@ -29,19 +29,19 @@ bool CopyToOutputPass::initialize(RenderContext* pRenderContext, ResourceManager
 	mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
 
 	// When we start, let's assume there are no valid buffers to copy from; create a GUI list that says so
-	mDisplayableBuffers.push_back({ -1, "< None >" });
+	mDisplayableBuffers.push_back({ uint32_t(-1), "< None >" });
 
 	// We have now finished initializing our pass
     return true;
 }
 
-void CopyToOutputPass::renderGui(Gui* pGui)
+void CopyToOutputPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
 	// Add a widget to allow us to select our buffer to display
-	pGui->addDropdown("Displayed", mDisplayableBuffers, mSelectedBuffer);
+	pPassWindow->dropdown("Displayed", mDisplayableBuffers, mSelectedBuffer);
 }
 
-void CopyToOutputPass::execute(RenderContext* pRenderContext)
+void CopyToOutputPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
 	// Get a pointer to a Falcor texture resource for our output 
 	Texture::SharedPtr outTex = mpResManager->getTexture(ResourceManager::kOutputChannel);
@@ -87,7 +87,7 @@ void CopyToOutputPass::pipelineUpdated(ResourceManager::SharedPtr pResManager)
 		if (i == outputChannel) continue;
 
 		// Add the name of this resource to our GUI's list of displayable resources
-		mDisplayableBuffers.push_back({ int32_t(i), mpResManager->getTextureName(i) });
+		mDisplayableBuffers.push_back({ i, mpResManager->getTextureName(i) });
 
 		// If our UI currently had an invalid buffer selected, select this valid one now.
 		if (mSelectedBuffer == uint32_t(-1)) mSelectedBuffer = i;
@@ -96,7 +96,7 @@ void CopyToOutputPass::pipelineUpdated(ResourceManager::SharedPtr pResManager)
 	// If there are no valid textures to select, add a "<None>" entry to our list and select it.
 	if (mDisplayableBuffers.size() <= 0)
 	{
-		mDisplayableBuffers.push_back({ -1, "< None >" });
+		mDisplayableBuffers.push_back({ uint32_t(-1), "< None >" });
 		mSelectedBuffer = uint32_t(-1);
 	}
 }

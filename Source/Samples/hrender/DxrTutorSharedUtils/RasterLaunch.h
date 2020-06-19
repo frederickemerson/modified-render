@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Falcor.h"
-#include "SimpleVars.h"
 
 using namespace Falcor;
 
@@ -48,8 +47,8 @@ public:
 	using SharedConstPtr = std::shared_ptr<const RasterLaunch>;
 	virtual ~RasterLaunch() = default;
 
-	// Create a raster pass from an existing Falcor GraphicsProgram object.  All other creation routines simply call this.
-	static SharedPtr create(GraphicsProgram::SharedPtr &existingProgram);
+	// Create a raster pass from an existing Falcor Program Desc object.  All other creation routines simply call this.
+	static SharedPtr create(Program::Desc& existingDesc);
 
 	// Shortcut creation routines that take various filenames as input, then load the files and create a program
 	static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& fragmentFile);
@@ -69,17 +68,16 @@ public:
 	void execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
     void execute(RenderContext* pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
 
-	// Want to sent variables to your HLSL code, you do that via the SimpleVars structure
-	SimpleVars::SharedPtr getVars();
+    Falcor::GraphicsVars::SharedPtr getVars();
 
 protected:
-	RasterLaunch(GraphicsProgram::SharedPtr &existingProgram);
-	
+	RasterLaunch(Program::Desc& existingDesc);
+
 	void createGraphicsVariables();
 
+    Program::Desc               mProgDesc;
+    Scene::SharedPtr            mpScene;
 	GraphicsProgram::SharedPtr  mpPassShader;
 	GraphicsVars::SharedPtr     mpSharedVars;
-	SimpleVars::SharedPtr       mpSimpleVars;
-	SceneRenderer::SharedPtr    mpSceneRenderer;
 	bool                        mInvalidVarReflector;
 };

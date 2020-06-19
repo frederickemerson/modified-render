@@ -16,20 +16,14 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-// Falcor has a "default" vertex shader (see DefaultVS.slang).  We're explicitly using
+// Falcor has a "default" vertex shader (see Raster.slang).  We're explicitly using
 //     that shader (by calling it in main()) rather than implicitly linking to it
 
-// To enable Falcor to pass vertex attributes (position, normal, etc.), include some Falcor constants
-#include "VertexAttrib.h"
-
-// Invokes our Slang shader preprocessor to include the functionality from ShaderCommon.slang.
-__import ShaderCommon;
-
 // Invokes Slang to import the default vertex shader, it's inputs and outputs
-__import DefaultVS;
+__import Scene.Raster;
 
 // Define our main() entry point for our vertex shader, then simply call the default Falcor vertex shader
-VertexOut main(VertexIn vIn)
+VSOut main(VSIn vIn)
 {
 	return defaultVS(vIn);
 }

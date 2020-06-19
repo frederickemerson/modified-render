@@ -39,10 +39,10 @@ bool SinusoidRasterPass::initialize(RenderContext* pRenderContext, ResourceManag
     return true;
 }
 
-void SinusoidRasterPass::renderGui(Gui* pGui, Gui::Window* passWindow)
+void SinusoidRasterPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
 	// Add a widget to this pass' GUI window to allow a value to change in [0..1] in increments of 0.00001
-    passWindow->var("Sin multiplier", mScaleValue, 0.0f, 1.0f, 0.00001f, false);
+    pPassWindow->var("Sin multiplier", mScaleValue, 0.0f, 1.0f, 0.00001f, false);
 }
 
 void SinusoidRasterPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)

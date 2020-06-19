@@ -50,10 +50,10 @@ Falcor::GraphicsVars::SharedPtr FullscreenLaunch::getVars()
 
 void FullscreenLaunch::addDefine(const std::string& name, const std::string& value)
 {
-	mpPass->getProgram()->addDefine(name, value);
+	mpPass->addDefine(name, value, true);
 }
 
 void FullscreenLaunch::removeDefine(const std::string& name)
 {
-	mpPass->getProgram()->removeDefine(name);
+	mpPass->removeDefine(name, true);
 }

@@ -38,13 +38,13 @@ protected:
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 
 	// The renderGui() callback allows you to attach GUI widget into this pass' options window
-    void renderGui(Gui* pGui) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
 	// When the pipeline is updated, we will need to update the list of buffers we can copy from
 	void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
 
 	// The execute() callback is invoked during frame render when it is this pass' turn to execute
-    void execute(RenderContext* pRenderContext) override;
+    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
 	// Override some functions that provide information to the RenderPipeline class
 	bool appliesPostprocess() override { return true; }

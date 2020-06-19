@@ -19,9 +19,9 @@
 #include "RasterLaunch.h"
 
 
-RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::create(GraphicsProgram::SharedPtr &existingProgram)
+RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::create(Program::Desc& existingDesc)
 {
-	return SharedPtr(new RasterLaunch(existingProgram));
+	return SharedPtr(new RasterLaunch(existingDesc));
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& fragmentFile)
@@ -29,8 +29,7 @@ RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::s
 	Program::Desc desc;
 	desc.addShaderLibrary(vertexFile).vsEntry("main");
 	desc.addShaderLibrary(fragmentFile).psEntry("main");
-	GraphicsProgram::SharedPtr prog = GraphicsProgram::create(desc);
-	return SharedPtr(new RasterLaunch(prog));
+    return create(desc);
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& geometryFile, const std::string& fragmentFile)
@@ -39,8 +38,7 @@ RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::s
 	desc.addShaderLibrary(vertexFile).vsEntry("main");
 	desc.addShaderLibrary(geometryFile).gsEntry("main");
 	desc.addShaderLibrary(fragmentFile).psEntry("main");
-	GraphicsProgram::SharedPtr prog = GraphicsProgram::create(desc);
-	return SharedPtr(new RasterLaunch(prog));
+    return create(desc);
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& fragmentFile, const std::string& geometryFile, const std::string& hullFile, const std::string& domainFile)
@@ -51,14 +49,14 @@ RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::s
 	desc.addShaderLibrary(domainFile).dsEntry("main");
 	desc.addShaderLibrary(geometryFile).gsEntry("main");
 	desc.addShaderLibrary(fragmentFile).psEntry("main");
-	GraphicsProgram::SharedPtr prog = GraphicsProgram::create(desc);
-	return SharedPtr(new RasterLaunch(prog));
+    return create(desc);
 }
 
-RasterLaunch::RasterLaunch(GraphicsProgram::SharedPtr &existingProgram)
+RasterLaunch::RasterLaunch(Program::Desc& existingDesc)
 {
-	mpPassShader = existingProgram;
-	mpSceneRenderer = nullptr;
+    mProgDesc = existingDesc;
+    mpScene = nullptr;
+    mpPassShader = nullptr;
 	mpSharedVars = nullptr;
 	mInvalidVarReflector = true;
 }
@@ -75,22 +73,23 @@ void RasterLaunch::removeDefine(const std::string& name)
 	mInvalidVarReflector = true;
 }
 
-SimpleVars::SharedPtr RasterLaunch::getVars()
+GraphicsVars::SharedPtr RasterLaunch::getVars()
 {
 	if (mInvalidVarReflector)
 		createGraphicsVariables();
 
-	return mpSimpleVars;
+	return mpSharedVars;
 }
 
 void RasterLaunch::setScene(Scene::SharedPtr pScene)
 {
 	if (!pScene)
 	{
-		mpSceneRenderer = nullptr;
+		mpScene = nullptr;
 		return;
 	}
-	mpSceneRenderer = SceneRenderer::create(pScene);
+    mpPassShader = GraphicsProgram::create(mProgDesc, pScene->getSceneDefines());
+    mpScene = pScene;
 }
 
 void RasterLaunch::createGraphicsVariables()
@@ -99,7 +98,6 @@ void RasterLaunch::createGraphicsVariables()
 	if (mInvalidVarReflector && mpPassShader)
 	{
 		mpSharedVars = GraphicsVars::create(mpPassShader->getActiveVersion()->getReflector());
-		mpSimpleVars = SimpleVars::create(mpSharedVars.get());
 		mInvalidVarReflector = false;
 	}
 }
@@ -115,14 +113,10 @@ void RasterLaunch::execute(RenderContext* pRenderContext, GraphicsState::SharedP
 	if (mInvalidVarReflector) createGraphicsVariables();
 
 	// If we all the resources we need are valid, go ahead and render
-	if (mpPassShader && mpSceneRenderer && pGfxState && pRenderContext)
+	if (mpPassShader && mpScene && pGfxState && pRenderContext)
 	{
 		if(pTargetFbo) pGfxState->setFbo(pTargetFbo);
 		pGfxState->setProgram(mpPassShader);
-		pRenderContext->pushGraphicsState(pGfxState);
-		pRenderContext->pushGraphicsVars(mpSharedVars);
-		mpSceneRenderer->renderScene(pRenderContext);
-		pRenderContext->popGraphicsVars();
-		pRenderContext->popGraphicsState();
+        mpScene->render(pRenderContext, pGfxState.get(), mpSharedVars.get());
 	}
 }

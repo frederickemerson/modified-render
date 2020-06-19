@@ -153,7 +153,7 @@ protected:
 	std::string mEnvMapFilename = "";
 
 	// Can specify the default scene to load
-	std::string mDefaultSceneName = "Media/Arcade/Arcade.fscene";
+	std::string mDefaultSceneName = "Arcade/Arcade.fscene";
 	bool        mUserSetDefaultScene = false;    // If the developer changes the default scene, assume they want it loaded.
 
     // The internal texture resources.  These could be combined into an AoS rather than a SoA, but I was lazy.  Does it matter?

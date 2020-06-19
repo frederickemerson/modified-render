@@ -28,10 +28,10 @@ bool ConstantColorPass::initialize(RenderContext* pRenderContext, ResourceManage
     return true;  // Successful initialization.
 }
 
-void ConstantColorPass::renderGui(Gui* pGui, Gui::Window* passWindow)
+void ConstantColorPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
 	// Add a widget to our GUI to allow us to dynamically change the constant color
-    passWindow->var("  Color", mConstColor, 0.0f, 1.0f);
+    pPassWindow->var("  Color", mConstColor, 0.0f, 1.0f);
 }
 
 void ConstantColorPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)

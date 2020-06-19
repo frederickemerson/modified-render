@@ -30,7 +30,7 @@ bool ::RenderPass::onInitialize(RenderContext* pRenderContext, ResourceManager::
     return mIsInitialized;
 }
 
-void ::RenderPass::onRenderGui(Gui* pGui, Gui::Window* passWindow)
+void ::RenderPass::onRenderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
     // Record current UI pos/size
     ImVec2 pos = ImGui::GetWindowPos();
@@ -41,7 +41,7 @@ void ::RenderPass::onRenderGui(Gui* pGui, Gui::Window* passWindow)
     mGuiSize.x = std::max(32, (int)std::round(size.x));
     mGuiSize.y = std::max(32, (int)std::round(size.y));
 
-    renderGui(pGui, passWindow);
+    renderGui(pGui, pPassWindow);
 }
 
 void ::RenderPass::onExecute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState)

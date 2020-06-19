@@ -46,7 +46,7 @@ protected:
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 
 	// The renderGui() callback allows you to attach GUI widget into this pass' options window
-    void renderGui(Gui* pGui, Gui::Window* passWindow) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
 	// The execute() callback is invoked during frame render when it is this pass' turn to execute
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;

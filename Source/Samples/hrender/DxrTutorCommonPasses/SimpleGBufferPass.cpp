@@ -20,8 +20,8 @@
 
 namespace {
 	// Where are our shaders located?
-	const char *kGbufVertShader = "CommonPasses\\gBuffer.vs.hlsl";
-    const char *kGbufFragShader = "CommonPasses\\gBuffer.ps.hlsl";
+	const char *kGbufVertShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.vs.hlsl";
+    const char *kGbufFragShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.ps.hlsl";
 };
 
 bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -36,6 +36,8 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 	mpResManager->requestTextureResource("MaterialSpecRough");
 	mpResManager->requestTextureResource("MaterialExtraParams");
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
+
+    mpResManager->setDefaultSceneName("Arcade/Arcade.fscene");
 
     // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
     mpGfxState = GraphicsState::create();
@@ -58,7 +60,7 @@ void SimpleGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPt
 		mpRaster->setScene(mpScene);
 }
 
-void SimpleGBufferPass::execute(RenderContext* pRenderContext)
+void SimpleGBufferPass::execute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState)
 {
 	// Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
 	Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(

@@ -34,7 +34,7 @@ protected:
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void execute(RenderContext* pRenderContext) override;
+    void execute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState) override;
 	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 
 	// Override some functions that provide information to the RenderPipeline class

@@ -23,6 +23,15 @@
     <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp">
       <Filter>TestPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -46,6 +55,15 @@
     </ClInclude>
     <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h">
       <Filter>TestPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h">
+      <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

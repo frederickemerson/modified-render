@@ -26,57 +26,11 @@
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
 #include "hrender.h"
+#include "DxrTutorCommonPasses/CopyToOutputPass.h"
+#include "DxrTutorCommonPasses/SimpleGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
-#include "DxrTutorTestPasses/SinusoidRasterPass.h"
 #include "DxrTutorTestPasses/ConstantColorPass.h"
-
-uint32_t mSampleGuiWidth = 250;
-uint32_t mSampleGuiHeight = 200;
-uint32_t mSampleGuiPositionX = 20;
-uint32_t mSampleGuiPositionY = 40;
-
-void hrender::onGuiRender(Gui* pGui)
-{
-    Gui::Window w(pGui, "Falcor", { 250, 200 });
-    gpFramework->renderGlobalUI(pGui);
-    w.text("Hello from hrender");
-    if (w.button("Click Here"))
-    {
-        msgBox("Now why would you do that?");
-    }
-}
-
-void hrender::onLoad(RenderContext* pRenderContext)
-{
-}
-
-void hrender::onFrameRender(RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
-{
-    const float4 clearColor(0.38f, 0.52f, 0.10f, 1);
-    pRenderContext->clearFbo(pTargetFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
-}
-
-void hrender::onShutdown()
-{
-}
-
-bool hrender::onKeyEvent(const KeyboardEvent& keyEvent)
-{
-    return false;
-}
-
-bool hrender::onMouseEvent(const MouseEvent& mouseEvent)
-{
-    return false;
-}
-
-void hrender::onHotReload(HotReloadFlags reloaded)
-{
-}
-
-void hrender::onResizeSwapChain(uint32_t width, uint32_t height)
-{
-}
+#include "DxrTutorTestPasses/SinusoidRasterPass.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -84,8 +38,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     RenderingPipeline* pipeline = new RenderingPipeline();
 
     // Add passes into our pipeline
-    pipeline->setPass(0, SinusoidRasterPass::create());   // This pass displays a time-varying sinusoidal function
-    pipeline->setPass(1, ConstantColorPass::create());   // Displays a user-selectable color on the screen
+    pipeline->setPass(0, SimpleGBufferPass::create());
+    pipeline->setPass(1, CopyToOutputPass::create());
 
     // Define a set of config / window parameters for our program
     SampleConfig config;
