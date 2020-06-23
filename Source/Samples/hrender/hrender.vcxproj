@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
@@ -24,10 +26,12 @@
     <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />

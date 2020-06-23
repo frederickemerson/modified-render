@@ -20,7 +20,7 @@
 
 namespace {
 	// Where is our shaders located?
-	const char* kFileRayTrace = "CommonPasses\\aoTracing.rt.hlsl";
+	const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\aoTracing.rt.hlsl";
 
 	// What are the entry points in that shader for various ray tracing shaders?
 	const char* kEntryPointRayGen   = "AoRayGen";
@@ -45,8 +45,10 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
 	mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
 
 	// Now that we've passed all our shaders in, compile.  If we already have our scene, let it know what scene to use.
-	mpRays->compileRayProgram();
-	if (mpScene) mpRays->setScene(mpScene);
+    if (mpScene) {
+        mpRays->setScene(mpScene);
+        mpRays->compileRayProgram();
+    }
 
     return true;
 }
@@ -54,35 +56,40 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
 void AmbientOcclusionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
 	// Stash a copy of the scene and pass it to our ray tracer (if initialized)
-    mpScene = std::dynamic_pointer_cast<RtScene>(pScene);
+    mpScene = pScene;
 	if (!mpScene) return;
-	if (mpRays) mpRays->setScene(mpScene);
+    if (mpRays) {
+        mpRays->setScene(mpScene);
+        mpRays->compileRayProgram();
+    }
    
 	// Set a default AO radius when we load a new scene.
-	mAORadius = glm::max(0.1f, mpScene->getRadius() * 0.05f);
+	mAORadius = glm::max(0.1f, glm::length(mpScene->getSceneBounds().getSize()) * 0.05f);
 }
 
-void AmbientOcclusionPass::renderGui(Gui* pGui)
+void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* passWindow)
 {
     int dirty = 0;
-    dirty |= (int)pGui->addFloatVar("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
-	dirty |= (int)pGui->addIntVar("Num AO Rays", mNumRaysPerPixel, 1, 64);
+    dirty |= (int)passWindow->var("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
+	dirty |= (int)passWindow->var("Num AO Rays", mNumRaysPerPixel, 1, 64);
 
     // If we modify options, let our pipeline know that we changed our rendering parameters 
     if (dirty) setRefreshFlag();
 }
 
 
-void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
+void AmbientOcclusionPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
 	// Get our output buffer; clear it to black.
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f, 0.0f, 0.0f, 0.0f));
-
+    float4 clearColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, clearColor);
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
 	// Set our ray tracing shader variables (just for the ray gen shader here)
-	auto rayGenVars = mpRays->getRayGenVars();
+    //TODO: Check if this is fine after getRayGenVars() is confirmed to be working.
+    //auto rayGenVars = mpRays->getRayGenVars();
+	auto rayGenVars = mpRays->getRayVars();
 	rayGenVars["RayGenCB"]["gFrameCount"]  = mFrameCount++;
 	rayGenVars["RayGenCB"]["gAORadius"]    = mAORadius;
 	rayGenVars["RayGenCB"]["gMinT"]        = mpResManager->getMinTDist();  // From the UI dropdown
@@ -94,6 +101,3 @@ void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 	// Shoot our AO rays
 	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
-
-
-

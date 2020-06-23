@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Falcor.h"
-#include "SimpleVars.h"
 
 /** This is a very light wrapper around Falcor's DirectX Raytracing API that removes lots of 
 boilerplate and uses the SimpleVars wrapper to access variables, constant buffers, textures, 
@@ -107,7 +106,7 @@ public:
 	void removeDefine(const std::string& name);
 
 	// When the Falcor scene you're using changes, make sure to tell us!
-	void setScene(RtScene::SharedPtr pScene);
+	void setScene(Scene::SharedPtr pScene);
 
 	// Sets the max recursion depth (defaults to 2)
 	void setMaxRecursionDepth(uint32_t maxDepth);
@@ -116,21 +115,12 @@ public:
 	void execute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
     void execute(RenderContext* pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
 
-	// NOTE: Experimental functionality.  Probably do not use. Beware!
-	void experimentalExecute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions );
+    RtProgramVars::SharedPtr getRayVars();
+    EntryPointGroupVars::SharedPtr getRayGenVars();
+	EntryPointGroupVars::SharedPtr getMissVars(uint32_t rayType);
 
-	// Get syntactic sugar to access global variables
-	SimpleVars::SharedPtr getGlobalVars();
-
-	// Get syntactic sugar to access ray gen variables
-	SimpleVars::SharedPtr getRayGenVars();
-
-	// Get syntactic sugar to access ray gen variables
-	SimpleVars::SharedPtr getMissVars(uint32_t rayType);
-
-	// Get syntacitc sugar to access hit shader variables
-	using SimpleVarsVector = std::vector<SimpleVars::SharedPtr>;
-	SimpleVarsVector &getHitVars(uint32_t rayType);
+    using GroupVarsVector = std::vector<EntryPointGroupVars::SharedPtr>;
+    GroupVarsVector getHitVars(uint32_t rayType);
 
 protected:
 	RayLaunch(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth=2);
@@ -138,7 +128,7 @@ protected:
 	void createRayTracingVariables();
 
 	RtProgram::SharedPtr          mpRayProg;        ///< Most abstract ray tracing pipeline (includes ray gen, miss, and hit shaders)
-	RtProgram::Desc               mpRayProgDesc;   
+	RtProgram::Desc               mRayProgDesc;   
 	std::string                   mpLastShaderFile;
 	uint32_t                      mNumMiss      = 0;
 	uint32_t                      mNumHitGroup  = 0;
@@ -146,16 +136,13 @@ protected:
 	RtProgramVars::SharedPtr      mpRayVars;        ///< Accessor / reflector for variables in all ray tracing shaders
 
 	// These are defined to avoid regenerating them every time getRayGenVars(), etc., is called
-	SimpleVars::SharedPtr               mpGlobalVars;
-	SimpleVars::SharedPtr               mpRayGenVars;
-	std::vector<SimpleVars::SharedPtr>  mpMissVars;
-	std::vector<SimpleVarsVector>       mpHitVars;
+    EntryPointGroupVars::SharedPtr  mpRayGenVars;
+    GroupVarsVector                 mpMissVars;
+    std::vector<GroupVarsVector>    mpHitVars;
 
-	RtState::SharedPtr            mpRayState;
-	RtSceneRenderer::SharedPtr    mpSceneRenderer;
-	RtScene::SharedPtr            mpScene;
-	bool                          mInvalidVarReflector = true;
+	Scene::SharedPtr                mpScene;
+	bool                            mInvalidVarReflector = true;
 
-	// Used only to return a zero-length list of hit shaders
-	SimpleVarsVector mDefaultHitVarList;
+    // Used only to return a zero-length list of hit shaders
+    GroupVarsVector                 mDefaultHitVarList;
 };

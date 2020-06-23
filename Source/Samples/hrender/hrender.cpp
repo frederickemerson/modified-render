@@ -26,6 +26,7 @@
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
 #include "hrender.h"
+#include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
 #include "DxrTutorCommonPasses/SimpleGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
@@ -39,11 +40,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     // Add passes into our pipeline
     pipeline->setPass(0, SimpleGBufferPass::create());
-    pipeline->setPass(1, CopyToOutputPass::create());
+    pipeline->setPass(1, AmbientOcclusionPass::create());
 
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = "Tutorial 2:  Running a simple raster pass to generate some more interesting imagry";
+    config.windowDesc.title = "HRender";
     config.windowDesc.resizableWindow = true;
 
     // Start our program!

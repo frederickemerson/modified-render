@@ -25,14 +25,12 @@ RayLaunch::SharedPtr RayLaunch::RayLaunch::create(const std::string &rayGenFile,
 
 RayLaunch::RayLaunch(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth)
 {
-	mpRayState = RtState::create();
-	mpRayState->setMaxTraceRecursionDepth(recursionDepth);
-	mpRayProgDesc.addShaderLibrary(rayGenFile).setRayGen(rayGenEntryPoint);
+    setMaxRecursionDepth(recursionDepth);
+	mRayProgDesc.addShaderLibrary(rayGenFile).setRayGen(rayGenEntryPoint);
 	mpLastShaderFile = rayGenFile;
 
 	mpRayProg = nullptr;
 	mpRayVars = nullptr;
-	mpSceneRenderer = nullptr;
 	mpScene = nullptr;
 	mInvalidVarReflector = true;
 }
@@ -40,38 +38,46 @@ RayLaunch::RayLaunch(const std::string &rayGenFile, const std::string& rayGenEnt
 uint32_t RayLaunch::addMissShader(const std::string& missShaderFile, const std::string& missEntryPoint)
 {
 	if (mpLastShaderFile != missShaderFile)
-		mpRayProgDesc.addShaderLibrary(missShaderFile);
+		mRayProgDesc.addShaderLibrary(missShaderFile);
 
-	mpRayProgDesc.addMiss(mNumMiss, missEntryPoint);
+	mRayProgDesc.addMiss(mNumMiss, missEntryPoint);
 	return mNumMiss++;
 }
 
 uint32_t RayLaunch::addHitShader(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint)
 {
 	if (mpLastShaderFile != hitShaderFile)
-		mpRayProgDesc.addShaderLibrary(hitShaderFile);
+		mRayProgDesc.addShaderLibrary(hitShaderFile);
 
-	mpRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint);
+	mRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint);
 	return mNumHitGroup++;
 }
 
 uint32_t RayLaunch::addHitGroup(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint, const std::string& intersectionEntryPoint)
 {
 	if (mpLastShaderFile != hitShaderFile)
-		mpRayProgDesc.addShaderLibrary(hitShaderFile);
+		mRayProgDesc.addShaderLibrary(hitShaderFile);
 
-	mpRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint, intersectionEntryPoint);
+	mRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint, intersectionEntryPoint);
 	return mNumHitGroup++;
 }
 
 void RayLaunch::compileRayProgram()
 {
-	mpRayProg = RtProgram::create(mpRayProgDesc);
-	mpRayState->setProgram(mpRayProg);
-	mInvalidVarReflector = true;
+    if (mpScene) {
+        // RtPrograms must be created with RtProgram::Desc that references a scene. We make a
+        // copy of the stashed Desc (created with the shaders that were added), then add the scene
+        // defines, and create the RtProgram. This way, if we set the scene again, we keep the original
+        // desc from the shaders.
+        auto rayProgDescCopy = mRayProgDesc;
+        rayProgDescCopy.addDefines(mpScene->getSceneDefines());
 
-	// Since generating ray tracing variables take a while, try to do it now.
-	createRayTracingVariables();
+        mpRayProg = RtProgram::create(rayProgDescCopy);
+        mInvalidVarReflector = true;
+
+        // Since generating ray tracing variables take a while, try to do it now.
+        createRayTracingVariables();
+    }
 }
 
 bool RayLaunch::readyToRender()
@@ -88,18 +94,15 @@ bool RayLaunch::readyToRender()
 
 void RayLaunch::setMaxRecursionDepth(uint32_t maxDepth)
 {
-	if (mpRayState) mpRayState->setMaxTraceRecursionDepth(maxDepth);
+	mRayProgDesc.setMaxTraceRecursionDepth(maxDepth);
 	mInvalidVarReflector = true;
 }
 
-void RayLaunch::setScene(RtScene::SharedPtr pScene)
+void RayLaunch::setScene(Scene::SharedPtr pScene)
 {
 	// Make sure we have a valid scene 
 	if (!pScene) return;
 	mpScene = pScene;
-
-	// Create a ray tracing renderer.
-	mpSceneRenderer = RtSceneRenderer::create(mpScene);
 
 	// Since the scene is an integral part of the variable reflector, we now need to update it!
 	mInvalidVarReflector = true;
@@ -128,14 +131,12 @@ void RayLaunch::createRayTracingVariables()
 		if (!mpRayVars) return;
 		mInvalidVarReflector = false;
 
-		// Generate the syntactic sugar wrappers to pass users of this class
-		mpGlobalVars = SimpleVars::create(mpRayVars->getGlobalVars().get());
-		mpRayGenVars = SimpleVars::create(mpRayVars->getRayGenVars().get());
-	
+        mpRayGenVars = mpRayVars->getRayGenVars(0);
+
 		mpMissVars.clear();
 		for (int i = 0; i<int(mNumMiss); i++)
 		{
-			mpMissVars.push_back(SimpleVars::create(mpRayVars->getMissVars(i).get()));
+			mpMissVars.push_back(mpRayVars->getMissVars(i));
 		}
 
 		mpHitVars.clear();
@@ -143,43 +144,39 @@ void RayLaunch::createRayTracingVariables()
 		{
 			int32_t curHitVarsIdx = int32_t(mpHitVars.size());
 
-			SimpleVarsVector curVarVec;
+            GroupVarsVector curVarVec;
 			mpHitVars.push_back(curVarVec); 
 
-			RtProgramVars::VarsVector curVars = mpRayVars->getHitVars(i);
-			for (int j = 0; j < curVars.size(); j++)
+			for (int j = 0; j<int(mpScene->getMeshCount()); j++)
 			{
-				auto instanceVar = curVars[j];
-				mpHitVars[curHitVarsIdx].push_back(SimpleVars::create(instanceVar.get()));
+				auto instanceVar = mpRayVars->getHitVars(i, j);
+				mpHitVars[curHitVarsIdx].push_back(instanceVar);
 			}
 		}
 	}
 }
 
-SimpleVars::SharedPtr RayLaunch::getGlobalVars()
-{
-	if (mInvalidVarReflector) createRayTracingVariables();
-	return mpGlobalVars;
+RtProgramVars::SharedPtr RayLaunch::getRayVars() {
+    if (mInvalidVarReflector) createRayTracingVariables();
+    return (!mpRayVars) ? nullptr : mpRayVars;
 }
 
-SimpleVars::SharedPtr RayLaunch::getRayGenVars()
+EntryPointGroupVars::SharedPtr RayLaunch::getRayGenVars()
 {
 	if (mInvalidVarReflector) createRayTracingVariables();
-	return mpRayGenVars;
+    return (!mpRayVars) ? nullptr : mpRayGenVars;
 }
 
-SimpleVars::SharedPtr RayLaunch::getMissVars(uint32_t rayType)
+EntryPointGroupVars::SharedPtr RayLaunch::getMissVars(uint32_t rayType)
 {
 	if (mInvalidVarReflector) createRayTracingVariables();
-	return (rayType >= uint32_t(mpMissVars.size())) ? nullptr : mpMissVars[rayType];
+	return (!mpRayVars || rayType >= uint32_t(mpMissVars.size())) ? nullptr : mpMissVars[rayType];
 }
 
-RayLaunch::SimpleVarsVector &RayLaunch::getHitVars(uint32_t rayType)
+RayLaunch::GroupVarsVector RayLaunch::getHitVars(uint32_t rayType)
 {
 	if (mInvalidVarReflector) createRayTracingVariables();
-	if (!mpRayVars || rayType >= uint32_t(mpHitVars.size())) return mDefaultHitVarList;
-
-	return mpHitVars[rayType];
+	return (!mpRayVars || rayType >= uint32_t(mpHitVars.size())) ? mDefaultHitVarList : mpHitVars[rayType];
 }
 
 void RayLaunch::execute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera)
@@ -195,28 +192,6 @@ void RayLaunch::execute(RenderContext* pRenderContext, uint2 rayLaunchDimensions
 	// We need our shader variable reflector in order to execute!
 	if (!mpRayVars) return;
 
-	// Get a camera pointer to pass to the renderer
-	Camera *camPtr = nullptr;
-	if (viewCamera)
-		camPtr = viewCamera.get();
-	else if (mpScene && mpScene->getActiveCamera())
-		camPtr = mpScene->getActiveCamera().get();
-	else
-	{
-		// No valid camera.  Launching ray tracing via renderScene() with a null camera may give undefined results!
-		assert(false);
-		return;
-	}
-
 	// Ok.  We're ready and have done all our error checking.  Launch the ray tracing!
-	mpSceneRenderer->renderScene(pRenderContext, mpRayVars, mpRayState, uint3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), camPtr);
-}
-
-void RayLaunch::experimentalExecute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions)
-{
-	// We need our shader variable reflector in order to execute!
-	if (!mpRayVars) return;
-
-	// Ok.  We're ready and have done all our error checking.  Launch the ray tracing!
-	mpSceneRenderer->renderScene(pRenderContext.get(), mpRayVars, mpRayState, uint3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1), nullptr);
+    mpScene->raytrace(pRenderContext, mpRayProg.get(), mpRayVars, uint3(rayLaunchDimensions.x, rayLaunchDimensions.y, 1));
 }

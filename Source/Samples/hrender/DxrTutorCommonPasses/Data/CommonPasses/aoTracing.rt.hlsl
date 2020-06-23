@@ -16,12 +16,11 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "HostDeviceSharedMacros.h"
+//#include "HostDeviceSharedMacros.h"
 
 // Include and import common Falcor utilities and data structures
-import Raytracing;
-import ShaderCommon;
-import Shading;                      // Shading functions, etc     
+import Scene.Raytracing;
+import Scene.Shading;                      // Shading functions, etc     
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "aoCommonUtils.hlsli"
@@ -53,10 +52,10 @@ void AoMiss(inout AORayPayload hitData : SV_RayPayload)
 }
 
 [shader("anyhit")]
-void AoAnyHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void AoAnyHit(uniform HitShaderParams hitParams, inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Is this a transparent part of the surface?  If so, ignore this hit
-	if (alphaTestFails(attribs))
+	if (alphaTestFails(hitParams, attribs))
 		IgnoreHit();
 
 	// We update the hit distance with our current hitpoint

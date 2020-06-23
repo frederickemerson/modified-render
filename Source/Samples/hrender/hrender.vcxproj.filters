@@ -32,6 +32,12 @@
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -63,6 +69,12 @@
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>
