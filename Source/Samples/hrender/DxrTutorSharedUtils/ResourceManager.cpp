@@ -175,7 +175,7 @@ Texture::SharedPtr ResourceManager::getTexture(const std::string &channelName)
 	return getTexture(getTextureIndex(channelName));
 }
 
-Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channelName, float4 &clearColor)
+Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channelName, const float4 &clearColor)
 {
 	Texture::SharedPtr channel = getTexture(channelName);
 	if (!channel) return nullptr;
@@ -184,7 +184,7 @@ Texture::SharedPtr ResourceManager::getClearedTexture(const std::string &channel
 	return channel;
 }
 
-Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, float4 &clearColor)
+Texture::SharedPtr ResourceManager::getClearedTexture(int32_t channelIdx, const float4 &clearColor)
 {
 	Texture::SharedPtr channel = getTexture(channelIdx);
 	if (!channel) return nullptr;

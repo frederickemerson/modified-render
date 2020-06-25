@@ -16,14 +16,10 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "HostDeviceSharedMacros.h"
-#include "HostDeviceData.h"            // Some #defines used for shading across Falcor
-
 // Include and import common Falcor utilities and data structures
-import Raytracing;
-import ShaderCommon; 
-import Shading;                      // Shading functions, etc   
-import Lights;                       // Light structures for our current scene
+import Scene.Raytracing;
+import Scene.Shading;                      // Shading functions, etc   
+import Scene.Lights.Lights;                // Light structures for our current scene
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "lambertianPlusShadowsUtils.hlsli"
@@ -71,18 +67,14 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 }
 
 [shader("anyhit")]
-void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ShadowAnyHit(uniform HitShaderParams hitParams, inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	// Run a Falcor helper to extract the hit point's geometric data
-	VertexOut  vsOut = getVertexAttributes(PrimitiveIndex(), attribs);
-
-    // Extracts the diffuse color from the material (the alpha component is opacity)
-    ExplicitLodTextureSampler lodSampler = { 0 };  // Specify the tex lod/mip to use here
-    float4 baseColor = sampleTexture(gMaterial.resources.baseColor, gMaterial.resources.samplerState,
-        vsOut.texC, gMaterial.baseColor, EXTRACT_DIFFUSE_TYPE(gMaterial.flags), lodSampler);
+    // Run a Falcor helper to extract the current hit point's geometric data
+    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
+    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
 
 	// Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
-	if (baseColor.a < gMaterial.alphaThreshold)
+	if (!alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))
 		IgnoreHit();
 
 	// We update the hit distance with our current hitpoint
@@ -122,7 +114,8 @@ void LambertShadowsRayGen()
 		// We're going to accumulate contributions from multiple lights, so zero our our sum
 		shadeColor = float3(0.0, 0.0, 0.0);
 
-		for (int lightIndex = 0; lightIndex < gLightsCount; lightIndex++)
+        const uint lightCount = gScene.getLightCount();
+		for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
 		{
 			float distToLight;
 			float3 lightIntensity;

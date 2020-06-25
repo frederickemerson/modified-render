@@ -42,7 +42,7 @@ protected:
 	virtual void pipelineUpdated(ResourceManager::SharedPtr pResManager) { mpResManager = pResManager; }
 	virtual bool processKeyEvent(const Falcor::KeyboardEvent& keyEvent) { return false; }
 	virtual bool processMouseEvent(const Falcor::MouseEvent& mouseEvent) { return false; }
-	virtual void renderGui(Falcor::Gui* pGui, Falcor::Gui::Window* passWindow) {}
+	virtual void renderGui(Falcor::Gui* pGui, Falcor::Gui::Window* pPassWindow) {}
 	virtual void execute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState) = 0;
 	virtual void shutdown() {}
 	virtual void stateRefreshed() {}
@@ -110,7 +110,7 @@ public:
     /** Callback on GUI render.
         \param[in] pGui GUI instance to render UI elements with.
     */
-    void onRenderGui(Falcor::Gui* pGui, Falcor::Gui::Window* passWindow);
+    void onRenderGui(Falcor::Gui* pGui, Falcor::Gui::Window* pPassWindow);
 
     /** Callback for executing render pass.
         \param[in] context Provides the current context to initialize resources for your renderer

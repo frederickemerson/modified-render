@@ -38,6 +38,15 @@
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -75,6 +84,15 @@
       <Filter>SharedUtils</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,8 +16,6 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-//#include "HostDeviceSharedMacros.h"
-
 // Include and import common Falcor utilities and data structures
 import Scene.Raytracing;
 import Scene.Shading;                      // Shading functions, etc     

@@ -18,7 +18,6 @@
 
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
-#include "../DxrTutorSharedUtils/SimpleVars.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 
 /** Ray traced ambient occlusion pass.
@@ -29,16 +28,16 @@ public:
     using SharedPtr = std::shared_ptr<LambertianPlusShadowPass>;
     using SharedConstPtr = std::shared_ptr<const LambertianPlusShadowPass>;
 
-    static SharedPtr create() { return SharedPtr(new LambertianPlusShadowPass()); }
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new LambertianPlusShadowPass(outBuf)); }
     virtual ~LambertianPlusShadowPass() = default;
 
 protected:
-	LambertianPlusShadowPass() : ::RenderPass("Lambertian Plus Shadows", "Lambertian Plus Shadow Options") {}
+	LambertianPlusShadowPass(const std::string& outBuf) : ::RenderPass("Lambertian Plus Shadows", "Lambertian Plus Shadow Options") { mOutputTexName = outBuf; }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
-    void execute(RenderContext* pRenderContext) override;
+    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
 	// Override some functions that provide information to the RenderPipeline class
 	bool requiresScene() override { return true; }
@@ -46,8 +45,9 @@ protected:
 
     // Rendering state
 	RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
-    RtScene::SharedPtr                      mpScene;                ///< Our scene file (passed in from app)  
+    Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)  
     
 	// Various internal parameters
-	uint32_t                                mMinTSelector = 1;      ///< Allow user to select which minT value to use for rays
+    int32_t                                 mOutputIndex;           ///< An index for our output buffer
+    std::string                             mOutputTexName;         ///< Where do we want to store the results?
 };

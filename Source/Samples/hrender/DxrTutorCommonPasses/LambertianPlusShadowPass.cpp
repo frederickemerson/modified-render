@@ -20,7 +20,7 @@
 
 namespace {
 	// Where is our shaders located?
-	const char* kFileRayTrace = "CommonPasses\\lambertianPlusShadows.rt.hlsl";
+	const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\lambertianPlusShadows.rt.hlsl";
 
 	// What are the entry points in that shader for various ray tracing shaders?
 	const char* kEntryPointRayGen  = "LambertShadowsRayGen";
@@ -39,7 +39,7 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
 	mpResManager->requestTextureResource("WorldNormal");
 	mpResManager->requestTextureResource("MaterialDiffuse");
 	mpResManager->requestTextureResource("MaterialSpecRough");
-	mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -47,8 +47,10 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
 	mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
 
 	// Now that we've passed all our shaders in, compile and (if available) setup the scene
-	mpRays->compileRayProgram();
-	if (mpScene) mpRays->setScene(mpScene);
+    if (mpScene) {
+        mpRays->setScene(mpScene);
+        mpRays->compileRayProgram();
+    }
 
     return true;
 }
@@ -56,21 +58,24 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
 void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
 	// Stash a copy of the scene and pass it to our ray tracer (if initialized)
-    mpScene = std::dynamic_pointer_cast<RtScene>(pScene);
+    mpScene = pScene;
 	if (!mpScene) return;
-	if (mpRays) mpRays->setScene(mpScene);
+    if (mpRays) {
+        mpRays->setScene(mpScene);
+        mpRays->compileRayProgram();
+    }
 }
 
-void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
+void LambertianPlusShadowPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
 	// Get the output buffer we're writing into
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(ResourceManager::kOutputChannel, float4(0.0f, 0.0f, 0.0f, 0.0f));
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
 
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
 	// Set our ray tracing shader variables 
-	auto rayGenVars = mpRays->getRayGenVars();
+	auto rayGenVars = mpRays->getRayVars();
 	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
 	rayGenVars["gPos"]         = mpResManager->getTexture("WorldPosition");
 	rayGenVars["gNorm"]        = mpResManager->getTexture("WorldNormal");

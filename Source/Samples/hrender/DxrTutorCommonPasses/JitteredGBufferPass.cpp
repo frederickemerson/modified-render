@@ -3,15 +3,15 @@
 
 namespace {
 	// For basic jittering, we don't need to change our rasterized g-buffer, just jitter the camera position
-	const char *kGbufVertShader = "CommonPasses\\gBuffer.vs.hlsl";
-    const char *kGbufFragShader = "CommonPasses\\gBuffer.ps.hlsl";
+	const char *kGbufVertShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.vs.hlsl";
+    const char *kGbufFragShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.ps.hlsl";
 
 	// If we want to jitter the camera to antialias using traditional a traditional 8x MSAA pattern, 
 	//     use these positions (which are in the range [-8.0...8.0], so divide by 16 before use)
 	const float kMSAA[8][2] = { {1,-3}, {-1,3}, {5,1}, {-3,-5}, {-5,5}, {-7,-1}, {3,7}, {7,-7} };
 };
 
-bool JitteredGBufferPass::initialize(RenderContext::SharedPtr pRenderContext, ResourceManager::SharedPtr pResManager)
+bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
 	// Stash a copy of our resource manager so we can get rendering resources
 	mpResManager = pResManager;
@@ -24,9 +24,11 @@ bool JitteredGBufferPass::initialize(RenderContext::SharedPtr pRenderContext, Re
 	mpResManager->requestTextureResource("MaterialExtraParams");
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
+    mpResManager->setDefaultSceneName("Arcade/Arcade.fscene");
+
     // Create our rasterization state and our raster shader wrapper
     mpGfxState = GraphicsState::create();
-	mpRaster   = RasterPass::createFromFiles(kGbufVertShader, kGbufFragShader);
+	mpRaster   = RasterLaunch::createFromFiles(kGbufVertShader, kGbufFragShader);
 	mpRaster->setScene(mpScene);
 
 	// Set up our random number generator by seeding it with the current time 
@@ -37,31 +39,31 @@ bool JitteredGBufferPass::initialize(RenderContext::SharedPtr pRenderContext, Re
     return true;
 }
 
-void JitteredGBufferPass::initScene(RenderContext::SharedPtr pRenderContext, Scene::SharedPtr pScene)
+void JitteredGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
 	// Stash a copy of the scene.  Update our raster pass wrapper with the scene
 	if (pScene) mpScene = pScene;
 	if (mpRaster) mpRaster->setScene(mpScene);
 }
 
-void JitteredGBufferPass::renderGui(Gui* pGui)
+void JitteredGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
 	int dirty = 0;
 
 	// Determine whether we're jittering at all
-	dirty |= (int)pGui->addCheckBox(mUseJitter ? "Camera jitter enabled" : "Camera jitter disabled", mUseJitter);
+	dirty |= (int)pPassWindow->checkbox(mUseJitter ? "Camera jitter enabled" : "Camera jitter disabled", mUseJitter);
 
 	// Select what kind of jitter to use.  Right now, the choices are: 8x MSAA or completely random
 	if (mUseJitter)
 	{
-		dirty |= (int)pGui->addCheckBox(mUseRandom ? "Using randomized camera position" : "Using 8x MSAA pattern", mUseRandom);
+		dirty |= (int)pPassWindow->checkbox(mUseRandom ? "Using randomized camera position" : "Using 8x MSAA pattern", mUseRandom);
 	}
 
 	// If UI parameters change, let the pipeline know we're doing something different next frame
 	if (dirty) setRefreshFlag();
 }
 
-void JitteredGBufferPass::execute(RenderContext::SharedPtr pRenderContext)
+void JitteredGBufferPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
 	// Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
 	Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
@@ -72,7 +74,7 @@ void JitteredGBufferPass::execute(RenderContext::SharedPtr pRenderContext)
 	if (!outputFbo) return;
 	
 	// Are we jittering?  If so, update our camera with the current jitter
-	if (mUseJitter && mpScene && mpScene->getActiveCamera())
+	if (mUseJitter && mpScene && mpScene->getCamera())
 	{
 		// Increase our frame count
 		mFrameCount++;
@@ -82,7 +84,7 @@ void JitteredGBufferPass::execute(RenderContext::SharedPtr pRenderContext)
 		float yOff = mUseRandom ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1]*0.0625f;
 
 		// Give our jitter to the scene camera
-		mpScene->getActiveCamera()->setJitter( xOff / float(outputFbo->getWidth()), yOff / float(outputFbo->getHeight()));
+		mpScene->getCamera()->setJitter( xOff / float(outputFbo->getWidth()), yOff / float(outputFbo->getHeight()));
 	}
 
 	// Clear our g-buffer.  All color buffers to (0,0,0,0), depth to 1, stencil to 0

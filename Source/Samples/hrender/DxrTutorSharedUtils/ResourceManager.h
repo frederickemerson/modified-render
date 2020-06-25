@@ -64,8 +64,8 @@ public:
 	Texture::SharedPtr getTexture(int32_t channelIdx);
 
 	// Get a pointer to requested texture, but before returning, clear the channel
-	Texture::SharedPtr getClearedTexture(const std::string &channelName, float4 &clearColor);
-	Texture::SharedPtr getClearedTexture(int32_t channelIdx, float4 &clearColor);
+	Texture::SharedPtr getClearedTexture(const std::string &channelName, const float4 &clearColor);
+	Texture::SharedPtr getClearedTexture(int32_t channelIdx, const float4 &clearColor);
 
 	// If you have a texture, you can clear it here
 	void clearTexture(Texture::SharedPtr &tex, const float4 &clearColor);

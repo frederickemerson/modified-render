@@ -18,7 +18,6 @@
 
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
-#include "../DxrTutorSharedUtils/SimpleVars.h"
 #include "../DxrTutorSharedUtils/FullscreenLaunch.h"
 
 class SimpleAccumulationPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, SimpleAccumulationPass>
@@ -36,8 +35,8 @@ protected:
     // Implementation of SimpleRenderPass interface
 	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
-    void execute(RenderContext* pRenderContext) override;
-    void renderGui(Gui* pGui) override;
+    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
     void resize(uint32_t width, uint32_t height) override;
 	void stateRefreshed() override;
 
@@ -53,13 +52,12 @@ protected:
 
 	// State for our accumulation shader
 	FullscreenLaunch::SharedPtr   mpAccumShader;
-	GraphicsState::SharedPtr      mpGfxState;
 	Texture::SharedPtr            mpLastFrame;
 	Fbo::SharedPtr                mpInternalFbo;
 
 	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
 	Scene::SharedPtr              mpScene;
-	mat4                          mpLastCameraMatrix;
+	glm::mat4x4                   mpLastCameraMatrix;
 
 	// Is our accumulation enabled?
 	bool                          mDoAccumulation = true;

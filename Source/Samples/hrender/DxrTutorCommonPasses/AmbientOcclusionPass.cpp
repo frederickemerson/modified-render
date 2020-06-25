@@ -67,11 +67,11 @@ void AmbientOcclusionPass::initScene(RenderContext* pRenderContext, Scene::Share
 	mAORadius = glm::max(0.1f, glm::length(mpScene->getSceneBounds().getSize()) * 0.05f);
 }
 
-void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* passWindow)
+void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
     int dirty = 0;
-    dirty |= (int)passWindow->var("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
-	dirty |= (int)passWindow->var("Num AO Rays", mNumRaysPerPixel, 1, 64);
+    dirty |= (int)pPassWindow->var("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
+	dirty |= (int)pPassWindow->var("Num AO Rays", mNumRaysPerPixel, 1, 64);
 
     // If we modify options, let our pipeline know that we changed our rendering parameters 
     if (dirty) setRefreshFlag();
@@ -81,8 +81,7 @@ void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* passWindow)
 void AmbientOcclusionPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
 	// Get our output buffer; clear it to black.
-    float4 clearColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, clearColor);
+	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
 	// Do we have all the resources we need to render?  If not, return
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
