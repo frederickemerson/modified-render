@@ -47,6 +47,18 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\LightProbeGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\GGXGlobalIllumination.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -93,6 +105,19 @@
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\LightProbeGBufferPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXGlobalIllumination.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>
@@ -159,5 +184,20 @@
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl">
       <Filter>TestPasses\Shaders</Filter>
     </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </ShaderSource>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="hrender.rc" />
   </ItemGroup>
 </Project>

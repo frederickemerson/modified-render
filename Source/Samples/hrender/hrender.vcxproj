@@ -13,10 +13,14 @@
   <ItemGroup>
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\GGXGlobalIllumination.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\LightProbeGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
@@ -31,10 +35,14 @@
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\GGXGlobalIllumination.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\LightProbeGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
@@ -45,6 +53,7 @@
     <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h" />
     <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h" />
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Falcor\Falcor.vcxproj">
@@ -57,16 +66,23 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadows.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadowsUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGI.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGIUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="hrender.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F318569-891B-4D35-952C-9162D29F97F7}</ProjectGuid>

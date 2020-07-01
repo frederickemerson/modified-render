@@ -16,18 +16,16 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "HostDeviceSharedMacros.h"
+#include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
-import Raytracing;
-import ShaderCommon;
-import Shading;                      // Shading functions, etc     
+import Scene.Raytracing;
+import Scene.Shading;                      // Shading functions, etc   
+import Scene.Scene;
+import Scene.Camera.Camera;
 
 // Include utility functions for sampling random numbers
 #include "thinLensUtils.hlsli"
-
-// Define pi
-#define M_PI  3.14159265358979323846264338327950288
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct SimpleRayPayload
@@ -67,51 +65,52 @@ void PrimaryMiss(inout SimpleRayPayload hitData)
 }
 
 [shader("anyhit")]
-void PrimaryAnyHit(inout SimpleRayPayload hitData, BuiltInTriangleIntersectionAttributes attribs)
+void PrimaryAnyHit(uniform HitShaderParams hitParams, inout SimpleRayPayload hitData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	// Run a Falcor helper to extract the hit point's geometric data
-	VertexOut  vsOut = getVertexAttributes(PrimitiveIndex(), attribs);
+    // Run a Falcor helper to extract the current hit point's geometric data
+    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
+    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
 
-    // Extracts the diffuse color from the material (the alpha component is opacity)
-    ExplicitLodTextureSampler lodSampler = { 0 };  // Specify the tex lod/mip to use here
-    float4 baseColor = sampleTexture(gMaterial.resources.baseColor, gMaterial.resources.samplerState,
-        vsOut.texC, gMaterial.baseColor, EXTRACT_DIFFUSE_TYPE(gMaterial.flags), lodSampler);
-
-	// Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
-	if (baseColor.a < gMaterial.alphaThreshold)
-		IgnoreHit();
+    // Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
+    if (alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))
+        IgnoreHit();
 }
 
 [shader("closesthit")]
-void PrimaryClosestHit(inout SimpleRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void PrimaryClosestHit(uniform HitShaderParams hitParams, inout SimpleRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	rayData.hit = true;
 
 	// Get some information about the current ray
-	uint2  launchIndex     = DispatchRaysIndex().xy;  
+	uint2  launchIndex     = DispatchRaysIndex().xy;
+    float3 cameraPosW = gScene.camera.getPosition();
+    float3 rayDirW = WorldRayDirection();
+    uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
 
-	// Run a pair of Falcor helper functions to compute important data at the current hit point
-	VertexOut  vsOut       = getVertexAttributes(PrimitiveIndex(), attribs);        // Get geometrical data
-	ShadingData shadeData  = prepareShadingData(vsOut, gMaterial, gCamera.posW, 0); // Get shading data
+    // Run a pair of Falcor helper functions to compute important data at the current hit point
+    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
+    ShadingData shadeData = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], -rayDirW, 0);
 
 	// Check if we hit the back of a double-sided material, in which case, we flip
 	//     normals around here (so we don't need to when shading)
-	float NdotV = dot(normalize(shadeData.N.xyz), normalize(gCamera.posW - shadeData.posW));
-	if (NdotV <= 0.0f && shadeData.doubleSidedMaterial)
+	float NdotV = dot(normalize(shadeData.N.xyz), normalize(cameraPosW - shadeData.posW));
+	if (NdotV <= 0.0f && shadeData.doubleSided)
 		shadeData.N = -shadeData.N;
 
 	// Save out our G-Buffer values to our textures
 	gWsPos[launchIndex]    = float4(shadeData.posW, 1.f);
-	gWsNorm[launchIndex]   = float4(shadeData.N, length(shadeData.posW - gCamera.posW));
+	gWsNorm[launchIndex]   = float4(shadeData.N, length(shadeData.posW - cameraPosW));
 	gMatDif[launchIndex]   = float4(shadeData.diffuse, shadeData.opacity);
 	gMatSpec[launchIndex]  = float4(shadeData.specular, shadeData.linearRoughness);
-	gMatExtra[launchIndex] = float4(shadeData.IoR, shadeData.doubleSidedMaterial ? 1.f : 0.f, 0.f, 0.f);
+	gMatExtra[launchIndex] = float4(shadeData.IoR, shadeData.doubleSided ? 1.f : 0.f, 0.f, 0.f);
 }
 
 
 [shader("raygeneration")]
 void GBufferRayGen()
 {
+    Camera camera = gScene.camera;
+
 	// Get our pixel's position on the screen
 	uint2 launchIndex = DispatchRaysIndex().xy;
 	uint2 launchDim   = DispatchRaysDimensions().xy;
@@ -119,11 +118,11 @@ void GBufferRayGen()
 	// Convert our ray index into a ray direction in world space
 	float2 pixelCenter = (launchIndex + gPixelJitter) / launchDim;
 	float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);                    
-	float3 rayDir = ndc.x * gCamera.cameraU + ndc.y * gCamera.cameraV + gCamera.cameraW;  
-	rayDir /= length(gCamera.cameraW);
+	float3 rayDir = ndc.x * camera.data.cameraU + ndc.y * camera.data.cameraV + camera.data.cameraW;  
+	rayDir /= length(camera.data.cameraW);
 
 	// Find the focal point for this pixel.
-	float3 focalPoint = gCamera.posW + gFocalLen * rayDir;
+	float3 focalPoint = camera.data.posW + gFocalLen * rayDir;
 
 	// Initialize a random number generator
 	uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
@@ -133,11 +132,11 @@ void GBufferRayGen()
 	float2 uv  = float2(cos(rnd.x) * rnd.y, sin(rnd.x) * rnd.y);
 
 	// Use uv coordinate to compute a random origin on the camera lens
-	float3 randomOrig = gCamera.posW + uv.x * normalize(gCamera.cameraU) + uv.y * normalize(gCamera.cameraV);
+	float3 randomOrig = camera.data.posW + uv.x * normalize(camera.data.cameraU) + uv.y * normalize(camera.data.cameraV);
 
 	// Initialize a ray structure for our ray tracer
 	RayDesc ray; 
-	ray.Origin    = gUseThinLens ? randomOrig : gCamera.posW;  
+	ray.Origin    = gUseThinLens ? randomOrig : camera.data.posW;  
 	ray.Direction = normalize(gUseThinLens ? focalPoint - randomOrig : rayDir);
 	ray.TMin      = 0.0f;              
 	ray.TMax      = 1e+38f;            

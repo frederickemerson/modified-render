@@ -16,15 +16,12 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-// Some shared Falcor stuff for talking between CPU and GPU code
-#include "HostDeviceSharedMacros.h"
-#include "HostDeviceData.h"           
+#include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
-import Raytracing;                   // Shared ray tracing specific functions & data
-import ShaderCommon;                 // Shared shading data structures
-import Shading;                      // Shading functions, etc     
-import Lights;                       // Light structures for our current scene
+import Scene.Raytracing;
+import Scene.Shading;                      // Shading functions, etc   
+import Scene.Lights.Lights;                // Light structures for our current scene
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "simpleDiffuseGIUtils.hlsli"
@@ -39,6 +36,7 @@ cbuffer RayGenCB
 	uint  gFrameCount;     // An integer changing every frame to update the random number
 	bool  gDoIndirectGI;   // A boolean determining if we should shoot indirect GI rays
 	bool  gCosSampling;    // Use cosine sampling (true) or uniform sampling (false)
+    bool  gDirectShadow;   // Should we shoot shadow rays from our first hit point?
 }
 
 // Input and out textures that need to be set by the C++ code (for the ray gen shader)
@@ -73,23 +71,26 @@ void IndirectMiss(inout IndirectRayPayload rayData)
 }
 
 [shader("anyhit")]
-void IndirectAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void IndirectAnyHit(uniform HitShaderParams hitParams, inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Is this a transparent part of the surface?  If so, ignore this hit
-	if (alphaTestFails(attribs))
+	if (alphaTestFails(hitParams, attribs))
 		IgnoreHit();
 }
 
 // What code is executed when we have a new closest hitpoint?   Well, pick a random light,
 //    shoot a shadow ray to that light, and shade using diffuse shading.
 [shader("closesthit")]
-void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void IndirectClosestHit(uniform HitShaderParams hitParams, inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
+    // Get the number of lights in the scene
+    const uint lightCount = gScene.getLightCount();
+
 	// Run a helper functions to extract Falcor scene data for shading
-	ShadingData shadeData = getHitShadingData( attribs );
+	ShadingData shadeData = getHitShadingData(hitParams, attribs);
 
 	// Pick a random light from our scene to shoot a shadow ray towards
-	int lightToSample = min(int(nextRand(rayData.rndSeed) * gLightsCount), gLightsCount - 1);
+	int lightToSample = min(int(nextRand(rayData.rndSeed) * lightCount), lightCount - 1);
 
 	// Query the scene to find info about the randomly selected light
 	float distToLight;
@@ -101,7 +102,7 @@ void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleInterse
 	float LdotN = saturate(dot(shadeData.N, toLight));
 
 	// Shoot our shadow ray to our randomly selected light
-	float shadowMult = float(gLightsCount) * shadowRayVisibility(shadeData.posW, toLight, RayTMin(), distToLight);
+	float shadowMult = float(lightCount) * shadowRayVisibility(shadeData.posW, toLight, RayTMin(), distToLight);
 
 	// Return the Lambertian shading color using the physically based Lambertian term (albedo / pi)
 	rayData.color = shadowMult * LdotN * lightIntensity * shadeData.diffuse / M_PI;
@@ -133,6 +134,9 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint seed)
 [shader("raygeneration")]
 void SimpleDiffuseGIRayGen()
 {
+    // Get the number of lights in the scene
+    const uint lightCount = gScene.getLightCount();
+
 	// Where is this ray on screen?
 	uint2 launchIndex = DispatchRaysIndex().xy;
 	uint2 launchDim   = DispatchRaysDimensions().xy;
@@ -152,7 +156,7 @@ void SimpleDiffuseGIRayGen()
 	if (worldPos.w != 0.0f)
 	{
 		// Pick a random light from our scene to sample for direct lighting
-		int lightToSample = min(int(nextRand(randSeed) * gLightsCount), gLightsCount - 1);
+		int lightToSample = min(int(nextRand(randSeed) * lightCount), lightCount - 1);
 
 		// We need to query our scene to find info about the current light
 		float distToLight;
@@ -164,7 +168,9 @@ void SimpleDiffuseGIRayGen()
 		float LdotN = saturate(dot(worldNorm.xyz, toLight));
 
 		// Shoot our ray for our direct lighting
-		float shadowMult = float(gLightsCount) * shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+        float shadowMult = float(lightCount);
+        if (gDirectShadow)
+            shadowMult *= shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
 		// Compute our Lambertian shading color using the physically based Lambertian term (albedo / pi)
 		shadeColor = shadowMult * LdotN * lightIntensity * difMatlColor.rgb / M_PI;

@@ -37,7 +37,7 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
 	mpResManager->requestTextureResource("MaterialExtraParams");
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
-    mpResManager->setDefaultSceneName("Arcade/Arcade.fscene");
+    mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
 
     // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
     mpGfxState = GraphicsState::create();

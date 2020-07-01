@@ -26,33 +26,70 @@
  # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **************************************************************************/
 #include "hrender.h"
-#include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
+#include "DxrTutorCommonPasses/GGXGlobalIllumination.h"
 #include "DxrTutorCommonPasses/JitteredGBufferPass.h"
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
+#include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
+#include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
+#include "DxrTutorCommonPasses/SimpleDiffuseGIPass.h"
+#include "DxrTutorCommonPasses/SimpleGBufferPass.h"
+#include "DxrTutorCommonPasses/ThinLensGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
-#include "DxrTutorTestPasses/ConstantColorPass.h"
-#include "DxrTutorTestPasses/SinusoidRasterPass.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
-
-    // Add passes into our pipeline
-    pipeline->setPass(0, JitteredGBufferPass::create());
-    pipeline->setPass(1, AmbientOcclusionPass::create("AmbientOcclusionPass"));
-    pipeline->setPass(2, LambertianPlusShadowPass::create("LambertianPlusShadowPass"));
-    pipeline->setPass(3, CopyToOutputPass::create());
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
-
     // Define a set of config / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "HRender";
     config.windowDesc.resizableWindow = true;
 
-    // Start our program!
+    // Create our rendering pipeline, and add passes to the pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
+
+    // -------------------------------- //
+    // --- Pass 1 creates a GBuffer --- //
+    // -------------------------------- //
+    pipeline->setPassOptions(0, {
+        // Rasterized GBuffer 
+        SimpleGBufferPass::create(),
+        // Rasterized GBuffer with camera jitter (for antialiasing)
+        JitteredGBufferPass::create(),
+        // Raytraced GBuffer with camera jitter that allows for depth of field
+        ThinLensGBufferPass::create(),
+        // Raytraced GBuffer with camera jitter that allows for depth of field) and environment map
+        LightProbeGBufferPass::create()
+    });
+
+    // --------------------------------------- //
+    // --- Pass 2 makes use of the GBuffer --- //
+    // --------------------------------------- //
+
+    // ------ Pass 2a is a shading pass
+    pipeline->setPassOptions(1, {
+        // Lambertian BRDF for local lighting, 1 shadow ray per light
+        LambertianPlusShadowPass::create("LambertianPlusShadowPass"),
+        // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per point
+        SimpleDiffuseGIPass::create("DiffuseGIPass"),
+        // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per point
+        GGXGlobalIlluminationPass::create("GGXPass")
+    });
+
+    // ------ Pass 2b is an Ambient Occlusion pass
+    pipeline->setPass(2, AmbientOcclusionPass::create("AmbientOcclusionPass"));
+
+    // --------------------------------------------------------------- //
+    // --- Pass 3 just lets us select which pass to view on screen --- //
+    // --------------------------------------------------------------- //
+    pipeline->setPass(3, CopyToOutputPass::create());
+
+    // ---------------------------------------------------------- //
+    // --- Pass 4 temporally accumulates frames for denoising --- //
+    // ---------------------------------------------------------- //
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // Start our program
     RenderingPipeline::run(pipeline, config);
     return 0;
 }

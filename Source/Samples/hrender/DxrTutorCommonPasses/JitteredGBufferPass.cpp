@@ -24,7 +24,7 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
 	mpResManager->requestTextureResource("MaterialExtraParams");
 	mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
-    mpResManager->setDefaultSceneName("Arcade/Arcade.fscene");
+    mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
 
     // Create our rasterization state and our raster shader wrapper
     mpGfxState = GraphicsState::create();

@@ -89,6 +89,7 @@ void RasterLaunch::setScene(Scene::SharedPtr pScene)
 		return;
 	}
     mpPassShader = GraphicsProgram::create(mProgDesc, pScene->getSceneDefines());
+    mInvalidVarReflector = true;
     mpScene = pScene;
 }
 

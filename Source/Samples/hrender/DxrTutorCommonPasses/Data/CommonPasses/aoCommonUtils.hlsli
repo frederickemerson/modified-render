@@ -74,5 +74,5 @@ bool alphaTestFails(HitShaderParams hitParams, BuiltInTriangleIntersectionAttrib
 
     const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
 
-    return !alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f);
+    return alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f);
 }

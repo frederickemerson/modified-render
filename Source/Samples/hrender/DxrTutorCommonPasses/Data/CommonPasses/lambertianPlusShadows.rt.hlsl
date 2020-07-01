@@ -74,7 +74,7 @@ void ShadowAnyHit(uniform HitShaderParams hitParams, inout ShadowRayPayload rayD
     const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
 
 	// Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
-	if (!alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))
+	if (alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))
 		IgnoreHit();
 
 	// We update the hit distance with our current hitpoint

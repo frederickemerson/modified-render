@@ -151,29 +151,6 @@ void RenderingPipeline::updatePipelineRequirementFlags(void)
 	mPipeRequiresScene = mPipeRequiresScene || mPipeNeedsDefaultScene;
 }
 
-void RenderingPipeline::createDropdownGuiForPass(uint32_t passOrder, Gui::DropdownList& outputList)
-{
-	// Ensure our list is empty
-	outputList.resize(0);
-
-	// Add an item to allow selecting a null pass.
-	outputList.push_back({ kNullPassId, kNullPassDescriptor });
-
-	//outputList.push_back({ int32_t(passOrder), mAvailPasses[passOrder]->getName() });
-	
-	// Include an item in the dropdown for each possible pass
-	for (uint32_t i = 0; i < mAvailPasses.size(); i++)
-	{
-		// Don't add if this pass doesn't exist or if we can't insert it at that location in the pipeline.
-		if (!mAvailPasses[i]) continue;
-		if (!isPassValid(mAvailPasses[i], passOrder)) continue;
-
-		// Ok.  The pass exists and is able to be selected for pass number <passOrder>.  Insert it into the list.
-		outputList.push_back({ i, mAvailPasses[i]->getName() });
-	}
-	
-}
-
 void RenderingPipeline::createDefaultDropdownGuiForPass(uint32_t passOrder, Gui::DropdownList& outputList)
 {
 	// Ensure our list is empty
@@ -183,7 +160,7 @@ void RenderingPipeline::createDefaultDropdownGuiForPass(uint32_t passOrder, Gui:
 	outputList.push_back({ kNullPassId, kNullPassDescriptor });
 
 	//outputList.push_back({ int32_t(passOrder), mAvailPasses[passOrder]->getName() });
-
+	
 	// Include an item in the dropdown for each possible pass
 	for (uint32_t i = 0; i < mAvailPasses.size(); i++)
 	{

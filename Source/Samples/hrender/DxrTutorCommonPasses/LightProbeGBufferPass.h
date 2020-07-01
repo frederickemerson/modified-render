@@ -18,7 +18,6 @@
 
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
-#include "../DxrTutorSharedUtils/SimpleVars.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include <random>
 
@@ -36,8 +35,8 @@ protected:
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void execute(RenderContext* pRenderContext) override;
-	void renderGui(Gui* pGui) override;
+    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
+	void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 
 	// Override some functions that provide information to the RenderPipeline class
@@ -47,7 +46,7 @@ protected:
 
 	// Internal pass state
 	RayLaunch::SharedPtr        mpRays;            ///< Our wrapper around a DX Raytracing pass
-	RtScene::SharedPtr          mpScene;           ///<  A copy of our scene
+	Scene::SharedPtr            mpScene;           ///<  A copy of our scene
 
 	// Thin lens parameters
 	bool      mUseThinLens = false;

@@ -75,13 +75,13 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext, GraphicsSt
 	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
 	// Set our ray tracing shader variables 
-	auto rayGenVars = mpRays->getRayVars();
-	rayGenVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
-	rayGenVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-	rayGenVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-	rayGenVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
-	rayGenVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
-	rayGenVars["gOutput"]      = pDstTex;
+	auto rayVars = mpRays->getRayVars();
+	rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
+	rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
+	rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
+	rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
+	rayVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
+	rayVars["gOutput"]      = pDstTex;
 
 	// Shoot our rays and shade our primary hit points
 	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );

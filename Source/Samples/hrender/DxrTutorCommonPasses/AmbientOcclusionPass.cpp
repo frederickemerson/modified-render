@@ -37,7 +37,8 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
 	// Note that we need the G-buffer's position and normal buffer, plus the standard output buffer
 	mPositionIndex = mpResManager->requestTextureResource("WorldPosition");
 	mNormalIndex   = mpResManager->requestTextureResource("WorldNormal");
-	mOutputIndex   = mpResManager->requestTextureResource(mOutputTexName);
+    mNormalIndex   = (mNormalIndex == -1) ? mpResManager->getTextureIndex("WorldNormal") : mNormalIndex;
+    mOutputIndex   = mpResManager->requestTextureResource(mOutputTexName);
 
 	// Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
 	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
