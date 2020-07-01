@@ -83,29 +83,9 @@ void RenderingPipeline::onLoad(RenderContext* pRenderContext)
 	mpDefaultGfxState = GraphicsState::create();
 
 	// If we've requested to have an environment map... 
-	if (mPipeUsesEnvMap)
+	if (anyPassUsesEnvMap())
 	{
-		// Check to see if someone else already loaded one. 
-		std::string envName = mpResourceManager->getEnvironmentMapName();
-		if (envName == "") // No loaded map?  Create a default one
-		{
-			mpResourceManager->updateEnvironmentMap("");
-			mEnvMapSelector.push_back({ 0, "Sky blue (i.e., [0.5, 0.5, 0.8])" });
-		}
-		else  // Map already loaded, get it's name to put in the UI
-			mEnvMapSelector.push_back({ 0, envName.c_str() });
-
-		// Add a UI option to load a new HDR environment map
-		mEnvMapSelector.push_back({ 1, "< Load new map... >" });
-		mEnvMapSelector.push_back({ 2, "Switch -> black environment"  });
-		mEnvMapSelector.push_back({ 3, "Switch -> sky blue environment" });
-
-		if(findFileInDataDirectories("MonValley_G_DirtRoad_3k.hdr", mMonValleyFilename))
-		{
-			mHasMonValley = true;
-			mEnvMapSelector.push_back({ 4, "Switch -> desert HDR environment" });
-		}
-
+        populateEnvMapSelector();
 	}
 
     // By default, we freeze animation on load
@@ -213,6 +193,9 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
 
 	if (mPipeUsesEnvMap)
 	{
+        // Just in case we got here without having populated the selector
+        if (mEnvMapSelector.empty()) populateEnvMapSelector();
+
 		uint32_t selection = 0;
 		w.text( "Current environment map:" );
 		w.text("     ");
@@ -786,6 +769,40 @@ bool RenderingPipeline::havePassesSetRefreshFlag(void)
 		}
 	}
 	return refreshFlag;
+}
+
+bool RenderingPipeline::anyPassUsesEnvMap(void)
+{
+    for (auto& pass : mAvailPasses)
+    {
+        if (pass->usesEnvironmentMap())
+            return true;
+    }
+    return false;
+}
+
+void RenderingPipeline::populateEnvMapSelector(void)
+{
+    // Check to see if someone else already loaded one. 
+    std::string envName = mpResourceManager->getEnvironmentMapName();
+    if (envName == "") // No loaded map?  Create a default one
+    {
+        mpResourceManager->updateEnvironmentMap("");
+        mEnvMapSelector.push_back({ 0, "Sky blue (i.e., [0.5, 0.5, 0.8])" });
+    }
+    else  // Map already loaded, get it's name to put in the UI
+        mEnvMapSelector.push_back({ 0, envName.c_str() });
+
+    // Add a UI option to load a new HDR environment map
+    mEnvMapSelector.push_back({ 1, "< Load new map... >" });
+    mEnvMapSelector.push_back({ 2, "Switch -> black environment" });
+    mEnvMapSelector.push_back({ 3, "Switch -> sky blue environment" });
+
+    if (findFileInDataDirectories("MonValley_G_DirtRoad_3k.hdr", mMonValleyFilename))
+    {
+        mHasMonValley = true;
+        mEnvMapSelector.push_back({ 4, "Switch -> desert HDR environment" });
+    }
 }
 
 void RenderingPipeline::addPipeInstructions(const std::string &str)

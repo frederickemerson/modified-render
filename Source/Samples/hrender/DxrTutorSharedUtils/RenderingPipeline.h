@@ -108,6 +108,12 @@ private:
 	// Check if any passes have set a refresh flag (i.e., settings changed; temporal history should be invalidated)
 	bool havePassesSetRefreshFlag(void);
 
+    // Check if any passes use an environment map
+    bool anyPassUsesEnvMap(void);
+
+    // Populates the environment map selector
+    void populateEnvMapSelector(void);
+
 	// Update the mPipeRequires* member variables
 	void updatePipelineRequirementFlags(void);
 

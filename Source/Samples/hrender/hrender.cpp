@@ -58,7 +58,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         JitteredGBufferPass::create(),
         // Raytraced GBuffer with camera jitter that allows for depth of field
         ThinLensGBufferPass::create(),
-        // Raytraced GBuffer with camera jitter that allows for depth of field) and environment map
+        // Raytraced GBuffer with camera jitter that allows for depth of field and environment map
         LightProbeGBufferPass::create()
     });
 
