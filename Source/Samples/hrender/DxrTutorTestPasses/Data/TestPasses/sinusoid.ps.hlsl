@@ -20,15 +20,15 @@
 cbuffer PerFrameCB
 {
     uint gFrameCount;
-	float gMultValue;
+    float gMultValue;
 }
 
 // Our main pixel shader.  It writes a float4 to the output color buffer. 
 float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
 {
-	// Compute a per-pixel sinusoidal value
-	float sinusoid = 0.5 * (1.0f + sin(0.001f * gMultValue * (dot(pos.xy, pos.xy) + gFrameCount / gMultValue) ));
+    // Compute a per-pixel sinusoidal value
+    float sinusoid = 0.5 * (1.0f + sin(0.001f * gMultValue * (dot(pos.xy, pos.xy) + gFrameCount / gMultValue) ));
 
-	// Save our color out to our framebuffer
+    // Save our color out to our framebuffer
     return float4(sinusoid, sinusoid, sinusoid, 1.0f);
 }

@@ -21,34 +21,34 @@
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::create(Program::Desc& existingDesc)
 {
-	return SharedPtr(new RasterLaunch(existingDesc));
+    return SharedPtr(new RasterLaunch(existingDesc));
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& fragmentFile)
 {
-	Program::Desc desc;
-	desc.addShaderLibrary(vertexFile).vsEntry("main");
-	desc.addShaderLibrary(fragmentFile).psEntry("main");
+    Program::Desc desc;
+    desc.addShaderLibrary(vertexFile).vsEntry("main");
+    desc.addShaderLibrary(fragmentFile).psEntry("main");
     return create(desc);
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& geometryFile, const std::string& fragmentFile)
 {
-	Program::Desc desc;
-	desc.addShaderLibrary(vertexFile).vsEntry("main");
-	desc.addShaderLibrary(geometryFile).gsEntry("main");
-	desc.addShaderLibrary(fragmentFile).psEntry("main");
+    Program::Desc desc;
+    desc.addShaderLibrary(vertexFile).vsEntry("main");
+    desc.addShaderLibrary(geometryFile).gsEntry("main");
+    desc.addShaderLibrary(fragmentFile).psEntry("main");
     return create(desc);
 }
 
 RasterLaunch::SharedPtr RasterLaunch::RasterLaunch::createFromFiles(const std::string& vertexFile, const std::string& fragmentFile, const std::string& geometryFile, const std::string& hullFile, const std::string& domainFile)
 {
-	Program::Desc desc;
-	desc.addShaderLibrary(vertexFile).vsEntry("main");
-	desc.addShaderLibrary(hullFile).hsEntry("main");
-	desc.addShaderLibrary(domainFile).dsEntry("main");
-	desc.addShaderLibrary(geometryFile).gsEntry("main");
-	desc.addShaderLibrary(fragmentFile).psEntry("main");
+    Program::Desc desc;
+    desc.addShaderLibrary(vertexFile).vsEntry("main");
+    desc.addShaderLibrary(hullFile).hsEntry("main");
+    desc.addShaderLibrary(domainFile).dsEntry("main");
+    desc.addShaderLibrary(geometryFile).gsEntry("main");
+    desc.addShaderLibrary(fragmentFile).psEntry("main");
     return create(desc);
 }
 
@@ -57,37 +57,37 @@ RasterLaunch::RasterLaunch(Program::Desc& existingDesc)
     mProgDesc = existingDesc;
     mpScene = nullptr;
     mpPassShader = nullptr;
-	mpSharedVars = nullptr;
-	mInvalidVarReflector = true;
+    mpSharedVars = nullptr;
+    mInvalidVarReflector = true;
 }
 
 void RasterLaunch::addDefine(const std::string& name, const std::string& value)
 {
-	mpPassShader->addDefine(name, value);
-	mInvalidVarReflector = true;
+    mpPassShader->addDefine(name, value);
+    mInvalidVarReflector = true;
 }
 
 void RasterLaunch::removeDefine(const std::string& name)
 {
-	mpPassShader->removeDefine(name);
-	mInvalidVarReflector = true;
+    mpPassShader->removeDefine(name);
+    mInvalidVarReflector = true;
 }
 
 GraphicsVars::SharedPtr RasterLaunch::getVars()
 {
-	if (mInvalidVarReflector)
-		createGraphicsVariables();
+    if (mInvalidVarReflector)
+        createGraphicsVariables();
 
-	return mpSharedVars;
+    return mpSharedVars;
 }
 
 void RasterLaunch::setScene(Scene::SharedPtr pScene)
 {
-	if (!pScene)
-	{
-		mpScene = nullptr;
-		return;
-	}
+    if (!pScene)
+    {
+        mpScene = nullptr;
+        return;
+    }
     mpPassShader = GraphicsProgram::create(mProgDesc, pScene->getSceneDefines());
     mInvalidVarReflector = true;
     mpScene = pScene;
@@ -95,12 +95,12 @@ void RasterLaunch::setScene(Scene::SharedPtr pScene)
 
 void RasterLaunch::createGraphicsVariables()
 {
-	// Do we need to recreate our variables?  Do we also have a valid shader?
-	if (mInvalidVarReflector && mpPassShader)
-	{
-		mpSharedVars = GraphicsVars::create(mpPassShader->getActiveVersion()->getReflector());
-		mInvalidVarReflector = false;
-	}
+    // Do we need to recreate our variables?  Do we also have a valid shader?
+    if (mInvalidVarReflector && mpPassShader)
+    {
+        mpSharedVars = GraphicsVars::create(mpPassShader->getActiveVersion()->getReflector());
+        mInvalidVarReflector = false;
+    }
 }
 
 void RasterLaunch::execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo)
@@ -110,14 +110,14 @@ void RasterLaunch::execute(RenderContext::SharedPtr pRenderContext, GraphicsStat
 
 void RasterLaunch::execute(RenderContext* pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo)
 {
-	// Ok.  We're executing.  If we still have an invalid shader variable reflector, we'd better get one now!
-	if (mInvalidVarReflector) createGraphicsVariables();
+    // Ok.  We're executing.  If we still have an invalid shader variable reflector, we'd better get one now!
+    if (mInvalidVarReflector) createGraphicsVariables();
 
-	// If we all the resources we need are valid, go ahead and render
-	if (mpPassShader && mpScene && pGfxState && pRenderContext)
-	{
-		if(pTargetFbo) pGfxState->setFbo(pTargetFbo);
-		pGfxState->setProgram(mpPassShader);
+    // If we all the resources we need are valid, go ahead and render
+    if (mpPassShader && mpScene && pGfxState && pRenderContext)
+    {
+        if(pTargetFbo) pGfxState->setFbo(pTargetFbo);
+        pGfxState->setProgram(mpPassShader);
         mpScene->render(pRenderContext, pGfxState.get(), mpSharedVars.get());
-	}
+    }
 }

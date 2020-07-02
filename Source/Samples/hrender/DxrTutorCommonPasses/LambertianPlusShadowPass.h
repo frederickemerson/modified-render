@@ -32,22 +32,22 @@ public:
     virtual ~LambertianPlusShadowPass() = default;
 
 protected:
-	LambertianPlusShadowPass(const std::string& outBuf) : ::RenderPass("Lambertian Plus Shadows", "Lambertian Plus Shadow Options") { mOutputTexName = outBuf; }
+    LambertianPlusShadowPass(const std::string& outBuf) : ::RenderPass("Lambertian Plus Shadows", "Lambertian Plus Shadow Options") { mOutputTexName = outBuf; }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override { return true; }
-	bool usesRayTracing() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override { return true; }
+    bool usesRayTracing() override { return true; }
 
     // Rendering state
-	RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
+    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)  
     
-	// Various internal parameters
+    // Various internal parameters
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
 };

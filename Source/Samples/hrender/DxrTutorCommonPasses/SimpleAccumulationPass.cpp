@@ -23,39 +23,39 @@ namespace {
 };
 
 SimpleAccumulationPass::SimpleAccumulationPass(const std::string &bufferToAccumulate)
-	: ::RenderPass("Accumulation Pass", "Accumulation Options")
+    : ::RenderPass("Accumulation Pass", "Accumulation Options")
 {
-	mAccumChannel = bufferToAccumulate;
+    mAccumChannel = bufferToAccumulate;
 }
 
 bool SimpleAccumulationPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-	if (!pResManager) return false;
+    if (!pResManager) return false;
 
-	// Stash our resource manager; ask for the texture the developer asked us to accumulate
-	mpResManager = pResManager;
-	mpResManager->requestTextureResource(mAccumChannel);
+    // Stash our resource manager; ask for the texture the developer asked us to accumulate
+    mpResManager = pResManager;
+    mpResManager->requestTextureResource(mAccumChannel);
 
-	// Create our graphics state and accumulation shader
-	mpAccumShader = FullscreenLaunch::create(kAccumShader);
+    // Create our graphics state and accumulation shader
+    mpAccumShader = FullscreenLaunch::create(kAccumShader);
 
-	// Our GUI needs less space than other passes, so shrink the GUI window.
-	setGuiSize(int2(250, 135));
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(250, 135));
 
-	return true;
+    return true;
 }
 
 void SimpleAccumulationPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
-	// Reset accumulation.
-	mAccumCount = 0;
+    // Reset accumulation.
+    mAccumCount = 0;
 
-	// When our renderer moves around, we want to reset accumulation
-	mpScene = pScene;
+    // When our renderer moves around, we want to reset accumulation
+    mpScene = pScene;
 
-	// Grab a copy of the current scene's camera matrix (if it exists)
-	if (mpScene && mpScene->getCamera())
-		mpLastCameraMatrix = mpScene->getCamera()->getViewMatrix();
+    // Grab a copy of the current scene's camera matrix (if it exists)
+    if (mpScene && mpScene->getCamera())
+        mpLastCameraMatrix = mpScene->getCamera()->getViewMatrix();
 }
 
 void SimpleAccumulationPass::resize(uint32_t width, uint32_t height)
@@ -64,59 +64,59 @@ void SimpleAccumulationPass::resize(uint32_t width, uint32_t height)
     mpLastFrame = Texture::create2D(width, height, ResourceFormat::RGBA32Float, 1, 1, nullptr, Resource::BindFlags::ShaderResource | Resource::BindFlags::UnorderedAccess | Resource::BindFlags::RenderTarget);
 
     // We need a framebuffer to attach to our graphics pipe state (when running our full-screen pass)
-	mpInternalFbo = ResourceManager::createFbo(width, height, ResourceFormat::RGBA32Float);
+    mpInternalFbo = ResourceManager::createFbo(width, height, ResourceFormat::RGBA32Float);
 
     // Whenever we resize, we'd better force accumulation to restart
-	mAccumCount = 0;
+    mAccumCount = 0;
 }
 
 void SimpleAccumulationPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
-	// Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
+    // Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
     pPassWindow->text( (std::string("Accumulating buffer:   ") + mAccumChannel).c_str() );
     pPassWindow->text("");
 
-	// Add a toggle to enable/disable temporal accumulation.  Whenever this toggles, reset the
-	//     frame count and tell the pipeline we're part of that our rendering options have changed.
+    // Add a toggle to enable/disable temporal accumulation.  Whenever this toggles, reset the
+    //     frame count and tell the pipeline we're part of that our rendering options have changed.
     if (pPassWindow->checkbox(mDoAccumulation ? "Accumulating samples temporally" : "No temporal accumulation", mDoAccumulation))
     {
-		mAccumCount = 0;
+        mAccumCount = 0;
         setRefreshFlag();
     }
 
-	// Display a count of accumulated frames
+    // Display a count of accumulated frames
     pPassWindow->text("");
     pPassWindow->text((std::string("Frames accumulated: ") + std::to_string(mAccumCount)).c_str());
 }
 
 bool SimpleAccumulationPass::hasCameraMoved()
 {
-	// Has our camera moved?
-	return mpScene &&                      // No scene?  Then the answer is no
-		   mpScene->getCamera() &&   // No camera in our scene?  Then the answer is no
-		   (mpLastCameraMatrix != mpScene->getCamera()->getViewMatrix());   // Compare the current matrix with the last one
+    // Has our camera moved?
+    return mpScene &&                      // No scene?  Then the answer is no
+           mpScene->getCamera() &&   // No camera in our scene?  Then the answer is no
+           (mpLastCameraMatrix != mpScene->getCamera()->getViewMatrix());   // Compare the current matrix with the last one
 }
 
 void SimpleAccumulationPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
     // Grab the texture to accumulate
-	Texture::SharedPtr inputTexture = mpResManager->getTexture(mAccumChannel);
+    Texture::SharedPtr inputTexture = mpResManager->getTexture(mAccumChannel);
 
-	// If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
+    // If our input texture is invalid, or we've been asked to skip accumulation, do nothing.
     if (!inputTexture || !mDoAccumulation) return;
    
-	// If the camera in our current scene has moved, we want to reset accumulation
-	if (hasCameraMoved())
-	{
-		mAccumCount = 0;
-		mpLastCameraMatrix = mpScene->getCamera()->getViewMatrix();
-	}
+    // If the camera in our current scene has moved, we want to reset accumulation
+    if (hasCameraMoved())
+    {
+        mAccumCount = 0;
+        mpLastCameraMatrix = mpScene->getCamera()->getViewMatrix();
+    }
 
     // Set shader parameters for our accumulation
-	auto shaderVars = mpAccumShader->getVars();
-	shaderVars["PerFrameCB"]["gAccumCount"] = mAccumCount++;
-	shaderVars["gLastFrame"] = mpLastFrame;
-	shaderVars["gCurFrame"]  = inputTexture;
+    auto shaderVars = mpAccumShader->getVars();
+    shaderVars["PerFrameCB"]["gAccumCount"] = mAccumCount++;
+    shaderVars["gLastFrame"] = mpLastFrame;
+    shaderVars["gCurFrame"]  = inputTexture;
 
     // Do the accumulation
     mpAccumShader->execute(pRenderContext, mpInternalFbo);
@@ -130,6 +130,6 @@ void SimpleAccumulationPass::execute(RenderContext* pRenderContext, GraphicsStat
 
 void SimpleAccumulationPass::stateRefreshed()
 {
-	// This gets called because another pass else in the pipeline changed state.  Restart accumulation
-	mAccumCount = 0;
+    // This gets called because another pass else in the pipeline changed state.  Restart accumulation
+    mAccumCount = 0;
 }

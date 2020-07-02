@@ -26,35 +26,35 @@ namespace {
 
 Scene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename )
 {
-	Scene::SharedPtr pScene;
+    Scene::SharedPtr pScene;
 
-	// If we didn't request a file to load, open a dialog box, asking which scene to load; on failure, return invalid scene
-	std::string filename;
-	if (!defaultFilename)
-	{
+    // If we didn't request a file to load, open a dialog box, asking which scene to load; on failure, return invalid scene
+    std::string filename;
+    if (!defaultFilename)
+    {
         if (!openFileDialog(Scene::kFileExtensionFilters, filename))
-			return pScene;
-	}
-	else
-	{
-		std::string fullPath;
+            return pScene;
+    }
+    else
+    {
+        std::string fullPath;
 
-		// Since we often run in Visual Studio, let's also check the relative paths to the binary directory...
-		if (!findFileInDataDirectories(std::string(defaultFilename), fullPath))
-			return pScene;
+        // Since we often run in Visual Studio, let's also check the relative paths to the binary directory...
+        if (!findFileInDataDirectories(std::string(defaultFilename), fullPath))
+            return pScene;
 
-		filename = fullPath;
-	}
+        filename = fullPath;
+    }
 
-	// Create a loading bar while loading a scene
-	ProgressBar::SharedPtr pBar = ProgressBar::show("Loading Scene", 100);
+    // Create a loading bar while loading a scene
+    ProgressBar::SharedPtr pBar = ProgressBar::show("Loading Scene", 100);
 
-	// Load a scene
+    // Load a scene
     SceneBuilder::SharedPtr pBuilder = SceneBuilder::create(filename);
 
-	// If we have a valid scene, do some sanity checking; set some defaults
-	if (pBuilder)
-	{
+    // If we have a valid scene, do some sanity checking; set some defaults
+    if (pBuilder)
+    {
         // Check to ensure the scene has at least one light.  If not, create a simple directional light
         if (pBuilder->getLightCount() == 0)
         {
@@ -68,39 +68,34 @@ Scene::SharedPtr loadScene( uint2 currentScreenSize, const char *defaultFilename
         // Finalize the SceneBuilder's Scene
         pScene = pBuilder->getScene();
 
-		// Bind a sampler to all scene textures using linear filtering.  Note this is only used if 
-		//    you use Falcor's built-in shading system.  Otherwise, you may have to specify your own sampler elsewhere.
-		Sampler::Desc desc;
-		desc.setFilterMode(Sampler::Filter::Linear, Sampler::Filter::Linear, Sampler::Filter::Linear);
-		Sampler::SharedPtr pSampler = Sampler::create(desc);
-		pScene->bindSamplerToMaterials(pSampler);
-        // TODO: Check if light probes really need this sampler. This is here because from
-        // Falcor 3.2.1 -> 4.0.0, Scene now only has a single light probe instead of multiple,
-        // and the Scene::bindSampler() method was removed.
-        auto& pLightProbe = pScene->getLightProbe();
-        if (pLightProbe) pLightProbe->setSampler(pSampler);
+        // Bind a sampler to all scene textures using linear filtering.  Note this is only used if 
+        //    you use Falcor's built-in shading system.  Otherwise, you may have to specify your own sampler elsewhere.
+        Sampler::Desc desc;
+        desc.setFilterMode(Sampler::Filter::Linear, Sampler::Filter::Linear, Sampler::Filter::Linear);
+        Sampler::SharedPtr pSampler = Sampler::create(desc);
+        pScene->bindSamplerToMaterials(pSampler);
 
-		// Set the aspect ratio of the camera appropriately
+        // Set the aspect ratio of the camera appropriately
         pScene->getCamera()->setAspectRatio((float)currentScreenSize.x / (float)currentScreenSize.y);
 
-		// If scene has a camera animation, disable from starting animation at load.
+        // If scene has a camera animation, disable from starting animation at load.
         pScene->toggleCameraAnimation(false);
-	}
+    }
 
-	// We're done.  Return whatever scene we might have
-	return pScene;
+    // We're done.  Return whatever scene we might have
+    return pScene;
 }
 
 std::string getTextureLocation(bool &isValid)
 {
-	// Open a dialog box, asking which scene to load; on failure, return invalid scene
-	std::string filename;
+    // Open a dialog box, asking which scene to load; on failure, return invalid scene
+    std::string filename;
     if (!openFileDialog(kTextureExtensions, filename))
-	{
-		isValid = false;
-		return std::string("");
-	}
+    {
+        isValid = false;
+        return std::string("");
+    }
 
-	isValid = true;
-	return filename;
+    isValid = true;
+    return filename;
 }

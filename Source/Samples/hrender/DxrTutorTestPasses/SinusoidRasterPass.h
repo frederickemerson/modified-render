@@ -37,21 +37,21 @@ public:
     virtual ~SinusoidRasterPass() = default;
 
 protected:
-	SinusoidRasterPass() : ::RenderPass("Simple Sinusoid (Raster)", "Raster Sinusoid Options") {}
+    SinusoidRasterPass() : ::RenderPass("Simple Sinusoid (Raster)", "Raster Sinusoid Options") {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
     void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
-	// The base RenderPass class defines a number of methods that we can override to specify
-	//    what properties this pass has.  
-	bool usesRasterization() override { return true; }  // Note that this pass ueses rasterization.
-	bool hasAnimation() override { return false; }      // Removes a GUI control that is confusing for this simple demo
+    // The base RenderPass class defines a number of methods that we can override to specify
+    //    what properties this pass has.  
+    bool usesRasterization() override { return true; }  // Note that this pass ueses rasterization.
+    bool hasAnimation() override { return false; }      // Removes a GUI control that is confusing for this simple demo
 
     // Internal pass state
     FullscreenLaunch::SharedPtr   mpSinusoidPass;         ///< Our accumulation shader state
     GraphicsState::SharedPtr      mpGfxState;             ///< Our graphics pipeline state
     uint32_t                      mFrameCount = 0;        ///< A frame counter to let our sinusoid animate
-	float                         mScaleValue = 0.1f;     ///< A scale value for our sinusoid
+    float                         mScaleValue = 0.1f;     ///< A scale value for our sinusoid
 };

@@ -20,63 +20,63 @@
 #include <chrono>
 
 namespace {
-	// Where is our environment map located?
-	const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    // Where is our environment map located?
+    const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
 
-	// Where is our shader located?
-	const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\lightProbeGBuffer.rt.hlsl";
+    // Where is our shader located?
+    const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\lightProbeGBuffer.rt.hlsl";
 
-	// What are the entry points in that shader for various ray tracing shaders?
-	const char* kEntryPointRayGen       = "GBufferRayGen";
-	const char* kEntryPointMiss0        = "PrimaryMiss";
-	const char* kEntryPrimaryAnyHit     = "PrimaryAnyHit";
-	const char* kEntryPrimaryClosestHit = "PrimaryClosestHit";
+    // What are the entry points in that shader for various ray tracing shaders?
+    const char* kEntryPointRayGen       = "GBufferRayGen";
+    const char* kEntryPointMiss0        = "PrimaryMiss";
+    const char* kEntryPrimaryAnyHit     = "PrimaryAnyHit";
+    const char* kEntryPrimaryClosestHit = "PrimaryClosestHit";
 
-	// If we want to jitter the camera to antialias using traditional a traditional 8x MSAA pattern, 
-	//     use these positions (which are in the range [-8.0...8.0], so divide by 16 before use)
-	const float kMSAA[8][2] = { { 1,-3 },{ -1,3 },{ 5,1 },{ -3,-5 },{ -5,5 },{ -7,-1 },{ 3,7 },{ 7,-7 } };
+    // If we want to jitter the camera to antialias using traditional a traditional 8x MSAA pattern, 
+    //     use these positions (which are in the range [-8.0...8.0], so divide by 16 before use)
+    const float kMSAA[8][2] = { { 1,-3 },{ -1,3 },{ 5,1 },{ -3,-5 },{ -5,5 },{ -7,-1 },{ 3,7 },{ 7,-7 } };
 };
 
 bool LightProbeGBufferPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-	// Stash a copy of our resource manager so we can get rendering resources
-	mpResManager = pResManager;
+    // Stash a copy of our resource manager so we can get rendering resources
+    mpResManager = pResManager;
 
-	// We write to these textures; tell our resource manager that we expect them
-	mpResManager->requestTextureResource("WorldPosition");
-	mpResManager->requestTextureResource("WorldNormal", ResourceFormat::RGBA16Float);
-	mpResManager->requestTextureResource("MaterialDiffuse", ResourceFormat::RGBA16Float);
-	mpResManager->requestTextureResource("MaterialSpecRough", ResourceFormat::RGBA16Float);
-	mpResManager->requestTextureResource("MaterialExtraParams", ResourceFormat::RGBA16Float);
-	mpResManager->requestTextureResource("Emissive", ResourceFormat::RGBA16Float);
+    // We write to these textures; tell our resource manager that we expect them
+    mpResManager->requestTextureResource("WorldPosition");
+    mpResManager->requestTextureResource("WorldNormal", ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("MaterialDiffuse", ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("MaterialSpecRough", ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("MaterialExtraParams", ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("Emissive", ResourceFormat::RGBA16Float);
 
     mpResManager->updateEnvironmentMap(kEnvironmentMap);
     mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
 
-	// Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
-	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-	mpRays->addHitShader(kFileRayTrace, kEntryPrimaryClosestHit, kEntryPrimaryAnyHit);
+    // Create our wrapper around a ray tracing pass.  Tell it where our shaders are, then compile/link the program
+    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
+    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+    mpRays->addHitShader(kFileRayTrace, kEntryPrimaryClosestHit, kEntryPrimaryAnyHit);
     if (mpScene) {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
     }
 
-	// Set up our random number generator by seeding it with the current time 
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	auto timeInMillisec = std::chrono::time_point_cast<std::chrono::milliseconds>(currentTime);
-	mRng = std::mt19937(uint32_t(timeInMillisec.time_since_epoch().count()));
+    // Set up our random number generator by seeding it with the current time 
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto timeInMillisec = std::chrono::time_point_cast<std::chrono::milliseconds>(currentTime);
+    mRng = std::mt19937(uint32_t(timeInMillisec.time_since_epoch().count()));
 
-	// Our GUI needs more space than other passes, so enlarge the GUI window.
-	setGuiSize(int2(250, 220));
+    // Our GUI needs more space than other passes, so enlarge the GUI window.
+    setGuiSize(int2(250, 220));
 
     return true;
 }
 
 void LightProbeGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
-	// Stash a copy of the scene and pass it to our ray tracer (if initialized)
-	mpScene = std::dynamic_pointer_cast<Scene>(pScene);
+    // Stash a copy of the scene and pass it to our ray tracer (if initialized)
+    mpScene = std::dynamic_pointer_cast<Scene>(pScene);
     if (mpRays) {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
@@ -85,83 +85,83 @@ void LightProbeGBufferPass::initScene(RenderContext* pRenderContext, Scene::Shar
 
 void LightProbeGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
-	int dirty = 0;
+    int dirty = 0;
 
-	// Allow user to specify thin lens / pinhole camera parameters
-	dirty |= (int)pPassWindow->checkbox(mUseThinLens ? "Using thin lens model" : "Using pinhole camera model", mUseThinLens);
-	if (mUseThinLens)
-	{ 
-		pPassWindow->text("     ");
-		dirty |= (int)pPassWindow->var("f stop", mFStop, 1.0f, 128.0f, 0.01f, true);
-		pPassWindow->text("     ");
-		dirty |= (int)pPassWindow->var("f plane", mFocalLength, 0.01f, FLT_MAX, 0.01f, true);
-	}
+    // Allow user to specify thin lens / pinhole camera parameters
+    dirty |= (int)pPassWindow->checkbox(mUseThinLens ? "Using thin lens model" : "Using pinhole camera model", mUseThinLens);
+    if (mUseThinLens)
+    { 
+        pPassWindow->text("     ");
+        dirty |= (int)pPassWindow->var("f stop", mFStop, 1.0f, 128.0f, 0.01f, true);
+        pPassWindow->text("     ");
+        dirty |= (int)pPassWindow->var("f plane", mFocalLength, 0.01f, FLT_MAX, 0.01f, true);
+    }
 
-	// Allow user to choose type of camera jitter for anti-aliasing
-	dirty |= (int)pPassWindow->checkbox(mUseJitter ? "Using camera jitter" : "No camera jitter", mUseJitter);
-	if (mUseJitter)
-	{
-		pPassWindow->text("     ");
-		dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Randomized jitter" : "8x MSAA jitter", mUseRandomJitter, true);
-	}
+    // Allow user to choose type of camera jitter for anti-aliasing
+    dirty |= (int)pPassWindow->checkbox(mUseJitter ? "Using camera jitter" : "No camera jitter", mUseJitter);
+    if (mUseJitter)
+    {
+        pPassWindow->text("     ");
+        dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Randomized jitter" : "8x MSAA jitter", mUseRandomJitter, true);
+    }
 
-	// If any of our UI parameters changed, let the pipeline know we're doing something different next frame
-	if (dirty) setRefreshFlag();
+    // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
+    if (dirty) setRefreshFlag();
 }
 
 void LightProbeGBufferPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
-	// Check that we're ready to render
-	if (!mpRays || !mpRays->readyToRender()) return;
+    // Check that we're ready to render
+    if (!mpRays || !mpRays->readyToRender()) return;
 
-	// Load our textures, but ask the resource manager to clear them to black before returning them
-	Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", float4(0, 0, 0, 0));
-	Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", float4(0, 0, 0, 0));
-	Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", float4(0, 0, 0, 0));
-	Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", float4(0, 0, 0, 0));
-	Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", float4(0, 0, 0, 0));
-	Texture::SharedPtr matEmit = mpResManager->getClearedTexture("Emissive", float4(0, 0, 0, 0));
-	mLightProbe = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
+    // Load our textures, but ask the resource manager to clear them to black before returning them
+    Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", float4(0, 0, 0, 0));
+    Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", float4(0, 0, 0, 0));
+    Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", float4(0, 0, 0, 0));
+    Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", float4(0, 0, 0, 0));
+    Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", float4(0, 0, 0, 0));
+    Texture::SharedPtr matEmit = mpResManager->getClearedTexture("Emissive", float4(0, 0, 0, 0));
+    mLightProbe = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
-	// Compute parameters based on our user-exposed controls
-	mLensRadius = mFocalLength / (2.0f * mFStop);
+    // Compute parameters based on our user-exposed controls
+    mLensRadius = mFocalLength / (2.0f * mFStop);
 
     // Bind our g-buffer outputs to the hit shaders
-	auto rayVars = mpRays->getRayVars();
-	rayVars["gWsPos"] = wsPos;
-	rayVars["gWsNorm"] = wsNorm;
-	rayVars["gMatDif"] = matDif;
-	rayVars["gMatSpec"] = matSpec;
-	rayVars["gMatExtra"] = matExtra;
-	rayVars["gMatEmissive"] = matEmit;
+    auto rayVars = mpRays->getRayVars();
+    rayVars["gWsPos"] = wsPos;
+    rayVars["gWsNorm"] = wsNorm;
+    rayVars["gMatDif"] = matDif;
+    rayVars["gMatSpec"] = matSpec;
+    rayVars["gMatExtra"] = matExtra;
+    rayVars["gMatEmissive"] = matEmit;
 
-	// Pass our background color down to our miss shader
-	rayVars["MissShaderCB"]["gEnvMapRes"] = uint2(mLightProbe->getWidth(), mLightProbe->getHeight());
-	rayVars["gEnvMap"] = mLightProbe;
+    // Pass our background color down to our miss shader
+    rayVars["MissShaderCB"]["gEnvMapRes"] = uint2(mLightProbe->getWidth(), mLightProbe->getHeight());
+    rayVars["gEnvMap"] = mLightProbe;
 
-	// Pass our camera parameters to the ray generation shader
-	rayVars["RayGenCB"]["gUseThinLens"] = mUseThinLens;
-	rayVars["RayGenCB"]["gFrameCount"]  = mFrameCount++;
-	rayVars["RayGenCB"]["gLensRadius"]  = mLensRadius;
-	rayVars["RayGenCB"]["gFocalLen"]    = mFocalLength;
+    // Pass our camera parameters to the ray generation shader
+    rayVars["RayGenCB"]["gUseThinLens"] = mUseThinLens;
+    rayVars["RayGenCB"]["gFrameCount"]  = mFrameCount++;
+    rayVars["RayGenCB"]["gLensRadius"]  = mLensRadius;
+    rayVars["RayGenCB"]["gFocalLen"]    = mFocalLength;
 
-	if (mUseJitter)
-	{
-		// Determine our offset in the pixel
-		float xOff = mUseRandomJitter ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][0] * 0.0625f;
-		float yOff = mUseRandomJitter ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1] * 0.0625f;
+    if (mUseJitter)
+    {
+        // Determine our offset in the pixel
+        float xOff = mUseRandomJitter ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][0] * 0.0625f;
+        float yOff = mUseRandomJitter ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1] * 0.0625f;
 
-		// Set our shader and the scene camera to use the computed jitter
-		rayVars["RayGenCB"]["gPixelJitter"] = float2( xOff + 0.5f, yOff + 0.5f );
-		mpScene->getCamera()->setJitter(xOff / float(wsPos->getWidth()), yOff / float(wsPos->getHeight()));
-	}
-	else
-	{
-		// No jitter, so sent our shader values that mean "use center of pixel"
-		rayVars["RayGenCB"]["gPixelJitter"] = float2(0.5f, 0.5f);
-		mpScene->getCamera()->setJitter(0,0);
-	}
+        // Set our shader and the scene camera to use the computed jitter
+        rayVars["RayGenCB"]["gPixelJitter"] = float2( xOff + 0.5f, yOff + 0.5f );
+        mpScene->getCamera()->setJitter(xOff / float(wsPos->getWidth()), yOff / float(wsPos->getHeight()));
+    }
+    else
+    {
+        // No jitter, so sent our shader values that mean "use center of pixel"
+        rayVars["RayGenCB"]["gPixelJitter"] = float2(0.5f, 0.5f);
+        mpScene->getCamera()->setJitter(0,0);
+    }
 
-	// Launch our ray tracing
-	mpRays->execute( pRenderContext, uint2(wsPos->getWidth(),wsPos->getHeight()) );
+    // Launch our ray tracing
+    mpRays->execute( pRenderContext, uint2(wsPos->getWidth(),wsPos->getHeight()) );
 }

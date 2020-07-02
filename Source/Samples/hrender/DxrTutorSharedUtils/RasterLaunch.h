@@ -28,7 +28,7 @@ a simple array [] notation and overloaded operator=()
 
 Initialization:
      RasterLaunch::SharedPtr mpRaster = RasterLaunch::createFromFiles("myVertex.vs.hlsl", "myFragment.ps.hlsl");
-	 mpRaster->setScene( mpScene );
+     mpRaster->setScene( mpScene );
 
 Pass setup / setting HLSL variable values:
      auto passHLSLVars = mpRaster->getVars();
@@ -43,41 +43,41 @@ Pass execution:
 class RasterLaunch : public std::enable_shared_from_this<RasterLaunch>
 {
 public:
-	using SharedPtr = std::shared_ptr<RasterLaunch>;
-	using SharedConstPtr = std::shared_ptr<const RasterLaunch>;
-	virtual ~RasterLaunch() = default;
+    using SharedPtr = std::shared_ptr<RasterLaunch>;
+    using SharedConstPtr = std::shared_ptr<const RasterLaunch>;
+    virtual ~RasterLaunch() = default;
 
-	// Create a raster pass from an existing Falcor Program Desc object.  All other creation routines simply call this.
-	static SharedPtr create(Program::Desc& existingDesc);
+    // Create a raster pass from an existing Falcor Program Desc object.  All other creation routines simply call this.
+    static SharedPtr create(Program::Desc& existingDesc);
 
-	// Shortcut creation routines that take various filenames as input, then load the files and create a program
-	static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& fragmentFile);
-	static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& geometryFile, const std::string& fragmentFile);
-	static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& fragmentFile, const std::string& geometryFile, const std::string& hullFile, const std::string& domainFile);
+    // Shortcut creation routines that take various filenames as input, then load the files and create a program
+    static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& fragmentFile);
+    static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& geometryFile, const std::string& fragmentFile);
+    static SharedPtr createFromFiles(const std::string& vertexFile, const std::string& fragmentFile, const std::string& geometryFile, const std::string& hullFile, const std::string& domainFile);
 
-	// If you use #define's in this pass' shaders and need to set them programmatically, use these methods (rather
-	//     than built-in Falcor methods) to ensure setting resources via this class' syntactic sugar still works.
-	// Note:  Treat updating #defines as invalidating all resources currently bound to the shaders.
-	void addDefine(const std::string& name, const std::string& value);
-	void removeDefine(const std::string& name);
+    // If you use #define's in this pass' shaders and need to set them programmatically, use these methods (rather
+    //     than built-in Falcor methods) to ensure setting resources via this class' syntactic sugar still works.
+    // Note:  Treat updating #defines as invalidating all resources currently bound to the shaders.
+    void addDefine(const std::string& name, const std::string& value);
+    void removeDefine(const std::string& name);
 
-	// When the Falcor scene you're using changes, make sure to tell us!
-	void setScene(Scene::SharedPtr pScene);
+    // When the Falcor scene you're using changes, make sure to tell us!
+    void setScene(Scene::SharedPtr pScene);
 
-	// Execute the shader.
-	void execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
+    // Execute the shader.
+    void execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
     void execute(RenderContext* pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
 
     Falcor::GraphicsVars::SharedPtr getVars();
 
 protected:
-	RasterLaunch(Program::Desc& existingDesc);
+    RasterLaunch(Program::Desc& existingDesc);
 
-	void createGraphicsVariables();
+    void createGraphicsVariables();
 
     Program::Desc               mProgDesc;
     Scene::SharedPtr            mpScene;
-	GraphicsProgram::SharedPtr  mpPassShader;
-	GraphicsVars::SharedPtr     mpSharedVars;
-	bool                        mInvalidVarReflector;
+    GraphicsProgram::SharedPtr  mpPassShader;
+    GraphicsVars::SharedPtr     mpSharedVars;
+    bool                        mInvalidVarReflector;
 };

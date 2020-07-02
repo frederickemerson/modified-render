@@ -34,34 +34,34 @@ public:
     virtual ~GGXGlobalIlluminationPass() = default;
 
 protected:
-	GGXGlobalIlluminationPass(const std::string &outChannel) : mOutputTextureName(outChannel),
-		::RenderPass("Global Illum., GGX BRDF", "GGX Global Illumination Options") {}
+    GGXGlobalIlluminationPass(const std::string &outChannel) : mOutputTextureName(outChannel),
+        ::RenderPass("Global Illum., GGX BRDF", "GGX Global Illumination Options") {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
-	void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override { return true; }
-	bool usesRayTracing() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override { return true; }
+    bool usesRayTracing() override { return true; }
 
     // Rendering state
-	RayLaunch::SharedPtr    mpRays;                       ///< Our wrapper around a DX Raytracing pass
+    RayLaunch::SharedPtr    mpRays;                       ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr        mpScene;                      ///< Our scene file (passed in from app)  
 
-	// Recursive ray tracing can be slow.  Add a toggle to disable, to allow you to manipulate the scene
-	bool                    mDoIndirectGI = true;
-	bool                    mDoDirectGI = true;
+    // Recursive ray tracing can be slow.  Add a toggle to disable, to allow you to manipulate the scene
+    bool                    mDoIndirectGI = true;
+    bool                    mDoDirectGI = true;
 
-	int32_t                 mUserSpecifiedRayDepth = 1;   ///<  What is the current maximum ray depth
-	const int32_t           mMaxPossibleRayDepth = 8;     ///<  The largest ray depth we support (without recompile)
+    int32_t                 mUserSpecifiedRayDepth = 1;   ///<  What is the current maximum ray depth
+    const int32_t           mMaxPossibleRayDepth = 8;     ///<  The largest ray depth we support (without recompile)
 
 
-	// What texture should was ask the resource manager to store our result in?
-	std::string             mOutputTextureName;
+    // What texture should was ask the resource manager to store our result in?
+    std::string             mOutputTextureName;
     
-	// Various internal parameters
-	uint32_t                mFrameCount = 0x1337u;        ///< A frame counter to vary random numbers over time
+    // Various internal parameters
+    uint32_t                mFrameCount = 0x1337u;        ///< A frame counter to vary random numbers over time
 };

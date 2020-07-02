@@ -19,46 +19,46 @@
 #include "SinusoidRasterPass.h"
 
 namespace {
-	// Where is our shader located?
+    // Where is our shader located?
     const char *kSinusoidShader = "Samples\\hrender\\DxrTutorTestPasses\\Data\\TestPasses\\sinusoid.ps.hlsl";
 };
 
 bool SinusoidRasterPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-	// Stash a copy of our resource manager, allowing us to access shared rendering resources
-	//    We need an output buffer; tell our resource manager we expect the standard output channel
-	mpResManager = pResManager;
-	mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
+    // Stash a copy of our resource manager, allowing us to access shared rendering resources
+    //    We need an output buffer; tell our resource manager we expect the standard output channel
+    mpResManager = pResManager;
+    mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
 
     // We're rendering with the rasterizer, so we need to define our gfx pipeline state (we'll use the default)
     mpGfxState = GraphicsState::create();
 
     // Create our simplistic full-screen pass shader (which computes and displays a sinusoidal color)
-	mpSinusoidPass = FullscreenLaunch::create(kSinusoidShader);
+    mpSinusoidPass = FullscreenLaunch::create(kSinusoidShader);
 
     return true;
 }
 
 void SinusoidRasterPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
-	// Add a widget to this pass' GUI window to allow a value to change in [0..1] in increments of 0.00001
+    // Add a widget to this pass' GUI window to allow a value to change in [0..1] in increments of 0.00001
     pPassWindow->var("Sin multiplier", mScaleValue, 0.0f, 1.0f, 0.00001f, false);
 }
 
 void SinusoidRasterPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
-	// Create a framebuffer object to render to.  Done here once per frame for simplicity, not performance.
-	//     This function allows us provide a list of managed texture names, which get combined into an FBO
-	Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo({ ResourceManager::kOutputChannel });
+    // Create a framebuffer object to render to.  Done here once per frame for simplicity, not performance.
+    //     This function allows us provide a list of managed texture names, which get combined into an FBO
+    Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo({ ResourceManager::kOutputChannel });
 
     // No valid framebuffer?  We're done.
     if (!outputFbo) return;
 
     // Set shader parameters.  PerFrameCB is a named constant buffer in our HLSL shader
-	auto shaderVars = mpSinusoidPass->getVars();
-	shaderVars["PerFrameCB"]["gFrameCount"] = mFrameCount++;
-	shaderVars["PerFrameCB"]["gMultValue"]  = mScaleValue;
+    auto shaderVars = mpSinusoidPass->getVars();
+    shaderVars["PerFrameCB"]["gFrameCount"] = mFrameCount++;
+    shaderVars["PerFrameCB"]["gMultValue"]  = mScaleValue;
 
     // Execute our shader
-	mpSinusoidPass->execute(pRenderContext, outputFbo);
+    mpSinusoidPass->execute(pRenderContext, outputFbo);
 }

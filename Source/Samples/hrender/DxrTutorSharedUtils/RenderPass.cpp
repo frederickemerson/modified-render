@@ -26,7 +26,7 @@ using namespace Falcor;
 bool ::RenderPass::onInitialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     assert(!mIsInitialized);
-	mIsInitialized = initialize(pRenderContext, pResManager);
+    mIsInitialized = initialize(pRenderContext, pResManager);
     return mIsInitialized;
 }
 
@@ -46,7 +46,7 @@ void ::RenderPass::onRenderGui(Gui* pGui, Gui::Window* pPassWindow)
 
 void ::RenderPass::onExecute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState)
 { 
-	mRefreshFlag = false;     // Did come afterwards, but that prevents discovery of a required refresh while rendering
+    mRefreshFlag = false;     // Did come afterwards, but that prevents discovery of a required refresh while rendering
     execute(pRenderContext, pDefaultGfxState);
 }
 

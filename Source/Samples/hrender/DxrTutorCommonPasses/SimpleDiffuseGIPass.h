@@ -32,31 +32,31 @@ public:
     virtual ~SimpleDiffuseGIPass() = default;
 
 protected:
-	SimpleDiffuseGIPass(const std::string &outBuf);
+    SimpleDiffuseGIPass(const std::string &outBuf);
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
-	void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override { return true; }
-	bool usesRayTracing() override { return true; }
-	bool usesEnvironmentMap() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override { return true; }
+    bool usesRayTracing() override { return true; }
+    bool usesEnvironmentMap() override { return true; }
 
     // Rendering state
-	RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
+    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)  
 
-	// User-specified output buffer
-	std::string                             mOutputBuf;             ///< What texture do we render into?
+    // User-specified output buffer
+    std::string                             mOutputBuf;             ///< What texture do we render into?
 
-	// Recursive ray tracing can be slow.  Add a toggle to disable, to allow you to manipulate the scene
-	bool                                    mDoIndirectGI = true;
-	bool                                    mDoCosSampling = true;
-	bool                                    mDoDirectShadows = true;
+    // Recursive ray tracing can be slow.  Add a toggle to disable, to allow you to manipulate the scene
+    bool                                    mDoIndirectGI = true;
+    bool                                    mDoCosSampling = true;
+    bool                                    mDoDirectShadows = true;
     
-	// Various internal parameters
-	uint32_t                                mFrameCount = 0x1337u;  ///< A frame counter to vary random numbers over time
+    // Various internal parameters
+    uint32_t                                mFrameCount = 0x1337u;  ///< A frame counter to vary random numbers over time
 };

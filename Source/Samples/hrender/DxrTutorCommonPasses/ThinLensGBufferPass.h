@@ -31,37 +31,37 @@ public:
     virtual ~ThinLensGBufferPass() = default;
 
 protected:
-	ThinLensGBufferPass() : ::RenderPass("Thin Lens Camera", "Thin Lens G-Buffer Options") {}
+    ThinLensGBufferPass() : ::RenderPass("Thin Lens Camera", "Thin Lens G-Buffer Options") {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
-	void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
-	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
+    void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override  { return true; }
-	bool usesRayTracing() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override  { return true; }
+    bool usesRayTracing() override { return true; }
 
-	// Internal pass state
-	RayLaunch::SharedPtr        mpRays;            ///< Our wrapper around a DX Raytracing pass
-	Scene::SharedPtr            mpScene;           ///<  A copy of our scene
+    // Internal pass state
+    RayLaunch::SharedPtr        mpRays;            ///< Our wrapper around a DX Raytracing pass
+    Scene::SharedPtr            mpScene;           ///<  A copy of our scene
 
-	// Thin lens parameters
-	bool      mUseThinLens = false;
-	float     mFStop = 32.0f;      
-	float     mFocalLength = 1.0f;  
-	float     mLensRadius;
+    // Thin lens parameters
+    bool      mUseThinLens = false;
+    float     mFStop = 32.0f;      
+    float     mFocalLength = 1.0f;  
+    float     mLensRadius;
 
-	// State for our camera jitter and random number generator (if we're doing randomized samples)
-	bool      mUseJitter = false;
-	bool      mUseRandomJitter = false;
-	std::uniform_real_distribution<float> mRngDist;     ///< We're going to want random #'s in [0...1] (the default distribution)
-	std::mt19937 mRng;                                  ///< Our random number generate.  Set up in initialize()
+    // State for our camera jitter and random number generator (if we're doing randomized samples)
+    bool      mUseJitter = false;
+    bool      mUseRandomJitter = false;
+    std::uniform_real_distribution<float> mRngDist;     ///< We're going to want random #'s in [0...1] (the default distribution)
+    std::mt19937 mRng;                                  ///< Our random number generate.  Set up in initialize()
 
-	// A texture containing our environment map
-	float3    mBgColor = float3(0.5f, 0.5f, 1.0f);
+    // A texture containing our environment map
+    float3    mBgColor = float3(0.5f, 0.5f, 1.0f);
 
-	// A counter to initialize our thin-lens random numbers each frame; incremented by 1 each frame
-	uint32_t  mFrameCount = 0xdeadbeef;    // Should use a different start value than other passes
+    // A counter to initialize our thin-lens random numbers each frame; incremented by 1 each frame
+    uint32_t  mFrameCount = 0xdeadbeef;    // Should use a different start value than other passes
 };

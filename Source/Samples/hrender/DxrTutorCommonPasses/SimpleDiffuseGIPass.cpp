@@ -20,48 +20,48 @@
 
 // Some global vars, used to simplify changing shader location & entry points
 namespace {
-	// Where is our shaders located?
-	const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\simpleDiffuseGI.rt.hlsl";
+    // Where is our shaders located?
+    const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\simpleDiffuseGI.rt.hlsl";
 
-	// What are the entry points in that shader for various ray tracing shaders?
-	const char* kEntryPointRayGen        = "SimpleDiffuseGIRayGen";
+    // What are the entry points in that shader for various ray tracing shaders?
+    const char* kEntryPointRayGen        = "SimpleDiffuseGIRayGen";
 
-	const char* kEntryPointMiss0         = "ShadowMiss";
-	const char* kEntryShadowAnyHit       = "ShadowAnyHit";
-	const char* kEntryShadowClosestHit   = "ShadowClosestHit";
+    const char* kEntryPointMiss0         = "ShadowMiss";
+    const char* kEntryShadowAnyHit       = "ShadowAnyHit";
+    const char* kEntryShadowClosestHit   = "ShadowClosestHit";
 
-	const char* kEntryPointMiss1         = "IndirectMiss";
-	const char* kEntryIndirectAnyHit     = "IndirectAnyHit";
-	const char* kEntryIndirectClosestHit = "IndirectClosestHit";
+    const char* kEntryPointMiss1         = "IndirectMiss";
+    const char* kEntryIndirectAnyHit     = "IndirectAnyHit";
+    const char* kEntryIndirectClosestHit = "IndirectClosestHit";
 };
 
 SimpleDiffuseGIPass::SimpleDiffuseGIPass(const std::string &outBuf) 
-	: ::RenderPass("Simple Diffuse GI Ray", "Simple Diffuse GI Options"), mOutputBuf(outBuf) 
+    : ::RenderPass("Simple Diffuse GI Ray", "Simple Diffuse GI Options"), mOutputBuf(outBuf) 
 {
 }
 
 bool SimpleDiffuseGIPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-	// Stash a copy of our resource manager so we can get rendering resources
-	mpResManager = pResManager;
-	mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
-	mpResManager->requestTextureResource( mOutputBuf );
-	 
-	// We also need our light probe, since indirect rays may hit it
-	mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
+    // Stash a copy of our resource manager so we can get rendering resources
+    mpResManager = pResManager;
+    mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
+    mpResManager->requestTextureResource( mOutputBuf );
+     
+    // We also need our light probe, since indirect rays may hit it
+    mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
-	// Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
-	mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
+    // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
+    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
 
-	// Add ray type #0 (shadow rays)
-	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-	mpRays->addHitShader(kFileRayTrace, kEntryShadowClosestHit, kEntryShadowAnyHit);
+    // Add ray type #0 (shadow rays)
+    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+    mpRays->addHitShader(kFileRayTrace, kEntryShadowClosestHit, kEntryShadowAnyHit);
 
-	// Add ray type #1 (indirect GI rays)
-	mpRays->addMissShader(kFileRayTrace, kEntryPointMiss1);
-	mpRays->addHitShader(kFileRayTrace, kEntryIndirectClosestHit, kEntryIndirectAnyHit);
+    // Add ray type #1 (indirect GI rays)
+    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss1);
+    mpRays->addHitShader(kFileRayTrace, kEntryIndirectClosestHit, kEntryIndirectAnyHit);
 
-	// Now that we've passed all our shaders in, compile and (if available) setup the scene
+    // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
@@ -71,7 +71,7 @@ bool SimpleDiffuseGIPass::initialize(RenderContext* pRenderContext, ResourceMana
 
 void SimpleDiffuseGIPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
-	// Stash a copy of the scene and pass it to our ray tracer (if initialized)
+    // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (mpRays) {
         mpRays->setScene(mpScene);
@@ -81,43 +81,43 @@ void SimpleDiffuseGIPass::initScene(RenderContext* pRenderContext, Scene::Shared
 
 void SimpleDiffuseGIPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
-	// Add a toggle to turn on/off shooting of indirect GI rays
-	int dirty = 0;
-	dirty |= (int)pPassWindow->checkbox(mDoDirectShadows ? "Shooting direct shadow rays" : "No direct shadow rays", mDoDirectShadows);
-	dirty |= (int)pPassWindow->checkbox(mDoIndirectGI ? "Shooting global illumination rays" : "Skipping global illumination",
-		                            mDoIndirectGI);
-	dirty |= (int)pPassWindow->checkbox(mDoCosSampling ? "Use cosine sampling" : "Use uniform sampling", mDoCosSampling);
-	if (dirty) setRefreshFlag();
+    // Add a toggle to turn on/off shooting of indirect GI rays
+    int dirty = 0;
+    dirty |= (int)pPassWindow->checkbox(mDoDirectShadows ? "Shooting direct shadow rays" : "No direct shadow rays", mDoDirectShadows);
+    dirty |= (int)pPassWindow->checkbox(mDoIndirectGI ? "Shooting global illumination rays" : "Skipping global illumination",
+                                    mDoIndirectGI);
+    dirty |= (int)pPassWindow->checkbox(mDoCosSampling ? "Use cosine sampling" : "Use uniform sampling", mDoCosSampling);
+    if (dirty) setRefreshFlag();
 }
 
 
 void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
-	// Get the output buffer we're writing into
-	Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputBuf, float4(0.0f, 0.0f, 0.0f, 0.0f));
+    // Get the output buffer we're writing into
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputBuf, float4(0.0f, 0.0f, 0.0f, 0.0f));
 
-	// Do we have all the resources we need to render?  If not, return
-	if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
+    // Do we have all the resources we need to render?  If not, return
+    if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
-	// Set our shader variables for the ray generation shader
-	auto rayVars = mpRays->getRayVars();
-	rayVars["RayGenCB"]["gMinT"]         = mpResManager->getMinTDist();
-	rayVars["RayGenCB"]["gFrameCount"]   = mFrameCount++;
-	rayVars["RayGenCB"]["gDoIndirectGI"] = mDoIndirectGI;
-	rayVars["RayGenCB"]["gCosSampling"]  = mDoCosSampling;
-	rayVars["RayGenCB"]["gDirectShadow"] = mDoDirectShadows;
+    // Set our shader variables for the ray generation shader
+    auto rayVars = mpRays->getRayVars();
+    rayVars["RayGenCB"]["gMinT"]         = mpResManager->getMinTDist();
+    rayVars["RayGenCB"]["gFrameCount"]   = mFrameCount++;
+    rayVars["RayGenCB"]["gDoIndirectGI"] = mDoIndirectGI;
+    rayVars["RayGenCB"]["gCosSampling"]  = mDoCosSampling;
+    rayVars["RayGenCB"]["gDirectShadow"] = mDoDirectShadows;
 
-	// Pass our G-buffer textures down to the HLSL so we can shade
-	rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-	rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-	rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
-	rayVars["gOutput"]      = pDstTex;
+    // Pass our G-buffer textures down to the HLSL so we can shade
+    rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
+    rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
+    rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
+    rayVars["gOutput"]      = pDstTex;
 
-	// Set our environment map texture for indirect rays that miss geometry 
+    // Set our environment map texture for indirect rays that miss geometry 
     rayVars["gEnvMap"] = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
-	// Execute our shading pass and shoot indirect rays
-	mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
+    // Execute our shading pass and shoot indirect rays
+    mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
 

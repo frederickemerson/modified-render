@@ -30,5 +30,5 @@ float4 main(float2 texC : TEXCOORD, float4 pos : SV_Position) : SV_Target0
     float4 curColor = gCurFrame[pixelPos];
     float4 prevColor = gLastFrame[pixelPos];
 
-	return (gAccumCount * prevColor + curColor) / (gAccumCount + 1);
+    return (gAccumCount * prevColor + curColor) / (gAccumCount + 1);
 }

@@ -32,7 +32,7 @@ public:
     virtual ~AmbientOcclusionPass() = default;
 
 protected:
-	AmbientOcclusionPass(const std::string &outBuf) : ::RenderPass("Ambient Occlusion Rays", "Ambient Occlusion Options") { mOutputTexName = outBuf; }
+    AmbientOcclusionPass(const std::string &outBuf) : ::RenderPass("Ambient Occlusion Rays", "Ambient Occlusion Options") { mOutputTexName = outBuf; }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -40,24 +40,24 @@ protected:
     void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override { return true; }
-	bool usesRayTracing() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override { return true; }
+    bool usesRayTracing() override { return true; }
 
     // Rendering state
-	RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
+    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)  
     
-	// Various internal parameters
-	float                                   mAORadius = 0.0f;       ///< What radius are we using for AO rays (i.e., maxT when ray tracing)
-	uint32_t                                mFrameCount = 0;        ///< Frame count used to help seed our shaders' random number generator
-	int32_t                                 mNumRaysPerPixel = 1;   ///< How many ambient occlusion rays should we shot per pixel?
+    // Various internal parameters
+    float                                   mAORadius = 0.0f;       ///< What radius are we using for AO rays (i.e., maxT when ray tracing)
+    uint32_t                                mFrameCount = 0;        ///< Frame count used to help seed our shaders' random number generator
+    int32_t                                 mNumRaysPerPixel = 1;   ///< How many ambient occlusion rays should we shot per pixel?
 
-	// Indices we can use to query the resource manager for various texture resources
-	int32_t                                 mPositionIndex;         ///< An index for the G-Buffer wsPosition buffer
-	int32_t                                 mNormalIndex;           ///< An index for the G-Buffer wsNormal buffer
-	int32_t                                 mOutputIndex;           ///< An index for our output buffer
+    // Indices we can use to query the resource manager for various texture resources
+    int32_t                                 mPositionIndex;         ///< An index for the G-Buffer wsPosition buffer
+    int32_t                                 mNormalIndex;           ///< An index for the G-Buffer wsNormal buffer
+    int32_t                                 mOutputIndex;           ///< An index for our output buffer
 
-	// The name of the buffer we want to store our computations into.
-	std::string                             mOutputTexName;         ///< Where do we want to store the results?
+    // The name of the buffer we want to store our computations into.
+    std::string                             mOutputTexName;         ///< Where do we want to store the results?
 };

@@ -22,11 +22,11 @@ __import Scene.Scene;
 
 struct GBuffer
 {
-	float4 wsPos    : SV_Target0;
-	float4 wsNorm   : SV_Target1;
-	float4 matDif   : SV_Target2;
-	float4 matSpec  : SV_Target3;
-	float4 matExtra : SV_Target4;
+    float4 wsPos    : SV_Target0;
+    float4 wsNorm   : SV_Target1;
+    float4 matDif   : SV_Target2;
+    float4 matSpec  : SV_Target3;
+    float4 matExtra : SV_Target4;
 };
 
 // Our main entry point for the g-buffer fragment shader.
@@ -34,25 +34,25 @@ GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
 {
     float3 cameraPosW = gScene.camera.getPosition();
     float3 viewDir = normalize(cameraPosW - vsOut.posW);
-	// This is a Falcor built-in that extracts data suitable for shading routines
-	//     (see ShaderCommon.slang for the shading data structure and routines)
-	ShadingData hitPt = prepareShadingData(vsOut, primID, viewDir);
+    // This is a Falcor built-in that extracts data suitable for shading routines
+    //     (see ShaderCommon.slang for the shading data structure and routines)
+    ShadingData hitPt = prepareShadingData(vsOut, primID, viewDir);
 
-	// Check if we hit the back of a double-sided material, in which case, we flip
-	//     normals around here (so we don't need to when shading)
-	float NdotV = dot(normalize(hitPt.N), viewDir);
-	if (NdotV <= 0.0f && hitPt.doubleSided)
-		hitPt.N = -hitPt.N;
+    // Check if we hit the back of a double-sided material, in which case, we flip
+    //     normals around here (so we don't need to when shading)
+    float NdotV = dot(normalize(hitPt.N), viewDir);
+    if (NdotV <= 0.0f && hitPt.doubleSided)
+        hitPt.N = -hitPt.N;
 
-	// Dump out our G buffer channels
-	GBuffer gBufOut;
-	gBufOut.wsPos    = float4(hitPt.posW, 1.f);
-	gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - cameraPosW) );
-	gBufOut.matDif   = float4(hitPt.diffuse, hitPt.opacity);
-	gBufOut.matSpec  = float4(hitPt.specular, hitPt.linearRoughness);
-	gBufOut.matExtra = float4(hitPt.IoR, hitPt.doubleSided ? 1.f : 0.f, 0.f, 0.f);
+    // Dump out our G buffer channels
+    GBuffer gBufOut;
+    gBufOut.wsPos    = float4(hitPt.posW, 1.f);
+    gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - cameraPosW) );
+    gBufOut.matDif   = float4(hitPt.diffuse, hitPt.opacity);
+    gBufOut.matSpec  = float4(hitPt.specular, hitPt.linearRoughness);
+    gBufOut.matExtra = float4(hitPt.IoR, hitPt.doubleSided ? 1.f : 0.f, 0.f, 0.f);
 
-	return gBufOut;
+    return gBufOut;
 }
 
 

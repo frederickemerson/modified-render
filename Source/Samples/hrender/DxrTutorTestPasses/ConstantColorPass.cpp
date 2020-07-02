@@ -20,25 +20,25 @@
 
 bool ConstantColorPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-	// Stash a copy of our resource manager, allowing us to access shared rendering resources
-	//    We need an output buffer; tell our resource manager we expect the standard output channel
-	mpResManager = pResManager;
-	mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
+    // Stash a copy of our resource manager, allowing us to access shared rendering resources
+    //    We need an output buffer; tell our resource manager we expect the standard output channel
+    mpResManager = pResManager;
+    mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
 
     return true;  // Successful initialization.
 }
 
 void ConstantColorPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 {
-	// Add a widget to our GUI to allow us to dynamically change the constant color
+    // Add a widget to our GUI to allow us to dynamically change the constant color
     pPassWindow->var("  Color", mConstColor, 0.0f, 1.0f);
 }
 
 void ConstantColorPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
 {
-	// Get a pointer to a Falcor texture resource of our output channel
-	Texture::SharedPtr outTex = mpResManager->getTexture(ResourceManager::kOutputChannel);
+    // Get a pointer to a Falcor texture resource of our output channel
+    Texture::SharedPtr outTex = mpResManager->getTexture(ResourceManager::kOutputChannel);
 
-	// Clear the texture to the appropriate color
-	mpResManager->clearTexture(outTex, float4(mConstColor, 1.0f));
+    // Clear the texture to the appropriate color
+    mpResManager->clearTexture(outTex, float4(mConstColor, 1.0f));
 }

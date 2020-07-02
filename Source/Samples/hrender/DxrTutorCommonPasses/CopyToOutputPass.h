@@ -25,30 +25,30 @@ public:
     using SharedPtr = std::shared_ptr<CopyToOutputPass>;
     using SharedConstPtr = std::shared_ptr<const CopyToOutputPass>;
 
-	static SharedPtr create() { return SharedPtr(new CopyToOutputPass()); }
+    static SharedPtr create() { return SharedPtr(new CopyToOutputPass()); }
     virtual ~CopyToOutputPass() = default;
 
 protected:
-	// Constructor.  The strings represent:
-	//     1) The name of the pass that will be in the dropdown pass selector widget(s)
-	//     2) The name of the GUI window showing widget controls for this pass
-	CopyToOutputPass() : ::RenderPass("Copy-to-Output Pass", "Copy-to-Output Options") {}
-	
-	// The initialize() callback will be invoked when this class is instantiated and bound to a pipeline
+    // Constructor.  The strings represent:
+    //     1) The name of the pass that will be in the dropdown pass selector widget(s)
+    //     2) The name of the GUI window showing widget controls for this pass
+    CopyToOutputPass() : ::RenderPass("Copy-to-Output Pass", "Copy-to-Output Options") {}
+    
+    // The initialize() callback will be invoked when this class is instantiated and bound to a pipeline
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 
-	// The renderGui() callback allows you to attach GUI widget into this pass' options window
+    // The renderGui() callback allows you to attach GUI widget into this pass' options window
     void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
-	// When the pipeline is updated, we will need to update the list of buffers we can copy from
-	void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
+    // When the pipeline is updated, we will need to update the list of buffers we can copy from
+    void pipelineUpdated(ResourceManager::SharedPtr pResManager) override;
 
-	// The execute() callback is invoked during frame render when it is this pass' turn to execute
+    // The execute() callback is invoked during frame render when it is this pass' turn to execute
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool appliesPostprocess() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool appliesPostprocess() override { return true; }
 
-	Gui::DropdownList mDisplayableBuffers;  
-	uint32_t          mSelectedBuffer = 0xFFFFFFFFu;
+    Gui::DropdownList mDisplayableBuffers;  
+    uint32_t          mSelectedBuffer = 0xFFFFFFFFu;
  };

@@ -22,12 +22,12 @@ using namespace Falcor;
 
 FullscreenLaunch::SharedPtr FullscreenLaunch::FullscreenLaunch::create(const char *fragShader)
 {
-	return SharedPtr(new FullscreenLaunch(fragShader));
+    return SharedPtr(new FullscreenLaunch(fragShader));
 }
 
 FullscreenLaunch::FullscreenLaunch(const char *fragShader)
 { 
-	mpPass = FullScreenPass::create(fragShader);
+    mpPass = FullScreenPass::create(fragShader);
 }
 
 void FullscreenLaunch::execute(RenderContext::SharedPtr pRenderContext, Fbo::SharedPtr pTargetFbo)
@@ -37,23 +37,23 @@ void FullscreenLaunch::execute(RenderContext::SharedPtr pRenderContext, Fbo::Sha
 
 void FullscreenLaunch::execute(RenderContext* pRenderContext, Fbo::SharedPtr pTargetFbo)
 {
-	if (mpPass && pTargetFbo && pRenderContext)
-	{
+    if (mpPass && pTargetFbo && pRenderContext)
+    {
         mpPass->execute(pRenderContext, pTargetFbo);
-	}
+    }
 }
 
 Falcor::GraphicsVars::SharedPtr FullscreenLaunch::getVars()
 {
-	return mpPass->getVars();
+    return mpPass->getVars();
 }
 
 void FullscreenLaunch::addDefine(const std::string& name, const std::string& value)
 {
-	mpPass->addDefine(name, value, true);
+    mpPass->addDefine(name, value, true);
 }
 
 void FullscreenLaunch::removeDefine(const std::string& name)
 {
-	mpPass->removeDefine(name, true);
+    mpPass->removeDefine(name, true);
 }

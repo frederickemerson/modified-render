@@ -32,28 +32,28 @@ class ConstantColorPass : public ::RenderPass, inherit_shared_from_this<::Render
 public:
     using SharedPtr = std::shared_ptr<ConstantColorPass>;
 
-	// Our simple constructor and destructor
-	static SharedPtr create() { return SharedPtr(new ConstantColorPass()); }
+    // Our simple constructor and destructor
+    static SharedPtr create() { return SharedPtr(new ConstantColorPass()); }
     virtual ~ConstantColorPass() = default;
 
 protected:
-	// Constructor.  The strings represent:
-	//     1) The name of the pass that will be in the dropdown pass selector widget(s)
-	//     2) The name of the GUI window showing widget controls for this pass
-	ConstantColorPass() : ::RenderPass("Constant Color Pass", "Constant Color Options") {}
-	
-	// The initialize() callback will be invoked when this class is instantiated and bound to a pipeline
+    // Constructor.  The strings represent:
+    //     1) The name of the pass that will be in the dropdown pass selector widget(s)
+    //     2) The name of the GUI window showing widget controls for this pass
+    ConstantColorPass() : ::RenderPass("Constant Color Pass", "Constant Color Options") {}
+    
+    // The initialize() callback will be invoked when this class is instantiated and bound to a pipeline
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 
-	// The renderGui() callback allows you to attach GUI widget into this pass' options window
+    // The renderGui() callback allows you to attach GUI widget into this pass' options window
     void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
 
-	// The execute() callback is invoked during frame render when it is this pass' turn to execute
+    // The execute() callback is invoked during frame render when it is this pass' turn to execute
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
 
-	// Override default RenderPass functionality (that control the rendering pipeline and its GUI)
-	bool hasAnimation() override { return false; }  // Removes a GUI control that is confusing for this simple demo
+    // Override default RenderPass functionality (that control the rendering pipeline and its GUI)
+    bool hasAnimation() override { return false; }  // Removes a GUI control that is confusing for this simple demo
 
-	// Internal state variables for this pass
-	float3  mConstColor = float3(0.8f, 0.4f, 0.4f);   ///< The color we'll use to clear the screen
+    // Internal state variables for this pass
+    float3  mConstColor = float3(0.8f, 0.4f, 0.4f);   ///< The color we'll use to clear the screen
  };

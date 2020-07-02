@@ -29,36 +29,36 @@ Initialization:
 
 Pass setup / setting HLSL variable values:
     auto passHLSLVars = mpMyPass->getVars();
-	passHLSLVars["myShaderCB"]["myVar"] = uint4( 1, 2, 4, 16 );
-	passHLSLVars["myShaderCB"]["myBinaryBlob"].setBlob( cpuSideBinaryBlob );
-	passHLSLVars["myShaderTexture"] = myTextureResource;
+    passHLSLVars["myShaderCB"]["myVar"] = uint4( 1, 2, 4, 16 );
+    passHLSLVars["myShaderCB"]["myBinaryBlob"].setBlob( cpuSideBinaryBlob );
+    passHLSLVars["myShaderTexture"] = myTextureResource;
 
 Pass execution:
     pGraphicsState->setFbo( pOutputFbo );  
-	mpMyPass->execute( pRenderContext, pGraphicsState );
+    mpMyPass->execute( pRenderContext, pGraphicsState );
 
 */
 class FullscreenLaunch : public std::enable_shared_from_this<FullscreenLaunch>
 {
 public:
-	using SharedPtr = std::shared_ptr<FullscreenLaunch>;
-	using SharedConstPtr = std::shared_ptr<const FullscreenLaunch>;
-	virtual ~FullscreenLaunch() = default;
+    using SharedPtr = std::shared_ptr<FullscreenLaunch>;
+    using SharedConstPtr = std::shared_ptr<const FullscreenLaunch>;
+    virtual ~FullscreenLaunch() = default;
 
-	// Create our full-screen shader wrapper with a single HLSL fragment shader
-	static SharedPtr create(const char *fragShader);
+    // Create our full-screen shader wrapper with a single HLSL fragment shader
+    static SharedPtr create(const char *fragShader);
 
-	// Execute the full-screen shader
-	void execute(Falcor::RenderContext::SharedPtr pRenderContext, Falcor::Fbo::SharedPtr pTargetFbo);
+    // Execute the full-screen shader
+    void execute(Falcor::RenderContext::SharedPtr pRenderContext, Falcor::Fbo::SharedPtr pTargetFbo);
     void execute(Falcor::RenderContext* pRenderContext, Falcor::Fbo::SharedPtr pTargetFbo);
 
     Falcor::GraphicsVars::SharedPtr getVars();
 
-	void addDefine(const std::string& name, const std::string& value);
-	void removeDefine(const std::string& name);
+    void addDefine(const std::string& name, const std::string& value);
+    void removeDefine(const std::string& name);
 
 protected:
-	FullscreenLaunch(const char *fragShader);
+    FullscreenLaunch(const char *fragShader);
 
-	Falcor::FullScreenPass::SharedPtr mpPass;
+    Falcor::FullScreenPass::SharedPtr mpPass;
 };

@@ -30,38 +30,38 @@ public:
     virtual ~SimpleAccumulationPass() = default;
 
 protected:
-	SimpleAccumulationPass(const std::string &bufferToAccumulate);
+    SimpleAccumulationPass(const std::string &bufferToAccumulate);
 
     // Implementation of SimpleRenderPass interface
-	bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+    void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
     void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
     void resize(uint32_t width, uint32_t height) override;
-	void stateRefreshed() override;
+    void stateRefreshed() override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool appliesPostprocess() override { return true; }
-	bool hasAnimation() override { return false; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool appliesPostprocess() override { return true; }
+    bool hasAnimation() override { return false; }
 
-	// A helper utility to determine if the current scene (if any) has had any camera motion
-	bool hasCameraMoved();
+    // A helper utility to determine if the current scene (if any) has had any camera motion
+    bool hasCameraMoved();
 
     // Information about the rendering texture we're accumulating into
-	std::string                   mAccumChannel;
+    std::string                   mAccumChannel;
 
-	// State for our accumulation shader
-	FullscreenLaunch::SharedPtr   mpAccumShader;
-	Texture::SharedPtr            mpLastFrame;
-	Fbo::SharedPtr                mpInternalFbo;
+    // State for our accumulation shader
+    FullscreenLaunch::SharedPtr   mpAccumShader;
+    Texture::SharedPtr            mpLastFrame;
+    Fbo::SharedPtr                mpInternalFbo;
 
-	// We stash a copy of our current scene.  Why?  To detect if changes have occurred.
-	Scene::SharedPtr              mpScene;
-	glm::mat4x4                   mpLastCameraMatrix;
+    // We stash a copy of our current scene.  Why?  To detect if changes have occurred.
+    Scene::SharedPtr              mpScene;
+    glm::mat4x4                   mpLastCameraMatrix;
 
-	// Is our accumulation enabled?
-	bool                          mDoAccumulation = true;
+    // Is our accumulation enabled?
+    bool                          mDoAccumulation = true;
 
-	// How many frames have we accumulated so far?
-	uint32_t                      mAccumCount = 0;
+    // How many frames have we accumulated so far?
+    uint32_t                      mAccumCount = 0;
 };

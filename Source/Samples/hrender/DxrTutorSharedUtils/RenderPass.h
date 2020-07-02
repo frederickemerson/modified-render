@@ -32,35 +32,35 @@ public:
 
 protected:
 
-	//
-	// Interface for derived classes. See description of parameters for the corresponding functions, below, in the public interface.
-	//
+    //
+    // Interface for derived classes. See description of parameters for the corresponding functions, below, in the public interface.
+    //
 
-	virtual bool initialize(Falcor::RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) = 0;
-	virtual void initScene(Falcor::RenderContext* pRenderContext, Falcor::Scene::SharedPtr pScene) {}
-	virtual void resize(uint32_t width, uint32_t height) {}
-	virtual void pipelineUpdated(ResourceManager::SharedPtr pResManager) { mpResManager = pResManager; }
-	virtual bool processKeyEvent(const Falcor::KeyboardEvent& keyEvent) { return false; }
-	virtual bool processMouseEvent(const Falcor::MouseEvent& mouseEvent) { return false; }
-	virtual void renderGui(Falcor::Gui* pGui, Falcor::Gui::Window* pPassWindow) {}
-	virtual void execute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState) = 0;
-	virtual void shutdown() {}
-	virtual void stateRefreshed() {}
-	virtual void activatePass() {}
-	virtual void deactivatePass() {}
+    virtual bool initialize(Falcor::RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) = 0;
+    virtual void initScene(Falcor::RenderContext* pRenderContext, Falcor::Scene::SharedPtr pScene) {}
+    virtual void resize(uint32_t width, uint32_t height) {}
+    virtual void pipelineUpdated(ResourceManager::SharedPtr pResManager) { mpResManager = pResManager; }
+    virtual bool processKeyEvent(const Falcor::KeyboardEvent& keyEvent) { return false; }
+    virtual bool processMouseEvent(const Falcor::MouseEvent& mouseEvent) { return false; }
+    virtual void renderGui(Falcor::Gui* pGui, Falcor::Gui::Window* pPassWindow) {}
+    virtual void execute(Falcor::RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState) = 0;
+    virtual void shutdown() {}
+    virtual void stateRefreshed() {}
+    virtual void activatePass() {}
+    virtual void deactivatePass() {}
 
 public:
 
-	// Override these to describes aspects of the pass to the pipeline.  Setting these correctly is not vital, but
-	//     may provide global options in the UI (e.g., displaying a 'Load Scene' button) that are useful
-	virtual bool requiresScene()      { return false; }      // Will your pass require access to a scene?
-	virtual bool loadDefaultScene()   { return false; }      // If set to true, load a default scene on initialization
-	virtual bool usesRasterization()  { return false; }      // Will your pass rasterize a scene?
-	virtual bool usesRayTracing()     { return false; }      // Will your pass ray trace a scene?
-	virtual bool usesCompute()        { return false; }      // Will your pass use a compute pass?
-	virtual bool appliesPostprocess() { return false; }      // Does your pass apply a postprocess?
-	virtual bool usesEnvironmentMap() { return false; }      // Does your pass use an environment map?
-	virtual bool hasAnimation()       { return true;  }      // Controls if "freeze animation" GUI is shown (should generally leave as true)
+    // Override these to describes aspects of the pass to the pipeline.  Setting these correctly is not vital, but
+    //     may provide global options in the UI (e.g., displaying a 'Load Scene' button) that are useful
+    virtual bool requiresScene()      { return false; }      // Will your pass require access to a scene?
+    virtual bool loadDefaultScene()   { return false; }      // If set to true, load a default scene on initialization
+    virtual bool usesRasterization()  { return false; }      // Will your pass rasterize a scene?
+    virtual bool usesRayTracing()     { return false; }      // Will your pass ray trace a scene?
+    virtual bool usesCompute()        { return false; }      // Will your pass use a compute pass?
+    virtual bool appliesPostprocess() { return false; }      // Does your pass apply a postprocess?
+    virtual bool usesEnvironmentMap() { return false; }      // Does your pass use an environment map?
+    virtual bool hasAnimation()       { return true;  }      // Controls if "freeze animation" GUI is shown (should generally leave as true)
 
 
     //
@@ -69,7 +69,7 @@ public:
 
     /** Callback on application initialization.
         \param[in] context Provides the current context to initialize resources for your renderer.
-		\param[in] resManager Manager for shared resources between our passes
+        \param[in] resManager Manager for shared resources between our passes
         \return false if initialization failed, true otherwise.
     */
     bool onInitialize(Falcor::RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager);
@@ -80,14 +80,14 @@ public:
     */
     void onInitScene(Falcor::RenderContext* pRenderContext, Falcor::Scene::SharedPtr pScene) { initScene(pRenderContext, pScene); }
 
-	/** Callback for when the pipeline state changes.
-	    \param[in] resourceManager Provides the current resource manager, which has some state changed since the last call.
-	*/
-	void onPipelineUpdate(ResourceManager::SharedPtr pResManager) { pipelineUpdated(pResManager); }
-	
-	/** Called whenever any RenderPass in the current pipeline sets its mRefreshFlag
-	*/
-	void onStateRefresh(void) { stateRefreshed(); }
+    /** Callback for when the pipeline state changes.
+        \param[in] resourceManager Provides the current resource manager, which has some state changed since the last call.
+    */
+    void onPipelineUpdate(ResourceManager::SharedPtr pResManager) { pipelineUpdated(pResManager); }
+    
+    /** Called whenever any RenderPass in the current pipeline sets its mRefreshFlag
+    */
+    void onStateRefresh(void) { stateRefreshed(); }
 
     /** Callback when the image/resources need to be resized. Called once at startup and when the window is resized.
         \param[in] width The new width of your window.
@@ -122,13 +122,13 @@ public:
     */
     void onShutdown();
 
-	/** Called when this pass is activated via the UI (to add it to your pipeline)
-	*/
-	void onPassActivation() { activatePass(); }
+    /** Called when this pass is activated via the UI (to add it to your pipeline)
+    */
+    void onPassActivation() { activatePass(); }
 
-	/** Called when this pass is deactivated via the UI (removed from your pipeline)
-	*/
-	void onPassDeactivation() { deactivatePass(); }
+    /** Called when this pass is deactivated via the UI (removed from your pipeline)
+    */
+    void onPassDeactivation() { deactivatePass(); }
 
     //
     // Public utility functions. These configure the render pass name and UI window.
@@ -191,11 +191,11 @@ protected:
         \param[in] name The name of the render pass.
         \param[in] guiName The name of the GUI group window.
     */
-	RenderPass(const std::string name = "<Unknown render pass>",
+    RenderPass(const std::string name = "<Unknown render pass>",
                const std::string guiName = "<Unknown gui group>") : mName(name), mGuiName(guiName) {}
 
-	RenderPass(const RenderPass&) = delete;
-	RenderPass& operator=(const RenderPass &) = delete;
+    RenderPass(const RenderPass&) = delete;
+    RenderPass& operator=(const RenderPass &) = delete;
 
     /** Set the refresh flag.
     */

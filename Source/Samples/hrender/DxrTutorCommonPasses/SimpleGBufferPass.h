@@ -30,22 +30,22 @@ public:
     virtual ~SimpleGBufferPass() = default;
 
 protected:
-	SimpleGBufferPass() : ::RenderPass("Simple G-Buffer Creation", "Simple G-Buffer Options") {}
+    SimpleGBufferPass() : ::RenderPass("Simple G-Buffer Creation", "Simple G-Buffer Options") {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void execute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState) override;
-	void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
 
-	// Override some functions that provide information to the RenderPipeline class
-	bool requiresScene() override     { return true; }
-	bool usesRasterization() override { return true; }
+    // Override some functions that provide information to the RenderPipeline class
+    bool requiresScene() override     { return true; }
+    bool usesRasterization() override { return true; }
 
     // Internal pass state
     GraphicsState::SharedPtr    mpGfxState;             ///< Our graphics pipeline state (i.e., culling, raster, blend settings)
-	Scene::SharedPtr            mpScene;                ///< A pointer to the scene we're rendering
-	RasterLaunch::SharedPtr     mpRaster;               ///< A wrapper managing the shader for our g-buffer creation
+    Scene::SharedPtr            mpScene;                ///< A pointer to the scene we're rendering
+    RasterLaunch::SharedPtr     mpRaster;               ///< A wrapper managing the shader for our g-buffer creation
 
-	// What's our "background" color?
-	float3                      mBgColor = float3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+    // What's our "background" color?
+    float3                      mBgColor = float3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
 };
