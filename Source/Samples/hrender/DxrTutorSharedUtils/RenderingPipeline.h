@@ -25,7 +25,16 @@ class RenderingPipeline : public IRenderer, inherit_shared_from_this<IRenderer, 
 {
 public:
     using SharedPtr = std::shared_ptr<RenderingPipeline>;
- 
+
+    struct PresetData {
+        PresetData() = default;
+        PresetData(const std::string &d, const std::string &o, const std::vector<uint32_t> &s) : descriptor(d), outBuf(o), selectedPassIdxs(s) {};
+
+        const std::string descriptor; // The text displayed in the dropdown menu for this preset
+        const std::string outBuf; // The desired output buffer name. Should use "" if there isn't one.
+        const std::vector<uint32_t> selectedPassIdxs; // Which option should be selected for each pass selection. 1-indexed, 0 is the null pass.
+    };
+
     // Our publically-visible constructors 
     RenderingPipeline();
     virtual ~RenderingPipeline() = default;
@@ -48,6 +57,17 @@ public:
         \return An integer identifier specifying location in the internal list of render passes.
     */
     uint32_t addPass(::RenderPass::SharedPtr pNewPass);
+
+    /** Lets derived classes set up a list of presets to automatically select sequences of passes. Should occur after all setPass's, and before run.
+    \param[in] presets  A list of PresetData, each struct containing two strings and a list.
+        The outer list represents each preset option. Each PresetData contains the option's displayed name,
+        and the desired output texture name. The list is the options to select in that preset.
+        E.g. in a pipeline with 3 passes, each with 2 possible selections (plus the null pass), we can call
+        setPresets({ PresetData("Naive", "NaivePass", { 1, 2, 0 }), PresetData("Complex", "LightingPass", { 1, 0, 1 }) });
+        to insert two presets, where the first preset has the displayed descriptor "Naive", will cause the CopyToOutputBuffer to
+        display the "NaivePass" output, and selects option 1 for the first pass, option 2 for the second pass, and disables the third pass.
+    */
+    void setPresets(const std::vector<PresetData> &presets);
 
     /** To start running the application with this rendering pipeline, call this method
     */
@@ -96,11 +116,13 @@ private:
     void changePass(uint32_t passNum, ::RenderPass::SharedPtr pNewPass);
 
     // Creates a UI dropdown for inserting/changing the pass at order <passNum> in the list of active passes.
-    void createDropdownGuiForPass(uint32_t passNum, Gui::DropdownList& outputList);
     void createDefaultDropdownGuiForPass(uint32_t passNum, Gui::DropdownList& outputList);
 
     // Checks if <pCheckPass> is valid to insert at order <passNum> in the list of active passes.
     bool isPassValid(::RenderPass::SharedPtr pCheckPass, uint32_t passNum);
+
+    // Checks if <presetSequence> is a valid preset
+    bool isPresetValid(const std::vector<uint32_t>& presetSequence);
 
     // Check if any of the active passes have requested a pipeline change; also resets pass rebind flags.
     bool anyRequestedPipelineChanges(void);
@@ -111,6 +133,9 @@ private:
     // Check if any passes use an environment map
     bool anyPassUsesEnvMap(void);
 
+    // Check if all pass GUIs are enabled
+    bool allPassGuisEnabled(void);
+
     // Populates the environment map selector
     void populateEnvMapSelector(void);
 
@@ -120,8 +145,11 @@ private:
     enum UIOptions { CanRemove = 0x1u, CanAddAfter = 0x2u };
 
     // Internal state
-    std::vector<::RenderPass::SharedPtr> mAvailPasses;        ///< List of all passes available to be selected. List is unordered (or order unimportant).
-    std::vector<::RenderPass::SharedPtr> mActivePasses;       ///< Ordered list of currently active passes
+    std::vector<::RenderPass::SharedPtr> mAvailPasses;      ///< List of all passes available to be selected. List is unordered (or order unimportant).
+    std::vector<::RenderPass::SharedPtr> mActivePasses;     ///< Ordered list of currently active passes
+    uint32_t mSelectedPreset = uint32_t(-1);                ///< The current preset pass sequence selected
+    Gui::DropdownList mPresetSelector;                      ///< GUI selector used to select a preset pass sequence
+    std::vector< PresetData > mPresetsData;                 ///< Ordered list of structs that store the preset pass sequences' data
     std::vector< Gui::DropdownList > mPassSelectors;        ///< Ordered list of GUI selectors used to change currently active passes
     std::vector< uint32_t > mPassId;                        ///< Stores UI variables for currently selected passes.
     std::vector< bool > mEnablePassGui;                     ///< Stores whether the UI window for each pass is enabled
@@ -133,6 +161,7 @@ private:
     bool mProfileToggle = false;
     bool mFirstFrame = true;
     bool mGlobalPipeRefresh = false;
+    bool mEnableAllPassGui = false;                         ///< When true, all guis should be enabled.
     ResourceManager::SharedPtr mpResourceManager;
     int32_t mOutputBufferIndex = 0;
     Scene::SharedPtr mpScene = nullptr;                     ///< Stash a copy of our scene

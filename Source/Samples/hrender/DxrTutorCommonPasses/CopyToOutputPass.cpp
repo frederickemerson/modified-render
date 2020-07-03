@@ -35,13 +35,16 @@ bool CopyToOutputPass::initialize(RenderContext* pRenderContext, ResourceManager
     return true;
 }
 
-void CopyToOutputPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void CopyToOutputPass::renderGui(Gui::Window* pPassWindow)
 {
-    // Add a widget to allow us to select our buffer to display
-    pPassWindow->dropdown("Displayed", mDisplayableBuffers, mSelectedBuffer);
+    // Add a widget to allow us to select our buffer to display. 
+    if (pPassWindow->dropdown("Displayed", mDisplayableBuffers, mSelectedBuffer)) {
+        // If we modify the copied pass, notify the pipeline 
+        setRefreshFlag();
+    }
 }
 
-void CopyToOutputPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void CopyToOutputPass::execute(RenderContext* pRenderContext)
 {
     // Get a pointer to a Falcor texture resource for our output 
     Texture::SharedPtr outTex = mpResManager->getTexture(ResourceManager::kOutputChannel);
@@ -98,5 +101,14 @@ void CopyToOutputPass::pipelineUpdated(ResourceManager::SharedPtr pResManager)
     {
         mDisplayableBuffers.push_back({ uint32_t(-1), "< None >" });
         mSelectedBuffer = uint32_t(-1);
+    }
+
+    // If a preset was selected, we should select its desired output texture
+    std::string desiredOutputTextureName = mpResManager->getCopyOutTextureName();
+    if (!desiredOutputTextureName.empty())
+    {
+        uint32_t desiredOutputTextureIdx = mpResManager->getTextureIndex(desiredOutputTextureName);
+        if (desiredOutputTextureIdx != uint32_t(-1))
+            mSelectedBuffer = desiredOutputTextureIdx;
     }
 }

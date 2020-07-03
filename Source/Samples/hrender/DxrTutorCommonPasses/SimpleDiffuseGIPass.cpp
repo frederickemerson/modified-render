@@ -79,7 +79,7 @@ void SimpleDiffuseGIPass::initScene(RenderContext* pRenderContext, Scene::Shared
     }
 }
 
-void SimpleDiffuseGIPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void SimpleDiffuseGIPass::renderGui(Gui::Window* pPassWindow)
 {
     // Add a toggle to turn on/off shooting of indirect GI rays
     int dirty = 0;
@@ -91,7 +91,7 @@ void SimpleDiffuseGIPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 }
 
 
-void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputBuf, float4(0.0f, 0.0f, 0.0f, 0.0f));

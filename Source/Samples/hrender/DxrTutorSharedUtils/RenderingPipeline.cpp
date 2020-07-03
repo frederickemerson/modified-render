@@ -23,7 +23,9 @@
 
 namespace {
     const char     *kNullPassDescriptor = "< None >";   ///< Name used in dropdown lists when no pass is selected.
+    const char     *kNullPresetDescriptor = "< No preset selected >"; ///< Name used in dropdown lists when no preset is selected.
     const uint32_t  kNullPassId = 0xFFFFFFFFu;          ///< Id used to represent the null pass (using -1).
+    const uint32_t  kNullPresetId = 0xFFFFFFFFu;        ///< Id used to represent the null preset (using -1).
 };
 
 
@@ -37,6 +39,44 @@ uint32_t RenderingPipeline::addPass(::RenderPass::SharedPtr pNewPass)
     size_t id = mAvailPasses.size();
     mAvailPasses.push_back(pNewPass);
     return uint32_t(id);
+}
+
+void RenderingPipeline::setPresets(const std::vector<PresetData>& presets)
+{
+    // Ensure our lists are empty
+    mPresetSelector.resize(0);
+    mPresetsData.resize(0);
+
+    // Add an item to allow selecting a null preset.
+    mPresetSelector.push_back({ kNullPresetId, kNullPresetDescriptor });
+
+    // Include each preset in the dropdown
+    {
+        uint32_t i = 0;
+        for (auto& preset : presets)
+        {
+            // Don't add if this preset doesn't have the correct number of passes or has invalid options
+            if (!isPresetValid(preset.selectedPassIdxs)) continue;
+
+            // Ok.  The preset is valid. Insert it into the dropdown list and the data list.
+            mPresetSelector.push_back({ i++, preset.descriptor });
+            mPresetsData.push_back(preset);
+        }
+    }
+}
+
+bool RenderingPipeline::isPresetValid(const std::vector<uint32_t>& presetSequence)
+{
+    if (presetSequence.size() != mPassSelectors.size()) return false;
+
+    for (uint32_t i = 0; i < presetSequence.size(); i++)
+    {
+        // If the pass number has explicitly specified pass options, use that as the limit.
+        // Otherwise, just use the available passes as the limit (+1 for null pass).
+        uint32_t numPasses = mPassSelectors[i].size() != 0 ? uint32_t(mPassSelectors[i].size()) : (uint32_t(mAvailPasses.size()) + 1);
+        if (presetSequence[i] >= numPasses) return false;
+    }
+    return true;
 }
 
 void RenderingPipeline::onLoad(RenderContext* pRenderContext)
@@ -79,8 +119,9 @@ void RenderingPipeline::onLoad(RenderContext* pRenderContext)
         mProfileNames.push_back( std::string(buf) );
     }
 
-    // We're going to create a default graphics state
+    // We're going to create a default graphics state, and stash a reference in the resource manager
     mpDefaultGfxState = GraphicsState::create();
+    mpResourceManager->setDefaultGfxState(mpDefaultGfxState);
 
     // If we've requested to have an environment map... 
     if (anyPassUsesEnvMap())
@@ -139,8 +180,6 @@ void RenderingPipeline::createDefaultDropdownGuiForPass(uint32_t passOrder, Gui:
     // Add an item to allow selecting a null pass.
     outputList.push_back({ kNullPassId, kNullPassDescriptor });
 
-    //outputList.push_back({ int32_t(passOrder), mAvailPasses[passOrder]->getName() });
-    
     // Include an item in the dropdown for each possible pass
     for (uint32_t i = 0; i < mAvailPasses.size(); i++)
     {
@@ -257,9 +296,18 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         w.text(""); 
     }
 
-    w.text("");
+    // Draw the checkbox that enables/disables all passes' GUIs
     w.text("Ordered list of passes in rendering pipeline:");
-    w.text("       (Click the boxes at left to toggle GUIs)");
+    if (w.checkbox("##enableAllGuis", mEnableAllPassGui))
+    {
+        for (uint32_t i = 0; i < mPassSelectors.size(); i++)
+        {
+            mEnablePassGui[i] = mEnableAllPassGui;
+        }
+    }
+    w.text(" Display all GUIs", true);
+
+    // Draw pass selectors for each available pass
     for (uint32_t i = 0; i < mPassSelectors.size(); i++)
     {
         char buf[128];
@@ -267,7 +315,11 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         // Draw a button that enables/disables showing this pass' GUI window
         sprintf_s(buf, "##enable.pass.%d", i);
         bool enableGui = mEnablePassGui[i];
-        if (w.checkbox(buf, enableGui)) mEnablePassGui[i] = enableGui;
+        if (w.checkbox(buf, enableGui)) {
+            mEnablePassGui[i] = enableGui;
+            // Update the "select all" checkbox as well
+            mEnableAllPassGui = allPassGuisEnabled();
+        }
 
         // Draw the selectable list of passes we can add at this stage in the pipeline
         sprintf_s(buf, "##selector.pass.%d", i);
@@ -275,6 +327,9 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         {
             ::RenderPass::SharedPtr selectedPass = (mPassId[i] != kNullPassId) ? mAvailPasses[mPassId[i]] : nullptr;
             changePass(i, selectedPass);
+            // Reset the preset selection, and update the resource manager (in case we were using a preset)
+            mSelectedPreset = kNullPresetId;
+            mpResourceManager->setCopyOutTextureName("");
         }
 
         // If the GUI for this pass is enabled, go ahead and draw the GUI
@@ -297,7 +352,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
             Gui::Window passWindow(pGui, mActivePasses[i]->getGuiName().c_str(), { guiSz.x, guiSz.y }, { guiPos.x, guiPos.y }, mPassWindowFlags);
 
             // Render the pass' GUI to this new UI window, then pop the new UI window.
-            mActivePasses[i]->onRenderGui(pGui, &passWindow);
+            mActivePasses[i]->onRenderGui(&passWindow);
             passWindow.release();
         }
 
@@ -306,12 +361,43 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
             yGuiOffset += mActivePasses[i]->getGuiSize().y; 
     }
 
+    // Draw the preset selector
+    if (!mPresetSelector.empty())
+    {
+        w.text("Selected preset sequence:");
+        w.text("     ");
+        // Draw a button that enables/disables showing this pass' GUI window
+        if (w.dropdown("##presetSelector", mPresetSelector, mSelectedPreset, true))
+        {
+            // Reset the texture reference in the resource manager that indicates to the CopyToOutputPass which texture to copy
+            mpResourceManager->setCopyOutTextureName("");
+
+            // Ignore the null selection 
+            if (mSelectedPreset != kNullPresetId)
+            {
+                const std::vector<uint32_t>& selectedPassIdxs = mPresetsData[mSelectedPreset].selectedPassIdxs;
+                for (uint32_t i = 0; i < selectedPassIdxs.size(); i++)
+                {
+                    // The ith element is the index of the pass selector to choose
+                    uint32_t idx = selectedPassIdxs[i];
+                    // Get the underlying pass index from the pass selector.
+                    uint32_t passIdx = mPassSelectors[i][idx].value;
+                    mPassId[i] = passIdx;
+
+                    ::RenderPass::SharedPtr selectedPass = (mPassId[i] != kNullPassId) ? mAvailPasses[mPassId[i]] : nullptr;
+                    changePass(i, selectedPass);
+                }
+                mpResourceManager->setCopyOutTextureName(mPresetsData[mSelectedPreset].outBuf);
+                mGlobalPipeRefresh = true;
+            }
+        }
+    }
     w.text("");
+
     w.separator();
     w.text(Falcor::gProfileEnabled ? "Press (P):  Hide profiling window" : "Press (P):  Show profiling window");
     w.separator();
 
-    w.text("");
     if (mpScene) mpScene->renderUI(w);
 }
 
@@ -598,11 +684,11 @@ void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::
                 // Insert a per-pass profiling event.  
                 assert(passNum < mProfileNames.size());
                 Falcor::ProfilerEvent _profileEvent(mActivePasses[passNum]->getName().c_str());
-                mActivePasses[passNum]->onExecute(pRenderContext, mpDefaultGfxState.get());
+                mActivePasses[passNum]->onExecute(pRenderContext);
             }
             else
             {
-                mActivePasses[passNum]->onExecute(pRenderContext, mpDefaultGfxState.get());
+                mActivePasses[passNum]->onExecute(pRenderContext);
             }
         }
     }
@@ -774,6 +860,13 @@ bool RenderingPipeline::anyPassUsesEnvMap(void)
             return true;
     }
     return false;
+}
+
+bool RenderingPipeline::allPassGuisEnabled(void)
+{
+    for (uint32_t i = 0; i < mPassSelectors.size(); i++)
+        if (!mEnablePassGui[i]) return false;
+    return true;
 }
 
 void RenderingPipeline::populateEnvMapSelector(void)

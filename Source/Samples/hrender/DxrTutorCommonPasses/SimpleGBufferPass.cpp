@@ -60,7 +60,7 @@ void SimpleGBufferPass::initScene(RenderContext* pRenderContext, Scene::SharedPt
         mpRaster->setScene(mpScene);
 }
 
-void SimpleGBufferPass::execute(RenderContext* pRenderContext, Falcor::GraphicsState* pDefaultGfxState)
+void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 {
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(

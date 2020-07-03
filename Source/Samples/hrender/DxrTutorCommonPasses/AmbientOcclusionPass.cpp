@@ -68,7 +68,7 @@ void AmbientOcclusionPass::initScene(RenderContext* pRenderContext, Scene::Share
     mAORadius = glm::max(0.1f, glm::length(mpScene->getSceneBounds().getSize()) * 0.05f);
 }
 
-void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void AmbientOcclusionPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
     dirty |= (int)pPassWindow->var("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
@@ -79,7 +79,7 @@ void AmbientOcclusionPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 }
 
 
-void AmbientOcclusionPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 {
     // Get our output buffer; clear it to black.
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));

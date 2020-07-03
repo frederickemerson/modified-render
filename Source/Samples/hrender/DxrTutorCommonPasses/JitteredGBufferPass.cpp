@@ -46,7 +46,7 @@ void JitteredGBufferPass::initScene(RenderContext* pRenderContext, Scene::Shared
     if (mpRaster) mpRaster->setScene(mpScene);
 }
 
-void JitteredGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void JitteredGBufferPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
@@ -63,7 +63,7 @@ void JitteredGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-void JitteredGBufferPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 {
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(

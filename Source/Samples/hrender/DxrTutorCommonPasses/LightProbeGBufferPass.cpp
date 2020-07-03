@@ -83,7 +83,7 @@ void LightProbeGBufferPass::initScene(RenderContext* pRenderContext, Scene::Shar
     }
 }
 
-void LightProbeGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void LightProbeGBufferPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
@@ -109,7 +109,7 @@ void LightProbeGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-void LightProbeGBufferPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
 {
     // Check that we're ready to render
     if (!mpRays || !mpRays->readyToRender()) return;

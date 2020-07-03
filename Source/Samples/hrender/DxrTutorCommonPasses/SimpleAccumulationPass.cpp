@@ -70,7 +70,7 @@ void SimpleAccumulationPass::resize(uint32_t width, uint32_t height)
     mAccumCount = 0;
 }
 
-void SimpleAccumulationPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void SimpleAccumulationPass::renderGui(Gui::Window* pPassWindow)
 {
     // Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
     pPassWindow->text( (std::string("Accumulating buffer:   ") + mAccumChannel).c_str() );
@@ -97,7 +97,7 @@ bool SimpleAccumulationPass::hasCameraMoved()
            (mpLastCameraMatrix != mpScene->getCamera()->getViewMatrix());   // Compare the current matrix with the last one
 }
 
-void SimpleAccumulationPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void SimpleAccumulationPass::execute(RenderContext* pRenderContext)
 {
     // Grab the texture to accumulate
     Texture::SharedPtr inputTexture = mpResManager->getTexture(mAccumChannel);
@@ -130,6 +130,6 @@ void SimpleAccumulationPass::execute(RenderContext* pRenderContext, GraphicsStat
 
 void SimpleAccumulationPass::stateRefreshed()
 {
-    // This gets called because another pass else in the pipeline changed state.  Restart accumulation
+    // This gets called because another pass in the pipeline changed state.  Restart accumulation
     mAccumCount = 0;
 }

@@ -39,13 +39,13 @@ bool SinusoidRasterPass::initialize(RenderContext* pRenderContext, ResourceManag
     return true;
 }
 
-void SinusoidRasterPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void SinusoidRasterPass::renderGui(Gui::Window* pPassWindow)
 {
     // Add a widget to this pass' GUI window to allow a value to change in [0..1] in increments of 0.00001
     pPassWindow->var("Sin multiplier", mScaleValue, 0.0f, 1.0f, 0.00001f, false);
 }
 
-void SinusoidRasterPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void SinusoidRasterPass::execute(RenderContext* pRenderContext)
 {
     // Create a framebuffer object to render to.  Done here once per frame for simplicity, not performance.
     //     This function allows us provide a list of managed texture names, which get combined into an FBO

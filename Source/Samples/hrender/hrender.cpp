@@ -45,8 +45,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     config.windowDesc.title = "HRender";
     config.windowDesc.resizableWindow = true;
 
-    // Create our rendering pipeline, and add passes to the pipeline
+    // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+
+    // ========================== //
+    // Add Passes to the Pipeline //
+    // ========================== //
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
@@ -66,18 +70,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --- Pass 2 makes use of the GBuffer --- //
     // --------------------------------------- //
 
-    // ------ Pass 2a is a shading pass
-    pipeline->setPassOptions(1, {
-        // Lambertian BRDF for local lighting, 1 shadow ray per light
-        LambertianPlusShadowPass::create("LambertianPlusShadowPass"),
-        // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per point
-        SimpleDiffuseGIPass::create("DiffuseGIPass"),
-        // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per point
-        GGXGlobalIlluminationPass::create("GGXPass")
-    });
+    // ------ Pass 2a is an Ambient Occlusion pass
+    pipeline->setPass(1, AmbientOcclusionPass::create("Ambient Occlusion"));
 
-    // ------ Pass 2b is an Ambient Occlusion pass
-    pipeline->setPass(2, AmbientOcclusionPass::create("AmbientOcclusionPass"));
+    // ------ Pass 2b is a shading pass
+    pipeline->setPassOptions(2, {
+        // Lambertian BRDF for local lighting, 1 shadow ray per light
+        LambertianPlusShadowPass::create("Lambertian Plus Shadows"),
+        // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per point
+        SimpleDiffuseGIPass::create("Simple Diffuse GI Ray"),
+        // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per point
+        GGXGlobalIlluminationPass::create("Global Illum., GGX BRDF")
+    });
 
     // --------------------------------------------------------------- //
     // --- Pass 3 just lets us select which pass to view on screen --- //
@@ -88,6 +92,28 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --- Pass 4 temporally accumulates frames for denoising --- //
     // ---------------------------------------------------------- //
     pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // ============================ //
+    // Set presets for the pipeline //
+    // ============================ //
+
+    // Presets are "1-indexed", option 0 is the null option to disable the pass
+    std::vector<uint32_t> lambertianShadingOptions    = { 2, 0, 1, 1, 1 };
+    std::vector<uint32_t> diffuseGIShadingOptions     = { 2, 0, 2, 1, 1 };
+    std::vector<uint32_t> ggxGIShadingOptions         = { 2, 0, 3, 1, 1 };
+    std::vector<uint32_t> lp_lambertianShadingOptions = { 4, 0, 1, 1, 1 }; // Same as above with light probe g buffer instead
+    std::vector<uint32_t> lp_diffuseGIShadingOptions  = { 4, 0, 2, 1, 1 }; // Same as above with light probe g buffer instead
+    std::vector<uint32_t> lp_ggxGIShadingOptions      = { 4, 0, 3, 1, 1 }; // Same as above with light probe g buffer instead
+    std::vector<uint32_t> justAOOptions               = { 2, 1, 0, 1, 1 };
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Lambertian Shading", "Lambertian Plus Shadows", lambertianShadingOptions),
+        RenderingPipeline::PresetData("Diffuse GI Shading", "Simple Diffuse GI Ray", diffuseGIShadingOptions),
+        RenderingPipeline::PresetData("Diffuse GI + GGX GI Shading", "Global Illum., GGX BRDF", ggxGIShadingOptions),
+        RenderingPipeline::PresetData("Light Probe Lambertian Shading", "Lambertian Plus Shadows", lp_lambertianShadingOptions),
+        RenderingPipeline::PresetData("Light Probe Diffuse GI Shading", "Simple Diffuse GI Ray", lp_diffuseGIShadingOptions),
+        RenderingPipeline::PresetData("Light Probe Diffuse GI + GGX GI Shading", "Global Illum., GGX BRDF", lp_ggxGIShadingOptions),
+        RenderingPipeline::PresetData("Ambient Occlusion", "Ambient Occlusion", justAOOptions)
+    });
 
     // Start our program
     RenderingPipeline::run(pipeline, config);

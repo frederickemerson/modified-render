@@ -77,7 +77,7 @@ void GGXGlobalIlluminationPass::initScene(RenderContext* pRenderContext, Scene::
     }
 }
 
-void GGXGlobalIlluminationPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void GGXGlobalIlluminationPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
     dirty |= (int)pPassWindow->var("Max RayDepth", mUserSpecifiedRayDepth, 0, mMaxPossibleRayDepth);
@@ -89,7 +89,7 @@ void GGXGlobalIlluminationPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
 }
 
 
-void GGXGlobalIlluminationPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void GGXGlobalIlluminationPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTextureName, float4(0.0f, 0.0f, 0.0f, 0.0f));

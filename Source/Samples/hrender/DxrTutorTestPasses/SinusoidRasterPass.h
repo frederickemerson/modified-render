@@ -41,8 +41,8 @@ protected:
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
-    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
+    void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui::Window* pPassWindow) override;
 
     // The base RenderPass class defines a number of methods that we can override to specify
     //    what properties this pass has.  

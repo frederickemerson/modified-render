@@ -46,10 +46,10 @@ protected:
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
 
     // The renderGui() callback allows you to attach GUI widget into this pass' options window
-    void renderGui(Gui* pGui, Gui::Window* pPassWindow) override;
+    void renderGui(Gui::Window* pPassWindow) override;
 
     // The execute() callback is invoked during frame render when it is this pass' turn to execute
-    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
+    void execute(RenderContext* pRenderContext) override;
 
     // Override default RenderPass functionality (that control the rendering pipeline and its GUI)
     bool hasAnimation() override { return false; }  // Removes a GUI control that is confusing for this simple demo

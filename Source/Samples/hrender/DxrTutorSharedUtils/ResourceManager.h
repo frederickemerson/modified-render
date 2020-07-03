@@ -112,6 +112,10 @@ public:
     // Get the default system FBO.  You should not write to this, but you can use it if you need to bind an FBO.
     Fbo::SharedPtr getDefaultFbo() { return gpFramework->getTargetFbo(); }
 
+    // Get the default RenderingPipeline graphics state.
+    GraphicsState::SharedPtr getDefaultGfxState() { return mpDefaultGfxState; }
+    void setDefaultGfxState(GraphicsState::SharedPtr pDefaultGfxState) { mpDefaultGfxState = pDefaultGfxState; }
+
     // Did someone specify the default scene to load?
     std::string getDefaultSceneName() { return mDefaultSceneName; }    // Return the default scene name
     void setDefaultSceneName(const std::string &sceneFilename);        // Set the default scene name
@@ -139,6 +143,10 @@ public:
     float getMinTDist() const        { return mMinT; }
     void  setMinTDist(float newMinT) { mMinT = newMinT; }
 
+    // Used by CopyToOutputPasses in the case that we just selected a preset
+    std::string getCopyOutTextureName() const { return mCopyOutTextureName; }
+    void setCopyOutTextureName(const std::string& newOutTextureName) { mCopyOutTextureName = newOutTextureName; }
+
 protected:
     ResourceManager(uint32_t width, uint32_t height) : mWidth(width), mHeight(height) {}
 
@@ -148,6 +156,7 @@ protected:
     bool     mIsInitialized = false;
     bool     mUpdatedFlag = true;
     float    mMinT = 1.0e-4f;
+    GraphicsState::SharedPtr      mpDefaultGfxState;     ///< The default graphics state provided by the RenderingPipeline
 
     // If using the resource manager to manage an environment map, its filename is here.
     std::string mEnvMapFilename = "";
@@ -162,6 +171,9 @@ protected:
     std::vector<glm::int2>            mTextureSizes;     ///< Stored separately from internal texture data so we can distinguish between fixed & fullscreen textures
     std::vector<Resource::BindFlags>  mTextureFlags;     ///< Expected usage flags
     std::vector<ResourceFormat>       mTextureFormat;    ///< Expected texture format
+
+    // If a preset was selected and we have a CopyToOutputPass, it can choose to display this texture
+    std::string mCopyOutTextureName = "";
 
 private:
     // These are not meant to be exposed outside the class and may not have suitable error checking non-private use.

@@ -78,7 +78,7 @@ void ThinLensGBufferPass::initScene(RenderContext* pRenderContext, Scene::Shared
     }
 }
 
-void ThinLensGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
+void ThinLensGBufferPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
@@ -113,7 +113,7 @@ void ThinLensGBufferPass::renderGui(Gui* pGui, Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-void ThinLensGBufferPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void ThinLensGBufferPass::execute(RenderContext* pRenderContext)
 {
     // Check that we're ready to render
     if (!mpRays || !mpRays->readyToRender()) return;

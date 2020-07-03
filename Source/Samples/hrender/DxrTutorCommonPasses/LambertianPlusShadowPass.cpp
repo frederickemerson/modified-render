@@ -66,7 +66,7 @@ void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::S
     }
 }
 
-void LambertianPlusShadowPass::execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState)
+void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));

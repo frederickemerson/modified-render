@@ -37,7 +37,7 @@ protected:
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
-    void execute(RenderContext* pRenderContext, GraphicsState* pDefaultGfxState) override;
+    void execute(RenderContext* pRenderContext) override;
 
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }
