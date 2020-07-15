@@ -31,6 +31,9 @@
     <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp" />
     <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
+    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
@@ -54,6 +57,13 @@
     <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h" />
     <ClInclude Include="hrender.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli" />
+    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli" />
+    <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
+    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
+    <ClInclude Include="SVGFPasses\SVGFPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Falcor\Falcor.vcxproj">
@@ -80,6 +90,16 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCombineUnfiltered.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />
