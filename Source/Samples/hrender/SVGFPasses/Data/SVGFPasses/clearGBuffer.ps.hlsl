@@ -17,10 +17,19 @@
 **********************************************************************************************************************/
 
 // Falcor / Slang imports to include shared code and data structures
-__import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
+import Scene.Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
+import Scene.Camera.Camera;
 
 // Input texture that needs to be set by the C++ code 
 Texture2D<float4> gEnvMap;
+
+// Input camera data that needs to be set by the C++ code, since fullscreen passes don't have scene data
+cbuffer CameraInfo
+{
+    float3 gCameraU;
+    float3 gCameraV;
+    float3 gCameraW;
+};
 
 // What's in our output G-buffer structure?  This is extremely fat and probably could be cut down, except
 //    our research / prototype SVGF filter and simple path tracer uses a bunch of these outputs as full
@@ -52,7 +61,7 @@ GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 {
     // Compute our ray direction from the camera through the center of the pixel
     float2 ndc = float2(2, -2) * texC + float2(-1, 1);
-    float3 rayDir = ndc.x * gCamera.cameraU + ndc.y * gCamera.cameraV + gCamera.cameraW;
+    float3 rayDir = ndc.x * gCameraU + ndc.y * gCameraV + gCameraW;
 
     // Load a color from our background environment map
     float2 dims;

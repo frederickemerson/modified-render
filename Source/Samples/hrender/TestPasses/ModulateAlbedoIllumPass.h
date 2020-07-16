@@ -16,39 +16,47 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+// Simple full screen pass that combines the output of the ggxGlobalIlluminationDemod pass
+//    to make the full GGX output.
+
 #pragma once
+
+// Include our base render pass
 #include "../DxrTutorSharedUtils/RenderPass.h"
-#include "../DxrTutorSharedUtils/RasterLaunch.h"
+
+// Include the wrapper that makes launching full-screen raster work simple.
 #include "../DxrTutorSharedUtils/FullscreenLaunch.h"
 
-class GBufferForSVGF : public ::RenderPass, inherit_shared_from_this<::RenderPass, GBufferForSVGF>
+class ModulateAlbedoIllumPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, ModulateAlbedoIllumPass>
 {
 public:
-    using SharedPtr = std::shared_ptr<GBufferForSVGF>;
-    using SharedConstPtr = std::shared_ptr<const GBufferForSVGF>;
+    using SharedPtr = std::shared_ptr<ModulateAlbedoIllumPass>;
 
-    static SharedPtr create() { return SharedPtr(new GBufferForSVGF()); }
-    virtual ~GBufferForSVGF() = default;
+    static SharedPtr create(const std::string& directIllum, const std::string& indirectIllum, const std::string& outputChannel) { return SharedPtr(new ModulateAlbedoIllumPass(directIllum, indirectIllum, outputChannel)); }
+    virtual ~ModulateAlbedoIllumPass() = default;
 
 protected:
-    GBufferForSVGF() : RenderPass("SVGF G-Buffer", "G-Buffer Options") {}
+    ModulateAlbedoIllumPass(const std::string& directIllum, const std::string& indirectIllum, const std::string& output):
+        mDirectIllumChannel(directIllum), mIndirectIllumChannel(indirectIllum), mOutputChannel(output), 
+        ::RenderPass("Modulate Albedo/Illum", "Modulate Options") {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void execute(RenderContext* pRenderContext) override;
-    void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    void renderGui(Gui::Window* pPassWindow) override;
+    void resize(uint32_t width, uint32_t height) override;
 
-    // Override some functions that provide information to the RenderPipeline class
-    bool requiresScene() override     { return true; }
-    bool usesRasterization() override { return true; }
-    bool usesEnvironmentMap() override { return true; }
+    // The base RenderPass class defines a number of methods that we can override to specify
+    //    what properties this pass has.
+    bool appliesPostprocess() override { return true; }
+    bool hasAnimation() override { return false; }      // Removes a GUI control that is confusing for this simple demo
+
+    // Information about the rendering texture we output to
+    std::string                   mOutputChannel;
+    std::string                   mDirectIllumChannel;
+    std::string                   mIndirectIllumChannel;
 
     // Internal pass state
-    GraphicsState::SharedPtr      mpGfxState;             ///< Our graphics pipeline state (i.e., culling, raster, blend settings)
-    Scene::SharedPtr              mpScene;                ///< A pointer to the scene we're rendering
-    RasterLaunch::SharedPtr       mpRaster;               ///< A wrapper managing the shader for our g-buffer creation
-    FullscreenLaunch::SharedPtr   mpClearGBuf;            ///< A wrapper over the shader to clear our g-buffer to the env map
-
-    // What's our "background" color?
-    float3                        mBgColor = float3(0.5f, 0.5f, 1.0f);  ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+    FullscreenLaunch::SharedPtr   mpModulatePass;         ///< Our modulation shader state
+    Fbo::SharedPtr                mpInternalFbo;          ///< The FBO for our shader output
 };

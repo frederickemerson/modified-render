@@ -19,14 +19,20 @@
 #include "GBufferForSVGF.h"
 
 namespace {
+
+    // Where is our environment map located?
+    const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+
     // Where are our shaders located?
-    const char *kGbufVertShader = "SVGFSampleOtherPasses\\gBufferSVGF.vs.hlsl";
-    const char *kGbufFragShader = "SVGFSampleOtherPasses\\gBufferSVGF.ps.hlsl";
-    const char *kClearToEnvMap  = "SVGFSampleOtherPasses\\clearGBuffer.ps.hlsl";
+    const char *kGbufVertShader = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\gBufferSVGF.vs.hlsl";
+    const char *kGbufFragShader = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\gBufferSVGF.ps.hlsl";
+    const char *kClearToEnvMap  = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\clearGBuffer.ps.hlsl";
 };
 
-bool GBufferForSVGF::initialize(RenderContext::SharedPtr pRenderContext, ResourceManager::SharedPtr pResManager)
+bool GBufferForSVGF::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
+    if (!pResManager) return false;
+
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
 
@@ -40,28 +46,26 @@ bool GBufferForSVGF::initialize(RenderContext::SharedPtr pRenderContext, Resourc
     mpResManager->requestTextureResource("SVGF_CompactNormDepth");
     mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
+    mpResManager->updateEnvironmentMap(kEnvironmentMap);
+    mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
+
     // If the user loads an environment map, grab it here (to display in g-buffer)
     mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
     // Since we're rasterizing, we need to define our raster pipeline state (though we use the defaults)
     mpGfxState = GraphicsState::create();
 
-    // Create a graphics state (for our clear pass) with no depth writes
-    mpStateNoDepthWrites = GraphicsState::create();
-    DepthStencilState::Desc dsDesc; dsDesc.setDepthWriteMask(false).setDepthTest(false);
-    mpStateNoDepthWrites->setDepthStencilState(DepthStencilState::create(dsDesc));
-
     // Create our wrapper for a scene-rasterization pass.
-    mpRaster = RasterPass::createFromFiles(kGbufVertShader, kGbufFragShader);
+    mpRaster = RasterLaunch::createFromFiles(kGbufVertShader, kGbufFragShader);
     mpRaster->setScene(mpScene);
 
     // Create our wrapper for a full-screen raster pass to clear the g-buffer
-    mpClearGBuf = FSPass::create(kClearToEnvMap);
+    mpClearGBuf = FullscreenLaunch::create(kClearToEnvMap);
 
     return true;
 }
 
-void GBufferForSVGF::initScene(RenderContext::SharedPtr pRenderContext, Scene::SharedPtr pScene)
+void GBufferForSVGF::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
     // Stash a copy of the scene
     if (pScene) 
@@ -72,7 +76,7 @@ void GBufferForSVGF::initScene(RenderContext::SharedPtr pRenderContext, Scene::S
         mpRaster->setScene(mpScene);
 }
 
-void GBufferForSVGF::execute(RenderContext::SharedPtr pRenderContext)
+void GBufferForSVGF::execute(RenderContext* pRenderContext)
 {
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
@@ -86,15 +90,19 @@ void GBufferForSVGF::execute(RenderContext::SharedPtr pRenderContext)
     pRenderContext->clearDsv( outputFbo->getDepthStencilView().get(), 1.0f, 0 );
 
     // Clear our framebuffer to the background environment map (and zeros elsewhere in the buffer)
-    mpClearGBuf["gEnvMap"] = mpResManager->getTexture(ResourceManager::kEnvironmentMap);   // Get our env. map (default one is filled with blue)
-    mpClearGBuf->setCamera(mpScene->getActiveCamera());                                    // Pass camera data to shader (Falcor doesn't do this automatically for FSPases)
-    mpStateNoDepthWrites->setFbo(outputFbo);                                               // Don't want this "clear" pass to change z-value
-    mpClearGBuf->execute(pRenderContext, mpStateNoDepthWrites);                            // Do our clear.
+    auto clearGBufVars = mpClearGBuf->getVars();
+    clearGBufVars["gEnvMap"] = mpResManager->getTexture(ResourceManager::kEnvironmentMap);   // Get our env. map (default one is filled with blue)
+    // Pass camera data to shader, since FullscreenPass doesn't have scene information
+    const CameraData& cameraData = mpScene->getCamera()->getData();
+    clearGBufVars["CameraInfo"]["gCameraU"] = cameraData.cameraU;
+    clearGBufVars["CameraInfo"]["gCameraV"] = cameraData.cameraV;
+    clearGBufVars["CameraInfo"]["gCameraW"] = cameraData.cameraW;
+    mpClearGBuf->execute(pRenderContext, outputFbo); // Do our clear.
 
     // Pass down our output size to the G-buffer shader
     auto shaderVars = mpRaster->getVars();
-    vec2 fboSize = vec2(outputFbo->getWidth(), outputFbo->getHeight());
-    shaderVars["GBufCB"]["gBufSize"] = vec4(fboSize.x, fboSize.y, 1.0f / fboSize.x, 1.0f / fboSize.y);
+    float2 fboSize = float2(outputFbo->getWidth(), outputFbo->getHeight());
+    shaderVars["GBufCB"]["gBufSize"] = float4(fboSize.x, fboSize.y, 1.0f / fboSize.x, 1.0f / fboSize.y);
 
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);

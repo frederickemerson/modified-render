@@ -16,46 +16,59 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "SinusoidRasterPass.h"
+#include "ModulateAlbedoIllumPass.h"
 
 namespace {
     // Where is our shader located?
-    const char *kSinusoidShader = "Samples\\hrender\\DxrTutorTestPasses\\Data\\TestPasses\\sinusoid.ps.hlsl";
+    const char *kModulateShader        = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGFModulate.ps.hlsl";
+
+    // Where the albedo values are output
+    const char* kDirectAlbedoChannel   = "OutDirectAlbedo";
+    const char* kIndirectAlbedoChannel = "OutIndirectAlbedo";
 };
 
-bool SinusoidRasterPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool ModulateAlbedoIllumPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
+    if (!pResManager) return false;
+
     // Stash a copy of our resource manager, allowing us to access shared rendering resources
     //    We need an output buffer; tell our resource manager we expect the standard output channel
     mpResManager = pResManager;
-    mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
+    mpResManager->requestTextureResource(mOutputChannel);
+    mpResManager->requestTextureResource(mDirectIllumChannel);
+    mpResManager->requestTextureResource(mIndirectIllumChannel);
+    mpResManager->requestTextureResource(kDirectAlbedoChannel);
+    mpResManager->requestTextureResource(kIndirectAlbedoChannel);
 
-    // Create our simplistic full-screen pass shader (which computes and displays a sinusoidal color)
-    mpSinusoidPass = FullscreenLaunch::create(kSinusoidShader);
+    // Create our graphics state and accumulation shader
+    mpModulatePass = FullscreenLaunch::create(kModulateShader);
 
     return true;
 }
 
-void SinusoidRasterPass::renderGui(Gui::Window* pPassWindow)
+void ModulateAlbedoIllumPass::resize(uint32_t width, uint32_t height)
 {
-    // Add a widget to this pass' GUI window to allow a value to change in [0..1] in increments of 0.00001
-    pPassWindow->var("Sin multiplier", mScaleValue, 0.0f, 1.0f, 0.00001f, false);
+    // We need a framebuffer to render to
+    mpInternalFbo = mpResManager->createManagedFbo({ mOutputChannel });
 }
 
-void SinusoidRasterPass::execute(RenderContext* pRenderContext)
+void ModulateAlbedoIllumPass::renderGui(Gui::Window* pPassWindow)
 {
-    // Create a framebuffer object to render to.  Done here once per frame for simplicity, not performance.
-    //     This function allows us provide a list of managed texture names, which get combined into an FBO
-    Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo({ ResourceManager::kOutputChannel });
+    // Nothing in the GUI for now
+}
 
+void ModulateAlbedoIllumPass::execute(RenderContext* pRenderContext)
+{
     // No valid framebuffer?  We're done.
-    if (!outputFbo) return;
+    if (!mpInternalFbo) return;
 
-    // Set shader parameters.  PerFrameCB is a named constant buffer in our HLSL shader
-    auto shaderVars = mpSinusoidPass->getVars();
-    shaderVars["PerFrameCB"]["gFrameCount"] = mFrameCount++;
-    shaderVars["PerFrameCB"]["gMultValue"]  = mScaleValue;
+    // Set shader parameters.
+    auto shaderVars = mpModulatePass->getVars();
+    shaderVars["gDirect"]      = mpResManager->getTexture(mDirectIllumChannel);
+    shaderVars["gIndirect"]    = mpResManager->getTexture(mIndirectIllumChannel);
+    shaderVars["gDirAlbedo"]   = mpResManager->getTexture(kDirectAlbedoChannel);
+    shaderVars["gIndirAlbedo"] = mpResManager->getTexture(kIndirectAlbedoChannel);
 
-    // Execute our shader
-    mpSinusoidPass->execute(pRenderContext, outputFbo);
+    // Run the modulation pass
+    mpModulatePass->execute(pRenderContext, mpInternalFbo);
 }

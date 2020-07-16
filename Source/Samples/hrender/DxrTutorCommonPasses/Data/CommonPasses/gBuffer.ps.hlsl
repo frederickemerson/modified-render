@@ -17,8 +17,8 @@
 **********************************************************************************************************************/
 
 // Falcor / Slang imports to include shared code and data structures
-__import Scene.Raster;            // Imports ShaderCommon and DefaultVS, plus material evaluation, VertexOut declaration
-__import Scene.Scene;
+import Scene.Raster;            // Imports ShaderCommon and DefaultVS, plus material evaluation, VertexOut declaration
+import Scene.Scene;
 
 struct GBuffer
 {

@@ -29,14 +29,15 @@
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
 #include "DxrTutorCommonPasses/GGXGlobalIllumination.h"
-#include "DxrTutorCommonPasses/JitteredGBufferPass.h"
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
 #include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorCommonPasses/SimpleDiffuseGIPass.h"
-#include "DxrTutorCommonPasses/SimpleGBufferPass.h"
-#include "DxrTutorCommonPasses/ThinLensGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
+#include "SVGFPasses/GBufferForSVGF.h"
+#include "SVGFPasses/GGXGlobalIlluminationDemod.h"
+#include "SVGFPasses/SVGFPass.h"
+#include "TestPasses/ModulateAlbedoIllumPass.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -56,14 +57,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --- Pass 1 creates a GBuffer --- //
     // -------------------------------- //
     pipeline->setPassOptions(0, {
-        // Rasterized GBuffer 
-        SimpleGBufferPass::create(),
-        // Rasterized GBuffer with camera jitter (for antialiasing)
-        JitteredGBufferPass::create(),
-        // Raytraced GBuffer with camera jitter that allows for depth of field
-        ThinLensGBufferPass::create(),
         // Raytraced GBuffer with camera jitter that allows for depth of field and environment map
-        LightProbeGBufferPass::create()
+        LightProbeGBufferPass::create(),
+        // Rasterized GBuffer with support for spatio temporal variance-guided filtering (denoising)
+        GBufferForSVGF::create()
     });
 
     // --------------------------------------- //
@@ -77,42 +74,47 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         LambertianPlusShadowPass::create("Lambertian Plus Shadows"),
-        // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per point
+        // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per pixel
         SimpleDiffuseGIPass::create("Simple Diffuse GI Ray"),
-        // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per point
-        GGXGlobalIlluminationPass::create("Global Illum., GGX BRDF")
+        // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per pixel
+        GGXGlobalIlluminationPass::create("Global Illum., GGX BRDF"),
+        // GGX BRDF (same as above) with demodulated output. 4 outputs - albedo/illumination X direct/indirect lighting
+        GGXGlobalIlluminationPassDemod::create("DirectIllum", "IndirectIllum")
+    });
+
+    // ------ Pass 2c is a recombination pass
+    pipeline->setPassOptions(3, {
+        // This purely re-modulates the output of the demondulated pass
+        ModulateAlbedoIllumPass::create("DirectIllum", "IndirectIllum", "Modulate Albedo/Illum"),
+        // This performs SVGF denoising, then re-modulates the illumination/albedo 
+        SVGFPass::create("DirectIllum", "IndirectIllum", "SVGF Output")
     });
 
     // --------------------------------------------------------------- //
     // --- Pass 3 just lets us select which pass to view on screen --- //
     // --------------------------------------------------------------- //
-    pipeline->setPass(3, CopyToOutputPass::create());
+    pipeline->setPass(4, CopyToOutputPass::create());
 
     // ---------------------------------------------------------- //
     // --- Pass 4 temporally accumulates frames for denoising --- //
     // ---------------------------------------------------------- //
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
 
     // Presets are "1-indexed", option 0 is the null option to disable the pass
-    std::vector<uint32_t> lambertianShadingOptions    = { 2, 0, 1, 1, 1 };
-    std::vector<uint32_t> diffuseGIShadingOptions     = { 2, 0, 2, 1, 1 };
-    std::vector<uint32_t> ggxGIShadingOptions         = { 2, 0, 3, 1, 1 };
-    std::vector<uint32_t> lp_lambertianShadingOptions = { 4, 0, 1, 1, 1 }; // Same as above with light probe g buffer instead
-    std::vector<uint32_t> lp_diffuseGIShadingOptions  = { 4, 0, 2, 1, 1 }; // Same as above with light probe g buffer instead
-    std::vector<uint32_t> lp_ggxGIShadingOptions      = { 4, 0, 3, 1, 1 }; // Same as above with light probe g buffer instead
-    std::vector<uint32_t> justAOOptions               = { 2, 1, 0, 1, 1 };
+    std::vector<uint32_t> normalGBuff_ggxGI_Options         = { 1, 0, 3, 0, 1, 1 }; 
+    std::vector<uint32_t> svgfGBuff_ggxGI_Options           = { 2, 0, 4, 1, 1, 1 };
+    std::vector<uint32_t> svgfGBuff_ggxGIDenoised_Options   = { 2, 0, 4, 2, 1, 1 };
+    std::vector<uint32_t> normalGBuff_AO_Options            = { 1, 1, 0, 0, 1, 1 };
+
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Lambertian Shading", "Lambertian Plus Shadows", lambertianShadingOptions),
-        RenderingPipeline::PresetData("Diffuse GI Shading", "Simple Diffuse GI Ray", diffuseGIShadingOptions),
-        RenderingPipeline::PresetData("Diffuse GI + GGX GI Shading", "Global Illum., GGX BRDF", ggxGIShadingOptions),
-        RenderingPipeline::PresetData("Light Probe Lambertian Shading", "Lambertian Plus Shadows", lp_lambertianShadingOptions),
-        RenderingPipeline::PresetData("Light Probe Diffuse GI Shading", "Simple Diffuse GI Ray", lp_diffuseGIShadingOptions),
-        RenderingPipeline::PresetData("Light Probe Diffuse GI + GGX GI Shading", "Global Illum., GGX BRDF", lp_ggxGIShadingOptions),
-        RenderingPipeline::PresetData("Ambient Occlusion", "Ambient Occlusion", justAOOptions)
+        RenderingPipeline::PresetData("Global Illum", "Global Illum., GGX BRDF", normalGBuff_ggxGI_Options),
+        RenderingPipeline::PresetData("Global Illum (Demodulated GBuffer)", "Modulate Albedo/Illum", svgfGBuff_ggxGI_Options),
+        RenderingPipeline::PresetData("Global Illum Denoised", "SVGF Output", svgfGBuff_ggxGIDenoised_Options),
+        RenderingPipeline::PresetData("Ambient Occlusion", "Ambient Occlusion", normalGBuff_AO_Options)
     });
 
     // Start our program

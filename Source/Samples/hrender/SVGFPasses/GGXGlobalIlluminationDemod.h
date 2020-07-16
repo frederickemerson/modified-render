@@ -17,27 +17,28 @@
 **********************************************************************************************************************/
 
 #pragma once
-#include "../SharedUtils/SimpleRenderPass.h"
-#include "../SharedUtils/SimpleVars.h"
-#include "../SharedUtils/RayPass.h"
+#include "../DxrTutorSharedUtils/RenderPass.h"
+#include "../DxrTutorSharedUtils/RayLaunch.h"
 
-class GGXGlobalIlluminationPass : public RenderPass, inherit_shared_from_this<RenderPass, GGXGlobalIlluminationPass>
+class GGXGlobalIlluminationPassDemod : public ::RenderPass, inherit_shared_from_this<::RenderPass, GGXGlobalIlluminationPassDemod>
 {
 public:
-    using SharedPtr = std::shared_ptr<GGXGlobalIlluminationPass>;
-    using SharedConstPtr = std::shared_ptr<const GGXGlobalIlluminationPass>;
+    using SharedPtr = std::shared_ptr<GGXGlobalIlluminationPassDemod>;
+    using SharedConstPtr = std::shared_ptr<const GGXGlobalIlluminationPassDemod>;
 
-    static SharedPtr create(const std::string &directOut, const std::string &indirectOut);
-    virtual ~GGXGlobalIlluminationPass() = default;
+    static SharedPtr create(const std::string& directOut, const std::string& indirectOut) { return SharedPtr(new GGXGlobalIlluminationPassDemod(directOut, indirectOut)); }
+    virtual ~GGXGlobalIlluminationPassDemod() = default;
 
 protected:
-    GGXGlobalIlluminationPass(const std::string &directOut, const std::string &indirectOut); 
+    GGXGlobalIlluminationPassDemod(const std::string &directOut, const std::string &indirectOut):
+        mDirectOutName(directOut), mIndirectOutName(indirectOut),
+        ::RenderPass("SVGF GI., GGX BRDF", "SVGF GI Options") {}
 
     // Implementation of RenderPass interface
-    bool initialize(RenderContext::SharedPtr pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void initScene(RenderContext::SharedPtr pRenderContext, Scene::SharedPtr pScene) override;
-    void execute(RenderContext::SharedPtr pRenderContext) override;
-    void renderGui(Gui* pGui) override;
+    bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+    void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
+    void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui::Window* pPassWindow) override;
 
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }
@@ -45,17 +46,20 @@ protected:
     bool usesEnvironmentMap() override { return true; }
 
     // Rendering state
-    RayPass::SharedPtr                      mpRays;                 ///< Our wrapper around a DX Raytracing pass
-    RtScene::SharedPtr                      mpScene;                ///< Our scene file (passed in from app)  
+    RayLaunch::SharedPtr                    mpRays;                       ///< Our wrapper around a DX Raytracing pass
+    Scene::SharedPtr                        mpScene;                      ///< Our scene file (passed in from app)  
 
     // Recursive ray tracing can be slow.  Add a toggle to disable, to allow you to manipulate the scene
     bool                                    mDoIndirectGI = true;
     bool                                    mDoDirectGI = true;
+
+    int32_t                                 mUserSpecifiedRayDepth = 1;   ///<  What is the current maximum ray depth
+    const int32_t                           mMaxPossibleRayDepth = 8;     ///<  The largest ray depth we support (without recompile)
 
     // What texture should was ask the resource manager to store our result in?
     std::string                             mDirectOutName;
     std::string                             mIndirectOutName;
     
     // Various internal parameters
-    uint32_t                                mFrameCount = 0x1337u;  ///< A frame counter to vary random numbers over time
+    uint32_t                                mFrameCount = 0x1337u;        ///< A frame counter to vary random numbers over time
 };

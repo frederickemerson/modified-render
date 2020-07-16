@@ -51,15 +51,6 @@ shared RWTexture2D<float4> gOutput;
 //     masking term and function to sampl NDF 
 #include "microfacetBRDFUtils.hlsli"
 
-// Our material has have both a diffuse and a specular lobe.  
-//     With what probability should we sample the diffuse one?
-float probabilityToSampleDiffuse(float3 difColor, float3 specColor)
-{
-    float lumDiffuse = max(0.01f, luminance(difColor.rgb));
-    float lumSpecular = max(0.01f, luminance(specColor.rgb));
-    return lumDiffuse / (lumDiffuse + lumSpecular);
-}
-
 // Include shader entries, data structures, and utility functions to spawn rays
 #include "standardShadowRay.hlsli"
 #include "indirectRay.hlsli"

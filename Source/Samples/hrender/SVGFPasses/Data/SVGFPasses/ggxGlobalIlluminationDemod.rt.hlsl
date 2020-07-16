@@ -16,22 +16,24 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-// Some shared Falcor stuff for talking between CPU and GPU code
-#include "HostDeviceSharedMacros.hlsli"
-#include "HostDeviceData.hlsli"  
+#include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
-__import Raytracing;                   // Shared ray tracing specific functions & data
-__import ShaderCommon;                 // Shared shading data structures
-__import Shading;                      // Shading functions, etc     
-__import Lights;                       // Light structures for our current scene
+import Scene.Raytracing;                   // Shared ray tracing specific functions & data 
+import Scene.Shading;                      // Shading functions, etc   
+import Scene.Lights.Lights;                // Light structures for our current scene
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
-#include "ggxGlobalIlluminationUtils.hlsli"
+#include "ggxGlobalIlluminationDemodUtils.hlsli"
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/ggxGlobalIlluminationUtils.hlsli"
+
+// Include implementations of GGX normal distribution function, Fresnel approx,
+//     masking term and function to sampl NDF 
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses//microfacetBRDFUtils.hlsli"
 
 // Include shader entries, data structures, and utility functions to spawn rays
-#include "standardShadowRay.hlsli"
-#include "indirectRay.hlsli"
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses//standardShadowRay.hlsli"
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses//indirectRay.hlsli"
 
 // A constant buffer we'll populate from our C++ code  (used for our ray generation shader)
 cbuffer RayGenCB
@@ -40,6 +42,8 @@ cbuffer RayGenCB
     uint  gFrameCount;     // An integer changing every frame to update the random number
     bool  gDoIndirectGI;   // A boolean determining if we should shoot indirect GI rays
     bool  gDoDirectGI;     // A boolean determining if we should compute direct lighting
+    uint  gMaxDepth;       // Maximum number of recursive bounces to allow
+    float gEmitMult;       // Multiply emissive amount by this factor (set to 1, usually)
 }
 
 // Input textures that need to be set by the C++ code (for the ray gen shader)
@@ -61,8 +65,8 @@ Texture2D<float4> gEnvMap;
 void SimpleDiffuseGIRayGen()
 {
     // Where is this ray on screen?
-    uint2 launchIndex = DispatchRaysIndex();
-    uint2 launchDim   = DispatchRaysDimensions();
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    uint2 launchDim   = DispatchRaysDimensions().xy;
 
     // Load g-buffer data
     float4 worldPos      = gPos[launchIndex];
@@ -75,7 +79,7 @@ void SimpleDiffuseGIRayGen()
 
     // Extract some material parameters
     float roughness      = specMatlColor.a * specMatlColor.a;
-    float3 toCamera      = normalize(gCamera.posW - worldPos.xyz);
+    float3 toCamera      = normalize(gScene.camera.getPosition() - worldPos.xyz);
 
     // Check if we're looking at the back of a double-sided material (and if so, flip normal)
     float NdotV = dot(worldNorm.xyz, toCamera);
@@ -89,8 +93,11 @@ void SimpleDiffuseGIRayGen()
         // (Optionally) do explicit direct lighting to a random light in the scene
         if (gDoDirectGI)
         {
+            // Get the number of lights in the scene
+            const uint lightCount = gScene.getLightCount();
+
             // Pick a random light from our scene to sample for direct lighting
-            int lightToSample = min(int(nextRand(randSeed) * gLightsCount), gLightsCount - 1);
+            int lightToSample = min(int(nextRand(randSeed) * lightCount), lightCount - 1);
 
             // We need to query our scene to find info about the current light
             float distToLight;
@@ -102,7 +109,7 @@ void SimpleDiffuseGIRayGen()
             float NdotL = saturate(dot(worldNorm.xyz, toLight));
 
             // Shoot our ray for our direct lighting
-            float shadowMult = float(gLightsCount) * shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+            float shadowMult = float(lightCount) * shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
             // Compute our GGX color
             float3 ggxTerm = getGGXColor(toCamera, toLight, worldNorm.xyz, NdotV, specMatlColor.rgb, roughness, true);
@@ -116,7 +123,7 @@ void SimpleDiffuseGIRayGen()
         }
 
         // (Optionally) do indirect lighting for global illumination
-        if (gDoIndirectGI)
+        if (gDoIndirectGI && (gMaxDepth > 0))
         {
             // We have to decide whether we sample our diffuse or specular lobe.
             float probDiffuse   = probabilityToSampleDiffuse(difMatlColor.rgb, specMatlColor.rgb);
@@ -128,12 +135,12 @@ void SimpleDiffuseGIRayGen()
                 bounceDir = getCosHemisphereSample(randSeed, worldNorm.xyz);
             }
             else
-            {   // Randomyl select to bounce in our GGX lobe
-                bounceDir = getGGXSampleDir(randSeed, roughness, worldNorm.xyz, toCamera);
+            {   // Randomly select to bounce in our GGX lobe
+                bounceDir = getReflectionVec(getGGXMicrofacet(randSeed, roughness, worldNorm.xyz), toCamera);
             }
 
             // Shoot our indirect color ray
-            float3 bounceColor = shootIndirectRay(worldPos.xyz, bounceDir, gMinT, 0, randSeed);
+            float3 bounceColor = shootIndirectRay(worldPos.xyz, bounceDir, gMinT, 0, randSeed, 0);
 
             // Compute diffuse, ggx shading terms
             float  NdotL = saturate(dot(worldNorm.xyz, bounceDir));
@@ -141,7 +148,8 @@ void SimpleDiffuseGIRayGen()
             float3 ggxTerm = NdotL * getGGXColor(toCamera, bounceDir, worldNorm.xyz, NdotV, specMatlColor.rgb, roughness, false);
 
             // Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
-            float3 difFinal = float3(1.0f) / probDiffuse;                    // Has been divided by difTerm.  Multiplied back post-SVGF
+            float3 difFinal = float3(1.0f) / probDiffuse * M_PI;             // Has been divided by difTerm.  Multiplied back post-SVGF
+            // float3 difFinal = float3(1.0f) / probDiffuse;                 // Original 
             float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
             float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
             

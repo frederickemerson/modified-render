@@ -65,6 +65,9 @@
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp">
       <Filter>SVGFPasses</Filter>
     </ClCompile>
+    <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp">
+      <Filter>TestPasses</Filter>
+    </ClCompile>
     <ClCompile Include="SVGFPasses\SVGFPass.cpp">
       <Filter>SVGFPasses</Filter>
     </ClCompile>
@@ -138,17 +141,11 @@
     <ClInclude Include="SVGFPasses\SVGFPass.h">
       <Filter>SVGFPasses</Filter>
     </ClInclude>
-    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli">
       <Filter>SVGFPasses\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
+    <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h">
+      <Filter>TestPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -250,13 +247,19 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCombineUnfiltered.ps.hlsl">
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl">

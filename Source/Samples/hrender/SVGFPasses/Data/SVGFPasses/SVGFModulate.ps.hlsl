@@ -16,22 +16,16 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-__import Helpers;
-__import ShaderCommon;
-__import Shading;
-
 #include "SVGFCommon.hlsli"
-#include "SVGFEdgeStoppingFunctions.hlsli"
-#include "SVGFPackNormal.hlsli"
 
-cbuffer PerImageCB : register(b0)
-{
-    Texture2D gDirect;
-    Texture2D gIndirect;
-    Texture2D gDirAlbedo;
-    Texture2D gIndirAlbedo;
-};
+// Demodulated input textures from the shading pass
+Texture2D<float4> gDirect;
+Texture2D<float4> gIndirect;
+Texture2D<float4> gDirAlbedo;
+Texture2D<float4> gIndirAlbedo;
 
+// We could directly output a float4 instead of this PS_OUT, but this allows for
+// future extension if necessary.
 struct PS_OUT
 {
     float4 color : SV_TARGET0;
@@ -49,3 +43,4 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     return ret;
 }
+

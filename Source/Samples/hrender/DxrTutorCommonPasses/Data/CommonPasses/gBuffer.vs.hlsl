@@ -20,7 +20,7 @@
 //     that shader (by calling it in main()) rather than implicitly linking to it
 
 // Invokes Slang to import the default vertex shader, it's inputs and outputs
-__import Scene.Raster;
+import Scene.Raster;
 
 // Define our main() entry point for our vertex shader, then simply call the default Falcor vertex shader
 VSOut main(VSIn vIn)

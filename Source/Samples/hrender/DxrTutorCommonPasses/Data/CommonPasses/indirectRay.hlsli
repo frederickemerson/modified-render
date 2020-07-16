@@ -172,7 +172,7 @@ float3 ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, f
         float3 H = getGGXMicrofacet(rndSeed, rough, N);
 
         // Compute the outgoing direction based on this (perfectly reflective) microfacet
-        float3 L = normalize(2.f * dot(V, H) * H - V);
+        float3 L = getReflectionVec(H, V);
 
         // Compute our color by tracing a ray in this direction
         float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
@@ -198,6 +198,10 @@ float3 ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, f
         //    -> Should really simplify the math above.
         return NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
     }
+}
+
+float3 getReflectionVec(float3 H, float3 inVec) {
+    return normalize(2.f * dot(inVec, H) * H - inVec);
 }
 
 [shader("closesthit")]

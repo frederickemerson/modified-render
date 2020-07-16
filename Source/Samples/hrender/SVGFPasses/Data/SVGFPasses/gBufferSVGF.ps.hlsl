@@ -17,8 +17,9 @@
 **********************************************************************************************************************/
 
 // Falcor / Slang imports to include shared code and data structures
-__import Shading;           // Imports ShaderCommon and DefaultVS, plus material evaluation
-__import DefaultVS;         // VertexOut declaration
+import Scene.Raster;        // Imports ShaderCommon and DefaultVS, plus material evaluation
+import Scene.Scene;         // VertexOut declaration
+import Scene.Camera.Camera;
 
 #include "svgfGBufData.hlsli"  // Our input structure from the vertex shader
 
@@ -63,10 +64,13 @@ float2 calcMotionVector(float4 prevClipPos, float2 currentPixelPos, float2 invFr
 }
 
 // Our main entry point for the g-buffer fragment shader.
-GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_Position)
+GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID)
 {
+    Camera camera = gScene.camera;
+
     // Grab shading data.  Invert if necessary.
-    ShadingData hitPt = prepareShadingData(vsOut.base, gMaterial, gCamera.posW);
+    float3 viewDir = normalize(camera.getPosition() - vsOut.base.posW);
+    ShadingData hitPt = prepareShadingData(vsOut.base, primID, viewDir);
 
     // Compute data needed for SVGF
 
@@ -77,15 +81,15 @@ GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID, float4 pos : SV_
     float4 svgfLinearZOut = float4(linearZ, maxChangeZ, vsOut.base.prevPosH.z, objNorm);
 
     // The 'motion vector' buffer
-    float2 svgfMotionVec = calcMotionVector(vsOut.base.prevPosH, pos.xy, gBufSize.zw) +
-                           float2(gCamera.jitterX, -gCamera.jitterY);
+    float2 svgfMotionVec = calcMotionVector(vsOut.base.prevPosH, vsOut.base.posH.xy, gBufSize.zw) +
+                           float2(camera.data.jitterX, -camera.data.jitterY);
     float2 posNormFWidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N))); 
     float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
 
     // Dump out our G buffer channels
     GBuffer gBufOut;
     gBufOut.wsPos     = float4(hitPt.posW, 1.f);
-    gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - gCamera.posW) );
+    gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - camera.getPosition()) );
     gBufOut.matDif    = float4(hitPt.diffuse, hitPt.opacity);
     gBufOut.matSpec   = float4(hitPt.specular, hitPt.linearRoughness);
     gBufOut.svgfLinZ  = svgfLinearZOut;

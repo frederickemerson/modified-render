@@ -51,7 +51,6 @@ protected:
 
     // Internal pass state
     FullscreenLaunch::SharedPtr   mpSinusoidPass;         ///< Our accumulation shader state
-    GraphicsState::SharedPtr      mpGfxState;             ///< Our graphics pipeline state
     uint32_t                      mFrameCount = 0;        ///< A frame counter to let our sinusoid animate
     float                         mScaleValue = 0.1f;     ///< A scale value for our sinusoid
 };

@@ -16,30 +16,28 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-__import Helpers;
-__import ShaderCommon;
-__import Shading;
+import Utils.Color.ColorHelpers; // Contains function for computing luminance
 
 #include "SVGFCommon.hlsli"
 #include "SVGFPackNormal.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
 
+Texture2D   gMotion;
+
+Texture2D   gDirect;
+Texture2D   gIndirect;
+Texture2D   gPrevDirect;
+Texture2D   gPrevIndirect;
+Texture2D   gPrevMoments;
+//Texture2D   gAlbedo;
+
+Texture2D   gLinearZ;
+Texture2D   gPrevLinearZ;
+
+Texture2D   gHistoryLength;
+
 cbuffer PerImageCB : register(b0)
 {
-    Texture2D   gMotion;
-
-    Texture2D   gDirect;
-    Texture2D   gIndirect;
-    Texture2D   gPrevDirect;
-    Texture2D   gPrevIndirect;
-    Texture2D   gPrevMoments;
-    //Texture2D   gAlbedo;
-
-    Texture2D   gLinearZ;
-    Texture2D   gPrevLinearZ;
-
-    Texture2D   gHistoryLength;
-
     float       gAlpha;
     float       gMomentsAlpha;
     //bool        gPerformDemodulation;

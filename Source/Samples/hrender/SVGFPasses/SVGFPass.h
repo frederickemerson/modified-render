@@ -17,13 +17,12 @@
 **********************************************************************************************************************/
 
 #pragma once
-#include "../SharedUtils/SimpleRenderPass.h"
-#include "../SharedUtils/SimpleVars.h"
-#include "../SharedUtils/FSPass.h"
+#include "../DxrTutorSharedUtils/RenderPass.h"
+#include "../DxrTutorSharedUtils/FullscreenLaunch.h"
 
 /** This pass implements Spatiotemporal Variance-Guided Filtering from HPG 2017
 */
-class SVGFPass : public RenderPass, inherit_shared_from_this<RenderPass, SVGFPass>
+class SVGFPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, SVGFPass>
 {
 public:
     using SharedPtr = std::shared_ptr<SVGFPass>;
@@ -36,9 +35,9 @@ protected:
     SVGFPass(const std::string &directIn, const std::string &indirectIn, const std::string &outChannel);
 
     // Implementation of RenderPass interface
-    bool initialize(RenderContext::SharedPtr pRenderContext, ResourceManager::SharedPtr pResManager) override;
-    void execute(RenderContext::SharedPtr pRenderContext) override;
-    void renderGui(Gui* pGui) override;
+    bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
+    void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui::Window* pPassWindow) override;
     void resize(uint32_t width, uint32_t height) override;
 
     // Which texture inputs are we reading and writing to?
@@ -59,11 +58,11 @@ protected:
     float   mMomentsAlpha        = 0.2f;
 
     // SVGF passes
-    FSPass::SharedPtr         mpReprojection;
-    FSPass::SharedPtr         mpAtrous;
-    FSPass::SharedPtr         mpModulate;
-    FSPass::SharedPtr         mpFilterMoments;
-    FSPass::SharedPtr         mpCombineUnfiltered;
+    FullscreenLaunch::SharedPtr  mpReprojection;
+    FullscreenLaunch::SharedPtr  mpAtrous;
+    FullscreenLaunch::SharedPtr  mpModulate;
+    FullscreenLaunch::SharedPtr  mpFilterMoments;
+    FullscreenLaunch::SharedPtr  mpCombineUnfiltered;
 
     // Intermediate framebuffers
     Fbo::SharedPtr            mpPingPongFbo[2];
@@ -90,11 +89,11 @@ protected:
 
 private:
     // After resizing or creating framebuffers, make sure to initialize them
-    void clearFbos(RenderContext::SharedPtr pCtx);
+    void clearFbos(RenderContext* pCtx);
 
     // Encapsulate each of the passes in its own method
-    void computeReprojection(RenderContext::SharedPtr pRenderContext);
-    void computeVarianceEstimate(RenderContext::SharedPtr pRenderContext);
-    void computeAtrousDecomposition(RenderContext::SharedPtr pRenderContext);
-    void computeModulation(RenderContext::SharedPtr pRenderContext);
+    void computeReprojection(RenderContext* pRenderContext);
+    void computeVarianceEstimate(RenderContext* pRenderContext);
+    void computeAtrousDecomposition(RenderContext* pRenderContext);
+    void computeModulation(RenderContext* pRenderContext);
 };

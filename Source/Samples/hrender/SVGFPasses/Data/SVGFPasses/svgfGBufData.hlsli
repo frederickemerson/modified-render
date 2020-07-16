@@ -22,7 +22,7 @@
 
 struct GBufVertexOut
 {
-    VertexOut base;
+    VSOut base;
     INTERPOLATION_MODE float3 normalObj : OBJECTNORMAL;
-    uint instanceID : INSTANCEID;
+    //uint instanceID : INSTANCEID;
 };

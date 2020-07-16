@@ -16,22 +16,21 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-__import Helpers;
-__import ShaderCommon;
-__import Shading;
+import Utils.Color.ColorHelpers; // Contains function for computing luminance
 
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
 #include "SVGFPackNormal.hlsli"
 
+Texture2D   gDirect;
+Texture2D   gIndirect;
+Texture2D   gCompactNormDepth;
+Texture2D   gHistoryLength;
+Texture2D   gAlbedo;
+Texture2D   gIndirAlbedo;
+
 cbuffer PerImageCB : register(b0)
 {
-    Texture2D   gDirect;
-    Texture2D   gIndirect;
-    Texture2D   gCompactNormDepth;
-    Texture2D   gHistoryLength;
-    Texture2D   gAlbedo;
-    Texture2D   gIndirAlbedo;
     int         gStepSize;
     float       gPhiColor;
     float       gPhiNormal;

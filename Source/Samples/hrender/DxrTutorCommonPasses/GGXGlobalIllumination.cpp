@@ -59,7 +59,8 @@ bool GGXGlobalIlluminationPass::initialize(RenderContext* pRenderContext, Resour
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     mpRays->setMaxRecursionDepth(uint32_t(mMaxPossibleRayDepth));
-    if (mpScene) {
+    if (mpScene)
+    {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
     }
@@ -71,7 +72,8 @@ void GGXGlobalIlluminationPass::initScene(RenderContext* pRenderContext, Scene::
 {
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
-    if (mpScene) {
+    if (mpScene)
+    {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
     }
@@ -80,7 +82,7 @@ void GGXGlobalIlluminationPass::initScene(RenderContext* pRenderContext, Scene::
 void GGXGlobalIlluminationPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
-    dirty |= (int)pPassWindow->var("Max RayDepth", mUserSpecifiedRayDepth, 0, mMaxPossibleRayDepth);
+    dirty |= (int)pPassWindow->var("Max RayDepth", mUserSpecifiedRayDepth, 0, mMaxPossibleRayDepth, 0.2f);
     dirty |= (int)pPassWindow->checkbox(mDoDirectGI ? "Compute direct illumination" : "Skipping direct illumination",
                                     mDoDirectGI);
     dirty |= (int)pPassWindow->checkbox(mDoIndirectGI ? "Shooting global illumination rays" : "Skipping global illumination",

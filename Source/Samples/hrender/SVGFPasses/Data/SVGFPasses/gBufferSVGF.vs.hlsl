@@ -16,22 +16,19 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "VertexAttrib.hlsli"
 #include "svgfGBufData.hlsli"
 
-// Invokes our Slang shader preprocessor to include the functionality from ShaderCommon.slang.
-__import ShaderCommon;
-
 // Invokes Slang to import the default vertex shader, it's inputs and outputs
-__import DefaultVS;
+import Scene.Raster;
 
 // Define our main() entry point for our vertex shader
-GBufVertexOut main(VertexIn vIn)
+GBufVertexOut main(VSIn vIn)
 {
     GBufVertexOut vOut;
     vOut.base = defaultVS(vIn);       // Call the default Falcor vertex shader (see DefaultVS.slang)
-    vOut.instanceID = vIn.instanceID; // Pass down the current instance ID for use in our G-buffer
+    //vOut.instanceID = vIn.meshInstanceID; // Pass down the current instance ID for use in our G-buffer
 
+    // Seems like this is never used?
 #ifdef HAS_NORMAL
     vOut.normalObj = vIn.normal;      // Our g-buffer is storing an object-space normal, so pass that down
 #else
