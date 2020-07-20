@@ -44,9 +44,12 @@ bool SimpleDiffuseGIPass::initialize(RenderContext* pRenderContext, ResourceMana
 {
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
-    mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse" });
+    mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "__TextureData" });
     mpResManager->requestTextureResource( mOutputBuf );
-     
+
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(300, 120));
+
     // We also need our light probe, since indirect rays may hit it
     mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
@@ -110,7 +113,7 @@ void SimpleDiffuseGIPass::execute(RenderContext* pRenderContext)
     // Pass our G-buffer textures down to the HLSL so we can shade
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
+    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"]      = pDstTex;
 
     // Set our environment map texture for indirect rays that miss geometry 

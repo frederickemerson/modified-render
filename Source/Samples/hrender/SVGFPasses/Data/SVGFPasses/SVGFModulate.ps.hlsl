@@ -17,12 +17,21 @@
 **********************************************************************************************************************/
 
 #include "SVGFCommon.hlsli"
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
 // Demodulated input textures from the shading pass
 Texture2D<float4> gDirect;
 Texture2D<float4> gIndirect;
 Texture2D<float4> gDirAlbedo;
 Texture2D<float4> gIndirAlbedo;
+
+// Texture data from the shading pass - we need this to retrieve the emissive color
+Texture2D<float4> gTexData;
+
+cbuffer ModulateCB
+{
+    float   gEmitMult;  // Multiply emissive amount by this factor (set to 1, usually)
+};
 
 // We could directly output a float4 instead of this PS_OUT, but this allows for
 // future extension if necessary.
@@ -34,12 +43,14 @@ struct PS_OUT
 PS_OUT main(FullScreenPassVsOut vsOut)
 {
     float4 fragCoord = vsOut.posH;
-
-    // this shader is only used when there are no wavelet iterations
     int2 ipos        = int2(fragCoord.xy);
 
+    float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[ipos].z)).rgb, 1.0f);
+
     PS_OUT ret;
-    ret.color = (gDirect[ipos] * gDirAlbedo[ipos] + gIndirect[ipos] * gIndirAlbedo[ipos]);
+    ret.color = gDirect[ipos] * gDirAlbedo[ipos]
+              + gIndirect[ipos] * gIndirAlbedo[ipos]
+              + emissiveColor * gEmitMult;
 
     return ret;
 }

@@ -71,6 +71,9 @@
     <ClCompile Include="SVGFPasses\SVGFPass.cpp">
       <Filter>SVGFPasses</Filter>
     </ClCompile>
+    <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
+      <Filter>TestPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -145,6 +148,9 @@
       <Filter>SVGFPasses\Shaders</Filter>
     </ClInclude>
     <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h">
+      <Filter>TestPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="TestPasses\DecodeGBufferPass.h">
       <Filter>TestPasses</Filter>
     </ClInclude>
   </ItemGroup>
@@ -264,6 +270,18 @@
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl">
       <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl">
+      <Filter>CommonPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\packingUtils.hlsli">
+      <Filter>CommonPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl">
+      <Filter>TestPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="TestPasses\GBufferComponents.slang">
+      <Filter>TestPasses</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "packingUtils.hlsli"
 #include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
@@ -55,11 +56,12 @@ cbuffer RayGenCB
 // Our output textures, where we store our G-buffer results
 shared RWTexture2D<float4> gWsPos;
 shared RWTexture2D<float4> gWsNorm;
-shared RWTexture2D<float4> gMatDif;
-shared RWTexture2D<float4> gMatSpec;
-shared RWTexture2D<float4> gMatExtra;
-shared RWTexture2D<float4> gMatEmissive;
-
+// This render target stores material texture data in a packed format with 8 bits per component.
+// r: diffuse.r,    diffuse.g,      diffuse.b,          opacity
+// g: specular.r,   specular.g,     specular.b,         linear roughness
+// b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
+// a: IoR,          metallic,       specular trans,     eta
+shared RWTexture2D<float4> gTexData;
 
 [shader("miss")]
 void PrimaryMiss(inout SimpleRayPayload hitData)
@@ -71,7 +73,10 @@ void PrimaryMiss(inout SimpleRayPayload hitData)
     float2 uv = wsVectorToLatLong(WorldRayDirection());
 
     // Lookup and return our light probe color
-    gMatDif[launchIndex] = float4(gEnvMap[uint2(uv*gEnvMapRes)].rgb, 1.0f);
+    gTexData[launchIndex] = float4(
+        asfloat(packUnorm4x8(float4(gEnvMap[uint2(uv * gEnvMapRes)].rgb, 1.0f))),
+        0.f, 0.f, 0.f
+    );
 }
 
 [shader("anyhit")]
@@ -104,10 +109,7 @@ void PrimaryClosestHit(uniform HitShaderParams hitParams, inout SimpleRayPayload
     // Save out our G-Buffer values to our textures
     gWsPos[launchIndex]    = float4(shadeData.posW, 1.f);
     gWsNorm[launchIndex]   = float4(shadeData.N, length(shadeData.posW - cameraPosW));
-    gMatDif[launchIndex]   = float4(shadeData.diffuse, shadeData.opacity);
-    gMatSpec[launchIndex]  = float4(shadeData.specular, shadeData.linearRoughness);
-    gMatExtra[launchIndex] = float4(shadeData.IoR, shadeData.doubleSided ? 1.f : 0.f, 0.f, 0.f);
-    gMatEmissive[launchIndex] = float4(shadeData.emissive, 0.0f);
+    gTexData[launchIndex]  = asfloat(packTextureData(shadeData));
 }
 
 

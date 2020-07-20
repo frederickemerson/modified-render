@@ -25,6 +25,8 @@ bool CopyToOutputPass::initialize(RenderContext* pRenderContext, ResourceManager
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
 
+    setGuiSize(int2(300, 70));
+
     // We write to the output texture; tell our resource manager that we expect this channel
     mpResManager->requestTextureResource(ResourceManager::kOutputChannel);
 
@@ -86,8 +88,8 @@ void CopyToOutputPass::pipelineUpdated(ResourceManager::SharedPtr pResManager)
     // Loop over all resources available in the resource manager
     for (uint32_t i = 0; i < mpResManager->getTextureCount(); i++)
     {
-        // If this one is the output resource, skip it
-        if (i == outputChannel) continue;
+        // If this is a hidden resource or the output resource, skip it
+        if (isHiddenPass(i) || i == outputChannel) continue;
 
         // Add the name of this resource to our GUI's list of displayable resources
         mDisplayableBuffers.push_back({ i, mpResManager->getTextureName(i) });
@@ -111,4 +113,10 @@ void CopyToOutputPass::pipelineUpdated(ResourceManager::SharedPtr pResManager)
         if (desiredOutputTextureIdx != uint32_t(-1))
             mSelectedBuffer = desiredOutputTextureIdx;
     }
+}
+
+bool CopyToOutputPass::isHiddenPass(int textureIndex)
+{
+    const std::string& textureName = mpResManager->getTextureName(textureIndex);
+    return textureName.find("__") == 0;
 }

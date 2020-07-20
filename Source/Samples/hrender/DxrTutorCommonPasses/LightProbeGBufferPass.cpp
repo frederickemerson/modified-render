@@ -45,10 +45,7 @@ bool LightProbeGBufferPass::initialize(RenderContext* pRenderContext, ResourceMa
     // We write to these textures; tell our resource manager that we expect them
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("MaterialDiffuse", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("MaterialSpecRough", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("MaterialExtraParams", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("Emissive", ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("__TextureData", ResourceFormat::RGBA32Float); // Stores 16 x uint8
 
     mpResManager->updateEnvironmentMap(kEnvironmentMap);
     mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
@@ -57,7 +54,8 @@ bool LightProbeGBufferPass::initialize(RenderContext* pRenderContext, ResourceMa
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
     mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
     mpRays->addHitShader(kFileRayTrace, kEntryPrimaryClosestHit, kEntryPrimaryAnyHit);
-    if (mpScene) {
+    if (mpScene)
+    {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
     }
@@ -68,7 +66,7 @@ bool LightProbeGBufferPass::initialize(RenderContext* pRenderContext, ResourceMa
     mRng = std::mt19937(uint32_t(timeInMillisec.time_since_epoch().count()));
 
     // Our GUI needs more space than other passes, so enlarge the GUI window.
-    setGuiSize(int2(250, 220));
+    setGuiSize(int2(300, 160));
 
     return true;
 }
@@ -89,6 +87,9 @@ void LightProbeGBufferPass::renderGui(Gui::Window* pPassWindow)
 
     // Allow user to specify thin lens / pinhole camera parameters
     dirty |= (int)pPassWindow->checkbox(mUseThinLens ? "Using thin lens model" : "Using pinhole camera model", mUseThinLens);
+    pPassWindow->tooltip("Using the thin lens model allows you to adjust depth of field. "
+        "A larger f stop number will allow for larger depth of field (more things in focus). "
+        "f plane number determines the distance of the focal plane from the camera.");
     if (mUseThinLens)
     { 
         pPassWindow->text("     ");
@@ -102,7 +103,7 @@ void LightProbeGBufferPass::renderGui(Gui::Window* pPassWindow)
     if (mUseJitter)
     {
         pPassWindow->text("     ");
-        dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Randomized jitter" : "8x MSAA jitter", mUseRandomJitter, true);
+        dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Using randomized camera position" : "Using 8x MSAA pattern", mUseRandomJitter, true);
     }
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
@@ -117,10 +118,8 @@ void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
     // Load our textures, but ask the resource manager to clear them to black before returning them
     Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", float4(0, 0, 0, 0));
     Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", float4(0, 0, 0, 0));
-    Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", float4(0, 0, 0, 0));
-    Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", float4(0, 0, 0, 0));
-    Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", float4(0, 0, 0, 0));
-    Texture::SharedPtr matEmit = mpResManager->getClearedTexture("Emissive", float4(0, 0, 0, 0));
+    Texture::SharedPtr matTexData = mpResManager->getClearedTexture("__TextureData", float4(0, 0, 0, 0));
+
     mLightProbe = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
     // Compute parameters based on our user-exposed controls
@@ -130,10 +129,7 @@ void LightProbeGBufferPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["gWsPos"] = wsPos;
     rayVars["gWsNorm"] = wsNorm;
-    rayVars["gMatDif"] = matDif;
-    rayVars["gMatSpec"] = matSpec;
-    rayVars["gMatExtra"] = matExtra;
-    rayVars["gMatEmissive"] = matEmit;
+    rayVars["gTexData"] = matTexData;
 
     // Pass our background color down to our miss shader
     rayVars["MissShaderCB"]["gEnvMapRes"] = uint2(mLightProbe->getWidth(), mLightProbe->getHeight());

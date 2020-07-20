@@ -29,14 +29,18 @@
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
 #include "DxrTutorCommonPasses/GGXGlobalIllumination.h"
+#include "DxrTutorCommonPasses/JitteredGBufferPass.h"
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
 #include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorCommonPasses/SimpleDiffuseGIPass.h"
+#include "DxrTutorCommonPasses/SimpleGBufferPass.h"
+#include "DxrTutorCommonPasses/ThinLensGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
 #include "SVGFPasses/GBufferForSVGF.h"
 #include "SVGFPasses/GGXGlobalIlluminationDemod.h"
 #include "SVGFPasses/SVGFPass.h"
+#include "TestPasses/DecodeGBufferPass.h"
 #include "TestPasses/ModulateAlbedoIllumPass.h"
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
@@ -56,21 +60,29 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
     // -------------------------------- //
+    // All GBuffers support camera jitter AA, environment map. Rasterized GBuffers have z-fighting issues.
+    // TODO: Rasterized GBuffer support for emissive materials.
     pipeline->setPassOptions(0, {
-        // Raytraced GBuffer with camera jitter that allows for depth of field and environment map
+        // Rasterized GBuffer 
+        JitteredGBufferPass::create(),
+        // Raycasted GBuffer with camera jitter that allows for depth of field
         LightProbeGBufferPass::create(),
         // Rasterized GBuffer with support for spatio temporal variance-guided filtering (denoising)
-        GBufferForSVGF::create()
+        GBufferForSVGF::create(),
+
+        // --- Reduced functionality GBuffers, just for testing and not in any preset --- //
+        SimpleGBufferPass::create(),
+        ThinLensGBufferPass::create()
     });
 
-    // --------------------------------------- //
-    // --- Pass 2 makes use of the GBuffer --- //
-    // --------------------------------------- //
+    // --------------------------------------------------- //
+    // --- Pass 2 makes use of the GBuffer for shading --- //
+    // --------------------------------------------------- //
 
-    // ------ Pass 2a is an Ambient Occlusion pass
+    // ------ This pass is an Ambient Occlusion pass. It has yet to be integrated with the shading pass
     pipeline->setPass(1, AmbientOcclusionPass::create("Ambient Occlusion"));
 
-    // ------ Pass 2b is a shading pass
+    // ------ This pass is the main shading pass
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         LambertianPlusShadowPass::create("Lambertian Plus Shadows"),
@@ -79,10 +91,15 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         // GGX BRDF for local lighting, 1 shadow ray and 1 scatter ray (ggx or diffuse) per pixel
         GGXGlobalIlluminationPass::create("Global Illum., GGX BRDF"),
         // GGX BRDF (same as above) with demodulated output. 4 outputs - albedo/illumination X direct/indirect lighting
-        GGXGlobalIlluminationPassDemod::create("DirectIllum", "IndirectIllum")
+        GGXGlobalIlluminationPassDemod::create("DirectIllum", "IndirectIllum"),
+
+        // This pass lets us view the contents of the GBuffer, since it is stored in a compact
+        //     form and not immediately viewable, hence it needs to be decoded, and is not directly
+        //     viewable using the CopyToOutputPass.
+        DecodeGBufferPass::create("Decoded GBuffer")
     });
 
-    // ------ Pass 2c is a recombination pass
+    // ------ This pass is a recombination pass, only relevant when using SVGF GBuffer
     pipeline->setPassOptions(3, {
         // This purely re-modulates the output of the demondulated pass
         ModulateAlbedoIllumPass::create("DirectIllum", "IndirectIllum", "Modulate Albedo/Illum"),
@@ -93,6 +110,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --------------------------------------------------------------- //
     // --- Pass 3 just lets us select which pass to view on screen --- //
     // --------------------------------------------------------------- //
+
+    // ------ This pass selects the render target to view, and allows the user to pick any render target,
+    //            except those marked as hidden (by prepending the texture name with "__")
     pipeline->setPass(4, CopyToOutputPass::create());
 
     // ---------------------------------------------------------- //
@@ -105,15 +125,19 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // ============================ //
 
     // Presets are "1-indexed", option 0 is the null option to disable the pass
-    std::vector<uint32_t> normalGBuff_ggxGI_Options         = { 1, 0, 3, 0, 1, 1 }; 
-    std::vector<uint32_t> svgfGBuff_ggxGI_Options           = { 2, 0, 4, 1, 1, 1 };
-    std::vector<uint32_t> svgfGBuff_ggxGIDenoised_Options   = { 2, 0, 4, 2, 1, 1 };
+    std::vector<uint32_t> normalGBuff_ggxGI_Options         = { 1, 0, 3, 0, 1, 1 };
+    std::vector<uint32_t> lpGBuff_ggxGI_Options             = { 2, 0, 3, 0, 1, 1 };
+    std::vector<uint32_t> svgfGBuff_ggxGI_Options           = { 3, 0, 4, 1, 1, 1 };
+    std::vector<uint32_t> svgfGBuff_ggxGIDenoised_Options   = { 3, 0, 4, 2, 1, 1 };
+    std::vector<uint32_t> normalGBuff_decodeGBuffer_Options = { 1, 0, 5, 0, 1, 1 };
     std::vector<uint32_t> normalGBuff_AO_Options            = { 1, 1, 0, 0, 1, 1 };
 
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Global Illum", "Global Illum., GGX BRDF", normalGBuff_ggxGI_Options),
-        RenderingPipeline::PresetData("Global Illum (Demodulated GBuffer)", "Modulate Albedo/Illum", svgfGBuff_ggxGI_Options),
-        RenderingPipeline::PresetData("Global Illum Denoised", "SVGF Output", svgfGBuff_ggxGIDenoised_Options),
+        RenderingPipeline::PresetData("Global Illum (Rasterized GBuffer)", "Global Illum., GGX BRDF", normalGBuff_ggxGI_Options),
+        RenderingPipeline::PresetData("Global Illum (Raytraced GBuffer)", "Global Illum., GGX BRDF", lpGBuff_ggxGI_Options),
+        RenderingPipeline::PresetData("Global Illum (Demodulated Raster GBuffer)", "Modulate Albedo/Illum", svgfGBuff_ggxGI_Options),
+        RenderingPipeline::PresetData("Global Illum Denoised (Demodulated Raster GBuffer)", "SVGF Output", svgfGBuff_ggxGIDenoised_Options),
+        RenderingPipeline::PresetData("Rasterized GBuffer Output", "Decoded GBuffer", normalGBuff_decodeGBuffer_Options),
         RenderingPipeline::PresetData("Ambient Occlusion", "Ambient Occlusion", normalGBuff_AO_Options)
     });
 

@@ -300,6 +300,8 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
     w.text("Ordered list of passes in rendering pipeline:");
     if (w.checkbox("##enableAllGuis", mEnableAllPassGui))
     {
+        // This flag will ensure the window position changes are propagated
+        mResetWindowPositions = true;
         for (uint32_t i = 0; i < mPassSelectors.size(); i++)
         {
             mEnablePassGui[i] = mEnableAllPassGui;
@@ -336,7 +338,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         if (mEnablePassGui[i] && mActivePasses[i])
         {
             // Find out where to put the GUI for this pass
-            int2 guiPos = mActivePasses[i]->getGuiPosition();
+            int2 guiPos = mResetWindowPositions ? int2(-320, 30) : mActivePasses[i]->getGuiPosition();
             int2 guiSz = mActivePasses[i]->getGuiSize();
 
             // If the GUI position is negative, attach to right/bottom on screen
@@ -351,6 +353,11 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
             // Create a window.  Note: RS4 version does more; that doesn't work with recent Falcor; this is OK for just tutorials.
             Gui::Window passWindow(pGui, mActivePasses[i]->getGuiName().c_str(), { guiSz.x, guiSz.y }, { guiPos.x, guiPos.y }, mPassWindowFlags);
 
+            // If the flag to reset the window positions was set, we call this to move it to the calculated positon,
+            // since the constructor Gui::Window() only sets the position of the window the first time it is called.
+            if (mResetWindowPositions)
+                passWindow.windowPos(guiPos.x, guiPos.y);
+
             // Render the pass' GUI to this new UI window, then pop the new UI window.
             mActivePasses[i]->onRenderGui(&passWindow);
             passWindow.release();
@@ -360,6 +367,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         if (mActivePasses[i])
             yGuiOffset += mActivePasses[i]->getGuiSize().y; 
     }
+    mResetWindowPositions = false;
 
     // Draw the preset selector
     if (!mPresetSelector.empty())
@@ -369,6 +377,9 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         // Draw a button that enables/disables showing this pass' GUI window
         if (w.dropdown("##presetSelector", mPresetSelector, mSelectedPreset, true))
         {
+            // If a preset is selected, reset all the window positions
+            mResetWindowPositions = true;
+
             // Reset the texture reference in the resource manager that indicates to the CopyToOutputPass which texture to copy
             mpResourceManager->setCopyOutTextureName("");
 

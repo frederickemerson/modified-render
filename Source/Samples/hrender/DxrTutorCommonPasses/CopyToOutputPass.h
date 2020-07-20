@@ -19,6 +19,12 @@
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
 
+/** Allows the user to selct which texture they would like to have rendered to the screen.
+*       All textures that have been requested will be available for preview, except those with
+*       names that are prepended by "__" - those will not be available to the user. An example of
+*       when one should do this is when rendering values that are not within [0.0f, 1.0f], as this will
+*       break the rendering in general.
+*/
 class CopyToOutputPass : public ::RenderPass, inherit_shared_from_this<::RenderPass, CopyToOutputPass>
 {
 public:
@@ -51,4 +57,8 @@ protected:
 
     Gui::DropdownList mDisplayableBuffers;  
     uint32_t          mSelectedBuffer = 0xFFFFFFFFu;
+
+private:
+    // Check if a pass's name is prepended by "__" - do not expose this pass
+    bool isHiddenPass(int textureIndex);
  };

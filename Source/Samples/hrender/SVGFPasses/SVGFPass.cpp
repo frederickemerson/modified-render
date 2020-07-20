@@ -50,6 +50,7 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
     // Set our input textures / resources.  These are managed by our resource manager, and are 
     //    created each frame by earlier render passes.
     mpResManager->requestTextureResource("WorldPosition");
+    mpResManager->requestTextureResource("__TextureData"); // We need this to retrieve the emissive color
     mpResManager->requestTextureResource(mDirectInTexName);
     mpResManager->requestTextureResource(mIndirectInTexName);
     mpResManager->requestTextureResource("SVGF_LinearZ");  
@@ -71,7 +72,7 @@ bool SVGFPass::initialize(RenderContext* pRenderContext, ResourceManager::Shared
     mpFilterMoments     = FullscreenLaunch::create(kFilterMomentShader);
 
     // Our GUI needs more space than other passes, so enlarge the GUI window.
-    setGuiSize(int2(250, 350));
+    setGuiSize(int2(300, 350));
 
     return true;
 }
@@ -254,7 +255,9 @@ void SVGFPass::computeAtrousDecomposition(RenderContext* pRenderContext)
     atrousVars["PerImageCB"]["gPhiNormal"] = mPhiNormal;
     atrousVars["gHistoryLength"]           = mpCurReprojFbo->getColorTexture(3);
     atrousVars["gCompactNormDepth"]        = mInputTex.miscBuf;
-
+    // Used for emissive calculation in the last filter iteration which performs modulation
+    atrousVars["gTexData"] = mpResManager->getTexture("__TextureData");
+    atrousVars["PerImageCB"]["gEmitMult"] = 1.0f;
 
     for (int i = 0; i < mFilterIterations; i++) {
         bool performModulation = (i == mFilterIterations - 1);
@@ -299,6 +302,9 @@ void SVGFPass::computeModulation(RenderContext* pRenderContext)
     modulateVars["gIndirect"]    = mFilterEnabled ? mpCurReprojFbo->getColorTexture(1) : mInputTex.indirectIllum;
     modulateVars["gDirAlbedo"]   = mInputTex.dirAlbedo;
     modulateVars["gIndirAlbedo"] = mInputTex.indirAlbedo;
+    // We will need to add the emissive color
+    modulateVars["gTexData"]     = mpResManager->getTexture("__TextureData");
+    modulateVars["ModulateCB"]["gEmitMult"] = 1.0f;
 
     // Run the modulation pass. If filtering is not enabled, we simply render to the output texture. Otherwise,
     // we render to the output fbo, since there is further logic to perform (copying to history for the next frame)

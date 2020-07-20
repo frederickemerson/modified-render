@@ -16,7 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
+#include "packingUtils.hlsli"
 #include "Utils/Math/MathConstants.slangh"
 
 // Falcor / Slang imports to include shared code and data structures
@@ -34,17 +34,12 @@ cbuffer CameraInfo
     float3 gCameraW;
 };
 
-// What's in our output G-buffer structure?  This is extremely fat and probably could be cut down, except
-//    our research / prototype SVGF filter and simple path tracer uses a bunch of these outputs as full
-//    floats.  There's serious room here for G-buffer compression.
+// What's in our output G-buffer structure? 
 struct GBuffer
 {
     float4 wsPos       : SV_Target0;   // World space position.  .w component = 0 if a background pixel
     float4 wsNorm      : SV_Target1;   // World space normal.  (.w is distance from camera to hit point; this may not be used)
     float4 texData     : SV_Target2;   // Texture data of the hit point. For details, refer to gBuffer.ps.hlsl
-    float4 svgfLinZ    : SV_Target3;   // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
-    float4 svgfMoVec   : SV_Target4;   // SVGF-specific buffer containing motion vector and fwidth of pos & normal
-    float4 svgfCompact : SV_Target5;   // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
 };
 
 // Convert our world space direction to a (u,v) coord in a latitude-longitude spherical map
@@ -72,10 +67,9 @@ GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position)
     GBuffer gBufOut;
     gBufOut.wsPos = float4(0.0f, 0.0f, 0.0f, 0.0f);
     gBufOut.wsNorm = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    gBufOut.svgfLinZ = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    gBufOut.svgfMoVec = float4(0.0f, 0.0f, 0.0f, 0.0f);
     // Put the environment map color into the diffuse component of the texture data,
     // clear the rest
     gBufOut.texData = float4(asfloat(packUnorm4x8(float4(bgColor, 0.0f))), 0.f, 0.f, 0.f);
+
     return gBufOut;
 }

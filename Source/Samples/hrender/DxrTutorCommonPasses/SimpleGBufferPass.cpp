@@ -29,12 +29,13 @@ bool SimpleGBufferPass::initialize(RenderContext* pRenderContext, ResourceManage
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
 
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(300, 30));
+
     // We write these texture; tell our resource manager that we expect these channels to exist
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("MaterialDiffuse");
-    mpResManager->requestTextureResource("MaterialSpecRough");
-    mpResManager->requestTextureResource("MaterialExtraParams");
+    mpResManager->requestTextureResource("__TextureData", ResourceFormat::RGBA32Float); // Stores 16 x uint8
     mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
 
     mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
@@ -64,8 +65,8 @@ void SimpleGBufferPass::execute(RenderContext* pRenderContext)
 {
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
-        { "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams" }, // Names of color buffers
-        "Z-Buffer" );                                                                                      // Names of depth buffer
+        { "WorldPosition", "WorldNormal", "__TextureData" }, // Names of color buffers
+        "Z-Buffer" );                                      // Names of depth buffer
 
     // Failed to create a valid FBO?  We're done.
     if (!outputFbo) return;

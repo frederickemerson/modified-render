@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 #include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
@@ -37,11 +38,8 @@ shared cbuffer GlobalCB
 // Input and out textures that need to be set by the C++ code (for the ray gen shader)
 shared Texture2D<float4>   gPos;
 shared Texture2D<float4>   gNorm;
-shared Texture2D<float4>   gDiffuseMatl;
-shared Texture2D<float4>   gSpecMatl;
-shared Texture2D<float4>   gExtraMatl;
+shared Texture2D<float4>   gTexData;
 shared Texture2D<float4>   gEnvMap;
-shared Texture2D<float4>   gEmissive;
 shared RWTexture2D<float4> gOutput;
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
@@ -66,18 +64,22 @@ void SimpleDiffuseGIRayGen()
     // Load g-buffer data
     float4 worldPos      = gPos[launchIndex];
     float4 worldNorm     = gNorm[launchIndex];
-    float4 difMatlColor  = gDiffuseMatl[launchIndex];
-    float4 specMatlColor = gSpecMatl[launchIndex];
-    float4 extraData     = gExtraMatl[launchIndex];
-    float4 pixelEmissive = gEmissive[launchIndex];
+    // Get the texture data that is stored in a compact format
+    float4 difMatlColor;
+    float4 specMatlColor;
+    float4 pixelEmissive;
+    float4 matlOthers;
+    unpackTextureData(asuint(gTexData[launchIndex]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
+    // pixelEmissive.w is 1.f if material is double sided, 0.f otherwise
+    // matlOthers.r is IoR. Not currently used, but this was the structure of the original fat-GBuffer.
+    float4 extraData = float4(matlOthers.r, pixelEmissive.w, 0.0f, 0.0f);
     
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (worldPos.w != 0.0f);
 
     // Extract and compute some material and geometric parameters
     float roughness = specMatlColor.a * specMatlColor.a;
-    float3 cameraPosW = gScene.camera.getPosition();
-    float3 V = normalize(cameraPosW - worldPos.xyz);
+    float3 V        = normalize(gScene.camera.getPosition() - worldPos.xyz);
 
     // Make sure our normal is pointed the right direction
     if (dot(worldNorm.xyz, V) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;

@@ -42,9 +42,7 @@ bool ThinLensGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     // We write to these textures; tell our resource manager that we expect them
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("MaterialDiffuse");
-    mpResManager->requestTextureResource("MaterialSpecRough");
-    mpResManager->requestTextureResource("MaterialExtraParams");
+    mpResManager->requestTextureResource("__TextureData");
 
     mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
 
@@ -63,7 +61,7 @@ bool ThinLensGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mRng = std::mt19937(uint32_t(timeInMillisec.time_since_epoch().count()));
 
     // Our GUI needs more space than other passes, so enlarge the GUI window.
-    setGuiSize(int2(250, 300));
+    setGuiSize(int2(300, 160));
 
     return true;
 }
@@ -82,17 +80,12 @@ void ThinLensGBufferPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
-    pPassWindow->text("When using the thin lens, you can specify");
-    pPassWindow->text("the f-stop and the distance to the focal");
-    pPassWindow->text("plane (units are same as the scene file).");
-    pPassWindow->text("For now, the f-stop is approximate and does");
-    pPassWindow->text("not match your photographic experience, as");
-    pPassWindow->text("our demos do not require scenes with");
-    pPassWindow->text("specified measurement units.");
-    pPassWindow->text("");
-
     // Allow user to specify thin lens / pinhole camera parameters
     dirty |= (int)pPassWindow->checkbox(mUseThinLens ? "Using thin lens model" : "Using pinhole camera model", mUseThinLens);
+    pPassWindow->tooltip("When using the thin lens, you can specify "
+        "the f-stop and the distance to the focal plane (units are same as the scene file). "
+        "For now, the f-stop is approximate and does not match your photographic experience, as "
+        "our demos do not require scenes with specified measurement units.");
     if (mUseThinLens)
     { 
         pPassWindow->text("     ");
@@ -106,7 +99,7 @@ void ThinLensGBufferPass::renderGui(Gui::Window* pPassWindow)
     if (mUseJitter)
     {
         pPassWindow->text("     ");
-        dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Randomized jitter" : "8x MSAA jitter", mUseRandomJitter, true);
+        dirty |= (int)pPassWindow->checkbox(mUseRandomJitter ? "Using randomized camera position" : "Using 8x MSAA pattern", mUseRandomJitter, true);
     }
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
@@ -122,9 +115,7 @@ void ThinLensGBufferPass::execute(RenderContext* pRenderContext)
     float4 clearColor = float4(0, 0, 0, 0);
     Texture::SharedPtr wsPos = mpResManager->getClearedTexture("WorldPosition", clearColor);
     Texture::SharedPtr wsNorm = mpResManager->getClearedTexture("WorldNormal", clearColor);
-    Texture::SharedPtr matDif = mpResManager->getClearedTexture("MaterialDiffuse", clearColor);
-    Texture::SharedPtr matSpec = mpResManager->getClearedTexture("MaterialSpecRough", clearColor);
-    Texture::SharedPtr matExtra = mpResManager->getClearedTexture("MaterialExtraParams", clearColor);
+    Texture::SharedPtr matTexData = mpResManager->getClearedTexture("__TextureData", clearColor);
 
     // Compute parameters based on our user-exposed controls
     mLensRadius = mFocalLength / (2.0f * mFStop);
@@ -132,14 +123,11 @@ void ThinLensGBufferPass::execute(RenderContext* pRenderContext)
     // Pass our background color down to our miss shader
     auto rayVars = mpRays->getRayVars();
     rayVars["MissShaderCB"]["gBgColor"] = mBgColor;
-    rayVars["gMatDif"] = matDif;
 
     // Bind our g-buffer outputs to the hit shaders
     rayVars["gWsPos"] = wsPos;
     rayVars["gWsNorm"] = wsNorm;
-    rayVars["gMatDif"] = matDif;
-    rayVars["gMatSpec"] = matSpec;
-    rayVars["gMatExtra"] = matExtra;
+    rayVars["gTexData"] = matTexData;
 
     // Pass our camera parameters to the ray generation shader
     rayVars["RayGenCB"]["gUseThinLens"] = mUseThinLens;

@@ -34,11 +34,13 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
 
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(300, 30));
+
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("MaterialDiffuse");
-    mpResManager->requestTextureResource("MaterialSpecRough");
+    mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
@@ -79,8 +81,7 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
-    rayVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
+    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"]      = pDstTex;
 
     // Shoot our rays and shade our primary hit points

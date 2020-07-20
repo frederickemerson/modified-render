@@ -39,9 +39,6 @@ bool SimpleAccumulationPass::initialize(RenderContext* pRenderContext, ResourceM
     // Create our graphics state and accumulation shader
     mpAccumShader = FullscreenLaunch::create(kAccumShader);
 
-    // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(int2(250, 135));
-
     return true;
 }
 
@@ -74,7 +71,6 @@ void SimpleAccumulationPass::renderGui(Gui::Window* pPassWindow)
 {
     // Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
     pPassWindow->text( (std::string("Accumulating buffer:   ") + mAccumChannel).c_str() );
-    pPassWindow->text("");
 
     // Add a toggle to enable/disable temporal accumulation.  Whenever this toggles, reset the
     //     frame count and tell the pipeline we're part of that our rendering options have changed.
@@ -85,7 +81,6 @@ void SimpleAccumulationPass::renderGui(Gui::Window* pPassWindow)
     }
 
     // Display a count of accumulated frames
-    pPassWindow->text("");
     pPassWindow->text((std::string("Frames accumulated: ") + std::to_string(mAccumCount)).c_str());
 }
 

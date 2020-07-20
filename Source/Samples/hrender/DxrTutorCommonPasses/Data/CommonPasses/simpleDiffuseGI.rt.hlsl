@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 #include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
@@ -42,7 +43,7 @@ cbuffer RayGenCB
 // Input and out textures that need to be set by the C++ code (for the ray gen shader)
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
-Texture2D<float4> gDiffuseMatl;
+Texture2D<float4> gTexData;
 RWTexture2D<float4> gOutput;
 
 // The payload used for our indirect global illumination rays
@@ -144,7 +145,7 @@ void SimpleDiffuseGIRayGen()
     // Load g-buffer data
     float4 worldPos     = gPos[launchIndex];
     float4 worldNorm    = gNorm[launchIndex];
-    float4 difMatlColor = gDiffuseMatl[launchIndex];
+    float4 difMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].x));
 
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor = difMatlColor.rgb;

@@ -34,6 +34,7 @@
     <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
     <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
+    <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
     <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -62,6 +63,7 @@
     <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
     <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
     <ClInclude Include="SVGFPasses\SVGFPass.h" />
+    <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
     <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h" />
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +75,7 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoCommonUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl" />
@@ -83,6 +86,7 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\packingUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGI.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGIUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli" />
@@ -101,6 +105,8 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
+    <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
+    <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

@@ -34,6 +34,9 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
 
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(300, 90));
+
     // Note that we need the G-buffer's position and normal buffer, plus the standard output buffer
     mPositionIndex = mpResManager->requestTextureResource("WorldPosition");
     mNormalIndex   = mpResManager->requestTextureResource("WorldNormal");

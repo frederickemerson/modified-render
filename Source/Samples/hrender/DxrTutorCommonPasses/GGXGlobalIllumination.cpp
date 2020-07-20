@@ -39,7 +39,7 @@ bool GGXGlobalIlluminationPass::initialize(RenderContext* pRenderContext, Resour
 {
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
-    mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "MaterialDiffuse", "MaterialSpecRough", "MaterialExtraParams", "Emissive" });
+    mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "__TextureData" });
     mpResManager->requestTextureResource(mOutputTextureName);
     mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
@@ -109,16 +109,10 @@ void GGXGlobalIlluminationPass::execute(RenderContext* pRenderContext)
     globalVars["GlobalCB"]["gEmitMult"]     = 1.0f;
     globalVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    globalVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
-    globalVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
-    globalVars["gExtraMatl"]   = mpResManager->getTexture("MaterialExtraParams");
-    globalVars["gEmissive"]    = mpResManager->getTexture("Emissive");
+    globalVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     globalVars["gOutput"]      = pDstTex;
     globalVars["gEnvMap"]      = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
     // Shoot our rays and shade our primary hit points
     mpRays->execute( pRenderContext, mpResManager->getScreenSize() );
-
 }
-
-

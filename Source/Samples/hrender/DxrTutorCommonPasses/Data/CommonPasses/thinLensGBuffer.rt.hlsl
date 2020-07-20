@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "packingUtils.hlsli"
 #include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
@@ -52,16 +53,18 @@ cbuffer RayGenCB
 // Our output textures, where we store our G-buffer results
 RWTexture2D<float4> gWsPos;
 RWTexture2D<float4> gWsNorm;
-RWTexture2D<float4> gMatDif;
-RWTexture2D<float4> gMatSpec;
-RWTexture2D<float4> gMatExtra;
-
+// This render target stores material texture data in a packed format with 8 bits per component.
+// r: diffuse.r,    diffuse.g,      diffuse.b,          opacity
+// g: specular.r,   specular.g,     specular.b,         linear roughness
+// b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
+// a: IoR,          metallic,       specular trans,     eta
+RWTexture2D<float4> gTexData;
 
 [shader("miss")]
 void PrimaryMiss(inout SimpleRayPayload hitData)
 {
-    // Store the background color into our diffuse material buffer
-    gMatDif[ DispatchRaysIndex().xy ] = float4( gBgColor, 1.0f );
+    // Store the background color into the diffuse component of our material texture buffer
+    gTexData[DispatchRaysIndex().xy] = float4(asfloat(packUnorm4x8(float4(gBgColor, 1.0f))), 0.f, 0.f, 0.f);
 }
 
 [shader("anyhit")]
@@ -100,9 +103,7 @@ void PrimaryClosestHit(uniform HitShaderParams hitParams, inout SimpleRayPayload
     // Save out our G-Buffer values to our textures
     gWsPos[launchIndex]    = float4(shadeData.posW, 1.f);
     gWsNorm[launchIndex]   = float4(shadeData.N, length(shadeData.posW - cameraPosW));
-    gMatDif[launchIndex]   = float4(shadeData.diffuse, shadeData.opacity);
-    gMatSpec[launchIndex]  = float4(shadeData.specular, shadeData.linearRoughness);
-    gMatExtra[launchIndex] = float4(shadeData.IoR, shadeData.doubleSided ? 1.f : 0.f, 0.f, 0.f);
+    gTexData[launchIndex]  = asfloat(packTextureData(shadeData));
 }
 
 

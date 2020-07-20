@@ -208,8 +208,8 @@ private:
     // Internal state
     std::string mName;                          ///< Name of the render pass.
     std::string mGuiName;                       ///< Name of the GUI group/window for this render pass.
-    int2 mGuiPosition = { -270, 30 };           ///< Position in pixels of the UI window in the application window's client area.
-    int2 mGuiSize = { 250, 160 };               ///< Size in pixels of the UI window in the application window's client area.
+    int2 mGuiPosition = { -320, 30 };           ///< Position in pixels of the UI window in the application window's client area.
+    int2 mGuiSize = { 300, 110 };               ///< Size in pixels of the UI window in the application window's client area.
 
     bool mIsInitialized = false;                ///< Set to true upon successful intialization.
     bool mRefreshFlag = true;                   ///< User flag that is automatically reset after execute().

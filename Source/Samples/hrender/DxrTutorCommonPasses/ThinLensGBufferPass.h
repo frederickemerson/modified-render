@@ -54,7 +54,7 @@ protected:
     float     mLensRadius;
 
     // State for our camera jitter and random number generator (if we're doing randomized samples)
-    bool      mUseJitter = false;
+    bool      mUseJitter = true;
     bool      mUseRandomJitter = false;
     std::uniform_real_distribution<float> mRngDist;     ///< We're going to want random #'s in [0...1] (the default distribution)
     std::mt19937 mRng;                                  ///< Our random number generate.  Set up in initialize()

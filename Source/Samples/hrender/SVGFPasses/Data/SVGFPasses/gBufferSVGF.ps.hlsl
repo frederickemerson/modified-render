@@ -21,6 +21,7 @@ import Scene.Raster;        // Imports ShaderCommon and DefaultVS, plus material
 import Scene.Scene;         // VertexOut declaration
 import Scene.Camera.Camera;
 
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 #include "svgfGBufData.hlsli"  // Our input structure from the vertex shader
 
 // Constant buffer passed down from our C++ code in SVGFPass.cpp
@@ -36,13 +37,16 @@ struct GBuffer
 {
     float4 wsPos       : SV_Target0;   // World space position.  .w component = 0 if a background pixel
     float4 wsNorm      : SV_Target1;   // World space normal.  (.w is distance from camera to hit point; this may not be used)
-    float4 matDif      : SV_Target2;   // .rgb diffuse material color, .a pixel opacity/transparency
-    float4 matSpec     : SV_Target3;   // .rgb Falcor's specular representation, .a specular roughness
-    float4 svgfLinZ    : SV_Target4;   // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
-    float4 svgfMoVec   : SV_Target5;   // SVGF-specific buffer containing motion vector and fwidth of pos & normal
-    float4 svgfCompact : SV_Target6;   // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
+    // This render target stores material texture data in a packed format with 8 bits per component.
+    // r: diffuse.r,    diffuse.g,      diffuse.b,          opacity
+    // g: specular.r,   specular.g,     specular.b,         linear roughness
+    // b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
+    // a: IoR,          metallic,       specular trans,     eta
+    float4 texData     : SV_Target2;
+    float4 svgfLinZ    : SV_Target3;   // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
+    float4 svgfMoVec   : SV_Target4;   // SVGF-specific buffer containing motion vector and fwidth of pos & normal
+    float4 svgfCompact : SV_Target5;   // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
 };
-
 // A simple utility to convert a float to a 2-component octohedral representation packed into one uint
 uint dirToOct(float3 normal)
 {
@@ -69,8 +73,15 @@ GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID)
     Camera camera = gScene.camera;
 
     // Grab shading data.  Invert if necessary.
-    float3 viewDir = normalize(camera.getPosition() - vsOut.base.posW);
+    float3 cameraPosW = camera.getPosition();
+    float3 viewDir = normalize(cameraPosW - vsOut.base.posW);
     ShadingData hitPt = prepareShadingData(vsOut.base, primID, viewDir);
+
+    // Check if we hit the back of a double-sided material, in which case, we flip
+    //     normals around here (so we don't need to when shading)
+    float NdotV = dot(normalize(hitPt.N), viewDir);
+    if (NdotV <= 0.0f && hitPt.doubleSided)
+        hitPt.N = -hitPt.N;
 
     // Compute data needed for SVGF
 
@@ -89,9 +100,9 @@ GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID)
     // Dump out our G buffer channels
     GBuffer gBufOut;
     gBufOut.wsPos     = float4(hitPt.posW, 1.f);
-    gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - camera.getPosition()) );
-    gBufOut.matDif    = float4(hitPt.diffuse, hitPt.opacity);
-    gBufOut.matSpec   = float4(hitPt.specular, hitPt.linearRoughness);
+    gBufOut.wsNorm    = float4(hitPt.N, length(hitPt.posW - cameraPosW) );
+    // Use the function in packingUtils.hlsli to extract the texture data in a compact format
+    gBufOut.texData   = asfloat(packTextureData(hitPt));
     gBufOut.svgfLinZ  = svgfLinearZOut;
     gBufOut.svgfMoVec = svgfMotionVecOut;
 

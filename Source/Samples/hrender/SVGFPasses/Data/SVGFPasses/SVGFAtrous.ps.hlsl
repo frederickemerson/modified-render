@@ -21,6 +21,7 @@ import Utils.Color.ColorHelpers; // Contains function for computing luminance
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
 #include "SVGFPackNormal.hlsli"
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
 Texture2D   gDirect;
 Texture2D   gIndirect;
@@ -29,12 +30,16 @@ Texture2D   gHistoryLength;
 Texture2D   gAlbedo;
 Texture2D   gIndirAlbedo;
 
+// Texture data from the shading pass - we need this to retrieve the emissive color
+Texture2D<float4> gTexData;
+
 cbuffer PerImageCB : register(b0)
 {
     int         gStepSize;
     float       gPhiColor;
     float       gPhiNormal;
     bool        gPerformModulation;
+    float       gEmitMult;  // Multiply emissive amount by this factor (set to 1, usually)
 };
 
 // computes a 3x3 gaussian blur of the variance, centered around
@@ -85,8 +90,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     // fetches the sampler descriptor from memory for each texture access
     const float4  directCenter    = gDirect.Load(int3(ipos, 0));
     const float4  indirectCenter  = gIndirect.Load(int3(ipos, 0));
-    const float lDirectCenter   = luminance(directCenter.rgb);
-    const float lIndirectCenter = luminance(indirectCenter.rgb);
+    const float   lDirectCenter   = luminance(directCenter.rgb);
+    const float   lIndirectCenter = luminance(indirectCenter.rgb);
 
     // variance for direct and indirect, filtered using 3x3 gaussin blur
     const float2 var = computeVarianceCenter(ipos, gDirect, gIndirect);
@@ -114,8 +119,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     // explicitly store/accumulate center pixel with weight 1 to prevent issues
     // with the edge-stopping functions
-    float sumWDirect   = 1.0;
-    float sumWIndirect = 1.0;
+    float   sumWDirect   = 1.0;
+    float   sumWIndirect = 1.0;
     float4  sumDirect    = directCenter;
     float4  sumIndirect  = indirectCenter;
 
@@ -166,7 +171,10 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     // do the demodulation in the last iteration to save memory bandwidth
     if(gPerformModulation)
     {
-        psOut.OutDirect = (psOut.OutDirect * gAlbedo[ipos] + psOut.OutIndirect * gIndirAlbedo[ipos]);
+        float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[ipos].z)).rgb, 1.0f);
+        psOut.OutDirect = psOut.OutDirect * gAlbedo[ipos]
+                        + psOut.OutIndirect * gIndirAlbedo[ipos]
+                        + emissiveColor * gEmitMult;
     }
 
     return psOut;

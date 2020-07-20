@@ -42,8 +42,7 @@ bool GGXGlobalIlluminationPassDemod::initialize(RenderContext* pRenderContext, R
     // Let our resource manager know that we expect some input buffers
     mpResManager->requestTextureResource("WorldPosition");     // Our fragment position, from G-buffer pass
     mpResManager->requestTextureResource("WorldNormal");       // Our fragment normal, from G-buffer pass
-    mpResManager->requestTextureResource("MaterialDiffuse");   // Our fragment diffuse color, from G-buffer pass
-    mpResManager->requestTextureResource("MaterialSpecRough"); // Our fragment specular color, from G-buffer pass
+    mpResManager->requestTextureResource("__TextureData");     // Compacted material texture data, contains diffuse, specular, emissive colors and other data 
     mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);  // Our environment map
 
     // We'll be creating some output buffers.  We store illumination and albedo separately, so we can just
@@ -123,8 +122,7 @@ void GGXGlobalIlluminationPassDemod::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gEmitMult"]     = 1.0f;
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    rayVars["gDiffuseMatl"] = mpResManager->getTexture("MaterialDiffuse");
-    rayVars["gSpecMatl"]    = mpResManager->getTexture("MaterialSpecRough");
+    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     rayVars["gDirectOut"]   = pDirectDstTex;
     rayVars["gIndirectOut"] = pIndirectDstTex;
     rayVars["gOutAlbedo"]   = pOutAlbedoTex;

@@ -21,6 +21,7 @@ import Scene.Raytracing;
 import Scene.Shading;                      // Shading functions, etc   
 import Scene.Lights.Lights;                // Light structures for our current scene
 
+#include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "lambertianPlusShadowsUtils.hlsli"
 
@@ -39,8 +40,7 @@ cbuffer RayGenCB
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
-Texture2D<float4> gDiffuseMatl;
-Texture2D<float4> gSpecMatl;
+Texture2D<float4> gTexData;
 RWTexture2D<float4> gOutput;
 
 
@@ -98,11 +98,11 @@ void LambertShadowsRayGen()
     // Load g-buffer data
     float4 worldPos     = gPos[launchIndex];
     float4 worldNorm    = gNorm[launchIndex];
-    float4 difMatlColor = gDiffuseMatl[launchIndex];
+    float4 difMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].x));
 
     // We're only doing Lambertian, but sometimes Falcor gives a black Lambertian color.
     //    There, this shader uses the spec color for our Lambertian color.
-    float4 specMatlColor = gSpecMatl[launchIndex];
+    float4 specMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].y));
     if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
 
     // If we don't hit any geometry, our difuse material contains our background color.

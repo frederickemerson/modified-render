@@ -31,6 +31,9 @@ bool ModulateAlbedoIllumPass::initialize(RenderContext* pRenderContext, Resource
 {
     if (!pResManager) return false;
 
+    // Our GUI needs less space than other passes, so shrink the GUI window.
+    setGuiSize(int2(300, 30));
+
     // Stash a copy of our resource manager, allowing us to access shared rendering resources
     //    We need an output buffer; tell our resource manager we expect the standard output channel
     mpResManager = pResManager;
@@ -68,6 +71,9 @@ void ModulateAlbedoIllumPass::execute(RenderContext* pRenderContext)
     shaderVars["gIndirect"]    = mpResManager->getTexture(mIndirectIllumChannel);
     shaderVars["gDirAlbedo"]   = mpResManager->getTexture(kDirectAlbedoChannel);
     shaderVars["gIndirAlbedo"] = mpResManager->getTexture(kIndirectAlbedoChannel);
+    // We will need to add the emissive color
+    shaderVars["gTexData"]     = mpResManager->getTexture("__TextureData");
+    shaderVars["ModulateCB"]["gEmitMult"] = 1.0f;
 
     // Run the modulation pass
     mpModulatePass->execute(pRenderContext, mpInternalFbo);

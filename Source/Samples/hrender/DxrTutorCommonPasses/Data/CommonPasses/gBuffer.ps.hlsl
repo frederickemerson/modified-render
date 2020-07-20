@@ -20,13 +20,18 @@
 import Scene.Raster;            // Imports ShaderCommon and DefaultVS, plus material evaluation, VertexOut declaration
 import Scene.Scene;
 
+#include "packingUtils.hlsli"
+
 struct GBuffer
 {
-    float4 wsPos    : SV_Target0;
-    float4 wsNorm   : SV_Target1;
-    float4 matDif   : SV_Target2;
-    float4 matSpec  : SV_Target3;
-    float4 matExtra : SV_Target4;
+    float4 wsPos    : SV_Target0;   // World space position.  .w component = 0 if a background pixel
+    float4 wsNorm   : SV_Target1;   // World space normal.  (.w is distance from camera to hit point; this may not be used)
+    // This render target stores material texture data in a packed format with 8 bits per component.
+    // r: diffuse.r,    diffuse.g,      diffuse.b,          opacity
+    // g: specular.r,   specular.g,     specular.b,         linear roughness
+    // b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
+    // a: IoR,          metallic,       specular trans,     eta
+    float4 texData  : SV_Target2;
 };
 
 // Our main entry point for the g-buffer fragment shader.
@@ -47,11 +52,9 @@ GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
     // Dump out our G buffer channels
     GBuffer gBufOut;
     gBufOut.wsPos    = float4(hitPt.posW, 1.f);
-    gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - cameraPosW) );
-    gBufOut.matDif   = float4(hitPt.diffuse, hitPt.opacity);
-    gBufOut.matSpec  = float4(hitPt.specular, hitPt.linearRoughness);
-    gBufOut.matExtra = float4(hitPt.IoR, hitPt.doubleSided ? 1.f : 0.f, 0.f, 0.f);
-
+    gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - cameraPosW));
+    // Use the function in packingUtils.hlsli to extract the texture data in a compact format
+    gBufOut.texData = asfloat(packTextureData(hitPt));
     return gBufOut;
 }
 

@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 #include "Utils/Math/MathConstants.slangh"
 
 // Include and import common Falcor utilities and data structures
@@ -49,8 +50,7 @@ cbuffer RayGenCB
 // Input textures that need to be set by the C++ code (for the ray gen shader)
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
-Texture2D<float4> gDiffuseMatl;
-Texture2D<float4> gSpecMatl;
+Texture2D<float4> gTexData;
 
 // Output textures that need to be set by the C++ code (for the ray gen shader)
 RWTexture2D<float4> gDirectOut;
@@ -71,8 +71,14 @@ void SimpleDiffuseGIRayGen()
     // Load g-buffer data
     float4 worldPos      = gPos[launchIndex];
     float4 worldNorm     = gNorm[launchIndex];
-    float4 difMatlColor  = gDiffuseMatl[launchIndex];
-    float4 specMatlColor = gSpecMatl[launchIndex];
+    // Get the texture data that is stored in a compact format
+    float4 difMatlColor;
+    float4 specMatlColor;
+    float4 pixelEmissive;
+    float4 matlOthers;
+    unpackTextureData(asuint(gTexData[launchIndex]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
+    // pixelEmissive.w is 1.f if material is double sided, 0.f otherwise
+    float4 extraData = float4(0.0f, pixelEmissive.w, 0.0f, 0.0f);
 
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (worldPos.w != 0.0f);
@@ -82,7 +88,17 @@ void SimpleDiffuseGIRayGen()
     float3 toCamera      = normalize(gScene.camera.getPosition() - worldPos.xyz);
 
     // Check if we're looking at the back of a double-sided material (and if so, flip normal)
+    if (dot(worldNorm.xyz, toCamera) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;
     float NdotV = dot(worldNorm.xyz, toCamera);
+
+    // Grab our geometric normal.  Also make sure this points the right direction.
+    //     This is badly hacked into our G-buffer for now.  We need this because 
+    //     sometimes, when normal mapping, our randomly selected indirect ray will 
+    //     be *below* the surface (due to the normal map perturbations), which will 
+    //     cause light leaking.  We solve by ignoring the ray's contribution if it
+    //     is below the horizon.  
+    float3 noMapN = normalize(extraData.yzw);
+    if (dot(noMapN, toCamera) <= 0.0f) noMapN = -noMapN;
 
     // Initialize our random number generator
     uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
