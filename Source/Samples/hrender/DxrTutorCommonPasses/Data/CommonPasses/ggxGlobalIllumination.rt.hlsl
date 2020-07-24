@@ -71,8 +71,7 @@ void SimpleDiffuseGIRayGen()
     float4 matlOthers;
     unpackTextureData(asuint(gTexData[launchIndex]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
     // pixelEmissive.w is 1.f if material is double sided, 0.f otherwise
-    // matlOthers.r is IoR. Not currently used, but this was the structure of the original fat-GBuffer.
-    float4 extraData = float4(matlOthers.r, pixelEmissive.w, 0.0f, 0.0f);
+    float4 extraData = float4(0.0f, pixelEmissive.w, 0.0f, 0.0f);
     
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (worldPos.w != 0.0f);
@@ -83,7 +82,6 @@ void SimpleDiffuseGIRayGen()
 
     // Make sure our normal is pointed the right direction
     if (dot(worldNorm.xyz, V) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;
-    float NdotV = dot(worldNorm.xyz, V);
 
     // Grab our geometric normal.  Also make sure this points the right direction.
     //     This is badly hacked into our G-buffer for now.  We need this because 
@@ -92,7 +90,7 @@ void SimpleDiffuseGIRayGen()
     //     cause light leaking.  We solve by ignoring the ray's contribution if it
     //     is below the horizon.  
     float3 noMapN = normalize(extraData.yzw);
-    if (dot(noMapN, V) <= 0.0f) noMapN = -noMapN;
+    //if (dot(noMapN, V) <= 0.0f) noMapN = -noMapN;
 
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor    = isGeometryValid ? float3(0,0,0) : difMatlColor.rgb;
@@ -108,13 +106,29 @@ void SimpleDiffuseGIRayGen()
 
         // (Optionally) do explicit direct lighting to a random light in the scene
         if (gDoDirectGI)
-            shadeColor += ggxDirect(randSeed, worldPos.xyz, worldNorm.xyz, V,
-                                   difMatlColor.rgb, specMatlColor.rgb, roughness);
+        {
+            // Compute the incoming direct illumination from a random light, and albedo of the hit spot
+            float3 directColor, directAlbedo;
+            ggxDirect(randSeed, worldPos.xyz, worldNorm.xyz, V, difMatlColor.rgb, specMatlColor.rgb, roughness,
+                      directColor, directAlbedo);
+            // Don't add if there are any nan values
+            float3 addition = directColor * directAlbedo;
+            shadeColor += any(isnan(addition)) ? float3(0, 0, 0) : addition;
+        }
+            
 
         // (Optionally) do indirect lighting for global illumination
         if (gDoIndirectGI && (gMaxDepth > 0))
-            shadeColor += ggxIndirect(randSeed, worldPos.xyz, worldNorm.xyz, noMapN,
-                                      V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0);
+        {
+            // Compute the incoming indirect illumination either from the diffuse or GGX lobe
+            float3 indirectColor, indirectAlbedo;
+            ggxIndirect(randSeed, worldPos.xyz, worldNorm.xyz, noMapN,
+                V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, indirectColor, indirectAlbedo);
+            // Don't add if there are any nan values
+            float3 addition = indirectColor * indirectAlbedo;
+            shadeColor += any(isnan(addition)) ? float3(0, 0, 0) : addition;
+        }
+            
     }
     
     // Since we didn't do a good job above catching NaN's, div by 0, infs, etc.,

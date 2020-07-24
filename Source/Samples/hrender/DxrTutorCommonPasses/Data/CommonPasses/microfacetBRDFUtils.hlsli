@@ -15,6 +15,12 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
+#pragma once
+
+float3 getReflectionVec(float3 H, float3 inVec)
+{
+	return normalize(2.f * dot(inVec, H) * H - inVec);
+}
 
 // The NDF for GGX, see Eqn 19 from 
 //    http://blog.selfshadow.com/publications/s2012-shading-course/hoffman/s2012_pbs_physics_math_notes.pdf
@@ -76,4 +82,56 @@ float3 getGGXMicrofacet(inout uint randSeed, float roughness, float3 hitNorm)
 
 	// Get our GGX NDF sample (i.e., the half vector)
 	return T * (sinThetaH * cos(phiH)) + B * (sinThetaH * sin(phiH)) + hitNorm * cosThetaH;
+}
+
+// Compute GGX term from input parameters
+float3 getGGXColor(float3 V, float3 L, float3 N, float3 specColor, float roughness)
+{
+	// Compute half vector and dot products
+	float3 H = normalize(V + L);
+	float NdotL = saturate(dot(N, L)); // Lambertian term
+	float NdotH = saturate(dot(N, H));
+	float LdotH = saturate(dot(L, H));
+	float NdotV = saturate(dot(N, V));
+
+	// Evaluate our GGX BRDF term
+	float  D = ggxNormalDistribution(NdotH, roughness);
+	float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);
+	float3 F = schlickFresnel(specColor, LdotH);
+
+	// Evaluate the Cook-Torrance Microfacet BRDF model
+	float3 outColor = F * G * D / (4.f * NdotV * NdotL);
+
+	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
+	bool invalid = NdotV * NdotL * LdotH <= 0.0f;
+	return invalid ? float3(0, 0, 0) : outColor;
+}
+
+// Compute GGX term from input parameters
+void getGGXColorAndProb(inout uint randSeed, float3 V, float3 N, float3 specColor, float roughness,
+	out float3 ggxBRDF, out float ggxProb, out float3 L, out float NdotL)
+{
+	// Randomly sample the NDF to get a microfacet in our BRDF to reflect off of
+	float3 H = getGGXMicrofacet(randSeed, roughness, N);
+	// Compute the outgoing direction based on this (perfectly reflective) microfacet
+	L = getReflectionVec(H, V);
+	// Compute dot products
+	NdotL = saturate(dot(N, L)); // Lambertian term
+	float NdotH = saturate(dot(N, H));
+	float LdotH = saturate(dot(L, H));
+	float NdotV = saturate(dot(N, V));
+
+	// Evaluate our GGX BRDF term
+	float  D = ggxNormalDistribution(NdotH, roughness);
+	float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);
+	float3 F = schlickFresnel(specColor, LdotH);
+
+	// Compute the results
+	ggxBRDF = D * G * F / (4.f * NdotL * NdotV); // The Cook-Torrance microfacet BRDF
+	ggxProb = D * NdotH / (4.f * LdotH);         // The probability of sampling vector H from getGGXMicrofacet()
+
+	// Determine if the color is valid (if invalid, we likely have a NaN or Inf)
+	bool invalid = NdotV * NdotL * LdotH <= 0.0f;
+	ggxBRDF = invalid ? float3(0, 0, 0) : ggxBRDF;
+	ggxProb = invalid ? 0.f : ggxProb;
 }

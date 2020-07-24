@@ -89,7 +89,6 @@ void SimpleDiffuseGIRayGen()
 
     // Check if we're looking at the back of a double-sided material (and if so, flip normal)
     if (dot(worldNorm.xyz, toCamera) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;
-    float NdotV = dot(worldNorm.xyz, toCamera);
 
     // Grab our geometric normal.  Also make sure this points the right direction.
     //     This is badly hacked into our G-buffer for now.  We need this because 
@@ -98,7 +97,7 @@ void SimpleDiffuseGIRayGen()
     //     cause light leaking.  We solve by ignoring the ray's contribution if it
     //     is below the horizon.  
     float3 noMapN = normalize(extraData.yzw);
-    if (dot(noMapN, toCamera) <= 0.0f) noMapN = -noMapN;
+    //if (dot(noMapN, toCamera) <= 0.0f) noMapN = -noMapN;
 
     // Initialize our random number generator
     uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
@@ -109,69 +108,25 @@ void SimpleDiffuseGIRayGen()
         // (Optionally) do explicit direct lighting to a random light in the scene
         if (gDoDirectGI)
         {
-            // Get the number of lights in the scene
-            const uint lightCount = gScene.getLightCount();
-
-            // Pick a random light from our scene to sample for direct lighting
-            int lightToSample = min(int(nextRand(randSeed) * lightCount), lightCount - 1);
-
-            // We need to query our scene to find info about the current light
-            float distToLight;
-            float3 lightIntensity;
-            float3 toLight;
-            getLightData(lightToSample, worldPos.xyz, toLight, lightIntensity, distToLight);
-
-            // Compute our cosine / NdotL term
-            float NdotL = saturate(dot(worldNorm.xyz, toLight));
-
-            // Shoot our ray for our direct lighting
-            float shadowMult = float(lightCount) * shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
-
-            // Compute our GGX color
-            float3 ggxTerm = getGGXColor(toCamera, toLight, worldNorm.xyz, NdotV, specMatlColor.rgb, roughness, true);
-
-            // Compute direct color.  Split into light and albedo terms for our SVGF filter
-            float3 directColor = shadowMult * lightIntensity * NdotL; 
-            float3 directAlbedo = ggxTerm + difMatlColor.rgb / M_PI;
-            bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
-            gDirectOut[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : directColor, 1.0f);
-            gOutAlbedo[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : directAlbedo, 1.0f);
+            // Compute the incoming direct illumination from a random light, and albedo of the hit spot
+            float3 directColor, directAlbedo;
+            ggxDirect(randSeed, worldPos.xyz, worldNorm.xyz, toCamera, difMatlColor.rgb, specMatlColor.rgb, roughness,
+                      directColor, directAlbedo);
+            // Store the results
+            gDirectOut[launchIndex] = float4(directColor, 1.0f);
+            gOutAlbedo[launchIndex] = float4(directAlbedo, 1.0f);
         }
 
         // (Optionally) do indirect lighting for global illumination
         if (gDoIndirectGI && (gMaxDepth > 0))
         {
-            // We have to decide whether we sample our diffuse or specular lobe.
-            float probDiffuse   = probabilityToSampleDiffuse(difMatlColor.rgb, specMatlColor.rgb);
-            float chooseDiffuse = (nextRand(randSeed) < probDiffuse);
-
-            float3 bounceDir;
-            if (chooseDiffuse)
-            {   // Randomly select to bounce in our diffuse lobe
-                bounceDir = getCosHemisphereSample(randSeed, worldNorm.xyz);
-            }
-            else
-            {   // Randomly select to bounce in our GGX lobe
-                bounceDir = getReflectionVec(getGGXMicrofacet(randSeed, roughness, worldNorm.xyz), toCamera);
-            }
-
-            // Shoot our indirect color ray
-            float3 bounceColor = shootIndirectRay(worldPos.xyz, bounceDir, gMinT, 0, randSeed, 0);
-
-            // Compute diffuse, ggx shading terms
-            float  NdotL = saturate(dot(worldNorm.xyz, bounceDir));
-            float3 difTerm = max( 5e-3f, difMatlColor.rgb / M_PI );
-            float3 ggxTerm = NdotL * getGGXColor(toCamera, bounceDir, worldNorm.xyz, NdotV, specMatlColor.rgb, roughness, false);
-
-            // Split into an incoming light and "indirect albedo" term to help filter illumination despite sampling 2 different lobes
-            float3 difFinal = float3(1.0f) / probDiffuse * M_PI;             // Has been divided by difTerm.  Multiplied back post-SVGF
-            // float3 difFinal = float3(1.0f) / probDiffuse;                 // Original 
-            float3 ggxFinal = ggxTerm / (difTerm * (1.0f - probDiffuse));    // Has been divided by difTerm.  Multiplied back post-SVGF
-            float3 shadeColor = bounceColor * (chooseDiffuse ? difFinal : ggxFinal);
-            
-            bool colorsNan = any(isnan(shadeColor));
-            gIndirectOut[launchIndex] = float4(colorsNan ? float3(0, 0, 0) : shadeColor, 1.0f);
-            gIndirAlbedo[launchIndex] = float4(difTerm, 1.0f);
+            // Compute the incoming indirect illumination either from the diffuse or GGX lobe
+            float3 indirectColor, indirectAlbedo;
+            ggxIndirect(randSeed, worldPos.xyz, worldNorm.xyz, noMapN,
+                toCamera, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, indirectColor, indirectAlbedo);
+            // Store the results
+            gIndirectOut[launchIndex] = float4(indirectColor, 1.0f);
+            gIndirAlbedo[launchIndex] = float4(indirectAlbedo, 1.0f);
         }
     }
     else

@@ -15,6 +15,9 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
+#pragma once
+
+#include "microfacetBRDFUtils.hlsli"
 
 // The payload structure for our indirect rays
 struct IndirectRayPayload
@@ -103,7 +106,9 @@ float3 lambertianIndirect(inout uint rndSeed, float3 hit, float3 norm, float3 di
     return bounceColor * difColor;
 }
 
-float3 ggxDirect(inout uint rndSeed, float3 hit, float3 N, float3 V, float3 dif, float3 spec, float rough)
+// Get the direct illumination and albedo of a hit spot by randomly sampling a light and computing the GGX BRDF.
+void ggxDirect(inout uint rndSeed, float3 hit, float3 N, float3 V, float3 dif, float3 spec, float rough,
+    out float3 directColor, out float3 directAlbedo)
 {
     // Get the number of lights in the scene
     const uint lightCount = gScene.getLightCount();
@@ -123,33 +128,26 @@ float3 ggxDirect(inout uint rndSeed, float3 hit, float3 N, float3 V, float3 dif,
     // Shoot our shadow ray to our randomly selected light
     float shadowMult = float(lightCount) * shadowRayVisibility(hit, L, gMinT, distToLight);
 
-    // Compute half vectors and additional dot products for GGX
-    float3 H = normalize(V + L);
-    float NdotH = saturate(dot(N, H));
-    float LdotH = saturate(dot(L, H));
-    float NdotV = saturate(dot(N, V));
-
-    // Evaluate terms for our GGX BRDF model
-    float  D = ggxNormalDistribution(NdotH, rough);
-    float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);
-    float3 F = schlickFresnel(spec, LdotH);
-
-    // Evaluate the Cook-Torrance Microfacet BRDF model
-    //     Cancel out NdotL here & the next eq. to avoid catastrophic numerical precision issues.
-    float3 ggxTerm = D*G*F / (4 * NdotV /* * NdotL */);
+    // Compute our GGX color
+    float3 ggxTerm = getGGXColor(V, L, N, spec, rough);
 
     // Compute our final color (combining diffuse lobe plus specular GGX lobe)
-    return shadowMult * lightIntensity * ( /* NdotL * */ ggxTerm + NdotL * dif / M_PI);
+    directColor = shadowMult * lightIntensity * NdotL;
+    directAlbedo = ggxTerm + dif / M_PI;
+
+    bool colorsNan = any(isnan(directColor)) || any(isnan(directAlbedo));
+    directColor = colorsNan ? float3(0.f, 0.f, 0.f) : directColor;
+    directAlbedo = colorsNan ? float3(0.f, 0.f, 0.f) : directAlbedo;
 }
 
-float3 ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth)
+void ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth,
+    out float3 indirectColor, out float3 indirectAlbedo)
 {
     // We have to decide whether we sample our diffuse or specular/ggx lobe.
     float probDiffuse = probabilityToSampleDiffuse(dif, spec);
     float chooseDiffuse = (nextRand(rndSeed) < probDiffuse);
 
-    // We'll need NdotV for both diffuse and specular...
-    float NdotV = saturate(dot(N, V));
+    indirectAlbedo = /* NdotL * */ max (5e-3f, dif / M_PI);
 
     // If we randomly selected to sample our diffuse lobe...
     if (chooseDiffuse)
@@ -159,49 +157,32 @@ float3 ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, f
         float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
 
         // Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-        if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
+        //if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
 
         // Accumulate the color: (NdotL * incomingLight * dif / pi) 
         // Probability of sampling:  (NdotL / pi) * probDiffuse
-        return bounceColor * dif / probDiffuse;
+        indirectColor = /* NdotL * */ bounceColor * M_PI / probDiffuse;
     }
     // Otherwise we randomly selected to sample our GGX lobe
     else
     {
-        // Randomly sample the NDF to get a microfacet in our BRDF to reflect off of
-        float3 H = getGGXMicrofacet(rndSeed, rough, N);
-
-        // Compute the outgoing direction based on this (perfectly reflective) microfacet
-        float3 L = getReflectionVec(H, V);
+        float3 ggxBRDF, L; float ggxProb, NdotL;
+        getGGXColorAndProb(rndSeed, V, N, spec, rough, ggxBRDF, ggxProb, L, NdotL);
 
         // Compute our color by tracing a ray in this direction
         float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
 
         // Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-        if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
-
-        // Compute some dot products needed for shading
-        float  NdotL = saturate(dot(N, L));
-        float  NdotH = saturate(dot(N, H));
-        float  LdotH = saturate(dot(L, H));
-
-        // Evaluate our BRDF using a microfacet BRDF model
-        float  D = ggxNormalDistribution(NdotH, rough);          // The GGX normal distribution
-        float  G = ggxSchlickMaskingTerm(NdotL, NdotV, rough);   // Use Schlick's masking term approx
-        float3 F = schlickFresnel(spec, LdotH);                  // Use Schlick's approx to Fresnel
-        float3 ggxTerm = D * G * F / (4 * NdotL * NdotV);        // The Cook-Torrance microfacet BRDF
-
-        // What's the probability of sampling vector H from getGGXMicrofacet()?
-        float  ggxProb = D * NdotH / (4 * LdotH);
+        //if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
 
         // Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
         //    -> Should really simplify the math above.
-        return NdotL * bounceColor * ggxTerm / (ggxProb * (1.0f - probDiffuse));
+        indirectColor = NdotL * bounceColor * ggxBRDF / (indirectAlbedo * ggxProb * (1.0f - probDiffuse));
+        //return NdotL * bounceColor * ggxBRDF / (ggxProb * (1.0f - probDiffuse));
     }
-}
 
-float3 getReflectionVec(float3 H, float3 inVec) {
-    return normalize(2.f * dot(inVec, H) * H - inVec);
+    bool colorsNan = any(isnan(indirectColor)) || any(isnan(indirectAlbedo));
+    indirectColor = colorsNan ? float3(0.f, 0.f, 0.f) : indirectColor;
 }
 
 [shader("closesthit")]
@@ -216,8 +197,10 @@ void IndirectClosestHit(uniform HitShaderParams hitParams, inout IndirectRayPayl
     // Do direct illumination at this hit location
     if (gDoDirectGI)
     {
-        rayData.color += ggxDirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.V,
-            shadeData.diffuse, shadeData.specular, shadeData.linearRoughness);
+        float3 directColor, directAlbedo;
+        ggxDirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.V,
+            shadeData.diffuse, shadeData.specular, shadeData.linearRoughness, directColor, directAlbedo);
+        rayData.color += directColor * directAlbedo;
     }
 
     // Do indirect illumination at this hit location (if we haven't traversed too far)
@@ -226,7 +209,9 @@ void IndirectClosestHit(uniform HitShaderParams hitParams, inout IndirectRayPayl
         // Use the same normal for the normal-mapped and non-normal mapped vectors... This means we could get light
         //     leaks at secondary surfaces with normal maps due to indirect rays going below the surface.  This
         //     isn't a huge issue, but this is a (TODO: fix)
-        rayData.color += ggxIndirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.N, shadeData.V,
-            shadeData.diffuse, shadeData.specular, shadeData.linearRoughness, rayData.rayDepth);
+        float3 indirectColor, indirectAlbedo;
+        ggxIndirect(rayData.rndSeed, shadeData.posW, shadeData.N, shadeData.N, shadeData.V,
+            shadeData.diffuse, shadeData.specular, shadeData.linearRoughness, rayData.rayDepth, indirectColor, indirectAlbedo);
+        rayData.color += indirectColor * indirectAlbedo;
     }
 }
