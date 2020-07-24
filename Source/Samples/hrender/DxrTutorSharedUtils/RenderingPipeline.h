@@ -124,6 +124,9 @@ private:
     // Checks if <presetSequence> is a valid preset
     bool isPresetValid(const std::vector<uint32_t>& presetSequence);
 
+    // Sets all the selected passes to those set in mPresetsData[mSelectedPreset]
+    void selectPreset();
+
     // Check if any of the active passes have requested a pipeline change; also resets pass rebind flags.
     bool anyRequestedPipelineChanges(void);
 

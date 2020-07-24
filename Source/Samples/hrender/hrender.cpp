@@ -61,7 +61,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --- Pass 1 creates a GBuffer --- //
     // -------------------------------- //
     // All GBuffers support camera jitter AA, environment map. Rasterized GBuffers have z-fighting issues.
-    // TODO: Rasterized GBuffer support for emissive materials.
     pipeline->setPassOptions(0, {
         // Rasterized GBuffer 
         JitteredGBufferPass::create(),

@@ -386,20 +386,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
             // Ignore the null selection 
             if (mSelectedPreset != kNullPresetId)
             {
-                const std::vector<uint32_t>& selectedPassIdxs = mPresetsData[mSelectedPreset].selectedPassIdxs;
-                for (uint32_t i = 0; i < selectedPassIdxs.size(); i++)
-                {
-                    // The ith element is the index of the pass selector to choose
-                    uint32_t idx = selectedPassIdxs[i];
-                    // Get the underlying pass index from the pass selector.
-                    uint32_t passIdx = mPassSelectors[i][idx].value;
-                    mPassId[i] = passIdx;
-
-                    ::RenderPass::SharedPtr selectedPass = (mPassId[i] != kNullPassId) ? mAvailPasses[mPassId[i]] : nullptr;
-                    changePass(i, selectedPass);
-                }
-                mpResourceManager->setCopyOutTextureName(mPresetsData[mSelectedPreset].outBuf);
-                mGlobalPipeRefresh = true;
+                selectPreset();
             }
         }
     }
@@ -410,6 +397,24 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
     w.separator();
 
     if (mpScene) mpScene->renderUI(w);
+}
+
+void RenderingPipeline::selectPreset()
+{
+    const std::vector<uint32_t>& selectedPassIdxs = mPresetsData[mSelectedPreset].selectedPassIdxs;
+    for (uint32_t i = 0; i < selectedPassIdxs.size(); i++)
+    {
+        // The ith element is the index of the pass selector to choose
+        uint32_t idx = selectedPassIdxs[i];
+        // Get the underlying pass index from the pass selector.
+        uint32_t passIdx = mPassSelectors[i][idx].value;
+        mPassId[i] = passIdx;
+
+        ::RenderPass::SharedPtr selectedPass = (mPassId[i] != kNullPassId) ? mAvailPasses[mPassId[i]] : nullptr;
+        changePass(i, selectedPass);
+    }
+    mpResourceManager->setCopyOutTextureName(mPresetsData[mSelectedPreset].outBuf);
+    mGlobalPipeRefresh = true;
 }
 
 void RenderingPipeline::removePassFromPipeline(uint32_t passNum)
@@ -630,6 +635,13 @@ void RenderingPipeline::onFirstRun()
     {
         Scene::SharedPtr loadedScene = loadScene(mLastKnownSize, mpResourceManager->getDefaultSceneName().c_str());
         if (loadedScene) onInitNewScene(gpFramework->getRenderContext(), loadedScene);
+    }
+
+    // By default, select the first preset if it exists
+    if (!mPresetSelector.empty())
+    {
+        mSelectedPreset = 0;
+        selectPreset();
     }
 
     mFirstFrame = false;
