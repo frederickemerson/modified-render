@@ -72,8 +72,11 @@ GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position)
     GBuffer gBufOut;
     gBufOut.wsPos = float4(0.0f, 0.0f, 0.0f, 0.0f);
     gBufOut.wsNorm = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    gBufOut.svgfLinZ = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // LinearZ value is left as -1.0f to indicate this value as invalid
+    gBufOut.svgfLinZ = float4(-1.0f, 0.0f, 0.0f, 0.0f);
     gBufOut.svgfMoVec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // LinearZ value is left as -1.0f to indicate this value as invalid
+    gBufOut.svgfCompact = float4(0.0f, -1.0f, 0.0f, 0.0f);
     // Put the environment map color into the diffuse component of the texture data,
     // clear the rest
     gBufOut.texData = float4(asfloat(packUnorm4x8(float4(bgColor, 0.0f))), 0.f, 0.f, 0.f);
