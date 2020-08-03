@@ -19,8 +19,8 @@
 float normalDistanceCos(float3 n1, float3 n2, float power)
 {
     //return pow(max(0.0, dot(n1, n2)), 128.0);
-    //return pow( saturate(dot(n1,n2)), power);
-    return 1.0f;
+    return pow( saturate(dot(n1,n2)), power);
+    //return 1.0f;
 }
 
 float normalDistanceTan(float3 a, float3 b)

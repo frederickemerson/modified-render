@@ -43,6 +43,7 @@ cbuffer PerImageCB : register(b0)
     //bool        gPerformDemodulation;
 };
 
+// Given color x and albedo, retrieve the illumination
 float3 demodulate(float3 x, float3 albedo)
 {
     return x / max(albedo, float3(0.001, 0.001, 0.001));
@@ -64,9 +65,9 @@ bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal
 {
     const int2 imageDim = getTextureDims(gDirect, 0);
     // check whether reprojected pixel is inside of the screen
-    if(any(lessThan(coord, int2(1,1))) || any(greaterThan(coord, imageDim - int2(1,1)))) return false;
+    if(any(coord < int2(1,1)) || any(coord > imageDim - int2(1,1))) return false;
     // check if deviation of depths is acceptable
-    if(abs(Zprev - Z) / (fwidthZ + 1e-4) > 2.0) return false;
+    if(abs(Zprev - Z) / (fwidthZ + 1e-2) > 10.0) return false;
     // check normals for compatibility
     if(distance(normal, normalPrev) / (fwidthNormal + 1e-2) > 16.0) return false;
 
@@ -80,11 +81,12 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
 
     // xy = motion, z = length(fwidth(pos)), w = length(fwidth(normal))
     float4 motion = gMotion[ipos]; 
+    float normalFwidth = motion.w;
 
     // +0.5 to account for texel center offset
     const int2 iposPrev = int2(float2(ipos) + motion.xy * imageDim + float2(0.5,0.5));
 
-    // stores: Z, fwidth(z), z_prev
+    // stores: linearZ, max derivative of linearZ, z_prev, objNorm (.zw are not used here)
     float4 depth = gLinearZ[ipos];
     float3 normal = octToDir(asuint(depth.w));
 
@@ -104,7 +106,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
         float4 depthPrev = gPrevLinearZ[loc];
         float3 normalPrev = octToDir(asuint(depthPrev.w));
 
-        v[sampleIdx] = isReprjValid(iposPrev, depth.z, depthPrev.x, depth.y, normal, normalPrev, motion.w);
+        v[sampleIdx] = isReprjValid(iposPrev, depth.x, depthPrev.x, depth.y, normal, normalPrev, normalFwidth);
 
         valid = valid || v[sampleIdx];
     }    
@@ -120,10 +122,6 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
                             x  * (1 - y), 
                        (1 - x) *      y,
                             x  *      y };
-
-        prevDirect   = float4(0,0,0,0);
-        prevIndirect = float4(0,0,0,0);
-        prevMoments  = float4(0,0,0,0);
 
         // perform the actual bilinear interpolation
         for (int sampleIdx = 0; sampleIdx < 4; sampleIdx++)
@@ -158,7 +156,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
                 float4 depthFilter = gPrevLinearZ[p];
                 float3 normalFilter = octToDir(asuint(depthFilter.w));
 
-                if ( isReprjValid(iposPrev, depth.z, depthFilter.x, depth.y, normal, normalFilter, motion.w) )
+                if ( isReprjValid(iposPrev, depth.x, depthFilter.x, depth.y, normal, normalFilter, normalFwidth) )
                 {
                     prevDirect += gPrevDirect[p];
                     prevIndirect += gPrevIndirect[p];

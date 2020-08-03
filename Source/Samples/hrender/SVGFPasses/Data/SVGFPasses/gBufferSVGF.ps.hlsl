@@ -43,9 +43,15 @@ struct GBuffer
     // b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
     // a: IoR,          metallic,       specular trans,     eta
     float4 texData     : SV_Target2;
-    float4 svgfLinZ    : SV_Target3;   // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
-    float4 svgfMoVec   : SV_Target4;   // SVGF-specific buffer containing motion vector and fwidth of pos & normal
-    float4 svgfCompact : SV_Target5;   // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
+    // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
+    // x: linear Z,     y: max linZ-deriv,  z: last frame's z,  w: obj-space normal oct format (2 x uint16 packed in a 32-bit float)
+    float4 svgfLinZ    : SV_Target3;
+    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
+    // xy: Motion vector,   z: fwidth of position,  w: fwidth of normal
+    float4 svgfMoVec   : SV_Target4;
+    // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
+    // x:  world-space normal,  y: linear z,    z: max linZ-deriv,  w: dummy
+    float4 svgfCompact : SV_Target5;   
 };
 // A simple utility to convert a float to a 2-component octohedral representation packed into one uint
 uint dirToOct(float3 normal)
@@ -88,7 +94,8 @@ GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID)
     // The 'linearZ' buffer
     float linearZ    = vsOut.base.posH.z * vsOut.base.posH.w;
     float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
-    float objNorm    = asfloat(dirToOct(normalize(vsOut.normalObj)));
+    //float objNorm = asfloat(dirToOct(normalize(vsOut.normalObj)));
+    float objNorm    = asfloat(dirToOct(normalize(hitPt.N))); // Using world normal instead
     float4 svgfLinearZOut = float4(linearZ, maxChangeZ, vsOut.base.prevPosH.z, objNorm);
 
     // The 'motion vector' buffer

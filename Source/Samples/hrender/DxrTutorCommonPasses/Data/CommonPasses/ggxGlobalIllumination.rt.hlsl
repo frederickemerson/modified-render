@@ -80,9 +80,6 @@ void SimpleDiffuseGIRayGen()
     float roughness = specMatlColor.a * specMatlColor.a;
     float3 V        = normalize(gScene.camera.getPosition() - worldPos.xyz);
 
-    // Make sure our normal is pointed the right direction
-    if (dot(worldNorm.xyz, V) <= 0.0f) worldNorm.xyz = -worldNorm.xyz;
-
     // Grab our geometric normal.  Also make sure this points the right direction.
     //     This is badly hacked into our G-buffer for now.  We need this because 
     //     sometimes, when normal mapping, our randomly selected indirect ray will 

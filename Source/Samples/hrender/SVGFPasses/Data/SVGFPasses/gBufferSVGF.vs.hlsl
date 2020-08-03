@@ -17,6 +17,7 @@
 **********************************************************************************************************************/
 
 #include "svgfGBufData.hlsli"
+#define HAS_NORMAL
 
 // Invokes Slang to import the default vertex shader, it's inputs and outputs
 import Scene.Raster;
@@ -30,7 +31,7 @@ GBufVertexOut main(VSIn vIn)
 
     // Seems like this is never used?
 #ifdef HAS_NORMAL
-    vOut.normalObj = vIn.normal;      // Our g-buffer is storing an object-space normal, so pass that down
+    vOut.normalObj = vIn.unpack().normal; // Our g-buffer is storing an object-space normal, so pass that down
 #else
     vOut.normalObj = 0;               //  .... Unless we don't have an object space normal.
 #endif

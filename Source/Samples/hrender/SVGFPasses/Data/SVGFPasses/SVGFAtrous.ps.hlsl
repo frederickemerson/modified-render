@@ -129,7 +129,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         for (int xx = -2; xx <= 2; xx++)
         {
             const int2 p     = ipos + int2(xx, yy) * gStepSize;
-            const bool inside = all(greaterThanEqual(p, int2(0,0))) && all(lessThan(p, screenSize));
+            const bool inside = all(p >= int2(0,0)) && all(p < screenSize);
 
             const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
