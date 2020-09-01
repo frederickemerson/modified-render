@@ -35,6 +35,7 @@ struct ShadowRayPayload
 cbuffer RayGenCB
 {
     float gMinT;
+    bool gSkipShadows; // Render all lights without shadow rays
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -127,7 +128,7 @@ void LambertShadowsRayGen()
             float LdotN = saturate(dot(worldNorm.xyz, toLight));
 
             // Shoot our ray
-            float shadowMult = shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+            float shadowMult = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
             // Compute our Lambertian shading color
             shadeColor += shadowMult * LdotN * lightIntensity; 

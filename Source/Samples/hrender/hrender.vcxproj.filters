@@ -74,6 +74,9 @@
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>
     </ClCompile>
+    <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp">
+      <Filter>RasterizedPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -153,6 +156,9 @@
     <ClInclude Include="TestPasses\DecodeGBufferPass.h">
       <Filter>TestPasses</Filter>
     </ClInclude>
+    <ClInclude Include="RasterizedPasses\RasterLightingPass.h">
+      <Filter>RasterizedPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -175,6 +181,12 @@
     </Filter>
     <Filter Include="SVGFPasses\Shaders">
       <UniqueIdentifier>{afd72e98-215e-4b8b-83f6-d44ca28fbc52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RasterizedPasses">
+      <UniqueIdentifier>{39787612-65b8-4dad-9e27-e14ce972a9f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RasterizedPasses\Shaders">
+      <UniqueIdentifier>{c6bd3c7f-5a16-431b-9531-b23c8841573f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -282,6 +294,18 @@
     </ShaderSource>
     <ShaderSource Include="TestPasses\GBufferComponents.slang">
       <Filter>TestPasses</Filter>
+    </ShaderSource>
+    <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl">
+      <Filter>RasterizedPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.ps.hlsl">
+      <Filter>RasterizedPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.vs.hlsl">
+      <Filter>RasterizedPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli">
+      <Filter>RasterizedPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

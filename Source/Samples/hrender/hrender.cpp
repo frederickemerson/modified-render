@@ -37,6 +37,7 @@
 #include "DxrTutorCommonPasses/SimpleGBufferPass.h"
 #include "DxrTutorCommonPasses/ThinLensGBufferPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
+#include "RasterizedPasses/RasterLightingPass.h"
 #include "SVGFPasses/GBufferForSVGF.h"
 #include "SVGFPasses/GGXGlobalIlluminationDemod.h"
 #include "SVGFPasses/SVGFPass.h"
@@ -83,6 +84,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     // ------ This pass is the main shading pass
     pipeline->setPassOptions(2, {
+        // Lambertian BRDF for local lighting, shadow mapping
+        RasterLightingPass::create("Rasterized Lighting"),
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         LambertianPlusShadowPass::create("Lambertian Plus Shadows"),
         // Lambertian BRDF for local lighting, 1 shadow ray and 1 scatter ray per pixel
@@ -124,14 +127,18 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // ============================ //
 
     // Presets are "1-indexed", option 0 is the null option to disable the pass
-    std::vector<uint32_t> normalGBuff_ggxGI_Options         = { 1, 0, 3, 0, 1, 1 };
-    std::vector<uint32_t> lpGBuff_ggxGI_Options             = { 2, 0, 3, 0, 1, 1 };
-    std::vector<uint32_t> svgfGBuff_ggxGI_Options           = { 3, 0, 4, 1, 1, 1 };
-    std::vector<uint32_t> svgfGBuff_ggxGIDenoised_Options   = { 3, 0, 4, 2, 1, 1 };
-    std::vector<uint32_t> normalGBuff_decodeGBuffer_Options = { 1, 0, 5, 0, 1, 1 };
+    std::vector<uint32_t> normalGBuff_rasterized_Options    = { 1, 0, 1, 0, 1, 1 };
+    std::vector<uint32_t> normalGBuff_lambertian_Options    = { 1, 0, 2, 0, 1, 1 };
+    std::vector<uint32_t> normalGBuff_ggxGI_Options         = { 1, 0, 4, 0, 1, 1 };
+    std::vector<uint32_t> lpGBuff_ggxGI_Options             = { 2, 0, 4, 0, 1, 1 };
+    std::vector<uint32_t> svgfGBuff_ggxGI_Options           = { 3, 0, 5, 1, 1, 1 };
+    std::vector<uint32_t> svgfGBuff_ggxGIDenoised_Options   = { 3, 0, 5, 2, 1, 1 };
+    std::vector<uint32_t> normalGBuff_decodeGBuffer_Options = { 1, 0, 6, 0, 1, 1 };
     std::vector<uint32_t> normalGBuff_AO_Options            = { 1, 1, 0, 0, 1, 1 };
 
     pipeline->setPresets({
+        RenderingPipeline::PresetData("Rasterized Lighting", "Rasterized Lighting", normalGBuff_rasterized_Options),
+        RenderingPipeline::PresetData("Lambertian Lighting", "Lambertian Plus Shadows", normalGBuff_lambertian_Options),
         RenderingPipeline::PresetData("Global Illum (Rasterized GBuffer)", "Global Illum., GGX BRDF", normalGBuff_ggxGI_Options),
         RenderingPipeline::PresetData("Global Illum (Raytraced GBuffer)", "Global Illum., GGX BRDF", lpGBuff_ggxGI_Options),
         RenderingPipeline::PresetData("Global Illum (Demodulated Raster GBuffer)", "Modulate Albedo/Illum", svgfGBuff_ggxGI_Options),

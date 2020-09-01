@@ -35,7 +35,7 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     mpResManager = pResManager;
 
     // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(int2(300, 30));
+    setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
@@ -79,6 +79,7 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     // Set our ray tracing shader variables 
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
+    rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
     rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
@@ -88,4 +89,13 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
+void LambertianPlusShadowPass::renderGui(Gui::Window* pPassWindow)
+{
+    int dirty = 0;
+
+    dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
+
+    // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
+    if (dirty) setRefreshFlag();
+}
 

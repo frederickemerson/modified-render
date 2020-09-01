@@ -31,6 +31,7 @@
     <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp" />
     <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp" />
     <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
     <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
@@ -58,6 +59,7 @@
     <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h" />
     <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h" />
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="RasterizedPasses\RasterLightingPass.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
     <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
@@ -93,6 +95,10 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl" />
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli" />
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.ps.hlsl" />
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.vs.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
