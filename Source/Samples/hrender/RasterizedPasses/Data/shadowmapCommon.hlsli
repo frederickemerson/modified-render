@@ -12,6 +12,7 @@ struct ShadowMapVertexOut
 // Takes a direction vector and returns the UV and index of the cube map.
 // UV will be in range [0, 1], and must be multiplied by texture dimensions to
 // get the pixel coordinates.
+// The cubemap is actually a res * (res*6) shadow map.
 float3 dirToCubeCoords(float3 dir)
 {
     float x = dir.x; float y = dir.y; float z = dir.z;

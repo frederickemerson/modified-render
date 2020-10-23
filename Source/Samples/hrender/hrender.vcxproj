@@ -97,6 +97,7 @@
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli" />
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.ps.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.vs.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />

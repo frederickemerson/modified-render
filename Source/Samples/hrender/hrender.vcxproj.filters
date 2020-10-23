@@ -307,6 +307,9 @@
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli">
       <Filter>RasterizedPasses\Shaders</Filter>
     </ShaderSource>
+    <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl">
+      <Filter>RasterizedPasses\Shaders</Filter>
+    </ShaderSource>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

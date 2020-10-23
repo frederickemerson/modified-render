@@ -66,7 +66,7 @@ public:
 
     // Execute the shader.
     void execute(RenderContext::SharedPtr pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
-    void execute(RenderContext* pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo);
+    void execute(RenderContext* pRenderContext, GraphicsState::SharedPtr pGfxState, const Fbo::SharedPtr &pTargetFbo, bool setVp0Sc0 = true);
 
     Falcor::GraphicsVars::SharedPtr getVars();
 
