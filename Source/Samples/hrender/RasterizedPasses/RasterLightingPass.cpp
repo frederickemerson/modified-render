@@ -48,15 +48,16 @@ bool RasterLightingPass::initialize(RenderContext* pRenderContext, ResourceManag
 
     // Create our rasterization state and our raster shader wrapper for creating shadow maps
     mpCubeGfxState = GraphicsState::create();
-    updateCullMode(); // Enable front face culling by default
-    // For the directional map, we will disable culling (for indoor roof type things), this
-    // might be changed in the future
     mpDirGfxState = GraphicsState::create();
-    {
-        RasterizerState::Desc rsDesc;
-        rsDesc.setCullMode(RasterizerState::CullMode::None);
-        mpDirGfxState->setRasterizerState(RasterizerState::create(rsDesc));
-    }
+    updateCullMode(); // Enable front face culling by default
+
+    // For the directional map, uncomment this to disable culling (for indoor roof type things)
+    //{
+    //    RasterizerState::Desc rsDesc;
+    //    rsDesc.setCullMode(RasterizerState::CullMode::None);
+    //    mpDirGfxState->setRasterizerState(RasterizerState::create(rsDesc));
+    //}
+
     mpShadowPass = RasterLaunch::createFromFiles(kShadowVertShader, kShadowFragShader);
     mpShadowCubePass = RasterLaunch::createFromFiles(kShadowVertShader, kShadowCubeFragShader);
 
@@ -81,10 +82,6 @@ void RasterLightingPass::initScene(RenderContext* pRenderContext, Scene::SharedP
         mpShadowPass->setScene(mpScene);
         mpShadowCubePass->setScene(mpScene);
 
-        // The size of the buffer includes the directional lights, and thus might be slightly oversized
-        mLightPosBuffer = Buffer::createStructured(mpRays->getRayVars()["gLightLocations"],
-            (uint32_t)mpScene->getLightCount(), Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, nullptr, false);
-
         // Count the number of point/directional lights in the scene to create shadow cubemaps/directional shadow maps
         mNumPointLights = 0; mNumDirLights = 0;
         for (uint i = 0; i < mpScene->getLightCount(); i++)
@@ -97,6 +94,10 @@ void RasterLightingPass::initScene(RenderContext* pRenderContext, Scene::SharedP
 
         if (mNumPointLights > 0)
         {
+            // Create the array of point light positions for drawing of debug lights
+            mLightPosBuffer = Buffer::createStructured(mpRays->getRayVars()["gLightLocations"],
+                mNumPointLights, Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, nullptr, false);
+
             // Create our shadow map textures for each point light, which are arrays of Texture2D of 6*resolution each
             // This texture is used to store distance^2 of light to the object
             mpCubeShadowMapTex = Texture::create2D(mCubeShadowMapRes, mCubeShadowMapRes * 6, ResourceFormat::R32Float,
@@ -107,13 +108,20 @@ void RasterLightingPass::initScene(RenderContext* pRenderContext, Scene::SharedP
         }
         if (mNumDirLights > 0)
         {
-            // Create our shadow map textures for each point light, which are arrays of 6 Texture2D each
+            // Create our shadow map textures for the directional light, which are arrays of NUM_CASCADES Texture2D
+            // We assume there is only one directional light in a scene.
             // This texture is used to store distance^2 of light to the object
             mpDirShadowMapTex = Texture::create2D(mDirShadowMapRes, mDirShadowMapRes, ResourceFormat::R32Float,
-                mNumDirLights, Texture::kMaxPossible, nullptr, ResourceManager::kDefaultFlags);
+                NUM_CASCADES, Texture::kMaxPossible, nullptr, ResourceManager::kDefaultFlags);
             // This texture is simply used for z-buffering
             mpDirShadowMapZTex = Texture::create2D(mDirShadowMapRes, mDirShadowMapRes, ResourceFormat::D24UnormS8,
-                mNumDirLights, Texture::kMaxPossible, nullptr, ResourceManager::kDepthBufferFlags);
+                NUM_CASCADES, Texture::kMaxPossible, nullptr, ResourceManager::kDepthBufferFlags);
+            mDirShadowOriginBuffer = Buffer::createStructured(mpRays->getRayVars()["gDirOrigins"],
+                NUM_CASCADES, Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, nullptr, false);
+            mDirShadowRadiusBuffer = Buffer::createStructured(mpRays->getRayVars()["gDirRadii"],
+                NUM_CASCADES, Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, nullptr, false);
+            mDirShadowViewProjBuffer = Buffer::createStructured(mpRays->getRayVars()["gDirViewProj"],
+                NUM_CASCADES, Resource::BindFlags::ShaderResource, Buffer::CpuAccess::None, nullptr, false);
         }
     }
 }
@@ -136,12 +144,15 @@ void RasterLightingPass::execute(RenderContext* pRenderContext)
     rayVars["gOutput"]        = pDstTex;
     rayVars["RasterBuf"]["gUsingShadowMapping"] = mUsingShadowMapping;
     rayVars["RasterBuf"]["gDirShadowMapRes"]    = mDirShadowMapRes;
+    rayVars["RasterBuf"]["gDirAmbient"]         = mDirAmbient;
+    rayVars["RasterBuf"]["gDirShadowBias"]      = mDirShadowBias;
     rayVars["RasterBuf"]["gCubeShadowMapRes"]   = mCubeShadowMapRes;
     rayVars["RasterBuf"]["gCubeShadowFar2"]     = mCubeShadowFar * mCubeShadowFar;
-    rayVars["RasterBuf"]["gDirShadowBias"]      = mDirShadowBias;
     rayVars["RasterBuf"]["gCubeShadowBias"]     = mCubeShadowBias;
-    // Debug light drawing
+    rayVars["RasterBuf"]["gNumCascades"]        = NUM_CASCADES;
+    // Debug light/cascade drawing
     rayVars["RasterBuf"]["gShowLights"]         = mShowLights;
+    rayVars["RasterBuf"]["gShowCascades"]         = mShowCascades;
     // PCF options
     rayVars["RasterBuf"]["gUsingPCF"]           = mUsingPCF;
     rayVars["RasterBuf"]["gCubePCFWidth"]       = mCubePCFWidth;
@@ -234,84 +245,107 @@ void RasterLightingPass::fillShadowDirMap(Falcor::RenderContext* pRenderContext,
     // Get the parameter block to send variables to the shader
     auto shadowVars = mpShadowPass->getVars();
 
-    // Get world space bounding coordinates of the camera's view
-    float3 crd[8]; float3 center; Bounds b;
-    camClipSpaceToWorldSpace(mpScene->getCamera().get(), crd, b, center, mDirShadowRadius);
-
-    // Create directional shadow map
     float3 lightDir = ((DirectionalLight*)currLight.get())->getWorldDirection();
-    glm::mat4 view = glm::lookAt(center, center + lightDir, float3(0.f, 1.f, 0.f));
 
-    glm::mat4 proj = glm::ortho(-mDirShadowRadius, mDirShadowRadius, -mDirShadowRadius, mDirShadowRadius, -mDirShadowRadius, mDirShadowRadius);
-    glm::mat4 shadowViewProj = proj * view;
+    // Store the maximum frustum radius
+    float maxRadius = 0.0f;
+    // Compute origins and radii of all the cascades
+    for (uint i = 0; i < NUM_CASCADES; i++)
+    {
+        // Get world space bounding coordinates of the camera's view
+        camClipSpaceToWorldSpace(mpScene->getCamera().get(), mDirShadowOrigin[i], mDirShadowRadius[i], i);
+        maxRadius = std::max(maxRadius, mDirShadowRadius[i]);
+    }
 
-    // Render the scene with the computed matrix
-    // Vertex shader variables
-    shadowVars["ShadowMapBuf"]["gLightViewProj"] = shadowViewProj;
+    // Compute view-projection matrices and render the shadow maps for each cascade
+    for (uint i = 0; i < NUM_CASCADES; i++)
+    {
+        // Create directional shadow map
+        glm::mat4 view = glm::lookAt(mDirShadowOrigin[i], mDirShadowOrigin[i] + lightDir, float3(0.f, 1.f, 0.f));
+        glm::mat4 proj = glm::ortho(-mDirShadowRadius[i], mDirShadowRadius[i],
+                                    -mDirShadowRadius[i], mDirShadowRadius[i],
+                                    -maxRadius, maxRadius);
+        mDirShadowViewProj[i] = proj * view;
+        // Render the scene with the computed matrix
+        // Vertex shader variables
+        shadowVars["ShadowMapBuf"]["gLightViewProj"] = mDirShadowViewProj[i];
 
-    // Lighting pass variables
+        // Create an FBO using the specific perspective being rendered
+        auto pTargetFbo = Fbo::create();
+        pTargetFbo->attachColorTarget(mpDirShadowMapTex, 0, 0u, i);
+        pTargetFbo->attachDepthStencilTarget(mpDirShadowMapZTex, 0u, i);
+
+        // Render the scene from this perspective
+        mpShadowPass->execute(pRenderContext, mpDirGfxState, pTargetFbo);
+    }
+
+    // Lighting pass variables that were computed for the shadowmap's cascades
     auto shadingVars = mpRays->getRayVars();
-    shadingVars["RasterBuf"]["gDirViewProj"] = shadowViewProj;
-
-    // Create an FBO using the specific perspective being rendered
-    auto pTargetFbo = Fbo::create();
-    pTargetFbo->attachColorTarget(mpDirShadowMapTex, 0);
-    pTargetFbo->attachDepthStencilTarget(mpDirShadowMapZTex);
-
-    // Render the scene from this perspective
-    mpShadowPass->execute(pRenderContext, mpDirGfxState, pTargetFbo);
+    // The computed shadow view-projection matrices for each cascade
+    mDirShadowViewProjBuffer->setBlob(mDirShadowViewProj, 0, NUM_CASCADES * sizeof(glm::mat4));
+    shadingVars->setBuffer("gDirViewProj", mDirShadowViewProjBuffer);
+    // The bounding radius of each cascade
+    mDirShadowRadiusBuffer->setBlob(mDirShadowRadius, 0, NUM_CASCADES * sizeof(float));
+    shadingVars->setBuffer("gDirRadii", mDirShadowRadiusBuffer);
+    // The origin of each cascade
+    mDirShadowOriginBuffer->setBlob(mDirShadowOrigin, 0, NUM_CASCADES * sizeof(float3));
+    shadingVars->setBuffer("gDirOrigins", mDirShadowOriginBuffer);
 }
 
 void RasterLightingPass::drawDebugLights()
 {
     auto rayVars = mpRays->getRayVars();
 
-    // TODO: This is the buffer to be sent to GPU. Does not really need to be computed per frame,
-    // we should use a dirty bit to do that.
-    std::vector<float3> lightPositions;
-    // The number of point lights to be sent to the shader, so that the correct number of lights are rendered.
-    // Cannot be precomputed, since we do CPU clipping of the lights.
-    uint32_t numPointLights = 0;
-
-    const glm::mat4& camViewProj = mpScene->getCamera()->getViewProjMatrix();
-    uint32_t lightCount = mpScene->getLightCount();
-    for (uint32_t i = 0; i < lightCount; i++)
+    if (is_set(mpScene->getUpdates(), Scene::UpdateFlags::All))
     {
-        Light::SharedPtr currLight = mpScene->getLight(i);
+        std::vector<float3> lightPositions;
+        // The number of point lights to be sent to the shader, so that the correct number of lights are rendered.
+        // Cannot be precomputed, since we do CPU clipping of the lights.
+        mNumPointLightsVisible = 0;
 
-        // We only render point lights
-        if (currLight->getType() != LightType::Point) continue;
+        const glm::mat4& camViewProj = mpScene->getCamera()->getViewProjMatrix();
+        uint32_t lightCount = mpScene->getLightCount();
+        for (uint32_t i = 0; i < lightCount; i++)
+        {
+            Light::SharedPtr currLight = mpScene->getLight(i);
 
-        // Get the light's world position
-        float3 posw = currLight->getData().posW;
-        // We transpose because we need to pre-multiply the column-major matrix. 
-        float4 posh = float4(posw, 1.0f) * glm::transpose(camViewProj);
-        // Perform perspective division (divide x, y, z by w, where w increases the further the object is)
-        // This gives us clip coordinates ([-1.0, 1.0] NDC)
-        float3 posh_ndc = posh / posh[3];
+            // We only render point lights
+            if (currLight->getType() != LightType::Point) continue;
 
-        // Clip the light if it's out of view
-        if (fabs(posh_ndc.x) >= 1 || fabs(posh_ndc.y) >= 1 || posh_ndc.z >= 1) continue;
+            // Get the light's world position
+            float3 posw = currLight->getData().posW;
+            float4 posh = camViewProj * float4(posw, 1.0f);
+            // Perform perspective division (divide x, y, z by w, where w increases the further the object is)
+            // This gives us clip coordinates ([-1.0, 1.0] NDC)
+            float3 posh_ndc = posh / posh[3];
 
-        // Convert from NDC to window coordinates [0, 1.0]. We flip the y-axis because the y-indices in Falcor are flipped.
-        // To render the light positions in the shader, we need to put this into viewport space by multiplying
-        // the dimensions of the viewport.
-        float3 pos_window = float3(posh_ndc[0], posh_ndc[1] * (-1.f), posh_ndc[2]) * 0.5f + .5f;
+            // Clip the light if it's out of view
+            if (fabs(posh_ndc.x) >= 1 || fabs(posh_ndc.y) >= 1 || posh_ndc.z >= 1) continue;
 
-        // Store this in the vector that will be sent to the GPU
-        lightPositions.push_back(pos_window);
-        numPointLights++;
-    }
+            // Convert from NDC to window coordinates [0, 1.0]. We flip the y-axis because the y-indices in Falcor are flipped.
+            // To render the light positions in the shader, we need to put this into viewport space by multiplying
+            // the dimensions of the viewport.
+            float3 pos_window = float3(posh_ndc[0], posh_ndc[1] * (-1.f), posh_ndc[2]) * 0.5f + .5f;
 
-    // Send light positions to the shader if there is at least one
-    if (numPointLights > 0)
-    {
-        mLightPosBuffer->setBlob(&lightPositions[0], 0, numPointLights * sizeof(float3));
-        rayVars->setBuffer("gLightLocations", mLightPosBuffer);
+            // Store this in the vector that will be sent to the GPU
+            lightPositions.push_back(pos_window);
+            mNumPointLightsVisible++;
+        }
+
+        // Update the buffer if we have visible lights
+        if (mNumPointLightsVisible > 0)
+        {
+            mLightPosBuffer->setBlob(&lightPositions[0], 0, mNumPointLightsVisible * sizeof(float3));
+        }
     }
 
     // Send other variables to shader
-    rayVars["RasterBuf"]["gNumPointLights"] = numPointLights;
+    // Only send light positions to the shader if there is at least one
+    if (mNumPointLightsVisible > 0)
+    {
+        rayVars->setBuffer("gLightLocations", mLightPosBuffer);
+    }
+    rayVars["RasterBuf"]["gNumPointLights"] = mNumPointLightsVisible;
     rayVars["RasterBuf"]["gLightRadius"] = mLightRadius;
 }
 
@@ -325,14 +359,12 @@ void RasterLightingPass::renderGui(Gui::Window* pPassWindow)
         pPassWindow->text("     ");
         dirty |= (int)pPassWindow->var("Light Radius", mLightRadius, 0.01f, FLT_MAX, 0.1f, true);
     }
+    dirty |= (int)pPassWindow->checkbox("Debug Cascade Distances", mShowCascades, false);
 
     pPassWindow->checkbox("Use Shadow Mapping", mUsingShadowMapping, false);
     // Shadow map properties
     if (mUsingShadowMapping)
     {
-        pPassWindow->text("     ");
-        dirty |= (int)pPassWindow->checkbox("Use PCF Anti-Aliasing", mUsingPCF, true);
-        pPassWindow->text("     Omnidirectional Shadow Properties");
         // This has no effect for some reason
         pPassWindow->text("     ");
         if ((int)pPassWindow->checkbox("Front face culling", mCullFrontFace, true))
@@ -340,6 +372,9 @@ void RasterLightingPass::renderGui(Gui::Window* pPassWindow)
             updateCullMode();
             dirty |= 1;
         }
+        pPassWindow->text("     ");
+        dirty |= (int)pPassWindow->checkbox("Use PCF Anti-Aliasing", mUsingPCF, true);
+        pPassWindow->text("     Omnidirectional Shadow Properties");
         pPassWindow->text("     ");
         dirty |= (int)pPassWindow->var("Bias (pt)", mCubeShadowBias, 0.000001f, FLT_MAX, 0.000005f, true);
         pPassWindow->text("     ");
@@ -361,13 +396,21 @@ void RasterLightingPass::renderGui(Gui::Window* pPassWindow)
         pPassWindow->text("     Directional Shadow Properties");
         pPassWindow->text("     ");
         dirty |= (int)pPassWindow->var("Bias (dir)", mDirShadowBias, 0.000001f, FLT_MAX, 0.000005f, true);
-        pPassWindow->text("     ");
-        dirty |= (int)pPassWindow->var("zFar (dir)", mDirShadowFar, 0.01f, FLT_MAX, 0.1f, true);
-        
         if (mUsingPCF)
         {
             pPassWindow->text("     ");
             dirty |= (int)pPassWindow->var("PCF Width (dir)", mDirPCFWidth, 0.0001f, FLT_MAX, 0.0001f, true);
+        }
+        pPassWindow->text("     ");
+        dirty |= (int)pPassWindow->var("Ambient", mDirAmbient, 0.0f, FLT_MAX, 0.001f, true);
+        pPassWindow->tooltip("To prevent the scene from being completely dark, we can let the "
+            "shadowed region not be completely dark. This is the amount of light hitting shadowed regions.");
+        pPassWindow->text("     Cascade limits");
+        for (int i = 0; i < NUM_CASCADES; i++)
+        {
+            std::string label = "zFar [" + to_string(i) + "]";
+            pPassWindow->text("     ");
+            dirty |= (int)pPassWindow->var(label.c_str(), mDirShadowFar[i], 0.01f, FLT_MAX, 0.1f, true);
         }
     }
 
@@ -380,16 +423,16 @@ void RasterLightingPass::updateCullMode()
     RasterizerState::Desc rsDesc;
     rsDesc.setCullMode(mCullFrontFace ? RasterizerState::CullMode::Front : RasterizerState::CullMode::Back);
     mpCubeGfxState->setRasterizerState(RasterizerState::create(rsDesc));
-    //mpDirGfxState->setRasterizerState(RasterizerState::create(rsDesc));
+    mpDirGfxState->setRasterizerState(RasterizerState::create(rsDesc));
 }
 
-// From CSM.cpp
-void RasterLightingPass::camClipSpaceToWorldSpace(const Camera* pCamera, float3 viewFrustum[8], Bounds& b, float3& center, float& radius)
+// Based on CSM.cpp
+void RasterLightingPass::camClipSpaceToWorldSpace(const Camera* pCamera, float3& center, float& radius, uint cascadeNum)
 {
     float fovY = pCamera->getData().focalLength == 0.0f ? 0.0f : focalLengthToFovY(pCamera->getData().focalLength, pCamera->getData().frameHeight);
     float fovX = pCamera->getAspectRatio() * fovY;
-    float n = pCamera->getNearPlane();
-    float f = mDirShadowFar; // We use this value to limit the frustum size, otherwise the shadow map is too big
+    float n = cascadeNum == 0 ? pCamera->getNearPlane() : mDirShadowFar[cascadeNum - 1];
+    float f = mDirShadowFar[cascadeNum]; // We use this value to limit the frustum size, otherwise the shadow map is too big
 
     glm::mat4 projMat = glm::perspective(fovY, pCamera->getAspectRatio(), n, f);
     glm::mat4 viewMat = pCamera->getViewMatrix();
@@ -407,15 +450,14 @@ void RasterLightingPass::camClipSpaceToWorldSpace(const Camera* pCamera, float3 
         float3(1.0f, -1.0f, 1.0f),
         float3(-1.0f, -1.0f, 1.0f),
     };
+    float3 viewFrustum[8] = {};
 
     // Get the center of the view frustum in world space
     //glm::mat4 invViewProj = pCamera->getInvViewProjMatrix();
     center = float3(0, 0, 0);
     for (uint32_t i = 0; i < 8; i++)
     {
-        auto x = float4(clipSpace[i], 1.f);
         float4 crd = invViewProj * float4(clipSpace[i], 1.f);
-        auto b = float3(crd) / crd.w;
         viewFrustum[i] = float3(crd) / crd.w;
         center += viewFrustum[i];
     }
@@ -425,7 +467,6 @@ void RasterLightingPass::camClipSpaceToWorldSpace(const Camera* pCamera, float3 
     radius = 0;
     for (uint32_t i = 0; i < 8; i++)
     {
-        auto x = viewFrustum[i];
         float d = glm::length(center - viewFrustum[i]);
         radius = std::max(d, radius);
     }
