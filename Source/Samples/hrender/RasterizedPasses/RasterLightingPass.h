@@ -71,6 +71,7 @@ protected:
 
     // Omnidirectional Shadow map parameters
     uint                            mNumPointLights;        ///< The total number of point lights. This informs how many shadow cubemaps we need
+    uint                            mNumPointLightsVisible; ///< The total number of point lights in frame. This is for drawing of debug lights.
     Texture::SharedPtr              mpCubeShadowMapTex;     ///< The z-values of the scene from the point light's POV is stored here
     Texture::SharedPtr              mpCubeShadowMapZTex;    ///< Used for z-buffer of the shadow cube map rendering
     glm::mat4                       mCubeShadowProj;        ///< Projection matrix of the shadow map (6 sides use the same projection matrix)
