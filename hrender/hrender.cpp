@@ -32,7 +32,8 @@
 #include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
-#include "RasterizedPasses/RasterLightingPass.h"
+#include "NetworkPasses/VisibilityPass.h"
+#include "NetworkPasses/VShadingPass.h"
 
 constexpr int CLIENT = 0;
 constexpr int SERVER = 1;
@@ -59,29 +60,31 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         // Raycasted GBuffer with camera jitter that allows for depth of field
         LightProbeGBufferPass::create()
     });
-    // --------------------------------------------------- //
-    // --- Pass 2 makes use of the GBuffer for shading --- //
+    // ------------------------------------------------------------------------------------- //
+    // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
-        // Lambertian BRDF for local lighting, shadow mapping
-        RasterLightingPass::create("Rasterized Lighting"),
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        LambertianPlusShadowPass::create("Lambertian Plus Shadows")
+        VisibilityPass::create("Visibility")
     });
+    // -------------------------------------------------------------------- //
+    // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
+    pipeline->setPassOptions(2, {
+        // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
+        VShadingPass::create("V-shading")
+    });
+
     // --------------------------------------------------------------- //
-    // --- Pass 3 just lets us select which pass to view on screen --- //
-    pipeline->setPass(2, CopyToOutputPass::create());
+    // --- Pass 4 just lets us select which pass to view on screen --- //
+    pipeline->setPass(3, CopyToOutputPass::create());
     // ---------------------------------------------------------- //
-    // --- Pass 4 temporally accumulates frames for denoising --- //
-    pipeline->setPass(3, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 5 temporally accumulates frames for denoising --- //
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Rasterized Lighting (raster gbuffer)", "Rasterized Lighting", { 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Lambertian Lighting (raster gbuffer)", "Lambertian Plus Shadows", { 1, 2, 1, 1 }),
-        RenderingPipeline::PresetData("Rasterized Lighting (raycast gbuffer)", "Rasterized Lighting", { 2, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Lambertian Lighting (raycast gbuffer)", "Lambertian Plus Shadows", { 2, 2, 1, 1 })
+        RenderingPipeline::PresetData("Raytraced Lighting (raster gbuffer)", "Rasterized Lighting", { 1, 1, 1, 1, 1 })
     });
 
     // Start our program
