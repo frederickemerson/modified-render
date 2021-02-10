@@ -77,6 +77,9 @@
     <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp">
       <Filter>RasterizedPasses</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -159,6 +162,9 @@
     <ClInclude Include="RasterizedPasses\RasterLightingPass.h">
       <Filter>RasterizedPasses</Filter>
     </ClInclude>
+    <ClInclude Include="NetworkPasses\VisibilityPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -187,6 +193,12 @@
     </Filter>
     <Filter Include="RasterizedPasses\Shaders">
       <UniqueIdentifier>{c6bd3c7f-5a16-431b-9531-b23c8841573f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkPasses">
+      <UniqueIdentifier>{b9a14148-3d9f-48ac-87b5-68b25218a304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkPasses\Shaders">
+      <UniqueIdentifier>{4a32609a-0aa9-4b18-ba4d-c1caa118fda9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -309,6 +321,12 @@
     </ShaderSource>
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl">
       <Filter>RasterizedPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPassUtils.hlsli">
+      <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>
