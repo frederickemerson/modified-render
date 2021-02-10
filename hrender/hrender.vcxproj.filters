@@ -80,6 +80,9 @@
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\VShadingPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -163,6 +166,9 @@
       <Filter>RasterizedPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\VisibilityPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\VShadingPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
@@ -326,6 +332,9 @@
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
