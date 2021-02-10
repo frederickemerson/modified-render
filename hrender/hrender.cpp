@@ -77,13 +77,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
-
-    // Presets are "1-indexed", option 0 is the null option to disable the pass
-    //std::vector<uint32_t> normalGBuff_rasterized_Options    = ;
-    //std::vector<uint32_t> normalGBuff_lambertian_Options    = ;
-    //std::vector<uint32_t> lpGBuff_rasterized_Options        = ;
-    //std::vector<uint32_t> lpGBuff_lambertian_Options        = ;
-
     pipeline->setPresets({
         RenderingPipeline::PresetData("Rasterized Lighting (raster gbuffer)", "Rasterized Lighting", { 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Lambertian Lighting (raster gbuffer)", "Lambertian Plus Shadows", { 1, 2, 1, 1 }),
