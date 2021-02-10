@@ -97,8 +97,8 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPass.rt.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
     <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl" />

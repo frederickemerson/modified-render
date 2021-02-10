@@ -23,7 +23,7 @@ import Scene.Lights.Lights;                // Light structures for our current s
 
 #include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
-#include "lambertianPlusShadowsUtils.hlsli"
+#include "visibilityPassUtils.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ShadowRayPayload
@@ -42,7 +42,7 @@ cbuffer RayGenCB
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
-RWTexture2D<float4> gOutput;
+RWTexture2D<float> gOutput;
 
 
 float shadowRayVisibility( float3 origin, float3 direction, float minT, float maxT )
@@ -90,7 +90,7 @@ void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectio
 
 
 [shader("raygeneration")]
-void LambertShadowsRayGen()
+void SimpleShadowsRayGen()
 {
     // Where is this ray on screen?
     uint2 launchIndex = DispatchRaysIndex().xy;
@@ -107,13 +107,11 @@ void LambertShadowsRayGen()
     if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
 
     // If we don't hit any geometry, our difuse material contains our background color.
-    float3 shadeColor = difMatlColor.rgb;
+    int visibilityBit = 0;
 
     // Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
     if (worldPos.w != 0.0f)
     {
-        // We're going to accumulate contributions from multiple lights, so zero our our sum
-        shadeColor = float3(0.0, 0.0, 0.0);
 
         const uint lightCount = gScene.getLightCount();
         for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
@@ -124,20 +122,14 @@ void LambertShadowsRayGen()
             // A helper (that queries the Falcor scene to get needed data about this light)
             getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
 
-            // Compute our lambertion term (L dot N)
-            float LdotN = saturate(dot(worldNorm.xyz, toLight));
-
             // Shoot our ray
-            float shadowMult = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+            float visibility = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
-            // Compute our Lambertian shading color
-            shadeColor += shadowMult * LdotN * lightIntensity; 
+            // Store visibility
+            visibilityBit |= (visibility << lightIndex);
         }
-
-        // Physically based Lambertian term is albedo/pi
-        shadeColor *= difMatlColor.rgb / 3.141592f;
     }
     
     // Save out our AO color
-    gOutput[launchIndex] = float4(shadeColor, 1.0f);
+    gOutput[launchIndex] = visibilityBit;
 }

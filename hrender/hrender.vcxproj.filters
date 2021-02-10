@@ -322,10 +322,10 @@
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl">
       <Filter>RasterizedPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPass.rt.hlsl">
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\VisibilityPassUtils.hlsli">
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
