@@ -21,9 +21,9 @@ import Scene.Raytracing;
 import Scene.Shading;                      // Shading functions, etc   
 import Scene.Lights.Lights;                // Light structures for our current scene
 
-#include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
-#include "lambertianPlusShadowsUtils.hlsli"
+#include "visibilityPassUtils.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ShadowRayPayload
@@ -42,6 +42,7 @@ cbuffer RayGenCB
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
+Texture2D<uint>  gVisibility;
 RWTexture2D<float4> gOutput;
 
 
@@ -90,7 +91,7 @@ void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectio
 
 
 [shader("raygeneration")]
-void LambertShadowsRayGen()
+void VShadowsRayGen()
 {
     // Where is this ray on screen?
     uint2 launchIndex = DispatchRaysIndex().xy;
@@ -128,7 +129,7 @@ void LambertShadowsRayGen()
             float LdotN = saturate(dot(worldNorm.xyz, toLight));
 
             // Shoot our ray
-            float shadowMult = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+            float shadowMult = gSkipShadows ? 1.0f : (gVisibility[launchIndex] & (1 << lightIndex));
 
             // Compute our Lambertian shading color
             shadeColor += shadowMult * LdotN * lightIntensity; 

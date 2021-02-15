@@ -22,17 +22,17 @@
 
 /** Ray traced ambient occlusion pass.
 */
-class LambertianPlusShadowPass : public ::RenderPass
+class VShadingPass : public ::RenderPass
 {
 public:
-    using SharedPtr = std::shared_ptr<LambertianPlusShadowPass>;
-    using SharedConstPtr = std::shared_ptr<const LambertianPlusShadowPass>;
+    using SharedPtr = std::shared_ptr<VShadingPass>;
+    using SharedConstPtr = std::shared_ptr<const VShadingPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new LambertianPlusShadowPass(outBuf)); }
-    virtual ~LambertianPlusShadowPass() = default;
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new VShadingPass(outBuf)); }
+    virtual ~VShadingPass() = default;
 
 protected:
-    LambertianPlusShadowPass(const std::string& outBuf) : ::RenderPass("Lambertian Plus Shadows", "Lambertian Plus Shadow Options") { mOutputTexName = outBuf; }
+    VShadingPass(const std::string& outBuf) : ::RenderPass("Visibility-Shading Pass", "VShading Options") { mOutputTexName = outBuf; }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;

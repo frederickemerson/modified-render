@@ -41,7 +41,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
     mpResManager->requestTextureResource("__TextureData");
-    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Float);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -71,7 +71,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, 0.0f);
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;

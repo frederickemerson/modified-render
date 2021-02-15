@@ -64,7 +64,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitMap")
+        VisibilityPass::create("VisibilityBitmap"),
+        LambertianPlusShadowPass::create("RTLambertian")
     });
     // -------------------------------------------------------------------- //
     // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
@@ -84,7 +85,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Raytraced Lighting (raster gbuffer)", "Rasterized Lighting", { 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Split Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
     });
 
     // Start our program

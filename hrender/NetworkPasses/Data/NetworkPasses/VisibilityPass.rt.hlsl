@@ -21,7 +21,7 @@ import Scene.Raytracing;
 import Scene.Shading;                      // Shading functions, etc   
 import Scene.Lights.Lights;                // Light structures for our current scene
 
-#include "packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
+#include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "visibilityPassUtils.hlsli"
 
@@ -42,7 +42,7 @@ cbuffer RayGenCB
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
-RWTexture2D<float> gOutput;
+RWTexture2D<uint> gOutput;
 
 
 float shadowRayVisibility( float3 origin, float3 direction, float minT, float maxT )
@@ -126,7 +126,7 @@ void SimpleShadowsRayGen()
             float visibility = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
             // Store visibility
-            visibilityBit |= (visibility << lightIndex);
+            visibilityBit |= (int(visibility) << lightIndex);
         }
     }
     
