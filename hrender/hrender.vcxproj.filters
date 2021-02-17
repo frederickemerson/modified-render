@@ -83,6 +83,9 @@
     <ClCompile Include="NetworkPasses\VShadingPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -169,6 +172,9 @@
       <Filter>NetworkPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\VShadingPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>

@@ -34,23 +34,83 @@
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
+#include "NetworkPasses/NetworkPass.h"
 
 constexpr int CLIENT = 0;
 constexpr int SERVER = 1;
 
+void runServer();
+void runClient();
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
+{
+    int mode = CLIENT;
+    //int mode = SERVER;
+
+    if (mode == CLIENT) 
+        runClient();
+    else 
+        runServer();
+   
+    return 0;
+}
+
+void runServer()
 {
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = "HRender";
+    config.windowDesc.title = "NRender Server";
     config.windowDesc.resizableWindow = true;
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
 
-    // ========================== //
-    // Add Passes to the Pipeline //
-    // ========================== //
+    // -------------------------------- //
+    // --- Pass 1 creates a GBuffer --- //
+    pipeline->setPassOptions(0, {
+        NetworkPass::create("Receiver", NetworkPass::Mode::Server),
+    });
+    // ------------------------------------------------------------------------------------- //
+    // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
+    pipeline->setPassOptions(1, {
+        // Lambertian BRDF for local lighting, 1 shadow ray per light
+        VisibilityPass::create("VisibilityBitmap"),
+        LambertianPlusShadowPass::create("RTLambertian")
+    });
+    // -------------------------------------------------------------------- //
+    // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
+    pipeline->setPassOptions(2, {
+        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend),
+    });
+
+    // --------------------------------------------------------------- //
+    // --- Pass 4 just lets us select which pass to view on screen --- //
+    pipeline->setPass(3, CopyToOutputPass::create());
+    // ---------------------------------------------------------- //
+    // --- Pass 5 temporally accumulates frames for denoising --- //
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // ============================ //
+    // Set presets for the pipeline //
+    // ============================ //
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
+    });
+
+    // Start our program
+    RenderingPipeline::run(pipeline, config);
+}
+
+void runClient()
+{
+    // Define a set of config / window parameters for our program
+    SampleConfig config;
+    config.windowDesc.title = "NRender";
+    config.windowDesc.resizableWindow = true;
+
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
@@ -63,6 +123,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // ------------------------------------------------------------------------------------- //
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
+        // Send scene and gbuffer across network to server, and re-receive the visibility bitmap
+        NetworkPass::create("VisibilityBitmap", NetworkPass::Mode::Client),
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         VisibilityPass::create("VisibilityBitmap"),
         LambertianPlusShadowPass::create("RTLambertian")
@@ -85,11 +147,11 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Split Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility, then recombination on client", "V-shading", { 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 1, 1 })
     });
 
     // Start our program
     RenderingPipeline::run(pipeline, config);
-    return 0;
 }
