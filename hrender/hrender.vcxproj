@@ -22,6 +22,7 @@
     <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
@@ -53,6 +54,7 @@
     <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />

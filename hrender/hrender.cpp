@@ -32,22 +32,19 @@
 #include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
+#include "DxrTutorSharedUtils/NetworkManager.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
 #include "NetworkPasses/NetworkPass.h"
-
-constexpr int CLIENT = 0;
-constexpr int SERVER = 1;
 
 void runServer();
 void runClient();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    int mode = CLIENT;
-    //int mode = SERVER;
+    NetworkPass::Mode mode = NetworkPass::Mode::Client;
 
-    if (mode == CLIENT) 
+    if (mode == NetworkPass::Mode::Client)
         runClient();
     else 
         runServer();
@@ -64,6 +61,10 @@ void runServer()
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+
+    NetworkManager::SharedPtr networkManager = NetworkManager::create();
+    networkManager->SetUpServer("10871");
+    networkManager->AcceptAndListenServer();
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
@@ -111,6 +112,12 @@ void runClient()
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+    
+    NetworkManager::SharedPtr networkManager = NetworkManager::create();
+    networkManager->SetUpClient("localhost", "10871");
+    
+    const char* sendbuf = "this is a test";
+    networkManager->SendDataFromClient(sendbuf, (int)strlen(sendbuf), 0);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //

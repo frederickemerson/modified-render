@@ -86,6 +86,9 @@
     <ClCompile Include="NetworkPasses\NetworkPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkPass.h">
       <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
+      <Filter>SharedUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

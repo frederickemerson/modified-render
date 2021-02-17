@@ -37,8 +37,6 @@
 
 using namespace Falcor;
 
-enum NetworkMode { Client = 0x1u, Network = 0x2u };
-
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
 private:
@@ -50,6 +48,11 @@ private:
     SOCKET ConnectSocket = INVALID_SOCKET;
 
 public:
+    using SharedPtr = std::shared_ptr<NetworkManager>;
+    using SharedConstPtr = std::shared_ptr<const NetworkManager>;
+
+    static SharedPtr create() { return SharedPtr(new NetworkManager()); }
+
     // Server
     
     bool SetUpServer(PCSTR port);
