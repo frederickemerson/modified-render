@@ -24,9 +24,6 @@ namespace {
 
     // What are the entry points in that shader for various ray tracing shaders?
     const char* kEntryPointRayGen  = "VShadowsRayGen";
-    const char* kEntryPointMiss0   = "ShadowMiss";
-    const char* kEntryAoAnyHit     = "ShadowAnyHit";
-    const char* kEntryAoClosestHit = "ShadowClosestHit";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -46,8 +43,6 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-    mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
