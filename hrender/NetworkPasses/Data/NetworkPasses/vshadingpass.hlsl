@@ -45,51 +45,6 @@ Texture2D<float4> gTexData;
 Texture2D<uint>  gVisibility;
 RWTexture2D<float4> gOutput;
 
-
-float shadowRayVisibility( float3 origin, float3 direction, float minT, float maxT )
-{
-    // Setup our shadow ray
-    RayDesc ray;
-    ray.Origin = origin;
-    ray.Direction = direction;
-    ray.TMin = minT;
-    ray.TMax = maxT; 
-
-    // Query if anything is between the current point and the light (i.e., at maxT) 
-    ShadowRayPayload rayPayload = { maxT + 1.0f }; 
-    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, hitProgramCount, 0, ray, rayPayload);
-
-    // Check if anyone was closer than our maxT distance (in which case we're occluded)
-    return (rayPayload.hitDist > maxT) ? 1.0f : 0.0f;
-}
-
-[shader("miss")]
-void ShadowMiss(inout ShadowRayPayload rayData)
-{
-}
-
-[shader("anyhit")]
-void ShadowAnyHit(uniform HitShaderParams hitParams, inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
-{
-    // Run a Falcor helper to extract the current hit point's geometric data
-    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
-    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
-
-    // Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
-    if (alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))
-        IgnoreHit();
-
-    // We update the hit distance with our current hitpoint
-    rayData.hitDist = RayTCurrent();
-}
-
-[shader("closesthit")]
-void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
-{
-    rayData.hitDist = RayTCurrent();
-}
-
-
 [shader("raygeneration")]
 void VShadowsRayGen()
 {
@@ -129,7 +84,8 @@ void VShadowsRayGen()
             float LdotN = saturate(dot(worldNorm.xyz, toLight));
 
             // Shoot our ray
-            float shadowMult = gSkipShadows ? 1.0f : (gVisibility[launchIndex] & (1 << lightIndex));
+            float shadowMult = gSkipShadows ? 1.0f : 
+                ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0f);
 
             // Compute our Lambertian shading color
             shadeColor += shadowMult * LdotN * lightIntensity; 
