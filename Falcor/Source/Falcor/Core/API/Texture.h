@@ -231,6 +231,9 @@ namespace Falcor
         */
         void captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format = Bitmap::FileFormat::PngFile, Bitmap::ExportFlags exportFlags = Bitmap::ExportFlags::None);
 
+        std::vector<uint8_t> getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format = Bitmap::FileFormat::PngFile, Bitmap::ExportFlags exportFlags = Bitmap::ExportFlags::None);
+
+
         /** Generates mipmaps for a specified texture object.
         */
         void generateMips(RenderContext* pContext);

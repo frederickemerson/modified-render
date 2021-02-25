@@ -260,6 +260,44 @@ namespace Falcor
         return findViewCommon<ShaderResourceView>(this, mostDetailedMip, mipCount, firstArraySlice, arraySize, mSrvs, createFunc);
     }
 
+    std::vector<uint8_t> Texture::getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format, Bitmap::ExportFlags exportFlags)
+    {
+        if (format == Bitmap::FileFormat::DdsFile)
+        {
+            throw std::exception("Texture::captureToFile does not yet support saving to DDS.");
+        }
+
+        assert(mType == Type::Texture2D);
+        RenderContext* pContext = gpDevice->getRenderContext();
+        // Handle the special case where we have an HDR texture with less then 3 channels
+        FormatType type = getFormatType(mFormat);
+        uint32_t channels = getFormatChannelCount(mFormat);
+        std::vector<uint8_t> textureData;
+        ResourceFormat resourceFormat = mFormat;
+
+        if (type == FormatType::Float && channels < 3)
+        {
+            Texture::SharedPtr pOther = Texture::create2D(getWidth(mipLevel), getHeight(mipLevel), ResourceFormat::RGBA32Float, 1, 1, nullptr, ResourceBindFlags::RenderTarget | ResourceBindFlags::ShaderResource);
+            pContext->blit(getSRV(mipLevel, 1, arraySlice, 1), pOther->getRTV(0, 0, 1));
+            textureData = pContext->readTextureSubresource(pOther.get(), 0);
+            resourceFormat = ResourceFormat::RGBA32Float;
+        } else
+        {
+            uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
+            textureData = pContext->readTextureSubresource(this, subresource);
+        }
+
+        uint32_t width = getWidth(mipLevel);
+        uint32_t height = getHeight(mipLevel);
+        auto func = [=]()
+        {
+            Bitmap::saveImage(filename, width, height, format, exportFlags, resourceFormat, true, (void*)textureData.data());
+        };
+
+        //Threading::dispatchTask(func);
+        return textureData;
+    }
+
     void Texture::captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format, Bitmap::ExportFlags exportFlags)
     {
         if (format == Bitmap::FileFormat::DdsFile)
