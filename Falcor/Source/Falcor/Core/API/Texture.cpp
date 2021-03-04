@@ -287,14 +287,6 @@ namespace Falcor
             textureData = pContext->readTextureSubresource(this, subresource);
         }
 
-        uint32_t width = getWidth(mipLevel);
-        uint32_t height = getHeight(mipLevel);
-        auto func = [=]()
-        {
-            Bitmap::saveImage(filename, width, height, format, exportFlags, resourceFormat, true, (void*)textureData.data());
-        };
-
-        //Threading::dispatchTask(func);
         return textureData;
     }
 

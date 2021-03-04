@@ -38,6 +38,10 @@ public:
     static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, Mode mode = Mode::Client) { return SharedPtr(new NetworkPass(outBuf, mode)); }
     virtual ~NetworkPass() = default;
 
+    // Texture data from transfering
+    static std::vector<uint8_t> normData;
+    static std::vector<uint8_t> posData;
+    static std::vector<uint8_t> gBufData;
 protected:
     NetworkPass(const std::string& outBuf, Mode mode) : ::RenderPass("Network Pass", "Network Pass Options") { mOutputTexName = outBuf; mMode = mode; }
 
@@ -70,4 +74,6 @@ protected:
     bool                                    mFirstRender = true;    ///< If this is the first time rendering, need to send scene
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
+
 };
+

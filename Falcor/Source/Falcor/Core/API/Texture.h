@@ -88,6 +88,8 @@ namespace Falcor
         */
         ResourceFormat getFormat() const { return mFormat; }
 
+        void apiInitPub(const void* pData, bool autoGenMips) { apiInit(pData, autoGenMips); }
+
         /** Create a new texture from an existing API handle.
             \param[in] handle Handle of already allocated resource.
             \param[in] type The type of texture.

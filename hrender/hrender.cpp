@@ -29,7 +29,6 @@
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
 #include "DxrTutorCommonPasses/JitteredGBufferPass.h"
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
-#include "DxrTutorCommonPasses/LightProbeGBufferPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
 #include "DxrTutorSharedUtils/NetworkManager.h"
@@ -124,15 +123,13 @@ void runClient()
     // --- Pass 1 creates a GBuffer --- //
     pipeline->setPassOptions(0, {
         // Rasterized GBuffer 
-        JitteredGBufferPass::create(),
-        // Raycasted GBuffer with camera jitter that allows for depth of field
-        LightProbeGBufferPass::create()
+        JitteredGBufferPass::create()
     });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
         // Send scene and gbuffer across network to server, and re-receive the visibility bitmap
-        NetworkPass::create("VisibilityBitmap", NetworkPass::Mode::Client),
+        NetworkPass::create("Client", NetworkPass::Mode::Client),
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         VisibilityPass::create("VisibilityBitmap"),
         LambertianPlusShadowPass::create("RTLambertian")
@@ -141,34 +138,39 @@ void runClient()
     // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
+        NetworkPass::create("ServerRecv", NetworkPass::Mode::Server),
+
+        
         VShadingPass::create("V-shading"),
         LambertianPlusShadowPass::create("RTLambertian"),
         VisibilityPass::create("VisibilityBitmap")
 
     });
     pipeline->setPassOptions(3, {
-        NetworkPass::create("VisibilityBitmap", NetworkPass::Mode::ServerSend)
-
+        VisibilityPass::create("VisibilityBitmap")
     });
     pipeline->setPassOptions(4, {
+        NetworkPass::create("ServerSend", NetworkPass::Mode::ServerSend)
+
+    });
+    pipeline->setPassOptions(5, {
         // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
         VShadingPass::create("V-shading")
         });
     // --------------------------------------------------------------- //
     // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(5, CopyToOutputPass::create());
+    pipeline->setPass(6, CopyToOutputPass::create());
     // ---------------------------------------------------------- //
     // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(7, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility, then recombination on client", "V-shading", { 1, 1, 1, 0, 0, 1, 1 }),
-        RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 1, 0, 0, 1, 1 }),
-        RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 3, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 0, 0, 1, 1 })
+        RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 2, 0, 0, 0, 1, 1 }),
+        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 0, 0, 0, 1, 1 })
     });
 
     // Start our program
