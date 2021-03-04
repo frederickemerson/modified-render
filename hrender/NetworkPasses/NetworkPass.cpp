@@ -22,7 +22,8 @@
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>();
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
-std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(TEXTURE_LEN, 0);
+std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
+
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
@@ -106,19 +107,27 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
 {
     // Receive scene
     mFirstRender = false;
+
+    auto serverListen = [&]() {
+        ResourceManager::mNetworkManager->AcceptAndListenServer(posData, pRenderContext, mpResManager);
+    };
+    Threading::dispatchTask(serverListen);
+
     return true;
 }
 
 void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 {
     mFirstRender || firstServerRender(pRenderContext);
-    
+
     // Await the three textures from client
     //mpResManager->mNetworkManager->
-    
+    while (!(mpResManager->mNetworkManager->mServerAllowedToRender));
+
     // Load textures from GPU to CPU (other texture) - this belongs to serverRecv
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
     posTex2->apiInitPub(posData.data(), true);
+    
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
@@ -126,11 +135,11 @@ void NetworkPass::executeServerSend(RenderContext* pRenderContext)
     // Send back the visibility pass texture
 
 
-    // Just emulating.
+    //// Just emulating.
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
     posData = texData(pRenderContext, posTex2);
 
-   
+    mpResManager->mNetworkManager->mServerAllowedToRender = false;
 }
 
 void NetworkPass::renderGui(Gui::Window* pPassWindow)

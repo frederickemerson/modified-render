@@ -34,9 +34,12 @@
 
 #define DEFAULT_BUFLEN 2048
 #define DEFAULT_PORT "27015"
-#define TEXTURE_LEN 32593920
+#define POS_TEX_LEN 32593920
+#define VIS_TEX_LEN 8148480
 
 using namespace Falcor;
+
+class ResourceManager;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
@@ -53,12 +56,14 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
 
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
+    static bool mServerAllowedToRender;
+    static bool mServerFinishedRendering;
 
     // Server
     
     bool SetUpServer(PCSTR port);
 
-    bool AcceptAndListenServer(const std::vector<uint8_t>& buffer);
+    bool AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
 
     bool CloseServerConnection();
 

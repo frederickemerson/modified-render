@@ -1,4 +1,8 @@
+#include "ResourceManager.h"
 #include "NetworkManager.h"
+
+bool NetworkManager::mServerAllowedToRender = false;
+bool NetworkManager::mServerFinishedRendering = false;
 
 bool NetworkManager::SetUpServer(PCSTR port)
 {
@@ -56,7 +60,7 @@ bool NetworkManager::SetUpServer(PCSTR port)
     return false;
 }
 
-bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer)
+bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER CONFIGURING=================\n\n\n\n");
 
@@ -85,7 +89,7 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer)
     // Receive until the peer shuts down the connection
     do {
         int recvSoFar = 0;
-        while (recvSoFar < TEXTURE_LEN) {
+        while (recvSoFar < POS_TEX_LEN) {
             iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
             if (iResult > 0) {
                 recvSoFar += iResult;
@@ -93,17 +97,27 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer)
         }
 
         OutputDebugString(L"\n================================Bytes received================================\n");
+        NetworkManager::mServerAllowedToRender = true;
+
+        while (!NetworkManager::mServerFinishedRendering);
+        Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
+        std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
 
         // Echo the buffer back to the sender
         int sentSoFar = 0;
-        while (sentSoFar < TEXTURE_LEN) {
-            bool lastPacket = sentSoFar > TEXTURE_LEN - DEFAULT_BUFLEN;
-            int sizeToSend = lastPacket * (TEXTURE_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
-            int iResult = send(NetworkManager::ClientSocket, (char*)&buffer[sentSoFar], sizeToSend, 0);
+        while (sentSoFar < VIS_TEX_LEN) {
+            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+            int iResult = send(NetworkManager::ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
             if (iResult != SOCKET_ERROR) {
                 sentSoFar += iResult;
             }
         }
+
+        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
+
+        NetworkManager::mServerAllowedToRender = false;
+        NetworkManager::mServerFinishedRendering = false;
 
         //iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
         //if (iResult > 0) {
@@ -218,9 +232,9 @@ bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int le
 {
     // Send buffer until finishes
     int sentSoFar = 0;
-    while (sentSoFar < TEXTURE_LEN) {
-        bool lastPacket = sentSoFar > TEXTURE_LEN - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket * (TEXTURE_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+    while (sentSoFar < POS_TEX_LEN) {
+        bool lastPacket = sentSoFar > POS_TEX_LEN - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket * (POS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
         int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);
         if (iResult != SOCKET_ERROR) {
             sentSoFar += iResult;
@@ -231,7 +245,7 @@ bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int le
 
     // Receive until finish
     int recvSoFar = 0;
-    while (recvSoFar < TEXTURE_LEN) {
+    while (recvSoFar < VIS_TEX_LEN) {
         int iRecv = recv(NetworkManager::ConnectSocket, (char *)&out_data[recvSoFar], DEFAULT_BUFLEN, 0);
         if (iRecv != SOCKET_ERROR) {
             recvSoFar += iRecv;
