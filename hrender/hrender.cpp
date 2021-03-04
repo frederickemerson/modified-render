@@ -41,8 +41,8 @@ void runClient();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    NetworkPass::Mode mode = NetworkPass::Mode::Client;
-    //NetworkPass::Mode mode = NetworkPass::Mode::Server;
+    //NetworkPass::Mode mode = NetworkPass::Mode::Client;
+    NetworkPass::Mode mode = NetworkPass::Mode::Server;
 
     if (mode == NetworkPass::Mode::Client)
         runClient();
@@ -98,7 +98,7 @@ void runServer()
         RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
     });
 
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER IS CONFIGURED=================\n\n\n");
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER IS CONFIGURED=================\n\n\n\n");
 
 
     // Start our program
@@ -115,7 +115,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("localhost", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("172.25.107.160", DEFAULT_PORT);
     //NetworkManager::SharedPtr networkManager = NetworkManager::create();
     //networkManager->SetUpClient("localhost", "10871");
     //

@@ -58,6 +58,8 @@ bool NetworkManager::SetUpServer(PCSTR port)
 
 bool NetworkManager::AcceptAndListenServer()
 {
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER CONFIGURING=================\n\n\n\n");
+
     int iResult;
     char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
@@ -87,6 +89,7 @@ bool NetworkManager::AcceptAndListenServer()
     do {
         iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
+            OutputDebugString(L"\n================================Bytes received================================\n");
             printf("Bytes received: %d\n", iResult);
 
             // Echo the buffer back to the sender
@@ -195,40 +198,29 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 
 bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data)
 {
-    // Send an initial buffer
-    const char* sendbuf = "this is a test";
-    //networkManager->SendDataFromClient(sendbuf, (int)strlen(sendbuf), 0);
-
-    //int iResult = send(NetworkManager::ConnectSocket, (const char*)data.data(), len, flags);
-    while (true) {
-        int iResult = send(NetworkManager::ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+    // Send buffer until finishes
+    int sentSoFar = 0;
+    while (sentSoFar < TEXTURE_LEN) {
+        bool lastPacket = sentSoFar > TEXTURE_LEN - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket * (TEXTURE_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+        int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);
         if (iResult != SOCKET_ERROR) {
-            break;
+            sentSoFar += iResult;
         }
     }
+
     OutputDebugString(L"Data is SENT from client");
 
-    char recvbuf[DEFAULT_BUFLEN];
-    int recvbuflen = DEFAULT_BUFLEN;
-
-    while (true) {
-        int iRecv = recv(NetworkManager::ConnectSocket, recvbuf, recvbuflen, 0);
+    // Receive until finish
+    int recvSoFar = 0;
+    while (recvSoFar < TEXTURE_LEN) {
+        int iRecv = recv(NetworkManager::ConnectSocket, &out_data[recvSoFar], DEFAULT_BUFLEN, 0);
         if (iRecv != SOCKET_ERROR) {
-            break;
+            recvSoFar += iRecv;
         }
     }
 
-    //out_data = data;
     OutputDebugString(L"Data is RECEIVED from client");
-
-    //if (iResult == SOCKET_ERROR) {
-    //    printf("send failed with error: %d\n", WSAGetLastError());
-    //    closesocket(NetworkManager::ConnectSocket);
-    //    WSACleanup();
-    //    return false;
-    //}
-
-    // Receive
 
     return true;
 }

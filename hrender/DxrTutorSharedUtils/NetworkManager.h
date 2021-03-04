@@ -32,8 +32,9 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-#define DEFAULT_BUFLEN 1024
+#define DEFAULT_BUFLEN 2048
 #define DEFAULT_PORT "27015"
+#define TEXTURE_LEN 32593920
 
 using namespace Falcor;
 

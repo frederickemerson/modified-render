@@ -22,7 +22,7 @@
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>();
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
-std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>();
+std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(TEXTURE_LEN, 0);
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
