@@ -85,7 +85,6 @@ bool NetworkManager::AcceptAndListenServer()
 
     // Receive until the peer shuts down the connection
     do {
-
         iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
             printf("Bytes received: %d\n", iResult);
@@ -194,16 +193,42 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
-bool NetworkManager::SendDataFromClient(const char* data, int len, int flags)
+bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data)
 {
     // Send an initial buffer
-    int iResult = send(NetworkManager::ConnectSocket, data, len, flags);
-    if (iResult == SOCKET_ERROR) {
-        printf("send failed with error: %d\n", WSAGetLastError());
-        closesocket(NetworkManager::ConnectSocket);
-        WSACleanup();
-        return false;
+    const char* sendbuf = "this is a test";
+    //networkManager->SendDataFromClient(sendbuf, (int)strlen(sendbuf), 0);
+
+    //int iResult = send(NetworkManager::ConnectSocket, (const char*)data.data(), len, flags);
+    while (true) {
+        int iResult = send(NetworkManager::ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+        if (iResult != SOCKET_ERROR) {
+            break;
+        }
     }
+    OutputDebugString(L"Data is SENT from client");
+
+    char recvbuf[DEFAULT_BUFLEN];
+    int recvbuflen = DEFAULT_BUFLEN;
+
+    while (true) {
+        int iRecv = recv(NetworkManager::ConnectSocket, recvbuf, recvbuflen, 0);
+        if (iRecv != SOCKET_ERROR) {
+            break;
+        }
+    }
+
+    //out_data = data;
+    OutputDebugString(L"Data is RECEIVED from client");
+
+    //if (iResult == SOCKET_ERROR) {
+    //    printf("send failed with error: %d\n", WSAGetLastError());
+    //    closesocket(NetworkManager::ConnectSocket);
+    //    WSACleanup();
+    //    return false;
+    //}
+
+    // Receive
 
     return true;
 }

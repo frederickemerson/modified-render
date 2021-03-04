@@ -39,9 +39,11 @@ public:
     virtual ~NetworkPass() = default;
 
     // Texture data from transfering
-    static std::vector<uint8_t> normData;
+    //static std::vector<uint8_t> normData;
     static std::vector<uint8_t> posData;
-    static std::vector<uint8_t> gBufData;
+    //static std::vector<uint8_t> gBufData;
+    static std::vector<uint8_t> visibilityData;
+
 protected:
     NetworkPass(const std::string& outBuf, Mode mode) : ::RenderPass("Network Pass", "Network Pass Options") { mOutputTexName = outBuf; mMode = mode; }
 

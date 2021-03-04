@@ -19,9 +19,10 @@
 #include "NetworkPass.h"
 
 
-std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
+//std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>();
-std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
+//std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
+std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>();
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
@@ -92,9 +93,13 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
     posData = texData(pRenderContext, posTex);
 
-    // Send the texture to server
+    // Send the texture to server and await server to send back the visibility pass texture
+    bool result = mpResManager->mNetworkManager->SendDataFromClient(posData, int(posData.size()), 0, NetworkPass::visibilityData);
 
-    // Await server to send back the visibility pass texture
+    //// Put into the client code 
+    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
+    //visTex->apiInitPub(visibilityData.data(), true);
+
 }
 
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
@@ -109,6 +114,7 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     mFirstRender || firstServerRender(pRenderContext);
     
     // Await the three textures from client
+    //mpResManager->mNetworkManager->
     
     // Load textures from GPU to CPU (other texture) - this belongs to serverRecv
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
@@ -124,9 +130,7 @@ void NetworkPass::executeServerSend(RenderContext* pRenderContext)
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
     posData = texData(pRenderContext, posTex2);
 
-    //// Put into the client code 
-    Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    posTex->apiInitPub(posData.data(), true);
+   
 }
 
 void NetworkPass::renderGui(Gui::Window* pPassWindow)

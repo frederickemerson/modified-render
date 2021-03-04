@@ -62,9 +62,8 @@ void runServer()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
 
-    /*NetworkManager::SharedPtr networkManager = NetworkManager::create();
-    networkManager->SetUpServer("10871");
-    networkManager->AcceptAndListenServer();*/
+    ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT);
+    ResourceManager::mNetworkManager->AcceptAndListenServer();
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
@@ -99,6 +98,9 @@ void runServer()
         RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
     });
 
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER IS CONFIGURED=================\n\n\n");
+
+
     // Start our program
     RenderingPipeline::run(pipeline, config);
 }
@@ -113,6 +115,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
+    ResourceManager::mNetworkManager->SetUpClient("localhost", DEFAULT_PORT);
     //NetworkManager::SharedPtr networkManager = NetworkManager::create();
     //networkManager->SetUpClient("localhost", "10871");
     //
@@ -137,41 +140,44 @@ void runClient()
     // -------------------------------------------------------------------- //
     // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
     pipeline->setPassOptions(2, {
-        // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
-        NetworkPass::create("ServerRecv", NetworkPass::Mode::Server),
+        //// Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
+        //NetworkPass::create("ServerRecv", NetworkPass::Mode::Server),
 
         
         VShadingPass::create("V-shading"),
-        LambertianPlusShadowPass::create("RTLambertian"),
-        VisibilityPass::create("VisibilityBitmap")
+        //LambertianPlusShadowPass::create("RTLambertian"),
+        //VisibilityPass::create("VisibilityBitmap")
 
     });
-    pipeline->setPassOptions(3, {
-        VisibilityPass::create("VisibilityBitmap")
-    });
-    pipeline->setPassOptions(4, {
-        NetworkPass::create("ServerSend", NetworkPass::Mode::ServerSend)
+    //pipeline->setPassOptions(3, {
+    //    VisibilityPass::create("VisibilityBitmap")
+    //});
+    //pipeline->setPassOptions(4, {
+    //    NetworkPass::create("ServerSend", NetworkPass::Mode::ServerSend)
 
-    });
-    pipeline->setPassOptions(5, {
-        // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
-        VShadingPass::create("V-shading")
-        });
+    //});
+    //pipeline->setPassOptions(5, {
+    //    // Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
+    //    VShadingPass::create("V-shading")
+    //    });
     // --------------------------------------------------------------- //
     // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(6, CopyToOutputPass::create());
+    pipeline->setPass(3, CopyToOutputPass::create());
     // ---------------------------------------------------------- //
     // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(7, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 2, 0, 0, 0, 1, 1 }),
-        RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 0, 0, 0, 1, 1 })
+        //RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 });
+        RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1 })
+        //RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 2, 0, 0, 0, 1, 1 }),
+        //RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 0, 0, 0, 1, 1 })
     });
+
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n\n");
 
     // Start our program
     RenderingPipeline::run(pipeline, config);
