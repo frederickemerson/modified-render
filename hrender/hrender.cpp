@@ -63,7 +63,9 @@ void runServer()
     RenderingPipeline* pipeline = new RenderingPipeline();
 
     ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT);
-    ResourceManager::mNetworkManager->AcceptAndListenServer();
+
+    std::vector<uint8_t> positionData = std::vector<uint8_t>(TEXTURE_LEN, 0);
+    ResourceManager::mNetworkManager->AcceptAndListenServer(positionData);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //

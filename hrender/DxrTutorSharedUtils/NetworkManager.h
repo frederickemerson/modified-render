@@ -58,7 +58,7 @@ public:
     
     bool SetUpServer(PCSTR port);
 
-    bool AcceptAndListenServer();
+    bool AcceptAndListenServer(const std::vector<uint8_t>& buffer);
 
     bool CloseServerConnection();
 

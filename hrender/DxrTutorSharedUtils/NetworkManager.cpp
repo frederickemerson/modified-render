@@ -56,14 +56,11 @@ bool NetworkManager::SetUpServer(PCSTR port)
     return false;
 }
 
-bool NetworkManager::AcceptAndListenServer()
+bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer)
 {
     OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER CONFIGURING=================\n\n\n\n");
 
     int iResult;
-    char recvbuf[DEFAULT_BUFLEN];
-    int recvbuflen = DEFAULT_BUFLEN;
-    int iSendResult;
 
     iResult = listen(NetworkManager::ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
@@ -87,31 +84,52 @@ bool NetworkManager::AcceptAndListenServer()
 
     // Receive until the peer shuts down the connection
     do {
-        iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
-        if (iResult > 0) {
-            OutputDebugString(L"\n================================Bytes received================================\n");
-            printf("Bytes received: %d\n", iResult);
-
-            // Echo the buffer back to the sender
-            iSendResult = send(NetworkManager::ClientSocket, recvbuf, iResult, 0);
-            if (iSendResult == SOCKET_ERROR) {
-                printf("send failed with error: %d\n", WSAGetLastError());
-                closesocket(NetworkManager::ClientSocket);
-                WSACleanup();
-                return false;
+        int recvSoFar = 0;
+        while (recvSoFar < TEXTURE_LEN) {
+            iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
+            if (iResult > 0) {
+                recvSoFar += iResult;
             }
-            printf("Bytes sent: %d\n", iSendResult);
-        }
-        else if (iResult == 0)
-            printf("Connection closing...\n");
-        else {
-            printf("recv failed with error: %d\n", WSAGetLastError());
-            closesocket(NetworkManager::ClientSocket);
-            WSACleanup();
-            return false;
         }
 
-    } while (iResult > 0);
+        OutputDebugString(L"\n================================Bytes received================================\n");
+
+        // Echo the buffer back to the sender
+        int sentSoFar = 0;
+        while (sentSoFar < TEXTURE_LEN) {
+            bool lastPacket = sentSoFar > TEXTURE_LEN - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket * (TEXTURE_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+            int iResult = send(NetworkManager::ClientSocket, (char*)&buffer[sentSoFar], sizeToSend, 0);
+            if (iResult != SOCKET_ERROR) {
+                sentSoFar += iResult;
+            }
+        }
+
+        //iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
+        //if (iResult > 0) {
+        //    OutputDebugString(L"\n================================Bytes received================================\n");
+        //    printf("Bytes received: %d\n", iResult);
+
+        //    // Echo the buffer back to the sender
+        //    iSendResult = send(NetworkManager::ClientSocket, recvbuf, iResult, 0);
+        //    if (iSendResult == SOCKET_ERROR) {
+        //        printf("send failed with error: %d\n", WSAGetLastError());
+        //        closesocket(NetworkManager::ClientSocket);
+        //        WSACleanup();
+        //        return false;
+        //    }
+        //    printf("Bytes sent: %d\n", iSendResult);
+        //}
+        //else if (iResult == 0)
+        //    printf("Connection closing...\n");
+        //else {
+        //    printf("recv failed with error: %d\n", WSAGetLastError());
+        //    closesocket(NetworkManager::ClientSocket);
+        //    WSACleanup();
+        //    return false;
+        //}
+
+    } while (true);
 
     return true;
 }
@@ -214,7 +232,7 @@ bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int le
     // Receive until finish
     int recvSoFar = 0;
     while (recvSoFar < TEXTURE_LEN) {
-        int iRecv = recv(NetworkManager::ConnectSocket, &out_data[recvSoFar], DEFAULT_BUFLEN, 0);
+        int iRecv = recv(NetworkManager::ConnectSocket, (char *)&out_data[recvSoFar], DEFAULT_BUFLEN, 0);
         if (iRecv != SOCKET_ERROR) {
             recvSoFar += iRecv;
         }
