@@ -89,14 +89,10 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
     !mFirstRender || firstClientRender(pRenderContext);
 
     // Load textures from GPU to CPU
-    Texture::SharedPtr normTex = mpResManager->getTexture("WorldNormal");
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    Texture::SharedPtr gBufTex = mpResManager->getTexture("__TextureData");
-    normData = texData(pRenderContext, normTex);
     posData = texData(pRenderContext, posTex);
-    gBufData = texData(pRenderContext, gBufTex);
 
-    // Send the three textures to server
+    // Send the texture to server
 
     // Await server to send back the visibility pass texture
 }
@@ -112,17 +108,11 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 {
     mFirstRender || firstServerRender(pRenderContext);
     
-    //Texture::SharedPtr pTex = Texture::create2D(mpResManager->getWidth(), mpResManager->getHeight(), texFormat, 1, generateMipLevels ? Texture::kMaxPossible : 1, pBitmap->getData(), bindFlags);
-
     // Await the three textures from client
     
     // Load textures from GPU to CPU (other texture) - this belongs to serverRecv
-    Texture::SharedPtr normTex2 = mpResManager->getTexture("WorldNormal2");
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
-    Texture::SharedPtr gBufTex2 = mpResManager->getTexture("__TextureData2");
-    normTex2->apiInitPub(normData.data(), true); // Try false
     posTex2->apiInitPub(posData.data(), true);
-    gBufTex2->apiInitPub(gBufData.data(), true);
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
@@ -131,20 +121,12 @@ void NetworkPass::executeServerSend(RenderContext* pRenderContext)
 
 
     // Just emulating.
-    Texture::SharedPtr normTex2 = mpResManager->getTexture("WorldNormal2");
-    ////Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
-    ////Texture::SharedPtr gBufTex2 = mpResManager->getTexture("__TextureData2");
-    normData = texData(pRenderContext, normTex2);
-    ////posData = texData(pRenderContext, posTex2);
-    ////gBufData = texData(pRenderContext, gBufTex2);
+    Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
+    posData = texData(pRenderContext, posTex2);
 
     //// Put into the client code 
-    Texture::SharedPtr normTex = mpResManager->getTexture("WorldNormal");
-    ////Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    ////Texture::SharedPtr gBufTex = mpResManager->getTexture("__TextureData");
-    normTex->apiInitPub(normData.data(), true); // Try false
-    ////posTex->apiInitPub(posData.data(), true);
-    ////gBufTex->apiInitPub(gBufData.data(), true);
+    Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
+    posTex->apiInitPub(posData.data(), true);
 }
 
 void NetworkPass::renderGui(Gui::Window* pPassWindow)

@@ -38,12 +38,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    //mpResManager->requestTextureResource("WorldPosition");
-    //mpResManager->requestTextureResource("WorldNormal");
-    //mpResManager->requestTextureResource("__TextureData");
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float);
-    mpResManager->requestTextureResource("WorldNormal2", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("__TextureData2", ResourceFormat::RGBA32Float); // Stores 16 x uint8
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
@@ -83,12 +78,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
-    //rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-    //rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    //rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition2");
-    rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal2");
-    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData2");
     rayVars["gOutput"]      = pDstTex;
 
     // Shoot our rays and shade our primary hit points

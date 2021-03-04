@@ -40,8 +40,6 @@ cbuffer RayGenCB
 
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
-Texture2D<float4> gNorm;
-Texture2D<float4> gTexData;
 RWTexture2D<uint> gOutput;
 
 
@@ -98,13 +96,6 @@ void SimpleShadowsRayGen()
 
     // Load g-buffer data
     float4 worldPos     = gPos[launchIndex];
-    float4 worldNorm    = gNorm[launchIndex];
-    float4 difMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].x));
-
-    // We're only doing Lambertian, but sometimes Falcor gives a black Lambertian color.
-    //    There, this shader uses the spec color for our Lambertian color.
-    float4 specMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].y));
-    if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
 
     // If we don't hit any geometry, our difuse material contains our background color.
     int visibilityBit = 0;
