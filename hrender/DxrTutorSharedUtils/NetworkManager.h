@@ -43,7 +43,7 @@ class ResourceManager;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
-private:
+public:
     // Used by Server
     SOCKET ListenSocket = INVALID_SOCKET;
     SOCKET ClientSocket = INVALID_SOCKET;
@@ -51,7 +51,6 @@ private:
     // Used by client
     SOCKET ConnectSocket = INVALID_SOCKET;
 
-public:
     using SharedPtr = std::shared_ptr<NetworkManager>;
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
 

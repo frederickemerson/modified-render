@@ -90,73 +90,51 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, R
 
     // No longer need server socket
     closesocket(NetworkManager::ListenSocket);
-
-    // Receive until the peer shuts down the connection
-    do {
-        int recvSoFar = 0;
-        while (recvSoFar < POS_TEX_LEN) {
-            iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
-            if (iResult > 0) {
-                recvSoFar += iResult;
-            }
-        }
-
-        OutputDebugString(L"\n================================Bytes received================================\n");
-        NetworkManager::mServerAllowedToRender = true;
-
-        while (!NetworkManager::mServerFinishedRendering);
-        Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
-        OutputDebugString(L"\n================================Network Manager 109================================\n");
-        std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
-        OutputDebugString(L"\n================================Network Manager 111================================\n");
-
-        std::string lengthMessage = "Vis Data Length is " + std::to_string(visData.size());
-        OutputDebugString(string_2_wstring(lengthMessage).c_str());
-        
-        // Echo the buffer back to the sender
-        int sentSoFar = 0;
-        while (sentSoFar < VIS_TEX_LEN) {
-            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
-            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
-            int iResult = send(NetworkManager::ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
-            if (iResult != SOCKET_ERROR) {
-                sentSoFar += iResult;
-            }
-        }
-
-        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
-
-        NetworkManager::mServerAllowedToRender = false;
-        NetworkManager::mServerFinishedRendering = false;
-
-        //iResult = recv(NetworkManager::ClientSocket, recvbuf, recvbuflen, 0);
-        //if (iResult > 0) {
-        //    OutputDebugString(L"\n================================Bytes received================================\n");
-        //    printf("Bytes received: %d\n", iResult);
-
-        //    // Echo the buffer back to the sender
-        //    iSendResult = send(NetworkManager::ClientSocket, recvbuf, iResult, 0);
-        //    if (iSendResult == SOCKET_ERROR) {
-        //        printf("send failed with error: %d\n", WSAGetLastError());
-        //        closesocket(NetworkManager::ClientSocket);
-        //        WSACleanup();
-        //        return false;
-        //    }
-        //    printf("Bytes sent: %d\n", iSendResult);
-        //}
-        //else if (iResult == 0)
-        //    printf("Connection closing...\n");
-        //else {
-        //    printf("recv failed with error: %d\n", WSAGetLastError());
-        //    closesocket(NetworkManager::ClientSocket);
-        //    WSACleanup();
-        //    return false;
-        //}
-
-    } while (true);
-
+    
     return true;
 }
+//
+//    // Receive until the peer shuts down the connection
+//    do {
+//        int recvSoFar = 0;
+//        while (recvSoFar < POS_TEX_LEN) {
+//            iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
+//            if (iResult > 0) {
+//                recvSoFar += iResult;
+//            }
+//        }
+//
+//        OutputDebugString(L"\n================================Bytes received================================\n");
+//        NetworkManager::mServerAllowedToRender = true;
+//
+//        while (!NetworkManager::mServerFinishedRendering);
+//        Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
+//        OutputDebugString(L"\n================================Network Manager 109================================\n");
+//        std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
+//        OutputDebugString(L"\n================================Network Manager 111================================\n");
+//
+//        std::string lengthMessage = "Vis Data Length is " + std::to_string(visData.size());
+//        OutputDebugString(string_2_wstring(lengthMessage).c_str());
+//        
+//        // Echo the buffer back to the sender
+//        int sentSoFar = 0;
+//        while (sentSoFar < VIS_TEX_LEN) {
+//            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
+//            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+//            int iResult = send(NetworkManager::ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
+//            if (iResult != SOCKET_ERROR) {
+//                sentSoFar += iResult;
+//            }
+//        }
+//
+//        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
+//
+//        NetworkManager::mServerAllowedToRender = false;
+//        NetworkManager::mServerFinishedRendering = false;
+//    } while (true);
+//
+//    return true;
+//}
 
 bool NetworkManager::CloseServerConnection()
 {
