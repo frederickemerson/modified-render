@@ -62,17 +62,20 @@ bool NetworkManager::SetUpServer(PCSTR port)
 
 bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER CONFIGURING=================\n\n\n\n");
+    OutputDebugString(L"\n\n================================PIPELINE SERVER CONFIGURING================================\n\n");
 
     int iResult;
 
     iResult = listen(NetworkManager::ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
+        OutputDebugString(L"\n\n================================LISTEN FAILED WITH ERROR================================\n\n");
         printf("listen failed with error: %d\n", WSAGetLastError());
         closesocket(NetworkManager::ListenSocket);
         WSACleanup();
         return false;
     }
+
+    OutputDebugString(L"\n\n================================TRYING TO ACCEPT CLIENT================================\n\n");
 
     // Accept a client socket
     NetworkManager::ClientSocket = accept(NetworkManager::ListenSocket, NULL, NULL);
@@ -82,6 +85,8 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, R
         WSACleanup();
         return false;
     }
+
+    OutputDebugString(L"\n\n================================CONNECTION WITH CLIENT ESTABLISHED================================\n\n");
 
     // No longer need server socket
     closesocket(NetworkManager::ListenSocket);
@@ -101,8 +106,13 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, R
 
         while (!NetworkManager::mServerFinishedRendering);
         Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
+        OutputDebugString(L"\n================================Network Manager 109================================\n");
         std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
+        OutputDebugString(L"\n================================Network Manager 111================================\n");
 
+        std::string lengthMessage = "Vis Data Length is " + std::to_string(visData.size());
+        OutputDebugString(string_2_wstring(lengthMessage).c_str());
+        
         // Echo the buffer back to the sender
         int sentSoFar = 0;
         while (sentSoFar < VIS_TEX_LEN) {

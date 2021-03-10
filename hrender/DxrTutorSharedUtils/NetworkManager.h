@@ -32,10 +32,10 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-#define DEFAULT_BUFLEN 2048
+#define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define POS_TEX_LEN 32593920
-#define VIS_TEX_LEN 8148480
+#define POS_TEX_LEN 33177600
+#define VIS_TEX_LEN 8294400
 
 using namespace Falcor;
 

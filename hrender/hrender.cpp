@@ -99,7 +99,7 @@ void runServer()
         RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 2, 0, 1, 1 })
     });
 
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE SERVER IS CONFIGURED=================\n\n\n\n");
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE RENDER SERVER IS CONFIGURED=================\n\n\n\n");
 
 
     // Start our program

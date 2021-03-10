@@ -19,6 +19,10 @@
 #include "VisibilityPass.h"
 
 namespace {
+    // Where is our environment map and scene located?
+    //const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    const char* kDefaultScene = "pink_room\\pink_room.fscene";
+
     // Where is our shaders located?
     const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\visibilityPass.rt.hlsl";
 
@@ -40,6 +44,10 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint);
+
+    // Set default environment map and scene
+    //mpResManager->updateEnvironmentMap(kEnvironmentMap);
+    mpResManager->setDefaultSceneName(kDefaultScene);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -70,9 +78,11 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
+    OutputDebugString(L"\n\n================================VisibilityPass 73, GETCLEAREDTEXTURE================================\n\n");
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
+    OutputDebugString(L"\n\n================================VisibilityPass 77================================\n\n");
 
     // Set our ray tracing shader variables 
     auto rayVars = mpRays->getRayVars();
@@ -80,9 +90,11 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition2");
     rayVars["gOutput"]      = pDstTex;
+    OutputDebugString(L"\n\n================================VisibilityPass 85================================\n\n");
 
     // Shoot our rays and shade our primary hit points
     mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
+    OutputDebugString(L"\n\n================================VisibilityPass 88================================\n\n");
 }
 
 void VisibilityPass::renderGui(Gui::Window* pPassWindow)
