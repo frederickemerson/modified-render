@@ -40,6 +40,7 @@
 using namespace Falcor;
 
 class ResourceManager;
+class NetworkPass;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
@@ -55,14 +56,21 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
 
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
-    static bool mServerAllowedToRender;
-    static bool mServerFinishedRendering;
+    static bool mPosTexReceived;
+    static bool mVisTexComplete;
+    static std::mutex mMtxPosTexReceived;
+    static std::mutex mMtxVisTexComplete;
+    static std::mutex mMutex;
+
+    static std::condition_variable mCvPosTexReceived;
+    static std::condition_variable mCvVisTexComplete;
+
 
     // Server
     
     bool SetUpServer(PCSTR port);
 
-    bool AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
+    bool AcceptAndListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
 
     bool CloseServerConnection();
 

@@ -1,8 +1,14 @@
 #include "ResourceManager.h"
+#include "../NetworkPasses/NetworkPass.h"
 #include "NetworkManager.h"
 
-bool NetworkManager::mServerAllowedToRender = false;
-bool NetworkManager::mServerFinishedRendering = false;
+bool NetworkManager::mPosTexReceived = false;
+bool NetworkManager::mVisTexComplete = false;
+std::mutex NetworkManager::mMtxVisTexComplete;
+std::mutex NetworkManager::mMtxPosTexReceived;
+std::mutex NetworkManager::mMutex;
+std::condition_variable NetworkManager::mCvVisTexComplete;
+std::condition_variable NetworkManager::mCvPosTexReceived;
 
 bool NetworkManager::SetUpServer(PCSTR port)
 {
@@ -60,24 +66,23 @@ bool NetworkManager::SetUpServer(PCSTR port)
     return false;
 }
 
-bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool NetworkManager::AcceptAndListenServer(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    OutputDebugString(L"\n\n================================PIPELINE SERVER CONFIGURING================================\n\n");
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+    OutputDebugString(L"\n\n================================ PIPELINE SERVER CONFIGURING ================================\n\n");
 
+    // Listening for client socket
+    OutputDebugString(L"\n\n= NetworkThread - Trying to listen for client... =========\n\n");
     int iResult;
-
     iResult = listen(NetworkManager::ListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR) {
-        OutputDebugString(L"\n\n================================LISTEN FAILED WITH ERROR================================\n\n");
         printf("listen failed with error: %d\n", WSAGetLastError());
         closesocket(NetworkManager::ListenSocket);
         WSACleanup();
         return false;
     }
-
-    OutputDebugString(L"\n\n================================TRYING TO ACCEPT CLIENT================================\n\n");
-
-    // Accept a client socket
+    // Accept the client socket
+    OutputDebugString(L"\n\n= NetworkThread - Trying to accept client... =========\n\n");
     NetworkManager::ClientSocket = accept(NetworkManager::ListenSocket, NULL, NULL);
     if (ClientSocket == INVALID_SOCKET) {
         printf("accept failed with error: %d\n", WSAGetLastError());
@@ -85,56 +90,51 @@ bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, R
         WSACleanup();
         return false;
     }
-
-    OutputDebugString(L"\n\n================================CONNECTION WITH CLIENT ESTABLISHED================================\n\n");
-
     // No longer need server socket
     closesocket(NetworkManager::ListenSocket);
+    OutputDebugString(L"\n\n= NetworkThread - Connection with client established =========\n\n");
     
+    // Receive until the peer shuts down the connection
+    do {
+        // Receive the position texture from the sender
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting posTex receiving over network... =========\n\n");
+        int recvSoFar = 0;
+        while (recvSoFar < POS_TEX_LEN) {
+            iResult = recv(NetworkManager::ClientSocket, (char *)&NetworkPass::posData[recvSoFar], DEFAULT_BUFLEN, 0);
+            if (iResult > 0) {
+                recvSoFar += iResult;
+            }
+        }
+        OutputDebugString(L"\n\n= NetworkThread - Position texture received over network =========\n\n");
+
+        // Allow rendering using the posTex to begin, and wait for visTex to complete rendering
+        NetworkManager::mPosTexReceived = true;
+        NetworkManager::mCvPosTexReceived.notify_all();
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========\n\n");
+        while (!NetworkManager::mVisTexComplete)
+            NetworkManager::mCvVisTexComplete.wait(lck);
+        // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
+        // before we can continue sending the next frame
+        NetworkManager::mVisTexComplete = false;
+
+        // Send the visBuffer back to the sender
+        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========\n\n");
+        int sentSoFar = 0;
+        while (sentSoFar < VIS_TEX_LEN) {
+            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+            int iResult = send(NetworkManager::ClientSocket, (char*)&NetworkPass::visibilityData[sentSoFar], sizeToSend, 0);
+            if (iResult != SOCKET_ERROR) {
+                sentSoFar += iResult;
+            }
+        }
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========\n\n");
+        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
+
+    } while (true);
+
     return true;
 }
-//
-//    // Receive until the peer shuts down the connection
-//    do {
-//        int recvSoFar = 0;
-//        while (recvSoFar < POS_TEX_LEN) {
-//            iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
-//            if (iResult > 0) {
-//                recvSoFar += iResult;
-//            }
-//        }
-//
-//        OutputDebugString(L"\n================================Bytes received================================\n");
-//        NetworkManager::mServerAllowedToRender = true;
-//
-//        while (!NetworkManager::mServerFinishedRendering);
-//        Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
-//        OutputDebugString(L"\n================================Network Manager 109================================\n");
-//        std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
-//        OutputDebugString(L"\n================================Network Manager 111================================\n");
-//
-//        std::string lengthMessage = "Vis Data Length is " + std::to_string(visData.size());
-//        OutputDebugString(string_2_wstring(lengthMessage).c_str());
-//        
-//        // Echo the buffer back to the sender
-//        int sentSoFar = 0;
-//        while (sentSoFar < VIS_TEX_LEN) {
-//            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
-//            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
-//            int iResult = send(NetworkManager::ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
-//            if (iResult != SOCKET_ERROR) {
-//                sentSoFar += iResult;
-//            }
-//        }
-//
-//        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
-//
-//        NetworkManager::mServerAllowedToRender = false;
-//        NetworkManager::mServerFinishedRendering = false;
-//    } while (true);
-//
-//    return true;
-//}
 
 bool NetworkManager::CloseServerConnection()
 {
@@ -218,9 +218,9 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 
 bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data)
 {
-    // Send buffer until finishes
+    // Send posBuffer until finishes
     int sentSoFar = 0;
-    while (sentSoFar < POS_TEX_LEN) {
+    while (sentSoFar < data.size()){//POS_TEX_LEN) {
         bool lastPacket = sentSoFar > POS_TEX_LEN - DEFAULT_BUFLEN;
         int sizeToSend = lastPacket * (POS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
         int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);

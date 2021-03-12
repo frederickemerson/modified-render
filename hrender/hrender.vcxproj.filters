@@ -47,29 +47,11 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\LightProbeGBufferPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\GGXGlobalIllumination.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp">
-      <Filter>SVGFPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp">
-      <Filter>SVGFPasses</Filter>
-    </ClCompile>
     <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp">
       <Filter>TestPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="SVGFPasses\SVGFPass.cpp">
-      <Filter>SVGFPasses</Filter>
     </ClCompile>
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>
@@ -137,31 +119,10 @@
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\LightProbeGBufferPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\GGXGlobalIllumination.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="SVGFPasses\GBufferForSVGF.h">
-      <Filter>SVGFPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
-      <Filter>SVGFPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="SVGFPasses\SVGFPass.h">
-      <Filter>SVGFPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h">
       <Filter>TestPasses</Filter>
     </ClInclude>
@@ -197,14 +158,8 @@
     <Filter Include="TestPasses\Shaders">
       <UniqueIdentifier>{cd6e49c7-44eb-4463-9c29-1cce9c2eeb75}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SVGFPasses">
-      <UniqueIdentifier>{8efe5abb-b8eb-4cee-8c90-db754e1d804e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CommonPasses\Shaders">
       <UniqueIdentifier>{0b52c825-e6bc-4c0b-9af9-8052bbb5839f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SVGFPasses\Shaders">
-      <UniqueIdentifier>{afd72e98-215e-4b8b-83f6-d44ca28fbc52}</UniqueIdentifier>
     </Filter>
     <Filter Include="RasterizedPasses">
       <UniqueIdentifier>{39787612-65b8-4dad-9e27-e14ce972a9f2}</UniqueIdentifier>
@@ -276,42 +231,6 @@
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli">
       <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl">
       <Filter>CommonPasses\Shaders</Filter>

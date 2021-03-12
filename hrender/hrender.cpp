@@ -42,12 +42,18 @@ void runClient();
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
     //NetworkPass::Mode mode = NetworkPass::Mode::Client;
-    NetworkPass::Mode mode = NetworkPass::Mode::Server;
+    //NetworkPass::Mode mode = NetworkPass::Mode::Server;
 
-    if (mode == NetworkPass::Mode::Client)
-        runClient();
-    else 
+    if (std::string(lpCmdLine) == std::string("server"))
+    {
+        OutputDebugString(L"\n\n\n\n\n======== SERVER MODE =========\n\n\n\n");
         runServer();
+    }
+    else
+    {
+        OutputDebugString(L"\n\n\n\n\n======== CLIENT MODE =========\n\n\n\n");
+        runClient();
+    }
    
     return 0;
 }
