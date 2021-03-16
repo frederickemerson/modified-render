@@ -93,10 +93,12 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
 
     // Load textures from GPU to CPU
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    posData = texData(pRenderContext, posTex);
+    NetworkPass::posData = texData(pRenderContext, posTex);
     
-    // Send the texture to server and await server to send back the visibility pass texture
-    bool result = mpResManager->mNetworkManager->SendDataFromClient(posData, 0, NetworkPass::visibilityData, posTex->getWidth(), posTex->getHeight());
+    // Send the position texture to server
+    bool result1 = mpResManager->mNetworkManager->SendDataFromClient(NetworkPass::posData, posTex->getWidth(), posTex->getHeight());
+    // Await server to send back the visibility pass texture
+    bool result2 = mpResManager->mNetworkManager->RecvDataFromServer(NetworkPass::visibilityData, posTex->getWidth(), posTex->getHeight());
 
     // Put visibility texture from network (on CPU) into GPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");

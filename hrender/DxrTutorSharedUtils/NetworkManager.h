@@ -64,9 +64,14 @@ public:
     static std::condition_variable mCvPosTexReceived;
     static std::condition_variable mCvVisTexComplete;
 
+    // Used to send and receive textures over the network
+    void recvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
+    void sendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
+
 
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
 
@@ -78,7 +83,9 @@ public:
 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
 
-    bool SendDataFromClient(const std::vector<uint8_t>& data, int flags, const std::vector<uint8_t>& out_data, int texWidth, int texHeight);
+    bool SendDataFromClient(const std::vector<uint8_t>& data, int texWidth, int texHeight);
+
+    bool RecvDataFromServer(const std::vector<uint8_t>& out_data, int texWidth, int texHeight);
 
     bool SendInt(int toSend);
 
