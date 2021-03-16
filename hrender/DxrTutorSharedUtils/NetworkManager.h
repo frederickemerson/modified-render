@@ -67,8 +67,8 @@ public:
 
 
     // Server
-    
-    bool SetUpServer(PCSTR port);
+    // Set up the sockets and connect to a client, and output the client's texture width/height
+    bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
 
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
 

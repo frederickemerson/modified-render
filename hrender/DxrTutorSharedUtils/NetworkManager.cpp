@@ -10,7 +10,7 @@ std::mutex NetworkManager::mMutex;
 std::condition_variable NetworkManager::mCvVisTexComplete;
 std::condition_variable NetworkManager::mCvPosTexReceived;
 
-bool NetworkManager::SetUpServer(PCSTR port)
+bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight)
 {
     WSADATA wsaData;
     int iResult;
@@ -95,9 +95,15 @@ bool NetworkManager::SetUpServer(PCSTR port)
     }
     // No longer need server socket
     closesocket(NetworkManager::ListenSocket);
-    OutputDebugString(L"\n\n= NetworkThread - Connection with client established =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Connection with client established =========\n\n");
 
-    return false;
+    // Get the client texture width/height
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Getting client texture width/height... =========\n\n");
+    RecvInt(outTexWidth);
+    RecvInt(outTexHeight);
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========\n\n");
+
+    return true;
 }
 
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager)

@@ -71,24 +71,25 @@ void runServer()
     // Set up server - configure the sockets and await client connection. We need to await
     // the client connection before we allow the server thread to create the textures, because
     // we want to initialize our server textures the same size as the client
-    ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT);
+    int texWidth, texHeight;
+    ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
     pipeline->setPassOptions(0, {
-        NetworkPass::create("Receiver", NetworkPass::Mode::Server),
+        NetworkPass::create("Receiver", NetworkPass::Mode::Server, texWidth, texHeight),
     });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap"),
+        VisibilityPass::create("VisibilityBitmap", texWidth, texHeight),
         LambertianPlusShadowPass::create("RTLambertian")
     });
     // -------------------------------------------------------------------- //
     // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
     pipeline->setPassOptions(2, {
-        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend),
+        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend, texWidth, texHeight),
     });
 
     // --------------------------------------------------------------- //

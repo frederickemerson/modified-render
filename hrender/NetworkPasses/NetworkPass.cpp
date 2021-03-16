@@ -33,13 +33,10 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition");
-    mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("__TextureData");
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float);
-    mpResManager->requestTextureResource("WorldNormal2", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("__TextureData2", ResourceFormat::RGBA32Float); // Stores 16 x uint8
-    mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint);
+    mpResManager->requestTextureResource("WorldPosition"); // Only for client
+    // For server buffers, we are creating them here, so we specify their width/height accordingly
+    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
