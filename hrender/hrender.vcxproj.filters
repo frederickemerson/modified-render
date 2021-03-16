@@ -47,9 +47,6 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\LightProbeGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
     <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp">
       <Filter>TestPasses</Filter>
     </ClCompile>
@@ -117,9 +114,6 @@
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\LightProbeGBufferPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />

@@ -21,10 +21,13 @@ bool NetworkManager::SetUpServer(PCSTR port)
     struct addrinfo* result = NULL;
     struct addrinfo hints;
 
+    OutputDebugString(L"\n\n===== Pre-Falcor Init - NetworkManager::SetUpServer - PIPELINE SERVER SETTING UP ================================\n\n");
+
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
+        std::string errString = std::string("\n\n= Pre-Falcor Init - getaddrinfo failed with error: ") + std::to_string(iResult);
+        OutputDebugString(string_2_wstring(errString).c_str()); 
         return false;
     }
 
@@ -37,7 +40,8 @@ bool NetworkManager::SetUpServer(PCSTR port)
     // Resolve the server address and port
     iResult = getaddrinfo(NULL, port, &hints, &result);
     if (iResult != 0) {
-        printf("getaddrinfo failed with error: %d\n", iResult);
+        std::string errString = std::string("\n\n= Pre-Falcor Init - getaddrinfo failed with error: ") + std::to_string(iResult);
+        OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
         return false;
     }
@@ -45,7 +49,8 @@ bool NetworkManager::SetUpServer(PCSTR port)
     // Create a SOCKET for connecting to server
     NetworkManager::ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
     if (NetworkManager::ListenSocket == INVALID_SOCKET) {
-        printf("socket failed with error: %ld\n", WSAGetLastError());
+        std::string errString = std::string("\n\n= Pre-Falcor Init - socket failed with error: ") + std::to_string(WSAGetLastError());
+        OutputDebugString(string_2_wstring(errString).c_str());
         freeaddrinfo(result);
         WSACleanup();
         return false;
@@ -54,7 +59,8 @@ bool NetworkManager::SetUpServer(PCSTR port)
     // Setup the TCP listening socket
     iResult = bind(NetworkManager::ListenSocket, result->ai_addr, (int)result->ai_addrlen);
     if (iResult == SOCKET_ERROR) {
-        printf("bind failed with error: %d\n", WSAGetLastError());
+        std::string errString = std::string("\n\n= Pre-Falcor Init - bind failed with error: ") + std::to_string(WSAGetLastError());
+        OutputDebugString(string_2_wstring(errString).c_str());
         freeaddrinfo(result);
         closesocket(NetworkManager::ListenSocket);
         WSACleanup();
@@ -63,29 +69,26 @@ bool NetworkManager::SetUpServer(PCSTR port)
 
     freeaddrinfo(result);
 
-    return false;
-}
-
-bool NetworkManager::AcceptAndListenServer(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
-{
-    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
-    OutputDebugString(L"\n\n================================ PIPELINE SERVER CONFIGURING ================================\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - SETUP COMPLETE\n\n");
 
     // Listening for client socket
-    OutputDebugString(L"\n\n= NetworkThread - Trying to listen for client... =========\n\n");
-    int iResult;
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client... =========\n\n");
     iResult = listen(NetworkManager::ListenSocket, SOMAXCONN);
-    if (iResult == SOCKET_ERROR) {
-        printf("listen failed with error: %d\n", WSAGetLastError());
+    if (iResult == SOCKET_ERROR)
+    {
+        std::string errString = std::string("\n\n= Pre-Falcor Init - listen failed with error: ") + std::to_string(WSAGetLastError());
+        OutputDebugString(string_2_wstring(errString).c_str());
         closesocket(NetworkManager::ListenSocket);
         WSACleanup();
         return false;
     }
     // Accept the client socket
-    OutputDebugString(L"\n\n= NetworkThread - Trying to accept client... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to accept client... =========\n\n");
     NetworkManager::ClientSocket = accept(NetworkManager::ListenSocket, NULL, NULL);
-    if (ClientSocket == INVALID_SOCKET) {
-        printf("accept failed with error: %d\n", WSAGetLastError());
+    if (ClientSocket == INVALID_SOCKET)
+    {
+        std::string errString = std::string("\n\n= Pre-Falcor Init - accept failed with error: ") + std::to_string(WSAGetLastError());
+        OutputDebugString(string_2_wstring(errString).c_str());
         closesocket(NetworkManager::ListenSocket);
         WSACleanup();
         return false;
@@ -93,7 +96,15 @@ bool NetworkManager::AcceptAndListenServer(RenderContext* pRenderContext, Resour
     // No longer need server socket
     closesocket(NetworkManager::ListenSocket);
     OutputDebugString(L"\n\n= NetworkThread - Connection with client established =========\n\n");
-    
+
+    return false;
+}
+
+bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager)
+{
+    int iResult;
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+        
     // Receive until the peer shuts down the connection
     do {
         // Receive the position texture from the sender
@@ -140,7 +151,8 @@ bool NetworkManager::CloseServerConnection()
 {
     int iResult = shutdown(NetworkManager::ClientSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
-        printf("shutdown failed with error: %d\n", WSAGetLastError());
+        std::string errString = std::string("\n\n= CloseServerConnection - shutdown failed with error: ") + std::to_string(WSAGetLastError());
+        OutputDebugString(string_2_wstring(errString).c_str());
         closesocket(NetworkManager::ClientSocket);
         WSACleanup();
         return false;
@@ -166,7 +178,8 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
+        std::string errString = std::string("\n\n= SetUpClient - WSAStartup failed with error: ") + std::to_string(iResult);
+        OutputDebugString(string_2_wstring(errString).c_str());
         return 1;
     }
 
@@ -178,7 +191,8 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     // Resolve the server address and port
     iResult = getaddrinfo(serverName, serverPort, &hints, &result);
     if (iResult != 0) {
-        printf("getaddrinfo failed with error: %d\n", iResult);
+        std::string errString = std::string("\n\n= SetUpClient - getaddrinfo failed with error: ") + std::to_string(iResult);
+        OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
         return false;
     }
@@ -190,7 +204,8 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
         NetworkManager::ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype,
             ptr->ai_protocol);
         if (NetworkManager::ConnectSocket == INVALID_SOCKET) {
-            printf("socket failed with error: %ld\n", WSAGetLastError());
+            std::string errString = std::string("\n\n= SetUpClient - socket failed with error: ") + std::to_string(WSAGetLastError());
+            OutputDebugString(string_2_wstring(errString).c_str());
             WSACleanup();
             return false;
         }
@@ -208,7 +223,8 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     freeaddrinfo(result);
 
     if (NetworkManager::ConnectSocket == INVALID_SOCKET) {
-        printf("Unable to connect to server!\n");
+        std::string errString = std::string("\n\n= SetUpClient - Unable to connect to server!");
+        OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
         return false;
     }
@@ -222,7 +238,7 @@ bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int le
     int sentSoFar = 0;
     while (sentSoFar < data.size()){//POS_TEX_LEN) {
         bool lastPacket = sentSoFar > POS_TEX_LEN - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket * (POS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket ? (POS_TEX_LEN - sentSoFar) : DEFAULT_BUFLEN;
         int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);
         if (iResult != SOCKET_ERROR) {
             sentSoFar += iResult;
@@ -277,3 +293,35 @@ bool NetworkManager::CloseClientConnection()
 
     return true;
 }
+
+bool NetworkManager::RecvInt(int& recvInt)
+{
+    int32_t ret{};
+    char* data = (char*)&ret;
+    int amtToRecv = sizeof(ret);
+    int recvSoFar = 0;
+    do
+    {
+        int iResult = recv(NetworkManager::ConnectSocket, &data[recvSoFar], amtToRecv - recvSoFar, 0);
+        if (iResult != SOCKET_ERROR) recvSoFar += iResult;
+    } while (recvSoFar < amtToRecv);
+
+    recvInt = ntohl(ret);
+    return true;
+}
+
+bool NetworkManager::SendInt(int toSend)
+{
+    int32_t conv = htonl(toSend);
+    char* data = (char*)&conv;
+    int amtToSend = sizeof(conv);
+    int sentSoFar = 0;
+    do
+    {
+        int iResult = send(NetworkManager::ConnectSocket, &data[sentSoFar], amtToSend - sentSoFar, 0);
+        if (iResult != SOCKET_ERROR) sentSoFar += iResult;
+    } while (sentSoFar < amtToSend);
+    return true;
+}
+
+

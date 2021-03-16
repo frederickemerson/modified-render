@@ -70,7 +70,9 @@ public:
     
     bool SetUpServer(PCSTR port);
 
-    bool AcceptAndListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
+    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
+
+    bool RecvInt(int& recvInt);
 
     bool CloseServerConnection();
 
@@ -79,6 +81,8 @@ public:
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
 
     bool SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data);
+
+    bool SendInt(int toSend);
 
     bool CloseClientConnection();
 };

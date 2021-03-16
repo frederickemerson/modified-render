@@ -109,7 +109,7 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
     mFirstRender = false;
 
     auto serverListen = [&]() {
-        ResourceManager::mNetworkManager->AcceptAndListenServer(pRenderContext, mpResManager);
+        ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager);
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= ServerRecv - Mutexes locked and network thread dispatched =========\n\n");
@@ -127,6 +127,9 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= ServerRecv - Awaiting PosTex from client... =========\n\n");
     while (!NetworkManager::mPosTexReceived) 
         NetworkManager::mCvPosTexReceived.wait(lck);
+    // Reset to false so that we will need to wait for the network pass to flag it as received
+    // before we can continue rendering the next frame
+    NetworkManager::mPosTexReceived = false;
     OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
 
     // Load position texture from CPU to GPU
@@ -145,9 +148,7 @@ void NetworkPass::executeServerSend(RenderContext* pRenderContext)
     visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
     OutputDebugString(L"\n\n= ServerSend - VisTex loaded to CPU =========\n\n");
 
-    // Let the network thread send the visibilty texture, but we also block our
-    // current thread from rendering again until we receive the next position texture
-    NetworkManager::mPosTexReceived = false;
+    // Let the network thread send the visibilty texture
     NetworkManager::mVisTexComplete = true;
     NetworkManager::mCvVisTexComplete.notify_all();
 }

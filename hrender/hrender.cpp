@@ -68,9 +68,10 @@ void runServer()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
 
+    // Set up server - configure the sockets and await client connection. We need to await
+    // the client connection before we allow the server thread to create the textures, because
+    // we want to initialize our server textures the same size as the client
     ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT);
-
-    //ResourceManager::mNetworkManager->AcceptAndListenServer(positionData);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
