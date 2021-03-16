@@ -74,7 +74,11 @@ std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture
 
 bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 {
-    // Send scene
+    // Send the texture size to the server
+    mpResManager->mNetworkManager->SendInt(mpResManager->getWidth());
+    mpResManager->mNetworkManager->SendInt(mpResManager->getHeight());
+    
+    // TODO: Send scene
 
     mFirstRender = false;
     
@@ -84,15 +88,15 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 void NetworkPass::executeClient(RenderContext* pRenderContext)
 {
     // Slight branch optimization over:
-    // if (!mFirstRender) firstClientRender();
+     //if (!mFirstRender) firstClientRender();
     !mFirstRender && firstClientRender(pRenderContext);
 
     // Load textures from GPU to CPU
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
     posData = texData(pRenderContext, posTex);
-
+    
     // Send the texture to server and await server to send back the visibility pass texture
-    bool result = mpResManager->mNetworkManager->SendDataFromClient(posData, int(posData.size()), 0, NetworkPass::visibilityData);
+    bool result = mpResManager->mNetworkManager->SendDataFromClient(posData, 0, NetworkPass::visibilityData, posTex->getWidth(), posTex->getHeight());
 
     // Put visibility texture from network (on CPU) into GPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
@@ -106,7 +110,7 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
     mFirstRender = false;
 
     auto serverListen = [&]() {
-        ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager);
+        ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager, mTexWidth, mTexHeight);
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= ServerRecv - Mutexes locked and network thread dispatched =========\n\n");

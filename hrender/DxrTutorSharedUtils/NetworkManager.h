@@ -34,8 +34,8 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define POS_TEX_LEN 33177600
-#define VIS_TEX_LEN 8294400
+#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
 
 using namespace Falcor;
 
@@ -56,21 +56,19 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
 
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
+
+    // Used for thread synchronizing
     static bool mPosTexReceived;
     static bool mVisTexComplete;
-    static std::mutex mMtxPosTexReceived;
-    static std::mutex mMtxVisTexComplete;
     static std::mutex mMutex;
-
     static std::condition_variable mCvPosTexReceived;
     static std::condition_variable mCvVisTexComplete;
-
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
 
-    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
+    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
 
     bool RecvInt(int& recvInt);
 
@@ -80,7 +78,7 @@ public:
 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
 
-    bool SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data);
+    bool SendDataFromClient(const std::vector<uint8_t>& data, int flags, const std::vector<uint8_t>& out_data, int texWidth, int texHeight);
 
     bool SendInt(int toSend);
 

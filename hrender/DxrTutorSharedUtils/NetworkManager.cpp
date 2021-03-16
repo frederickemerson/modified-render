@@ -4,8 +4,6 @@
 
 bool NetworkManager::mPosTexReceived = false;
 bool NetworkManager::mVisTexComplete = false;
-std::mutex NetworkManager::mMtxVisTexComplete;
-std::mutex NetworkManager::mMtxPosTexReceived;
 std::mutex NetworkManager::mMutex;
 std::condition_variable NetworkManager::mCvVisTexComplete;
 std::condition_variable NetworkManager::mCvPosTexReceived;
@@ -106,17 +104,19 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     return true;
 }
 
-bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager)
+bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
     int iResult;
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+    int posTexSize = texWidth * texHeight * 16;
+    int visTexSize = texWidth * texHeight * 4;
         
     // Receive until the peer shuts down the connection
     do {
         // Receive the position texture from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting posTex receiving over network... =========\n\n");
         int recvSoFar = 0;
-        while (recvSoFar < POS_TEX_LEN) {
+        while (recvSoFar < posTexSize) {
             iResult = recv(NetworkManager::ClientSocket, (char *)&NetworkPass::posData[recvSoFar], DEFAULT_BUFLEN, 0);
             if (iResult > 0) {
                 recvSoFar += iResult;
@@ -137,9 +137,9 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         // Send the visBuffer back to the sender
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========\n\n");
         int sentSoFar = 0;
-        while (sentSoFar < VIS_TEX_LEN) {
-            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
-            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+        while (sentSoFar < visTexSize) {
+            bool lastPacket = sentSoFar > visTexSize - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket * (visTexSize - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
             int iResult = send(NetworkManager::ClientSocket, (char*)&NetworkPass::visibilityData[sentSoFar], sizeToSend, 0);
             if (iResult != SOCKET_ERROR) {
                 sentSoFar += iResult;
@@ -238,13 +238,17 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
-bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data)
+bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int flags, const std::vector<uint8_t>& out_data, int texWidth, int texHeight)
 {
+    int posTexLen = int(data.size());
+    int visTexLen = texWidth * texHeight * 4;
+    assert(posTexLen == texWidth * texHeight * 16);
+
     // Send posBuffer until finishes
     int sentSoFar = 0;
     while (sentSoFar < data.size()){//POS_TEX_LEN) {
-        bool lastPacket = sentSoFar > POS_TEX_LEN - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket ? (POS_TEX_LEN - sentSoFar) : DEFAULT_BUFLEN;
+        bool lastPacket = sentSoFar > posTexLen - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket ? (posTexLen - sentSoFar) : DEFAULT_BUFLEN;
         int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);
         if (iResult != SOCKET_ERROR) {
             sentSoFar += iResult;
@@ -255,7 +259,7 @@ bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int le
 
     // Receive until finish
     int recvSoFar = 0;
-    while (recvSoFar < VIS_TEX_LEN) {
+    while (recvSoFar < visTexLen) {
         int iRecv = recv(NetworkManager::ConnectSocket, (char *)&out_data[recvSoFar], DEFAULT_BUFLEN, 0);
         if (iRecv != SOCKET_ERROR) {
             recvSoFar += iRecv;
