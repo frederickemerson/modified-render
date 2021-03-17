@@ -124,7 +124,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("172.25.107.160", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("192.168.1.144", DEFAULT_PORT);
     //NetworkManager::SharedPtr networkManager = NetworkManager::create();
     //networkManager->SetUpClient("localhost", "10871");
     //

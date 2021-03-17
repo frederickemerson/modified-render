@@ -116,6 +116,7 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         std::string frameMsg = std::string("\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================\n");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
         
+        // COMMENT
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========\n\n");
         RecvCameraData(NetworkPass::camData, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========\n\n");
@@ -323,10 +324,10 @@ bool NetworkManager::SendInt(int toSend, SOCKET& s)
     return true;
 }
 
-bool NetworkManager::RecvCameraData(float3 cameraData[3], SOCKET& s)
+bool NetworkManager::RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s)
 {
     char* data = (char*)&cameraData;
-    int amtToRecv = sizeof(cameraData);
+    int amtToRecv = sizeof(std::array<float3, 3>);
     int recvSoFar = 0;
     do
     {
@@ -338,7 +339,7 @@ bool NetworkManager::RecvCameraData(float3 cameraData[3], SOCKET& s)
 
 bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 {
-    float3 cameraData[3] = { cam->getPosition(), cam->getUpVector(), cam->getTarget() };
+    std::array<float3, 3> cameraData = { cam->getPosition(), cam->getUpVector(), cam->getTarget() };
     char* data = (char*)&cameraData;
     int amtToSend = sizeof(cameraData);
     int sentSoFar = 0;

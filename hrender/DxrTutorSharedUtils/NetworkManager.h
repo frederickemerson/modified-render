@@ -69,7 +69,7 @@ public:
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
-    bool RecvCameraData(float3 camData[3], SOCKET& s);
+    bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
 
     // Server

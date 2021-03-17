@@ -22,7 +22,7 @@
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
-float3 NetworkPass::camData[3];
+std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
@@ -155,11 +155,19 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     NetworkManager::mPosTexReceived = false;
     OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
 
+    // COMMENT
     // Load camera data to scene
     Camera::SharedPtr cam = mpScene->getCamera();
     cam->setPosition(camData[0]);
     cam->setUpVector(camData[1]);
     cam->setTarget(camData[2]);
+
+    std::string camPosStr = std::to_string(camData[0].x) + std::string(", ") + std::to_string(camData[0].y) + std::string(", ") + std::to_string(camData[0].z);
+    std::string camUpStr = std::to_string(camData[1].x) + std::string(", ") + std::to_string(camData[1].y) + std::string(", ") + std::to_string(camData[1].z);
+    std::string camTargetStr = std::to_string(camData[2].x) + std::string(", ") + std::to_string(camData[2].y) + std::string(", ") + std::to_string(camData[2].z);
+    std::string camMsg = std::string("Cam Pos: ") + camPosStr + std::string(", ") + std::string("Cam Up: ") + camUpStr + std::string(", ") + std::string("Cam Target: ") + camTargetStr;
+    std::string camFinalMsg = std::string("\n================================ Camera Info:  ") + camMsg + std::string(" ================================\n");
+    OutputDebugString(string_2_wstring(camFinalMsg).c_str());
 
     // Load position texture from CPU to GPU
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
