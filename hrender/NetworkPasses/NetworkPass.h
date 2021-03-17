@@ -45,6 +45,7 @@ public:
     static std::vector<uint8_t> posData;
     //static std::vector<uint8_t> gBufData;
     static std::vector<uint8_t> visibilityData;
+    static float3 camData[3];
 
 protected:
     NetworkPass(const std::string& outBuf, Mode mode, int texWidth=-1, int texHeight=-1) : ::RenderPass("Network Pass", "Network Pass Options") { 

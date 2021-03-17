@@ -46,11 +46,11 @@ class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
 public:
     // Used by Server
-    SOCKET ListenSocket = INVALID_SOCKET;
-    SOCKET ClientSocket = INVALID_SOCKET;
+    SOCKET mListenSocket = INVALID_SOCKET;
+    SOCKET mClientSocket = INVALID_SOCKET;
 
     // Used by client
-    SOCKET ConnectSocket = INVALID_SOCKET;
+    SOCKET mConnectSocket = INVALID_SOCKET;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
@@ -64,30 +64,24 @@ public:
     static std::condition_variable mCvPosTexReceived;
     static std::condition_variable mCvVisTexComplete;
 
-    // Used to send and receive textures over the network
-    void recvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
-    void sendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+    // Used to send and receive data over the network
+    void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
+    void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+    bool RecvInt(int& recvInt, SOCKET& s);
+    bool SendInt(int toSend, SOCKET& s);
+    bool RecvCameraData(float3 camData[3], SOCKET& s);
+    bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
 
-
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
-
-    bool RecvInt(int& recvInt);
 
     bool CloseServerConnection();
 
     // Client 
-
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
-
-    bool SendDataFromClient(const std::vector<uint8_t>& data, int texWidth, int texHeight);
-
-    bool RecvDataFromServer(const std::vector<uint8_t>& out_data, int texWidth, int texHeight);
-
-    bool SendInt(int toSend);
 
     bool CloseClientConnection();
 };
