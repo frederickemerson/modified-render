@@ -94,7 +94,7 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
 
     // Slight branch optimization over:
      //if (!mFirstRender) firstClientRender();
-    !mFirstRender && firstClientRender(pRenderContext);
+    mFirstRender && firstClientRender(pRenderContext);
 
     // Load textures from GPU to CPU and retrieve relevant information
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
