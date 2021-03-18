@@ -47,6 +47,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
     {
+        OutputDebugString(L"\n\n\n\n\n======== WITHOUT COMPRESSION =========\n\n\n\n");
         NetworkManager::mCompression = false;
     }
 

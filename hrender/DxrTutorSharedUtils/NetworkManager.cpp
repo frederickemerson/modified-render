@@ -289,7 +289,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     // If no compression occurs, we write directly to the recvTex with the expected texture size,
     // but if we are using compression, we need to receive a compressed texture to an intermediate
     // array and decompress
-    char* recvDest = mCompression ? (char*)&NetworkManager::compData : recvTexData;
+    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexData;
     int recvSize = recvTexSize;
     if (mCompression)
         RecvInt(recvSize, socket);
@@ -317,15 +317,27 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     // If no compression occurs, we directly send the texture with the expected texture size
     char* srcTex = sendTexData;
     int sendSize = sendTexSize;
+    
     // But if compression occurs, we perform compression and send the compressed texture size
     // to the other device
+    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string("=========");
+    OutputDebugString(string_2_wstring(message).c_str());
+
     if (mCompression)
     {
+        OutputDebugString(L"\n\n= Compressing texture =========");
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        
+        std::string message1 = std::string("\n\n= Sending compressed texture size: ") + std::to_string(sendSize) + std::string("=========");
+        OutputDebugString(string_2_wstring(message1).c_str());
+        
         SendInt(sendSize, socket);
     }
     
     // Send the texture
+    std::string message2 = std::string("\n\n= Sending texture of size of texture: ") + std::to_string(sendSize) + std::string("=========");
+    OutputDebugString(string_2_wstring(message2).c_str());
+
     int sentSoFar = 0;
     while (sentSoFar < sendSize)
     {
@@ -337,6 +349,8 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
             sentSoFar += iResult;
         }
     }
+    OutputDebugString(L"\n\n= Finished sending texture=========\n");
+
 }
 
 bool NetworkManager::RecvInt(int& recvInt, SOCKET& s)
