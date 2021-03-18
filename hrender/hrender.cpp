@@ -34,6 +34,7 @@
 #include "DxrTutorSharedUtils/NetworkManager.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
+#include "NetworkPasses/MemoryTransferPass.h"
 #include "NetworkPasses/NetworkPass.h"
 
 void runServer();
@@ -125,11 +126,6 @@ void runClient()
     RenderingPipeline* pipeline = new RenderingPipeline();
     
     ResourceManager::mNetworkManager->SetUpClient("192.168.1.144", DEFAULT_PORT);
-    //NetworkManager::SharedPtr networkManager = NetworkManager::create();
-    //networkManager->SetUpClient("localhost", "10871");
-    //
-    //const char* sendbuf = "this is a test";
-    //networkManager->SendDataFromClient(sendbuf, (int)strlen(sendbuf), 0);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
@@ -137,22 +133,34 @@ void runClient()
         // Rasterized GBuffer 
         JitteredGBufferPass::create()
     });
-    // ------------------------------------------------------------------------------------- //
-    // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
+    // ------------------------------------------------- //
+    // --- Pass 2 transfers GPU information into CPU --- //
     pipeline->setPassOptions(1, {
-        // Send scene and gbuffer across network to server, and re-receive the visibility bitmap
-        NetworkPass::create("Client", NetworkPass::Mode::Client),
-        // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap"),
-        LambertianPlusShadowPass::create("RTLambertian")
-    });
-    // -------------------------------------------------------------------- //
-    // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
+        // Memory transfer from GPU to CPU
+        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_GPUtoCPU)
+        });
+    // ------------------------------------------------------------------------------------- //
+    // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(2, {
+        // Send scene and gbuffer across network to server, and re-receive the visibility bitmap
+        NetworkPass::create("Client", NetworkPass::Mode::Client)
+        // Lambertian BRDF for local lighting, 1 shadow ray per light
+        //VisibilityPass::create("VisibilityBitmap"),
+        //LambertianPlusShadowPass::create("RTLambertian")
+    });
+    // ------------------------------------------------- //
+    // --- Pass 4 transfers GPU information into CPU --- //
+    pipeline->setPassOptions(3, {
+        // Memory transfer from GPU to CPU
+        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_GPUtoCPU)
+        });
+    // -------------------------------------------------------------------- //
+    // --- Pass 5 makes use of the visibility buffer to shade the scene --- //
+    pipeline->setPassOptions(4, {
         //// Lambertian BRDF for local lighting, based on the visibility buffer created in pass 2
         //NetworkPass::create("ServerRecv", NetworkPass::Mode::Server),
 
-        
+        // Make use of the received visibility bitmap to construct final scene
         VShadingPass::create("V-shading"),
         //LambertianPlusShadowPass::create("RTLambertian"),
         //VisibilityPass::create("VisibilityBitmap")
@@ -170,18 +178,19 @@ void runClient()
     //    VShadingPass::create("V-shading")
     //    });
     // --------------------------------------------------------------- //
-    // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(3, CopyToOutputPass::create());
+    // --- Pass 6 just lets us select which pass to view on screen --- //
+    pipeline->setPass(5, CopyToOutputPass::create());
     // ---------------------------------------------------------- //
-    // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 7 temporally accumulates frames for denoising --- //
+    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
         //RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 });
-        RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1 })
+        //RenderingPipeline::PresetData("CPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("GPU-CPU transfer, Network, CPU-GPU transfer, Visibility then Combination", "V-shading", { 1, 1, 1, 1, 1, 1, 1 })
         //RenderingPipeline::PresetData("Split Visibility then Combination on Client", "V-shading", { 1, 2, 2, 0, 0, 0, 1, 1 }),
         //RenderingPipeline::PresetData("Raytraced Lighting", "RTLambertian", { 1, 3, 0, 0, 0, 0, 1, 1 })
     });

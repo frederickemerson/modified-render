@@ -20,6 +20,9 @@
 
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
+int NetworkPass::posTexWidth = 0;
+int NetworkPass::posTexHeight = 0;
+
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
 std::array<float3, 3> NetworkPass::camData;
@@ -96,11 +99,6 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
      //if (!mFirstRender) firstClientRender();
     mFirstRender && firstClientRender(pRenderContext);
 
-    // Load textures from GPU to CPU and retrieve relevant information
-    Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    NetworkPass::posData = texData(pRenderContext, posTex);
-    int texWidth = posTex->getWidth(), texHeight = posTex->getHeight();
-
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
     OutputDebugString(L"\n\n= Awaiting camData sending over network... =========\n\n");
@@ -109,20 +107,16 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
 
     // Send the position texture to server
     int posTexLen = int(NetworkPass::posData.size());
-    assert(posTexLen == texWidth * texHeight * 16);
+    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 16);
     OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
     pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= posTex sent over network =========\n\n");
 
     // Await server to send back the visibility pass texture
-    int visTexLen = texWidth * texHeight * 4;
+    int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========\n\n");
     pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= visTex received over network =========\n\n");
-
-    // Put visibility texture from network (on CPU) into GPU
-    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    visTex->apiInitPub(visibilityData.data(), true);
 }
 
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
