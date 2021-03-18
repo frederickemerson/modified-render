@@ -45,7 +45,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     //NetworkPass::Mode mode = NetworkPass::Mode::Client;
     //NetworkPass::Mode mode = NetworkPass::Mode::Server;
 
-    if (std::string(lpCmdLine) == std::string("server"))
+    if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
+    {
+        NetworkManager::mCompression = false;
+    }
+
+    if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)
     {
         OutputDebugString(L"\n\n\n\n\n======== SERVER MODE =========\n\n\n\n");
         runServer();
