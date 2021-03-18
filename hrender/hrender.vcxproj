@@ -29,6 +29,7 @@
     <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
     <ClCompile Include="Libraries\minilzo.c" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="Libraries\lzoconf.h" />
     <ClInclude Include="Libraries\lzodefs.h" />
     <ClInclude Include="Libraries\minilzo.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPass.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />

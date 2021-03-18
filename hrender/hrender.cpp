@@ -125,7 +125,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("192.168.1.144", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //

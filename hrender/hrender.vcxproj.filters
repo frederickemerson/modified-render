@@ -71,6 +71,9 @@
     <ClCompile Include="Libraries\minilzo.c">
       <Filter>Libraries</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -149,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="Libraries\minilzo.h">
       <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPass.h">
+      <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
