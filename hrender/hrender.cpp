@@ -157,7 +157,7 @@ void runClient()
     // --- Pass 4 transfers GPU information into CPU --- //
     pipeline->setPassOptions(3, {
         // Memory transfer from GPU to CPU
-        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_GPUtoCPU)
+        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_CPUtoGPU)
         });
     // -------------------------------------------------------------------- //
     // --- Pass 5 makes use of the visibility buffer to shade the scene --- //
