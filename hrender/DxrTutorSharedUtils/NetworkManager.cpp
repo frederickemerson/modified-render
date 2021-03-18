@@ -7,6 +7,8 @@ bool NetworkManager::mVisTexComplete = false;
 std::mutex NetworkManager::mMutex;
 std::condition_variable NetworkManager::mCvVisTexComplete;
 std::condition_variable NetworkManager::mCvPosTexReceived;
+std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
+std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
 bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight)
 {
@@ -266,27 +268,56 @@ bool NetworkManager::CloseClientConnection()
     return true;
 }
 
+char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compTexSize)
+{
+    int maxCompLen = OUT_LEN(inTexSize);
+    lzo_uint compLen;
+    lzo1x_1_compress((unsigned char*)inTexData, (lzo_uint)inTexSize, &NetworkManager::compData[0], &compLen, &wrkmem[0]);
+    compTexSize = (int) compLen;
+    return (char*)&NetworkManager::compData[0];
+}
+
+void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
+{
+    lzo_uint new_len = outTexSize;
+    lzo1x_decompress((unsigned char*) compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
+}
+
 void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket)
 {
+    // Get the size of incoming compressed texture
+    int compSize;
+    RecvInt(compSize, socket);
+
+    // Receive the compressed texture
     int recvSoFar = 0;
-    while (recvSoFar < recvTexSize)
+    while (recvSoFar < compSize)
     {
-        int iResult = recv(socket, &recvTexData[recvSoFar], DEFAULT_BUFLEN, 0);
+        int iResult = recv(socket, (char*)&NetworkManager::compData[recvSoFar], DEFAULT_BUFLEN, 0);
         if (iResult > 0)
         {
             recvSoFar += iResult;
         }
     }
+    
+    // Decompress the texture
+    DecompressTexture(recvTexSize, recvTexData, compSize, (char*)&NetworkManager::compData[0]);
 }
 
 void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& socket)
 {
+    // Compress the outgoing texture
+    int compSize;
+    char* compressedTexData = CompressTexture(sendTexSize, sendTexData, compSize);
+    // Send the size of the compressed texture
+    SendInt(compSize, socket);
+    // Send the compressed texture
     int sentSoFar = 0;
-    while (sentSoFar < sendTexSize)
+    while (sentSoFar < compSize)
     {
-        bool lastPacket = sentSoFar > sendTexSize - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket ? (sendTexSize - sentSoFar) : DEFAULT_BUFLEN;
-        int iResult = send(socket, &sendTexData[sentSoFar], sizeToSend, 0);
+        bool lastPacket = sentSoFar > compSize - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket ? (compSize - sentSoFar) : DEFAULT_BUFLEN;
+        int iResult = send(socket, &compressedTexData[sentSoFar], sizeToSend, 0);
         if (iResult != SOCKET_ERROR)
         {
             sentSoFar += iResult;

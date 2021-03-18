@@ -26,6 +26,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "../Libraries/minilzo.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -36,6 +37,8 @@
 #define DEFAULT_PORT "27015"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
+
+#define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
 using namespace Falcor;
 
@@ -63,6 +66,8 @@ public:
     static std::mutex mMutex;
     static std::condition_variable mCvPosTexReceived;
     static std::condition_variable mCvVisTexComplete;
+    static std::vector<char> wrkmem;
+    static std::vector<unsigned char> compData;
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
@@ -71,6 +76,8 @@ public:
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
+    char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
+    void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height

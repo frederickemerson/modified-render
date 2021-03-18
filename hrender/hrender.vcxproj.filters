@@ -68,6 +68,9 @@
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
+    <ClCompile Include="Libraries\minilzo.c">
+      <Filter>Libraries</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -138,6 +141,15 @@
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
+    <ClInclude Include="Libraries\lzoconf.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\lzodefs.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="Libraries\minilzo.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -166,6 +178,9 @@
     </Filter>
     <Filter Include="NetworkPasses\Shaders">
       <UniqueIdentifier>{4a32609a-0aa9-4b18-ba4d-c1caa118fda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
