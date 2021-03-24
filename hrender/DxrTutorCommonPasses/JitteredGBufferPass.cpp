@@ -25,7 +25,7 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mpResManager = pResManager;
 
     // We write to these output textures; tell our resource manager that we expect them to exist
-    mpResManager->requestTextureResource("WorldPosition",       ResourceFormat::RGBA16Float);
+    mpResManager->requestTextureResource("WorldPosition",       ResourceFormat::RGBA32Float);
     mpResManager->requestTextureResource("WorldNormal",         ResourceFormat::RGBA16Float);
     mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float); // Stores 16 x uint8
     mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);

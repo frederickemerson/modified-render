@@ -110,7 +110,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
-    int posTexSize = texWidth * texHeight * 8;
+    int posTexSize = texWidth * texHeight * 16;
     int visTexSize = texWidth * texHeight * 4;
     int numFramesRendered = 0;
 

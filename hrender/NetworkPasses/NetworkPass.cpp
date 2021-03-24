@@ -106,7 +106,7 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
 
     // Send the position texture to server
     int posTexLen = int(NetworkPass::posData.size());
-    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 8);
+    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 16);
     OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
     pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= posTex sent over network =========\n\n");

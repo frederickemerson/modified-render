@@ -34,7 +34,10 @@
 #include "DxrTutorSharedUtils/NetworkManager.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
-#include "NetworkPasses/MemoryTransferPass.h"
+#include "NetworkPasses/MemoryTransferPassClientCPU_GPU.h"
+#include "NetworkPasses/MemoryTransferPassClientGPU_CPU.h"
+#include "NetworkPasses/MemoryTransferPassServerCPU_GPU.h"
+#include "NetworkPasses/MemoryTransferPassServerGPU_CPU.h"
 #include "NetworkPasses/NetworkPass.h"
 
 void runServer();
@@ -87,7 +90,7 @@ void runServer()
     // --- Pass 2 transfers CPU information into GPU --- //
     pipeline->setPassOptions(1, {
         // Memory transfer from GPU to CPU
-        MemoryTransferPass::create(MemoryTransferPass::Mode::Server_CPUtoGPU)
+        MemoryTransferPassServerCPU_GPU::create()
         });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
@@ -100,7 +103,7 @@ void runServer()
     // --- Pass 4 transfers GPU information into CPU --- //
     pipeline->setPassOptions(3, {
         // Memory transfer from GPU to CPU
-        MemoryTransferPass::create(MemoryTransferPass::Mode::Server_GPUtoCPU)
+        MemoryTransferPassServerGPU_CPU::create()
         });
     // -------------------------------------------------------------------- //
     // --- Pass 5 makes use of the visibility buffer to shade the scene --- //
@@ -151,7 +154,7 @@ void runClient()
     // --- Pass 2 transfers GPU information into CPU --- //
     pipeline->setPassOptions(1, {
         // Memory transfer from GPU to CPU
-        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_GPUtoCPU)
+        MemoryTransferPassClientGPU_CPU::create()
         });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
@@ -166,7 +169,7 @@ void runClient()
     // --- Pass 4 transfers GPU information into CPU --- //
     pipeline->setPassOptions(3, {
         // Memory transfer from GPU to CPU
-        MemoryTransferPass::create(MemoryTransferPass::Mode::Client_CPUtoGPU)
+        MemoryTransferPassClientCPU_GPU::create()
         });
     // -------------------------------------------------------------------- //
     // --- Pass 5 makes use of the visibility buffer to shade the scene --- //
