@@ -74,6 +74,18 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -154,6 +166,18 @@
       <Filter>Libraries</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\MemoryTransferPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
