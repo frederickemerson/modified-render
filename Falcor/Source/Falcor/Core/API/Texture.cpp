@@ -260,12 +260,8 @@ namespace Falcor
         return findViewCommon<ShaderResourceView>(this, mostDetailedMip, mipCount, firstArraySlice, arraySize, mSrvs, createFunc);
     }
 
-    std::vector<uint8_t> Texture::getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format, Bitmap::ExportFlags exportFlags)
+    std::vector<uint8_t> Texture::getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr)
     {
-        if (format == Bitmap::FileFormat::DdsFile)
-        {
-            throw std::exception("Texture::captureToFile does not yet support saving to DDS.");
-        }
 
         assert(mType == Type::Texture2D);
         RenderContext* pContext = gpDevice->getRenderContext();
@@ -279,12 +275,12 @@ namespace Falcor
         {
             Texture::SharedPtr pOther = Texture::create2D(getWidth(mipLevel), getHeight(mipLevel), ResourceFormat::RGBA32Float, 1, 1, nullptr, ResourceBindFlags::RenderTarget | ResourceBindFlags::ShaderResource);
             pContext->blit(getSRV(mipLevel, 1, arraySlice, 1), pOther->getRTV(0, 0, 1));
-            textureData = pContext->readTextureSubresource(pOther.get(), 0);
+            textureData = pContext->readTextureSubresource(pOther.get(), 0, result_ptr);
             resourceFormat = ResourceFormat::RGBA32Float;
         } else
         {
             uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
-            textureData = pContext->readTextureSubresource(this, subresource);
+            textureData = pContext->readTextureSubresource(this, subresource, result_ptr);
         }
 
         return textureData;

@@ -43,8 +43,8 @@ namespace Falcor
         {
         public:
             using SharedPtr = std::shared_ptr<ReadTextureTask>;
-            static SharedPtr create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex);
-            std::vector<uint8_t> getData();
+            static SharedPtr create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
+            std::vector<uint8_t> getData(std::vector<uint8_t>* result_ptr = nullptr);
         private:
             ReadTextureTask() = default;
             GpuFence::SharedPtr mpFence;
@@ -123,11 +123,11 @@ namespace Falcor
 
         /** Read texture data synchronously. Calling this command will flush the pipeline and wait for the GPU to finish execution
         */
-        std::vector<uint8_t> readTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex);
+        std::vector<uint8_t> readTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
 
         /** Read texture data Asynchronously
         */
-        ReadTextureTask::SharedPtr asyncReadTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex);
+        ReadTextureTask::SharedPtr asyncReadTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
 
         /** Get the low-level context data
         */

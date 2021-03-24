@@ -38,7 +38,7 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition"); // Only for client
     // For server buffers, we are creating them here, so we specify their width/height accordingly
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
@@ -71,7 +71,7 @@ void NetworkPass::execute(RenderContext* pRenderContext)
 
 std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
 {
-    return tex->getTextureData(pRenderContext, 0, 0, "TestFile.png");
+    return tex->getTextureData(pRenderContext, 0, 0);
 }
 
 
