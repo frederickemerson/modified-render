@@ -110,7 +110,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
-    int posTexSize = texWidth * texHeight * 16;
+    int posTexSize = texWidth * texHeight * 8;
     int visTexSize = texWidth * texHeight * 4;
     int numFramesRendered = 0;
 
@@ -289,13 +289,20 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     // If no compression occurs, we write directly to the recvTex with the expected texture size,
     // but if we are using compression, we need to receive a compressed texture to an intermediate
     // array and decompress
-    char* recvDest = mCompression ? (char*)&NetworkManager::compData : recvTexData;
+    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexData;
     int recvSize = recvTexSize;
     if (mCompression)
+    {
+        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========\n\n");
         RecvInt(recvSize, socket);
+        OutputDebugString(L"\n\n= RecvTexture: received int =========\n\n");
+
+    }
 
     // Receive the texture
     int recvSoFar = 0;
+    OutputDebugString(L"\n\n= RecvTexture: Receiving tex...c =========\n\n");
+
     while (recvSoFar < recvSize)
     {
         int iResult = recv(socket, &recvDest[recvSoFar], DEFAULT_BUFLEN, 0);
@@ -304,11 +311,18 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
             recvSoFar += iResult;
         }
     }
+    OutputDebugString(L"\n\n= RecvTexture: receievd tex =========\n\n");
+
     
     // Decompress the texture if using compression
+
     if (mCompression)
     {
+        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========\n\n");
+
         DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
+        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========\n\n");
+
     }
 }
 
@@ -321,11 +335,20 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     // to the other device
     if (mCompression)
     {
+        OutputDebugString(L"\n\n= RecvTexture: Compressing tex... =========\n\n");
+
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        OutputDebugString(L"\n\n= RecvTexture: Compressed  tex... =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Sending int... =========\n\n");
+
         SendInt(sendSize, socket);
+        OutputDebugString(L"\n\n= RecvTexture: Sent int... =========\n\n");
+
     }
     
     // Send the texture
+    OutputDebugString(L"\n\n= RecvTexture: Sending tex... =========\n\n");
+
     int sentSoFar = 0;
     while (sentSoFar < sendSize)
     {
@@ -337,6 +360,8 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
             sentSoFar += iResult;
         }
     }
+    OutputDebugString(L"\n\n= RecvTexture: Sent tex =========\n\n");
+
 }
 
 bool NetworkManager::RecvInt(int& recvInt, SOCKET& s)
