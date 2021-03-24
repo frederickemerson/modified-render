@@ -33,7 +33,7 @@ public:
     virtual ~MemoryTransferPassServerGPU_CPU() = default;
 
 protected:
-    MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass", "Memory Transfer Pass Options") { }
+    MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
