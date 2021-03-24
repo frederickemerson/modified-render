@@ -153,12 +153,6 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
 {
-    //OutputDebugString(L"\n\n= ServerSend - VisTex finished rendering =========\n\n");
-    //// Load visibility texture from GPU to CPU
-    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    //visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
-    //OutputDebugString(L"\n\n= ServerSend - VisTex loaded to CPU =========\n\n");
-
     // Let the network thread send the visibilty texture
     NetworkManager::mVisTexComplete = true;
     NetworkManager::mCvVisTexComplete.notify_all();

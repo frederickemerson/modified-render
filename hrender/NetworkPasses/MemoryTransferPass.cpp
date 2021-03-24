@@ -68,13 +68,6 @@ void MemoryTransferPass::execute(RenderContext* pRenderContext)
         cam->setUpVector(NetworkPass::camData[1]);
         cam->setTarget(NetworkPass::camData[2]);
 
-        //std::string camPosStr = std::to_string(camData[0].x) + std::string(", ") + std::to_string(camData[0].y) + std::string(", ") + std::to_string(camData[0].z);
-        //std::string camUpStr = std::to_string(camData[1].x) + std::string(", ") + std::to_string(camData[1].y) + std::string(", ") + std::to_string(camData[1].z);
-        //std::string camTargetStr = std::to_string(camData[2].x) + std::string(", ") + std::to_string(camData[2].y) + std::string(", ") + std::to_string(camData[2].z);
-        //std::string camMsg = std::string("Cam Pos: ") + camPosStr + std::string(", ") + std::string("Cam Up: ") + camUpStr + std::string(", ") + std::string("Cam Target: ") + camTargetStr;
-        //std::string camFinalMsg = std::string("\n================================ Camera Info:  ") + camMsg + std::string(" ================================\n");
-        //OutputDebugString(string_2_wstring(camFinalMsg).c_str());
-
         // Load position texture from CPU to GPU
         Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
         posTex2->apiInitPub(NetworkPass::posData.data(), true);
