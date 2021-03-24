@@ -26,7 +26,7 @@
 class MemoryTransferPassClientCPU_GPU : public ::RenderPass
 {
 public:
-    using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPUs>;
+    using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassClientCPU_GPU>;
 
     static SharedPtr create() { return SharedPtr(new MemoryTransferPassClientCPU_GPU()); }

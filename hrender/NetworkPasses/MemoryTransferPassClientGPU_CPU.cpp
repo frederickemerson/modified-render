@@ -59,5 +59,5 @@ void MemoryTransferPassClientGPU_CPU::renderGui(Gui::Window* pPassWindow)
 
 std::vector<uint8_t> MemoryTransferPassClientGPU_CPU::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
 {
-    return tex->getTextureData(pRenderContext, 0, 0, "TestFile.png");
+    return tex->getTextureData(pRenderContext, 0, 0);
 }
