@@ -38,7 +38,7 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition"); // Only for client
     // For server buffers, we are creating them here, so we specify their width/height accordingly
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
@@ -107,7 +107,7 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
 
     // Send the position texture to server
     int posTexLen = int(NetworkPass::posData.size());
-    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 16);
+    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 8);
     OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
     pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= posTex sent over network =========\n\n");
