@@ -96,7 +96,6 @@ void NetworkPass::executeClient(RenderContext* pRenderContext)
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-     //if (!mFirstRender) firstClientRender();
     mFirstRender && firstClientRender(pRenderContext);
 
     // Send camera data from client to server
@@ -149,35 +148,16 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     NetworkManager::mPosTexReceived = false;
     OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
 
-    // COMMENT
-    // Load camera data to scene
-    Camera::SharedPtr cam = mpScene->getCamera();
-    cam->setPosition(camData[0]);
-    cam->setUpVector(camData[1]);
-    cam->setTarget(camData[2]);
-
-    std::string camPosStr = std::to_string(camData[0].x) + std::string(", ") + std::to_string(camData[0].y) + std::string(", ") + std::to_string(camData[0].z);
-    std::string camUpStr = std::to_string(camData[1].x) + std::string(", ") + std::to_string(camData[1].y) + std::string(", ") + std::to_string(camData[1].z);
-    std::string camTargetStr = std::to_string(camData[2].x) + std::string(", ") + std::to_string(camData[2].y) + std::string(", ") + std::to_string(camData[2].z);
-    std::string camMsg = std::string("Cam Pos: ") + camPosStr + std::string(", ") + std::string("Cam Up: ") + camUpStr + std::string(", ") + std::string("Cam Target: ") + camTargetStr;
-    std::string camFinalMsg = std::string("\n================================ Camera Info:  ") + camMsg + std::string(" ================================\n");
-    OutputDebugString(string_2_wstring(camFinalMsg).c_str());
-
-    // Load position texture from CPU to GPU
-    Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
-    posTex2->apiInitPub(NetworkPass::posData.data(), true);
-    OutputDebugString(L"\n\n= ServerRecv - Texture loaded to GPU =========\n\n");
-
     // After this, the server visibilty pass will render
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
 {
-    OutputDebugString(L"\n\n= ServerSend - VisTex finished rendering =========\n\n");
-    // Load visibility texture from GPU to CPU
-    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
-    OutputDebugString(L"\n\n= ServerSend - VisTex loaded to CPU =========\n\n");
+    //OutputDebugString(L"\n\n= ServerSend - VisTex finished rendering =========\n\n");
+    //// Load visibility texture from GPU to CPU
+    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
+    //visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
+    //OutputDebugString(L"\n\n= ServerSend - VisTex loaded to CPU =========\n\n");
 
     // Let the network thread send the visibilty texture
     NetworkManager::mVisTexComplete = true;

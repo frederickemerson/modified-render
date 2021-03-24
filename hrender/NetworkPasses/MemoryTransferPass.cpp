@@ -32,6 +32,13 @@ bool MemoryTransferPass::initialize(RenderContext* pRenderContext, ResourceManag
     return true;
 }
 
+void MemoryTransferPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+{
+    // Stash a copy of the scene and pass it to our ray tracer (if initialized)
+    mpScene = pScene;
+    if (!mpScene) return;
+}
+
 void MemoryTransferPass::execute(RenderContext* pRenderContext)
 {
     if (mMode == MemoryTransferPass::Mode::Client_GPUtoCPU) {
@@ -48,10 +55,30 @@ void MemoryTransferPass::execute(RenderContext* pRenderContext)
         visTex->apiInitPub(NetworkPass::visibilityData.data(), true);
     }
     else if (mMode == MemoryTransferPass::Mode::Server_GPUtoCPU) {
-        // TODO
+        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex finished rendering =========\n\n");
+        // Load visibility texture from GPU to CPU
+        Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
+        NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
+        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========\n\n");
     }
     else if (mMode == MemoryTransferPass::Mode::Server_CPUtoGPU) {
-        // TODO
+        // Load camera data to scene
+        Camera::SharedPtr cam = mpScene->getCamera();
+        cam->setPosition(NetworkPass::camData[0]);
+        cam->setUpVector(NetworkPass::camData[1]);
+        cam->setTarget(NetworkPass::camData[2]);
+
+        //std::string camPosStr = std::to_string(camData[0].x) + std::string(", ") + std::to_string(camData[0].y) + std::string(", ") + std::to_string(camData[0].z);
+        //std::string camUpStr = std::to_string(camData[1].x) + std::string(", ") + std::to_string(camData[1].y) + std::string(", ") + std::to_string(camData[1].z);
+        //std::string camTargetStr = std::to_string(camData[2].x) + std::string(", ") + std::to_string(camData[2].y) + std::string(", ") + std::to_string(camData[2].z);
+        //std::string camMsg = std::string("Cam Pos: ") + camPosStr + std::string(", ") + std::string("Cam Up: ") + camUpStr + std::string(", ") + std::string("Cam Target: ") + camTargetStr;
+        //std::string camFinalMsg = std::string("\n================================ Camera Info:  ") + camMsg + std::string(" ================================\n");
+        //OutputDebugString(string_2_wstring(camFinalMsg).c_str());
+
+        // Load position texture from CPU to GPU
+        Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
+        posTex2->apiInitPub(NetworkPass::posData.data(), true);
+        OutputDebugString(L"\n\n= ServerRecv - Texture loaded to GPU =========\n\n");
     }
 }
 

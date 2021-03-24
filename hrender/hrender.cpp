@@ -42,9 +42,6 @@ void runClient();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
-    //NetworkPass::Mode mode = NetworkPass::Mode::Client;
-    //NetworkPass::Mode mode = NetworkPass::Mode::Server;
-
     if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
     {
         OutputDebugString(L"\n\n\n\n\n======== WITHOUT COMPRESSION =========\n\n\n\n");
@@ -86,25 +83,36 @@ void runServer()
     pipeline->setPassOptions(0, {
         NetworkPass::create("Receiver", NetworkPass::Mode::Server, texWidth, texHeight),
     });
-    // ------------------------------------------------------------------------------------- //
-    // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
+    // ------------------------------------------------- //
+    // --- Pass 2 transfers CPU information into GPU --- //
     pipeline->setPassOptions(1, {
+        // Memory transfer from GPU to CPU
+        MemoryTransferPass::create(MemoryTransferPass::Mode::Server_CPUtoGPU)
+        });
+    // ------------------------------------------------------------------------------------- //
+    // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
+    pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
         VisibilityPass::create("VisibilityBitmap", texWidth, texHeight),
         LambertianPlusShadowPass::create("RTLambertian")
     });
+    // ------------------------------------------------- //
+    // --- Pass 4 transfers GPU information into CPU --- //
+    pipeline->setPassOptions(3, {
+        // Memory transfer from GPU to CPU
+        MemoryTransferPass::create(MemoryTransferPass::Mode::Server_GPUtoCPU)
+        });
     // -------------------------------------------------------------------- //
-    // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
-    pipeline->setPassOptions(2, {
+    // --- Pass 5 makes use of the visibility buffer to shade the scene --- //
+    pipeline->setPassOptions(4, {
         NetworkPass::create("Sender", NetworkPass::Mode::ServerSend, texWidth, texHeight),
     });
-
     // --------------------------------------------------------------- //
-    // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(3, CopyToOutputPass::create());
+    // --- Pass 6 just lets us select which pass to view on screen --- //
+    pipeline->setPass(5, CopyToOutputPass::create());
     // ---------------------------------------------------------- //
-    // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 7 temporally accumulates frames for denoising --- //
+    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
