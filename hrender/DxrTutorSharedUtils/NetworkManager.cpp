@@ -2,12 +2,12 @@
 #include "../NetworkPasses/NetworkPass.h"
 #include "NetworkManager.h"
 
-bool NetworkManager::mPosTexReceived = false;
+bool NetworkManager::mCamPosReceived = false;
 bool NetworkManager::mVisTexComplete = false;
 bool NetworkManager::mCompression = true;
 std::mutex NetworkManager::mMutex;
 std::condition_variable NetworkManager::mCvVisTexComplete;
-std::condition_variable NetworkManager::mCvPosTexReceived;
+std::condition_variable NetworkManager::mCvCamPosReceived;
 std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
@@ -119,22 +119,18 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         std::string frameMsg = std::string("\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================\n");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
         
-        // COMMENT
+        // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========\n\n");
         RecvCameraData(NetworkPass::camData, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========\n\n");
 
-        // Receive the position texture from the sender
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting posTex receiving over network... =========\n\n");
-        RecvTexture(posTexSize, (char*) &NetworkPass::posData[0], mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - Position texture received over network =========\n\n");
-
-        // Allow rendering using the posTex to begin, and wait for visTex to complete rendering
-        NetworkManager::mPosTexReceived = true;
-        NetworkManager::mCvPosTexReceived.notify_all();
+        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
+        NetworkManager::mCamPosReceived = true;
+        NetworkManager::mCvCamPosReceived.notify_all();
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========\n\n");
         while (!NetworkManager::mVisTexComplete)
             NetworkManager::mCvVisTexComplete.wait(lck);
+        
         // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
         // before we can continue sending the next frame
         NetworkManager::mVisTexComplete = false;

@@ -141,14 +141,15 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 
     // Wait for the network thread to receive the position texture
     OutputDebugString(L"\n\n= ServerRecv - Awaiting PosTex from client... =========\n\n");
-    while (!NetworkManager::mPosTexReceived) 
-        NetworkManager::mCvPosTexReceived.wait(lck);
+    while (!NetworkManager::mCamPosReceived) 
+        NetworkManager::mCvCamPosReceived.wait(lck);
+
     // Reset to false so that we will need to wait for the network pass to flag it as received
     // before we can continue rendering the next frame
-    NetworkManager::mPosTexReceived = false;
-    OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
+    NetworkManager::mCamPosReceived = false;
+    OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========\n\n");
 
-    // After this, the server visibilty pass will render
+    // After this, the server JitteredGBuffer pass will render
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
