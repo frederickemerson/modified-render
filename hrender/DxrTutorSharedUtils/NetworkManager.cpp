@@ -22,7 +22,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     struct addrinfo* result = NULL;
     struct addrinfo hints;
 
-    OutputDebugString(L"\n\n===== Pre-Falcor Init - NetworkManager::SetUpServer - PIPELINE SERVER SETTING UP ================================\n\n");
+    OutputDebugString(L"\n\n===== Pre-Falcor Init - NetworkManager::SetUpServer - PIPELINE SERVER SETTING UP ================================");
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -70,10 +70,10 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     freeaddrinfo(result);
 
-    OutputDebugString(L"\n\n= Pre-Falcor Init - SETUP COMPLETE\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - SETUP COMPLETE =========");
 
     // Listening for client socket
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client... =========");
     iResult = listen(mListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR)
     {
@@ -84,7 +84,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
         return false;
     }
     // Accept the client socket
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to accept client... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to accept client... =========");
     mClientSocket = accept(mListenSocket, NULL, NULL);
     if (mClientSocket == INVALID_SOCKET)
     {
@@ -96,13 +96,13 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     }
     // No longer need server socket
     closesocket(mListenSocket);
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Connection with client established =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Connection with client established =========");
 
     // Get the client texture width/height
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Getting client texture width/height... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Getting client texture width/height... =========");
     RecvInt(outTexWidth, mClientSocket);
     RecvInt(outTexHeight, mClientSocket);
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========");
 
     return true;
 }
@@ -116,19 +116,19 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
 
     // Receive until the peer shuts down the connection
     do {
-        std::string frameMsg = std::string("\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================\n");
+        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
         
         // Receive the camera position from the sender
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
         RecvCameraData(NetworkPass::camData, mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
         NetworkManager::mCamPosReceived = true;
         NetworkManager::mCvCamPosReceived.notify_all();
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
         while (!NetworkManager::mVisTexComplete)
             NetworkManager::mCvVisTexComplete.wait(lck);
         
@@ -137,11 +137,11 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         NetworkManager::mVisTexComplete = false;
 
         // Send the visBuffer back to the sender
-        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
         SendTexture(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
         
-        std::string endMsg = std::string("\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================\n");
+        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
     } while (true);
 
@@ -290,15 +290,15 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     int recvSize = recvTexSize;
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========");
         RecvInt(recvSize, socket);
-        OutputDebugString(L"\n\n= RecvTexture: received int =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: received int =========");
 
     }
 
     // Receive the texture
     int recvSoFar = 0;
-    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========");
 
     while (recvSoFar < recvSize)
     {
@@ -308,17 +308,17 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
             recvSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= RecvTexture: received tex =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: received tex =========");
 
     
     // Decompress the texture if using compression
 
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========");
 
         DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
-        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========");
 
     }
 }
@@ -331,22 +331,22 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     
     // But if compression occurs, we perform compression and send the compressed texture size
     // to the other device
-    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string("=========");
+    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string(" =========");
     OutputDebugString(string_2_wstring(message).c_str());
 
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========");
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
-        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========\n\n");
-        OutputDebugString(L"\n\n= SendTexture: Sending int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========");
+        OutputDebugString(L"\n\n= SendTexture: Sending int... =========");
         SendInt(sendSize, socket);
-        OutputDebugString(L"\n\n= SendTexture: Sent int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Sent int... =========");
 
     }
     
     // Send the texture
-    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========");
     int sentSoFar = 0;
     while (sentSoFar < sendSize)
     {
@@ -358,7 +358,7 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
             sentSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= SendTexture: Sent tex =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sent tex =========");
 
 }
 
@@ -409,10 +409,6 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 {
     std::array<float3, 3> cameraData = { cam->getPosition(), cam->getUpVector(), cam->getTarget() };
     
-    std::stringstream ss;
-    ss << "CamPosition: " << cam->getPosition().x << "," << cam->getPosition().y << "," << cam->getPosition().z;
-    OutputDebugString(string_2_wstring(ss.str()).c_str());
-
     char* data = (char*)&cameraData;
     int amtToSend = sizeof(cameraData);
     int sentSoFar = 0;

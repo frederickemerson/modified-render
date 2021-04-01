@@ -48,23 +48,23 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 {
     if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
     {
-        OutputDebugString(L"\n\n\n\n\n======== WITHOUT COMPRESSION =========\n\n\n\n");
+        OutputDebugString(L"\n\n======== WITHOUT COMPRESSION =========");
         NetworkManager::mCompression = false;
     }
 
     if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)
     {
-        OutputDebugString(L"\n\n\n\n\n======== SERVER MODE =========\n\n\n\n");
+        OutputDebugString(L"\n\n======== SERVER MODE =========");
         runServer();
     }
     else if (std::string(lpCmdLine).find(std::string("client")) != std::string::npos)
     {
-        OutputDebugString(L"\n\n\n\n\n======== CLIENT MODE =========\n\n\n\n");
+        OutputDebugString(L"\n\n======== CLIENT MODE =========");
         runClient();
     }
     else
     {
-        OutputDebugString(L"\n\n\n\n\n======== DEBUG MODE =========\n\n\n\n");
+        OutputDebugString(L"\n\n======== DEBUG MODE =========");
         runDebug();
     }
    
@@ -104,7 +104,7 @@ void runDebug()
         RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 })
         });
 
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n\n");
+    OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================");
 
     // Start our program
     RenderingPipeline::run(pipeline, config);
@@ -116,8 +116,6 @@ void runServer()
     SampleConfig config;
     config.windowDesc.title = "NRender Server";
     config.windowDesc.resizableWindow = true;
-
-  
 
     // Set up server - configure the sockets and await client connection. We need to await
     // the client connection before we allow the server thread to create the textures, because
@@ -173,7 +171,7 @@ void runServer()
         RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1, 1 })
     });
 
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE RENDER SERVER IS CONFIGURED=================\n\n\n\n");
+    OutputDebugString(L"\n\n================================PIPELINE RENDER SERVER IS CONFIGURED=================\n\n");
 
 
     // Start our program
@@ -236,7 +234,7 @@ void runClient()
         RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1 })
     });
 
-    OutputDebugString(L"\n\n\n\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n\n");
+    OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
 
     // Start our program
     RenderingPipeline::run(pipeline, config);

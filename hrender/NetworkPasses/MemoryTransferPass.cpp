@@ -55,11 +55,11 @@ void MemoryTransferPass::execute(RenderContext* pRenderContext)
         visTex->apiInitPub(NetworkPass::visibilityData.data(), true);
     }
     else if (mMode == MemoryTransferPass::Mode::Server_GPUtoCPU) {
-        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex finished rendering =========\n\n");
+        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex finished rendering =========");
         // Load visibility texture from GPU to CPU
         Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
         NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
-        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========\n\n");
+        OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
     }
     else if (mMode == MemoryTransferPass::Mode::Server_CPUtoGPU) {
         // Load camera data to scene
@@ -71,7 +71,7 @@ void MemoryTransferPass::execute(RenderContext* pRenderContext)
         // Load position texture from CPU to GPU
         Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
         posTex2->apiInitPub(NetworkPass::posData.data(), true);
-        OutputDebugString(L"\n\n= ServerRecv - Texture loaded to GPU =========\n\n");
+        OutputDebugString(L"\n\n= ServerRecv - Texture loaded to GPU =========");
     }
 }
 

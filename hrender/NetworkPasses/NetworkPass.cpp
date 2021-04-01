@@ -81,10 +81,10 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 {
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
     // Send the texture size to the server
-    OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========");
     pNetworkManager->SendInt(mpResManager->getWidth(), pNetworkManager->mConnectSocket);
     pNetworkManager->SendInt(mpResManager->getHeight(), pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= width/height sent over network =========\n\n");
+    OutputDebugString(L"\n\n= width/height sent over network =========");
 
     // TODO: Send scene
 
@@ -100,7 +100,7 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 {
     static int numFramesRendered = 0;
-    std::string frameMsg = std::string("\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================\n");
+    std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
     OutputDebugString(string_2_wstring(frameMsg).c_str());
 
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
@@ -110,9 +110,9 @@ void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
-    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
     pNetworkManager->SendCameraData(cam, pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= camData sent over network =========\n\n");
+    OutputDebugString(L"\n\n= camData sent over network =========");
 }
 
 void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
@@ -121,9 +121,9 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
 
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
-    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
     pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= visTex received over network =========\n\n");
+    OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
@@ -136,7 +136,7 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
         ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager, mTexWidth, mTexHeight);
     };
     Threading::dispatchTask(serverListen);
-    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========\n\n");
+    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");
     return true;
 }
 
@@ -148,7 +148,7 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     mFirstRender && firstServerRender(pRenderContext);
 
     // Wait for the network thread to receive the cameraPosition
-    OutputDebugString(L"\n\n= ServerRecv - Awaiting camPos from client... =========\n\n");
+    OutputDebugString(L"\n\n= ServerRecv - Awaiting camPos from client... =========");
     while (!NetworkManager::mCamPosReceived) 
         NetworkManager::mCvCamPosReceived.wait(lck);
 
@@ -158,17 +158,17 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     cam->setUpVector(NetworkPass::camData[1]);
     cam->setTarget(NetworkPass::camData[2]);
 
+    // Update the scene. Ideally, this should be baked into RenderingPipeline.cpp and executed
+    // before the pass even starts and after the network thread receives the data.
+    mpScene->update(pRenderContext, gpFramework->getGlobalClock().getTime());
+
     // Reset to false so that we will need to wait for the network pass to flag it as received
     // before we can continue rendering the next frame
     NetworkManager::mCamPosReceived = false;
     // Recalculate, if we could do calculateCameraParameters() instead, we would.
     cam->getViewMatrix(); 
 
-    std::stringstream ss;
-    ss << "Camposition: " << camData[0].x << ", " << camData[0].y << ", " << camData[0].z;
-    OutputDebugString(string_2_wstring(ss.str()).c_str());
-
-    OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========\n\n");
+    OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========");
 
     // After this, the server JitteredGBuffer pass will render
 }
