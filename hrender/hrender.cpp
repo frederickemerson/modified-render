@@ -141,7 +141,7 @@ void runServer()
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap", "WorldPosition2", texWidth, texHeight),
+        VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight),
         LambertianPlusShadowPass::create("RTLambertian")
     });
     // ------------------------------------------------- //
@@ -186,7 +186,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("192.168.1.108", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
     
     // ---------------------------------------- //
     // --- Pass 1 Send camera data to server--- //

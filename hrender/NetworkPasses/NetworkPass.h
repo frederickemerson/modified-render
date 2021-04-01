@@ -42,12 +42,10 @@ public:
     virtual ~NetworkPass() = default;
 
     // Texture data from transfering
-    //static std::vector<uint8_t> normData;
     static std::vector<uint8_t> posData;
     static int posTexWidth;
     static int posTexHeight;
 
-    //static std::vector<uint8_t> gBufData;
     static std::vector<uint8_t> visibilityData;
     static std::array<float3, 3> camData;
 

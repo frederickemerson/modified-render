@@ -81,6 +81,8 @@ void JitteredGBufferPass::renderGui(Gui::Window* pPassWindow)
 
 void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 {
+    OutputDebugString(L"\n\n= JitteredGBuffer: Executing... =========\n\n");
+
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
         { "WorldPosition", "WorldNormal", "__TextureData" }, 
@@ -127,10 +129,16 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
         clearGBufVars["CameraInfo"]["gCameraV"] = cameraData.cameraV;
         clearGBufVars["CameraInfo"]["gCameraW"] = cameraData.cameraW;
 
+        std::stringstream ss;
+        ss << "CameraU: " << cameraData.cameraU.x << "," << cameraData.cameraU.y << "," << cameraData.cameraU.z;
+        OutputDebugString(string_2_wstring(ss.str()).c_str());
+
         // Clear our framebuffer to the background environment map (and zeros elsewhere in the buffer)
         mpClearGBuf->execute(pRenderContext, outputFbo); 
     }
     
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
+
+    OutputDebugString(L"\n\n= JitteredGBuffer: Finished executing=========\n\n");
 }

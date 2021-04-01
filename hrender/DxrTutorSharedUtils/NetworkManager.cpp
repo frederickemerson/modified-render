@@ -124,9 +124,10 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         RecvCameraData(NetworkPass::camData, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========\n\n");
 
-        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         NetworkManager::mCamPosReceived = true;
         NetworkManager::mCvCamPosReceived.notify_all();
+
+        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========\n\n");
         while (!NetworkManager::mVisTexComplete)
             NetworkManager::mCvVisTexComplete.wait(lck);
@@ -297,7 +298,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
 
     // Receive the texture
     int recvSoFar = 0;
-    OutputDebugString(L"\n\n= RecvTexture: Receiving tex...c =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========\n\n");
 
     while (recvSoFar < recvSize)
     {
@@ -307,7 +308,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
             recvSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= RecvTexture: receievd tex =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: received tex =========\n\n");
 
     
     // Decompress the texture if using compression
@@ -407,6 +408,11 @@ bool NetworkManager::RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s
 bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 {
     std::array<float3, 3> cameraData = { cam->getPosition(), cam->getUpVector(), cam->getTarget() };
+    
+    std::stringstream ss;
+    ss << "CamPosition: " << cam->getPosition().x << "," << cam->getPosition().y << "," << cam->getPosition().z;
+    OutputDebugString(string_2_wstring(ss.str()).c_str());
+
     char* data = (char*)&cameraData;
     int amtToSend = sizeof(cameraData);
     int sentSoFar = 0;
