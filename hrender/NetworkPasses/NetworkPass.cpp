@@ -36,8 +36,7 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition"); // Only for client
-
+    mpResManager->requestTextureResource("WorldPosition", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Only for client
     // For server buffers, we are creating them here, so we specify their width/height accordingly
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
@@ -162,6 +161,13 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     // Reset to false so that we will need to wait for the network pass to flag it as received
     // before we can continue rendering the next frame
     NetworkManager::mCamPosReceived = false;
+    // Recalculate, if we could do calculateCameraParameters() instead, we would.
+    cam->getViewMatrix(); 
+
+    std::stringstream ss;
+    ss << "Camposition: " << camData[0].x << ", " << camData[0].y << ", " << camData[0].z;
+    OutputDebugString(string_2_wstring(ss.str()).c_str());
+
     OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========\n\n");
 
     // After this, the server JitteredGBuffer pass will render

@@ -336,17 +336,17 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Compressing tex... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========\n\n");
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
-        OutputDebugString(L"\n\n= RecvTexture: Compressed  tex... =========\n\n");
-        OutputDebugString(L"\n\n= RecvTexture: Sending int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Sending int... =========\n\n");
         SendInt(sendSize, socket);
-        OutputDebugString(L"\n\n= RecvTexture: Sent int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Sent int... =========\n\n");
 
     }
     
     // Send the texture
-    OutputDebugString(L"\n\n= RecvTexture: Sending tex... =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========\n\n");
     int sentSoFar = 0;
     while (sentSoFar < sendSize)
     {
@@ -358,7 +358,7 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
             sentSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= RecvTexture: Sent tex =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sent tex =========\n\n");
 
 }
 

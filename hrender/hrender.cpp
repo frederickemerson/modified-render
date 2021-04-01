@@ -117,15 +117,20 @@ void runServer()
     config.windowDesc.title = "NRender Server";
     config.windowDesc.resizableWindow = true;
 
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
+  
 
     // Set up server - configure the sockets and await client connection. We need to await
     // the client connection before we allow the server thread to create the textures, because
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
     ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
+    NetworkPass::posTexHeight = texHeight;
+    NetworkPass::posTexWidth = texWidth;
+    config.windowDesc.height = texHeight;
+    config.windowDesc.width = texWidth;
 
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
     // ---------------------------------------------- //
     // --- Pass 1 Receive camera data from client --- //
     pipeline->setPassOptions(0, {
@@ -135,14 +140,13 @@ void runServer()
     // --- Pass 2 creates a GBuffer on server side--- //
     pipeline->setPassOptions(1, {
         // Rasterized GBuffer 
-        JitteredGBufferPass::create()
+        JitteredGBufferPass::create(texWidth, texHeight)
     });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight),
-        LambertianPlusShadowPass::create("RTLambertian")
+        VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)
     });
     // ------------------------------------------------- //
     // --- Pass 4 transfers GPU information into CPU --- //

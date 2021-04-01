@@ -12,11 +12,13 @@ class JitteredGBufferPass : public ::RenderPass
 public:
     using SharedPtr = std::shared_ptr<JitteredGBufferPass>;
 
-    static SharedPtr create() { return SharedPtr(new JitteredGBufferPass()); }
+    static SharedPtr create(int texWidth = -1, int texHeight = -1) { return SharedPtr(new JitteredGBufferPass(texWidth, texHeight)); }
     virtual ~JitteredGBufferPass() = default;
 
 protected:
-    JitteredGBufferPass() : ::RenderPass("Jittered G-Buffer", "Jittered G-Buffer Options") {}
+    JitteredGBufferPass(int texWidth = -1, int texHeight = -1) : ::RenderPass("Jittered G-Buffer", "Jittered G-Buffer Options") {
+        mTexWidth = texWidth; mTexHeight = texHeight;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -45,4 +47,7 @@ protected:
 
     // What's our background color?
     float3  mBgColor = float3(0.5f, 0.5f, 1.0f);        ///<  Color stored into our diffuse G-buffer channel if we hit no geometry
+
+    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 };

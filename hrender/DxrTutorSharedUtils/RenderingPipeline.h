@@ -37,7 +37,7 @@ public:
     };
 
     // Our publically-visible constructors 
-    RenderingPipeline();
+    RenderingPipeline(bool overridingSize=false, uint2 overrideSize=uint2(0,0));
     virtual ~RenderingPipeline() = default;
 
     /** Lets derived classes setup a pipeline. Function can be called before or after the renderer has been initialized.
@@ -161,6 +161,8 @@ private:
     std::vector< bool > mEnablePassGui;                     ///< Stores whether the UI window for each pass is enabled
     std::vector< int32_t > mEnableAddRemove;                ///< Stores whether the UI allows adding after this pass or removing this pass
     uint2 mLastKnownSize = uint2(0);                        ///< Last known size sent to onResizeSwapChain().
+    bool mOverridingSize = false;
+    uint2 mOverrideSize = uint2(1920, 1080);                ///< Used to force the size of the window, for server rendering
     bool mPipelineChanged = true;                           ///< A flag to keep track of pipeline changes
     bool mIsInitialized = false;
     bool mDoProfiling = false;
