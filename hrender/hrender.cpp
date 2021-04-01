@@ -129,7 +129,7 @@ void runServer()
     // ---------------------------------------------- //
     // --- Pass 1 Receive camera data from client --- //
     pipeline->setPassOptions(0, {
-        NetworkPass::create("Receiver", NetworkPass::Mode::Server, texWidth, texHeight),
+        NetworkPass::create(NetworkPass::Mode::Server, texWidth, texHeight),
     });
     // ---------------------------------------------- //
     // --- Pass 2 creates a GBuffer on server side--- //
@@ -153,7 +153,7 @@ void runServer()
     // ---------------------------------------------------- //
     // --- Pass 5 Send visibility bitmap back to client --- //
     pipeline->setPassOptions(4, {
-        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend, texWidth, texHeight),
+        NetworkPass::create(NetworkPass::Mode::ServerSend, texWidth, texHeight),
     });
     // --------------------------------------------------------------- //
     // --- Pass 6 just lets us select which pass to view on screen --- //
@@ -192,7 +192,7 @@ void runClient()
     // --- Pass 1 Send camera data to server--- //
     pipeline->setPassOptions(0, {
         // Send scene and camera data across network to server, and re-receive the visibility bitmap
-        NetworkPass::create("Client", NetworkPass::Mode::Client)
+        NetworkPass::create(NetworkPass::Mode::ClientSend)
     });
     // ---------------------------------------------- //
     // --- Pass 2 creates a GBuffer on client side--- //
@@ -204,7 +204,7 @@ void runClient()
     // --- Pass 3 receive visibility bitmap from server --- //
     pipeline->setPassOptions(2, {
         // Re-receive the visibility bitmap
-        NetworkPass::create("Client", NetworkPass::Mode::Client)
+        NetworkPass::create(NetworkPass::Mode::Client)
     });
     // ------------------------------------------------- //
     // --- Pass 4 transfers CPU information into GPU --- //

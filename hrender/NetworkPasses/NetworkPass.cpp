@@ -65,8 +65,10 @@ void NetworkPass::execute(RenderContext* pRenderContext)
         executeServerSend(pRenderContext);
     else if (mMode == Mode::Server)
         executeServerRecv(pRenderContext);
-    else 
-        executeClient(pRenderContext);
+    else if (mMode == Mode::ClientSend)
+        executeClientSend(pRenderContext);
+    else
+        executeClientRecv(pRenderContext);
 }
 
 std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
@@ -91,25 +93,23 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
     return true;
 }
 
-void NetworkPass::executeClient(RenderContext* pRenderContext)
+void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 {
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-    mFirstRender && firstClientRender(pRenderContext);
+    mFirstRender&& firstClientRender(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
     OutputDebugString(L"\n\n= Awaiting camData sending over network... =========\n\n");
     pNetworkManager->SendCameraData(cam, pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= camData sent over network =========\n\n");
+}
 
-    // Send the position texture to server
-    int posTexLen = int(NetworkPass::posData.size());
-    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 16);
-    OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
-    pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= posTex sent over network =========\n\n");
+void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
+{
+    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;

@@ -28,15 +28,16 @@ class NetworkPass : public ::RenderPass
 public:
     enum class Mode
     {
-        Client = 0,      
-        Server = 1,
-        ServerSend = 2,
+        Client = 0,
+        ClientSend = 1,
+        Server = 2,
+        ServerSend = 3,
     };
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, Mode mode = Mode::Client, int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new NetworkPass(outBuf, mode, texWidth, texHeight)); 
+    static SharedPtr create(Mode mode = Mode::Client, int texWidth = -1, int texHeight = -1) {
+        return SharedPtr(new NetworkPass(mode, texWidth, texHeight)); 
     }
     virtual ~NetworkPass() = default;
 
@@ -51,8 +52,8 @@ public:
     static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(const std::string& outBuf, Mode mode, int texWidth=-1, int texHeight=-1) : ::RenderPass("Network Pass", "Network Pass Options") { 
-        mOutputTexName = outBuf; mMode = mode; mTexWidth = texWidth; mTexHeight = texHeight;
+    NetworkPass(Mode mode, int texWidth=-1, int texHeight=-1) : ::RenderPass("Network Pass", "Network Pass Options") { 
+        mMode = mode; mTexWidth = texWidth; mTexHeight = texHeight;
     }
 
     // Implementation of RenderPass interface
@@ -62,7 +63,8 @@ protected:
     void renderGui(Gui::Window* pPassWindow) override;
     
     // Different execution functions
-    void executeClient(RenderContext* pRenderContext);
+    void executeClientSend(RenderContext* pRenderContext);
+    void executeClientRecv(RenderContext* pRenderContext);
     void executeServerSend(RenderContext* pRenderContext);
     void executeServerRecv(RenderContext* pRenderContext);
     bool firstClientRender(RenderContext* pRenderContext);
