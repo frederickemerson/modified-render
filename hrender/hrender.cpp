@@ -42,6 +42,7 @@
 
 void runServer();
 void runClient();
+void runDebug();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
@@ -56,13 +57,57 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
         OutputDebugString(L"\n\n\n\n\n======== SERVER MODE =========\n\n\n\n");
         runServer();
     }
-    else
+    else if (std::string(lpCmdLine).find(std::string("client")) != std::string::npos)
     {
         OutputDebugString(L"\n\n\n\n\n======== CLIENT MODE =========\n\n\n\n");
         runClient();
     }
+    else
+    {
+        OutputDebugString(L"\n\n\n\n\n======== DEBUG MODE =========\n\n\n\n");
+        runDebug();
+    }
    
     return 0;
+}
+
+void runDebug()
+{
+    // Define a set of config / window parameters for our program
+    SampleConfig config;
+    config.windowDesc.title = "NRender";
+    config.windowDesc.resizableWindow = true;
+
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
+
+
+    pipeline->setPassOptions(0, {
+        JitteredGBufferPass::create()
+    });
+
+    pipeline->setPassOptions(1, {
+        VisibilityPass::create("VisibilityBitmap", "WorldPosition"),
+    });
+    pipeline->setPassOptions(2, {
+        VShadingPass::create("V-shading"),
+    });
+    pipeline->setPass(3, CopyToOutputPass::create());
+    // ---------------------------------------------------------- //
+    // --- Pass 7 temporally accumulates frames for denoising --- //
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // ============================ //
+    // Set presets for the pipeline //
+    // ============================ //
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 })
+        });
+
+    OutputDebugString(L"\n\n\n\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n\n");
+
+    // Start our program
+    RenderingPipeline::run(pipeline, config);
 }
 
 void runServer()
@@ -96,7 +141,7 @@ void runServer()
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(2, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap", texWidth, texHeight),
+        VisibilityPass::create("VisibilityBitmap", "WorldPosition2", texWidth, texHeight),
         LambertianPlusShadowPass::create("RTLambertian")
     });
     // ------------------------------------------------- //
@@ -142,7 +187,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("192.168.1.108", DEFAULT_PORT);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
