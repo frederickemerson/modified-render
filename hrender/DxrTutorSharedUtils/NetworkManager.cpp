@@ -464,6 +464,12 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     // client is waiting
     int dummy = 0;
     RecvInt(dummy, socketTcp);
+    SendInt(dummy, socketTcp);
+    std::string msg = std::string("\n\n= Received dummy int: ") + std::to_string(dummy) + std::string(" =========");
+    OutputDebugString(string_2_wstring(msg).c_str());
+    char buf[DEFAULT_BUFLEN]; memset(buf, '\0', DEFAULT_BUFLEN);
+    recvfrom(socketUdp, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen);
+    OutputDebugString(string_2_wstring(std::string(buf)).c_str());
 
     // If no compression occurs, we directly send the texture with the expected texture size
     char* srcTex = sendTexData;
@@ -500,6 +506,9 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
         {
             sentSoFar += iResult;
         }
+        /*std::string mmsg = std::string("<") + std::to_string(sentSoFar) + std::string(">");
+        OutputDebugString(string_2_wstring(mmsg).c_str());*/
+
     }
     OutputDebugString(L"\n\n= SendTexture: Sent tex =========");
 
