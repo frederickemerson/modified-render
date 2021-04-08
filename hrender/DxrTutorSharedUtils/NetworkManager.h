@@ -35,6 +35,7 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
+#define DEFAULT_PORT_UDP "27016"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
 
@@ -78,7 +79,9 @@ public:
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
+    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketTcp, SOCKET& socketUdp);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketTcp, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
@@ -98,8 +101,6 @@ public:
     // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
-    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socket);
-    bool CloseClientConnectionUdp();
-
     bool CloseClientConnection();
+    bool CloseClientConnectionUdp();
 };

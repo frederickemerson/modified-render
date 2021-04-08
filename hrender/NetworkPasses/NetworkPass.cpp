@@ -105,8 +105,7 @@ void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
-    // Slight branch optimization over:
-    mFirstRender && firstClientRender(pRenderContext);
+    if (mFirstRender) firstClientRender(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
@@ -122,7 +121,7 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
+    pNetworkManager->RecvTextureUdp(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket, pNetworkManager->mUdpS);
     OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
@@ -133,7 +132,7 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
     mFirstRender = false;
 
     auto serverListen = [&]() {
-        ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager, mTexWidth, mTexHeight);
+        ResourceManager::mNetworkManager->ListenServerUdp(pRenderContext, mpResManager, mTexWidth, mTexHeight);
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");

@@ -112,6 +112,8 @@ void runDebug()
 
 void runServer()
 {
+    //ResourceManager::mNetworkManager->ListenServerUdp(NULL, nullptr, texWidth, texHeight);
+
     // Define a set of config / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender Server";
@@ -122,6 +124,7 @@ void runServer()
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
     ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
+    ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP);
     NetworkPass::posTexHeight = texHeight;
     NetworkPass::posTexWidth = texWidth;
     config.windowDesc.height = texHeight;
@@ -189,6 +192,7 @@ void runClient()
     RenderingPipeline* pipeline = new RenderingPipeline();
     
     ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClientUdp("192.168.1.111", DEFAULT_PORT_UDP);
     
     // ---------------------------------------- //
     // --- Pass 1 Send camera data to server--- //

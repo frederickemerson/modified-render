@@ -144,37 +144,44 @@ bool NetworkManager::SetUpServerUdp(PCSTR port)
 
 bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
-    char buf[DEFAULT_BUFLEN];    
-    int slen, recv_len;
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+    int posTexSize = texWidth * texHeight * 16;
+    int visTexSize = texWidth * texHeight * 4;
+    int numFramesRendered = 0;
 
-    slen = sizeof(mSsi_other);
-    //keep listening for data
-    while (1)
+    // Receive until the peer shuts down the connection
+    do
     {
-        printf("Waiting for data...");
-        fflush(stdout);
+        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
+        OutputDebugString(string_2_wstring(frameMsg).c_str());
 
-        //clear the buffer by filling null, it might have previously received data
-        memset(buf, '\0', DEFAULT_BUFLEN);
+        // Receive the camera position from the sender
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
+        RecvCameraData(NetworkPass::camData, mClientSocket);
+        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
-        //try to receive some data, this is a blocking call
-        if ((recv_len = recvfrom(mSUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
-        {
-            printf("recvfrom() failed with error code : %d", WSAGetLastError());
-            exit(EXIT_FAILURE);
-        }
+        NetworkManager::mCamPosReceived = true;
+        NetworkManager::mCvCamPosReceived.notify_all();
 
-        //print details of the client/peer and the data received
-        printf("Received packet from\n");
-        printf("Data: %s\n", buf);
+        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
+        while (!NetworkManager::mVisTexComplete)
+            NetworkManager::mCvVisTexComplete.wait(lck);
 
-        //now reply the client with the same data
-        if (sendto(mSUdpS, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
-        {
-            printf("sendto() failed with error code : %d", WSAGetLastError());
-            exit(EXIT_FAILURE);
-        }
-    }
+        // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
+        // before we can continue sending the next frame
+        NetworkManager::mVisTexComplete = false;
+
+        // Send the visBuffer back to the sender
+        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
+        SendTextureUdp(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket, mSUdpS);
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
+
+        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
+        OutputDebugString(string_2_wstring(endMsg).c_str());
+    } while (true);
+
+    return true;
 }
 
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
@@ -340,38 +347,164 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
     return true;
 }
-void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socket)
+void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketTcp, SOCKET& socketUdp)
 {
-    char message[DEFAULT_BUFLEN];
-    char buf[DEFAULT_BUFLEN];
+    //char message[DEFAULT_BUFLEN];
+    //char buf[DEFAULT_BUFLEN];
     int slen = sizeof(mSi_otherUdp);
-    //start communication
-    while (1)
+    ////start communication
+    //while (1)
+    //{
+    //    printf("Enter message : ");
+    //    std::cin >> message;
+
+
+    //    //send the message
+    //    if (sendto(mUdpS, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
+    //    {
+    //        printf("sendto() failed with error code : %d", WSAGetLastError());
+    //        exit(EXIT_FAILURE);
+    //    }
+
+    //    //receive a reply and print it
+    //    //clear the buffer by filling null, it might have previously received data
+    //    memset(buf, '\0', DEFAULT_BUFLEN);
+    //    //try to receive some data, this is a blocking call
+    //    if (recvfrom(mUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
+    //    {
+    //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
+    //        exit(EXIT_FAILURE);
+    //    }
+
+    //    puts(buf);
+    //}
+    // If no compression occurs, we write directly to the recvTex with the expected texture size,
+    // but if we are using compression, we need to receive a compressed texture to an intermediate
+    // array and decompress
+
+    // Server is going to send texture via UDP so it waits for the client to send an int via
+    // TCP to synchronize.
+    int dummy = 0;
+    SendInt(dummy, socketTcp);
+
+    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexData;
+    int recvSize = recvTexSize;
+    if (mCompression)
     {
-        printf("Enter message : ");
-        std::cin >> message;
+        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========");
+        RecvInt(recvSize, socketTcp);
+        OutputDebugString(L"\n\n= RecvTexture: received int =========");
 
+    }
 
-        //send the message
-        if (sendto(mUdpS, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
+    // Receive the texture
+    int recvSoFar = 0;
+    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========");
+
+    while (recvSoFar < recvSize)
+    {
+        int iResult = recvfrom(socketUdp, &recvDest[recvSoFar], DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen);
+
+        //int iResult = recv(socketTcp, &recvDest[recvSoFar], DEFAULT_BUFLEN, 0);
+        if (iResult > 0)
         {
-            printf("sendto() failed with error code : %d", WSAGetLastError());
-            exit(EXIT_FAILURE);
+            recvSoFar += iResult;
         }
+    }
+    OutputDebugString(L"\n\n= RecvTexture: received tex =========");
 
-        //receive a reply and print it
-        //clear the buffer by filling null, it might have previously received data
-        memset(buf, '\0', DEFAULT_BUFLEN);
-        //try to receive some data, this is a blocking call
-        if (recvfrom(mUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
-        {
-            printf("recvfrom() failed with error code : %d", WSAGetLastError());
-            exit(EXIT_FAILURE);
-        }
 
-        puts(buf);
+    // Decompress the texture if using compression
+
+    if (mCompression)
+    {
+        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========");
+
+        DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
+        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========");
+
     }
 }
+
+void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketTcp, SOCKET& socketUdp)
+{
+    //char buf[DEFAULT_BUFLEN];    
+    //int slen, recv_len;
+
+    int slen = sizeof(mSsi_other);
+    //keep listening for data
+    //while (1)
+    //{
+    //    printf("Waiting for data...");
+    //    fflush(stdout);
+
+    //    //clear the buffer by filling null, it might have previously received data
+    //    memset(buf, '\0', DEFAULT_BUFLEN);
+
+    //    //try to receive some data, this is a blocking call
+    //    if ((recv_len = recvfrom(mSUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
+    //    {
+    //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
+    //        exit(EXIT_FAILURE);
+    //    }
+
+    //    //print details of the client/peer and the data received
+    //    printf("Received packet from\n");
+    //    printf("Data: %s\n", buf);
+
+    //    //now reply the client with the same data
+    //    if (sendto(mSUdpS, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
+    //    {
+    //        printf("sendto() failed with error code : %d", WSAGetLastError());
+    //        exit(EXIT_FAILURE);
+    //    }
+    //}
+
+    // Server is going to send texture via UDP, so receive a int via TCP first to signal that
+    // client is waiting
+    int dummy = 0;
+    RecvInt(dummy, socketTcp);
+
+    // If no compression occurs, we directly send the texture with the expected texture size
+    char* srcTex = sendTexData;
+    int sendSize = sendTexSize;
+
+    // But if compression occurs, we perform compression and send the compressed texture size
+    // to the other device
+    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string(" =========");
+    OutputDebugString(string_2_wstring(message).c_str());
+
+    if (mCompression)
+    {
+        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========");
+        srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========");
+        OutputDebugString(L"\n\n= SendTexture: Sending int... =========");
+        SendInt(sendSize, socketTcp);
+        OutputDebugString(L"\n\n= SendTexture: Sent int... =========");
+
+    }
+
+    // Send the texture
+    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========");
+    int sentSoFar = 0;
+    while (sentSoFar < sendSize)
+    {
+        bool lastPacket = sentSoFar > sendSize - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket ? (sendSize - sentSoFar) : DEFAULT_BUFLEN;
+        //int iResult = send(socketTcp, &srcTex[sentSoFar], sizeToSend, 0);
+
+        int iResult = sendto(socketUdp, &srcTex[sentSoFar], sizeToSend, 0, (struct sockaddr*) & mSsi_other, slen);
+
+        if (iResult != SOCKET_ERROR)
+        {
+            sentSoFar += iResult;
+        }
+    }
+    OutputDebugString(L"\n\n= SendTexture: Sent tex =========");
+
+}
+
 bool NetworkManager::CloseClientConnectionUdp()
 {
     closesocket(mUdpS);
