@@ -76,6 +76,8 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
+    rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
+    rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
     rayVars["gVisibility"]  = mpResManager->getTexture("VisibilityBitmap");
@@ -91,7 +93,11 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     int dirty = 0;
 
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
-
+    dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
+    if (mDecodeMode)
+    {
+        dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
+    }
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
 }
