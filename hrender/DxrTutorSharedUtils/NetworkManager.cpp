@@ -384,8 +384,11 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
 
     // Server is going to send texture via UDP so it waits for the client to send an int via
     // TCP to synchronize.
-    int dummy = 0;
+    int dummy = 102342;
     SendInt(dummy, socketTcp);
+    RecvInt(dummy, socketTcp); // Block until server sends
+    char message[] = "this is the message from client";
+    sendto(socketUdp, message, (int)strlen(message), 0, (struct sockaddr*)&mSi_otherUdp, slen);
 
     char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexData;
     int recvSize = recvTexSize;
