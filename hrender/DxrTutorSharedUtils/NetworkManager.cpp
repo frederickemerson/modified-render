@@ -107,6 +107,76 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     return true;
 }
 
+bool NetworkManager::SetUpServerUdp(PCSTR port)
+{
+    WSADATA wsa;
+
+    //Initialise winsock
+    printf("\nInitialising Winsock...");
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        printf("Failed. Error Code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+    printf("Initialised.\n");
+
+    //Create a socket
+    if ((mSUdpS = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
+    {
+        printf("Could not create socket : %d", WSAGetLastError());
+    }
+    printf("Socket created.\n");
+
+    //Prepare the sockaddr_in structure
+    mServer.sin_family = AF_INET;
+    mServer.sin_addr.s_addr = INADDR_ANY;
+    mServer.sin_port = htons((u_short)std::strtoul(port, NULL, 0));
+
+    //Bind
+    if (bind(mSUdpS, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
+    {
+        printf("Bind failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+    puts("Bind done");
+    return true;
+}
+
+bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
+{
+    char buf[DEFAULT_BUFLEN];    
+    int slen, recv_len;
+
+    slen = sizeof(mSsi_other);
+    //keep listening for data
+    while (1)
+    {
+        printf("Waiting for data...");
+        fflush(stdout);
+
+        //clear the buffer by filling null, it might have previously received data
+        memset(buf, '\0', DEFAULT_BUFLEN);
+
+        //try to receive some data, this is a blocking call
+        if ((recv_len = recvfrom(mSUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
+        {
+            printf("recvfrom() failed with error code : %d", WSAGetLastError());
+            exit(EXIT_FAILURE);
+        }
+
+        //print details of the client/peer and the data received
+        printf("Received packet from\n");
+        printf("Data: %s\n", buf);
+
+        //now reply the client with the same data
+        if (sendto(mSUdpS, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
+        {
+            printf("sendto() failed with error code : %d", WSAGetLastError());
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
@@ -145,6 +215,12 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         OutputDebugString(string_2_wstring(endMsg).c_str());
     } while (true);
 
+    return true;
+}
+bool NetworkManager::CloseServerConnectionUdp()
+{
+    closesocket(mSUdpS);
+    WSACleanup();
     return true;
 }
 
@@ -233,6 +309,75 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
+bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
+{
+    int slen = sizeof(mSi_otherUdp);
+    WSADATA wsa;
+
+    //Initialise winsock
+    printf("\nInitialising Winsock...");
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        printf("Failed. Error Code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+    printf("Initialised.\n");
+
+    //create socket
+    if ((mUdpS = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
+    {
+        printf("socket() failed with error code : %d", WSAGetLastError());
+        exit(EXIT_FAILURE);
+    }
+
+    //setup address structure
+    memset((char*)&mSi_otherUdp, 0, sizeof(mSi_otherUdp));
+    mSi_otherUdp.sin_family = AF_INET;
+    mSi_otherUdp.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
+
+
+    inet_pton(AF_INET, serverName, &mSi_otherUdp.sin_addr.S_un.S_addr);
+    //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
+    return true;
+}
+void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socket)
+{
+    char message[DEFAULT_BUFLEN];
+    char buf[DEFAULT_BUFLEN];
+    int slen = sizeof(mSi_otherUdp);
+    //start communication
+    while (1)
+    {
+        printf("Enter message : ");
+        std::cin >> message;
+
+
+        //send the message
+        if (sendto(mUdpS, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
+        {
+            printf("sendto() failed with error code : %d", WSAGetLastError());
+            exit(EXIT_FAILURE);
+        }
+
+        //receive a reply and print it
+        //clear the buffer by filling null, it might have previously received data
+        memset(buf, '\0', DEFAULT_BUFLEN);
+        //try to receive some data, this is a blocking call
+        if (recvfrom(mUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
+        {
+            printf("recvfrom() failed with error code : %d", WSAGetLastError());
+            exit(EXIT_FAILURE);
+        }
+
+        puts(buf);
+    }
+}
+bool NetworkManager::CloseClientConnectionUdp()
+{
+    closesocket(mUdpS);
+    WSACleanup();
+    return true;
+}
 bool NetworkManager::CloseClientConnection()
 {
     char recvbuf[DEFAULT_BUFLEN];

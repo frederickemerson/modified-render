@@ -51,9 +51,13 @@ public:
     // Used by Server
     SOCKET mListenSocket = INVALID_SOCKET;
     SOCKET mClientSocket = INVALID_SOCKET;
+    SOCKET mSUdpS;
+    struct sockaddr_in mServer, mSsi_other;
 
     // Used by client
     SOCKET mConnectSocket = INVALID_SOCKET;
+    SOCKET mUdpS; 
+    struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
@@ -85,13 +89,17 @@ public:
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
-
+    bool SetUpServerUdp(PCSTR port);
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
-
+    bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
     bool CloseServerConnection();
+    bool CloseServerConnectionUdp();
 
     // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
+    bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
+    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socket);
+    bool CloseClientConnectionUdp();
 
     bool CloseClientConnection();
 };
