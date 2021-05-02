@@ -22,6 +22,7 @@
     <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
@@ -31,6 +32,9 @@
     <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp" />
     <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
+    <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
+    <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
     <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp" />
     <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
@@ -50,6 +54,7 @@
     <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />
@@ -59,6 +64,9 @@
     <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h" />
     <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h" />
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="NetworkPasses\NetworkPass.h" />
+    <ClInclude Include="NetworkPasses\VisibilityPass.h" />
+    <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="RasterizedPasses\RasterLightingPass.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
@@ -95,6 +103,9 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli" />
     <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl" />

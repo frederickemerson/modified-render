@@ -16,20 +16,17 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "LambertianPlusShadowPass.h"
+#include "VShadingPass.h"
 
 namespace {
     // Where is our shaders located?
-    const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\lambertianPlusShadows.rt.hlsl";
+    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
 
     // What are the entry points in that shader for various ray tracing shaders?
-    const char* kEntryPointRayGen  = "LambertShadowsRayGen";
-    const char* kEntryPointMiss0   = "ShadowMiss";
-    const char* kEntryAoAnyHit     = "ShadowAnyHit";
-    const char* kEntryAoClosestHit = "ShadowClosestHit";
+    const char* kEntryPointRayGen  = "VShadowsRayGen";
 };
 
-bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
@@ -40,14 +37,12 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("WorldNormal2");
+    mpResManager->requestTextureResource("VisibilityBitmap");
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-    mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
@@ -58,7 +53,7 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     return true;
 }
 
-void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+void VShadingPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
@@ -69,7 +64,7 @@ void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::S
     }
 }
 
-void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
+void VShadingPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
@@ -83,6 +78,7 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
+    rayVars["gVisibility"]  = mpResManager->getTexture("VisibilityBitmap");
     rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"]      = pDstTex;
 
@@ -90,7 +86,7 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
-void LambertianPlusShadowPass::renderGui(Gui::Window* pPassWindow)
+void VShadingPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 

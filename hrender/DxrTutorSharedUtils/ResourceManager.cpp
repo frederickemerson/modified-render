@@ -21,6 +21,7 @@
 // The fixed resource name of our output channel
 const std::string ResourceManager::kOutputChannel  = "PipelineOutput";
 const std::string ResourceManager::kEnvironmentMap = "EnvironmentMap";
+const NetworkManager::SharedPtr ResourceManager::mNetworkManager = NetworkManager::create();
 
 ResourceManager::SharedPtr ResourceManager::create(uint32_t width, uint32_t height)
 {

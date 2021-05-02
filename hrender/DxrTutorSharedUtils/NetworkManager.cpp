@@ -1,0 +1,279 @@
+#include "ResourceManager.h"
+#include "NetworkManager.h"
+
+bool NetworkManager::mServerAllowedToRender = false;
+bool NetworkManager::mServerFinishedRendering = false;
+
+bool NetworkManager::SetUpServer(PCSTR port)
+{
+    WSADATA wsaData;
+    int iResult;
+
+    NetworkManager::ListenSocket = INVALID_SOCKET;
+    NetworkManager::ClientSocket = INVALID_SOCKET;
+    
+    struct addrinfo* result = NULL;
+    struct addrinfo hints;
+
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return false;
+    }
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = AI_PASSIVE;
+
+    // Resolve the server address and port
+    iResult = getaddrinfo(NULL, port, &hints, &result);
+    if (iResult != 0) {
+        printf("getaddrinfo failed with error: %d\n", iResult);
+        WSACleanup();
+        return false;
+    }
+
+    // Create a SOCKET for connecting to server
+    NetworkManager::ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+    if (NetworkManager::ListenSocket == INVALID_SOCKET) {
+        printf("socket failed with error: %ld\n", WSAGetLastError());
+        freeaddrinfo(result);
+        WSACleanup();
+        return false;
+    }
+
+    // Setup the TCP listening socket
+    iResult = bind(NetworkManager::ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+    if (iResult == SOCKET_ERROR) {
+        printf("bind failed with error: %d\n", WSAGetLastError());
+        freeaddrinfo(result);
+        closesocket(NetworkManager::ListenSocket);
+        WSACleanup();
+        return false;
+    }
+
+    freeaddrinfo(result);
+
+    return false;
+}
+
+bool NetworkManager::AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+{
+    OutputDebugString(L"\n\n================================PIPELINE SERVER CONFIGURING================================\n\n");
+
+    int iResult;
+
+    iResult = listen(NetworkManager::ListenSocket, SOMAXCONN);
+    if (iResult == SOCKET_ERROR) {
+        OutputDebugString(L"\n\n================================LISTEN FAILED WITH ERROR================================\n\n");
+        printf("listen failed with error: %d\n", WSAGetLastError());
+        closesocket(NetworkManager::ListenSocket);
+        WSACleanup();
+        return false;
+    }
+
+    OutputDebugString(L"\n\n================================TRYING TO ACCEPT CLIENT================================\n\n");
+
+    // Accept a client socket
+    NetworkManager::ClientSocket = accept(NetworkManager::ListenSocket, NULL, NULL);
+    if (ClientSocket == INVALID_SOCKET) {
+        printf("accept failed with error: %d\n", WSAGetLastError());
+        closesocket(NetworkManager::ListenSocket);
+        WSACleanup();
+        return false;
+    }
+
+    OutputDebugString(L"\n\n================================CONNECTION WITH CLIENT ESTABLISHED================================\n\n");
+
+    // No longer need server socket
+    closesocket(NetworkManager::ListenSocket);
+    
+    return true;
+}
+//
+//    // Receive until the peer shuts down the connection
+//    do {
+//        int recvSoFar = 0;
+//        while (recvSoFar < POS_TEX_LEN) {
+//            iResult = recv(NetworkManager::ClientSocket, (char *)&buffer[recvSoFar], DEFAULT_BUFLEN, 0);
+//            if (iResult > 0) {
+//                recvSoFar += iResult;
+//            }
+//        }
+//
+//        OutputDebugString(L"\n================================Bytes received================================\n");
+//        NetworkManager::mServerAllowedToRender = true;
+//
+//        while (!NetworkManager::mServerFinishedRendering);
+//        Texture::SharedPtr visTex = pResManager->getTexture("VisibilityBitmap");
+//        OutputDebugString(L"\n================================Network Manager 109================================\n");
+//        std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
+//        OutputDebugString(L"\n================================Network Manager 111================================\n");
+//
+//        std::string lengthMessage = "Vis Data Length is " + std::to_string(visData.size());
+//        OutputDebugString(string_2_wstring(lengthMessage).c_str());
+//        
+//        // Echo the buffer back to the sender
+//        int sentSoFar = 0;
+//        while (sentSoFar < VIS_TEX_LEN) {
+//            bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
+//            int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+//            int iResult = send(NetworkManager::ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
+//            if (iResult != SOCKET_ERROR) {
+//                sentSoFar += iResult;
+//            }
+//        }
+//
+//        OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
+//
+//        NetworkManager::mServerAllowedToRender = false;
+//        NetworkManager::mServerFinishedRendering = false;
+//    } while (true);
+//
+//    return true;
+//}
+
+bool NetworkManager::CloseServerConnection()
+{
+    int iResult = shutdown(NetworkManager::ClientSocket, SD_SEND);
+    if (iResult == SOCKET_ERROR) {
+        printf("shutdown failed with error: %d\n", WSAGetLastError());
+        closesocket(NetworkManager::ClientSocket);
+        WSACleanup();
+        return false;
+    }
+
+    // Cleanup
+    closesocket(NetworkManager::ClientSocket);
+    WSACleanup();
+
+    return true;
+}
+
+bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
+{
+    NetworkManager::ConnectSocket = INVALID_SOCKET;
+    
+    WSADATA wsaData;
+    struct addrinfo* result = NULL,
+        * ptr = NULL,
+        hints;
+    int iResult;
+    
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        printf("WSAStartup failed with error: %d\n", iResult);
+        return 1;
+    }
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    // Resolve the server address and port
+    iResult = getaddrinfo(serverName, serverPort, &hints, &result);
+    if (iResult != 0) {
+        printf("getaddrinfo failed with error: %d\n", iResult);
+        WSACleanup();
+        return false;
+    }
+
+    // Attempt to connect to an address until one succeeds
+    for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
+
+        // Create a SOCKET for connecting to server
+        NetworkManager::ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype,
+            ptr->ai_protocol);
+        if (NetworkManager::ConnectSocket == INVALID_SOCKET) {
+            printf("socket failed with error: %ld\n", WSAGetLastError());
+            WSACleanup();
+            return false;
+        }
+
+        // Connect to server.
+        iResult = connect(NetworkManager::ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+        if (iResult == SOCKET_ERROR) {
+            closesocket(NetworkManager::ConnectSocket);
+            NetworkManager::ConnectSocket = INVALID_SOCKET;
+            continue;
+        }
+        break;
+    }
+
+    freeaddrinfo(result);
+
+    if (NetworkManager::ConnectSocket == INVALID_SOCKET) {
+        printf("Unable to connect to server!\n");
+        WSACleanup();
+        return false;
+    }
+
+    return true;
+}
+
+bool NetworkManager::SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data)
+{
+    // Send buffer until finishes
+    int sentSoFar = 0;
+    while (sentSoFar < POS_TEX_LEN) {
+        bool lastPacket = sentSoFar > POS_TEX_LEN - DEFAULT_BUFLEN;
+        int sizeToSend = lastPacket * (POS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
+        int iResult = send(NetworkManager::ConnectSocket, (char*)&data[sentSoFar], sizeToSend, 0);
+        if (iResult != SOCKET_ERROR) {
+            sentSoFar += iResult;
+        }
+    }
+
+    OutputDebugString(L"Data is SENT from client");
+
+    // Receive until finish
+    int recvSoFar = 0;
+    while (recvSoFar < VIS_TEX_LEN) {
+        int iRecv = recv(NetworkManager::ConnectSocket, (char *)&out_data[recvSoFar], DEFAULT_BUFLEN, 0);
+        if (iRecv != SOCKET_ERROR) {
+            recvSoFar += iRecv;
+        }
+    }
+
+    OutputDebugString(L"Data is RECEIVED from client");
+
+    return true;
+}
+
+bool NetworkManager::CloseClientConnection()
+{
+    char recvbuf[DEFAULT_BUFLEN];
+    int recvbuflen = DEFAULT_BUFLEN;
+
+    // Shutdown the connection
+    int iResult = shutdown(NetworkManager::ConnectSocket, SD_SEND);
+    if (iResult == SOCKET_ERROR) {
+        printf("shutdown failed with error: %d\n", WSAGetLastError());
+        closesocket(ConnectSocket);
+        WSACleanup();
+        return false;
+    }
+
+    // Receive until the peer closes the connection
+    do {
+        iResult = recv(NetworkManager::ConnectSocket, recvbuf, recvbuflen, 0);
+        if (iResult > 0)
+            printf("Bytes received: %d\n", iResult);
+        else if (iResult == 0)
+            printf("Connection closed\n");
+        else
+            printf("recv failed with error: %d\n", WSAGetLastError());
+
+    } while (iResult > 0);
+
+    // Cleanup
+    closesocket(ConnectSocket);
+    WSACleanup();
+
+    return true;
+}
