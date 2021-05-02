@@ -66,6 +66,9 @@ public:
     static std::mutex mMutex;
     static std::condition_variable mCvPosTexReceived;
     static std::condition_variable mCvVisTexComplete;
+
+    // Used for compression
+    static bool mCompression;
     static std::vector<char> wrkmem;
     static std::vector<unsigned char> compData;
 

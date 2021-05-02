@@ -19,24 +19,21 @@
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
+#include "../NetworkPasses/NetworkPass.h"
 
 /** Ray traced ambient occlusion pass.
 */
-class VisibilityPass : public ::RenderPass
+class MemoryTransferPassClientCPU_GPU : public ::RenderPass
 {
 public:
-    using SharedPtr = std::shared_ptr<VisibilityPass>;
-    using SharedConstPtr = std::shared_ptr<const VisibilityPass>;
+    using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPU>;
+    using SharedConstPtr = std::shared_ptr<const MemoryTransferPassClientCPU_GPU>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, const std::string& posBuf = "WorldPosition2", int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new VisibilityPass(outBuf, posBuf, texWidth, texHeight));
-    }
-    virtual ~VisibilityPass() = default;
+    static SharedPtr create() { return SharedPtr(new MemoryTransferPassClientCPU_GPU()); }
+    virtual ~MemoryTransferPassClientCPU_GPU() = default;
 
 protected:
-    VisibilityPass(const std::string& outBuf, const std::string& posBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("Visibility Pass", "Visibility Pass Options") {
-        mOutputTexName = outBuf; mPosBufName = posBuf;  mTexWidth = texWidth; mTexHeight = texHeight;
-    }
+    MemoryTransferPassClientCPU_GPU() : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") { }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -44,19 +41,12 @@ protected:
     void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
 
+    // Get the texture data from the GPU into a RAM array
+    std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);
+
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }
-    bool usesRayTracing() override { return true; }
 
     // Rendering state
-    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
-    
-    // Various internal parameters
-    int32_t                                 mOutputIndex;           ///< An index for our output buffer
-    std::string                             mOutputTexName;         ///< Where do we want to store the results?
-    std::string                             mPosBufName = "WorldPosition2";            ///< Where to find the position buffer
-    bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
-    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
-    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 };

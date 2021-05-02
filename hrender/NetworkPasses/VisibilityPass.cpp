@@ -42,7 +42,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Set default environment map and scene
@@ -88,7 +88,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
-    rayVars["gPos"]         = mpResManager->getTexture("WorldPosition2");
+    rayVars["gPos"]         = mpResManager->getTexture(mPosBufName);
     rayVars["gOutput"]      = pDstTex;
     OutputDebugString(L"\n\n================================VisibilityPass 85================================\n\n");
 

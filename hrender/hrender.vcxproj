@@ -29,6 +29,11 @@
     <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
     <ClCompile Include="Libraries\minilzo.c" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPass.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -57,6 +62,11 @@
     <ClInclude Include="Libraries\lzoconf.h" />
     <ClInclude Include="Libraries\lzodefs.h" />
     <ClInclude Include="Libraries\minilzo.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPass.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />

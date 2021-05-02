@@ -201,7 +201,7 @@ namespace Falcor
             // With sigma = 0.98, then after 100 frames, a given value's contribution is down to ~1.7% of
             // the running average, which seems to provide a reasonable trade-off of temporal smoothing
             // versus setting in to a new value when something has changed.
-            const double sigma = .98;
+            const double sigma = .9;
             if (pData->cpuRunningAverageMS < 0.) pData->cpuRunningAverageMS = cpuTime;
             else pData->cpuRunningAverageMS = sigma * pData->cpuRunningAverageMS + (1. - sigma) * cpuTime;
             if (pData->gpuRunningAverageMS < 0.) pData->gpuRunningAverageMS = gpuTime;
