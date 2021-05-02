@@ -18,12 +18,11 @@
 
 #include "NetworkPass.h"
 
-
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
-
+std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
@@ -34,13 +33,10 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition");
-    mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("__TextureData");
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float);
-    mpResManager->requestTextureResource("WorldNormal2", ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("__TextureData2", ResourceFormat::RGBA32Float); // Stores 16 x uint8
-    mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint);
+    mpResManager->requestTextureResource("WorldPosition"); // Only for client
+    // For server buffers, we are creating them here, so we specify their width/height accordingly
+    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
@@ -78,7 +74,14 @@ std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture
 
 bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 {
-    // Send scene
+    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+    // Send the texture size to the server
+    OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========\n\n");
+    pNetworkManager->SendInt(mpResManager->getWidth(), pNetworkManager->mConnectSocket);
+    pNetworkManager->SendInt(mpResManager->getHeight(), pNetworkManager->mConnectSocket);
+    OutputDebugString(L"\n\n= width/height sent over network =========\n\n");
+
+    // TODO: Send scene
 
     mFirstRender = false;
     
@@ -87,94 +90,104 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 
 void NetworkPass::executeClient(RenderContext* pRenderContext)
 {
+    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+
     // Slight branch optimization over:
-    // if (!mFirstRender) firstClientRender();
-    !mFirstRender && firstClientRender(pRenderContext);
+     //if (!mFirstRender) firstClientRender();
+    mFirstRender && firstClientRender(pRenderContext);
 
-    // Load textures from GPU to CPU
+    // Load textures from GPU to CPU and retrieve relevant information
     Texture::SharedPtr posTex = mpResManager->getTexture("WorldPosition");
-    posData = texData(pRenderContext, posTex);
+    NetworkPass::posData = texData(pRenderContext, posTex);
+    int texWidth = posTex->getWidth(), texHeight = posTex->getHeight();
 
-    // Send the texture to server and await server to send back the visibility pass texture
-    bool result = mpResManager->mNetworkManager->SendDataFromClient(posData, int(posData.size()), 0, NetworkPass::visibilityData);
+    // Send camera data from client to server
+    Camera::SharedPtr cam = mpScene->getCamera();
+    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========\n\n");
+    pNetworkManager->SendCameraData(cam, pNetworkManager->mConnectSocket);
+    OutputDebugString(L"\n\n= camData sent over network =========\n\n");
 
-    // Put into the client code 
+    // Send the position texture to server
+    int posTexLen = int(NetworkPass::posData.size());
+    assert(posTexLen == texWidth * texHeight * 16);
+    OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
+    pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
+    OutputDebugString(L"\n\n= posTex sent over network =========\n\n");
+
+    // Await server to send back the visibility pass texture
+    int visTexLen = texWidth * texHeight * 4;
+    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========\n\n");
+    pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
+    OutputDebugString(L"\n\n= visTex received over network =========\n\n");
+
+    // Put visibility texture from network (on CPU) into GPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
     visTex->apiInitPub(visibilityData.data(), true);
-
 }
 
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
 {
-    // Receive scene
+    // TODO: By right, we should receive scene as well
+
     mFirstRender = false;
 
-    //auto serverListen = [&]() {
-    //    ResourceManager::mNetworkManager->AcceptAndListenServer(posData, pRenderContext, mpResManager);
-    //};
-    //Threading::dispatchTask(serverListen);
-    ResourceManager::mNetworkManager->AcceptAndListenServer(posData, pRenderContext, mpResManager);
-
+    auto serverListen = [&]() {
+        ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager, mTexWidth, mTexHeight);
+    };
+    Threading::dispatchTask(serverListen);
+    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========\n\n");
     return true;
 }
 
 void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 {
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+
+    // Perform the first render steps (start the network thread)
     mFirstRender && firstServerRender(pRenderContext);
 
-    // Await the three textures from client
-    int iResult;
-    int recvSoFar = 0;
-    while (recvSoFar < POS_TEX_LEN) {
-        iResult = recv(mpResManager->mNetworkManager->ClientSocket, (char *)&posData[recvSoFar], DEFAULT_BUFLEN, 0);
-        if (iResult > 0) {
-            recvSoFar += iResult;
-        }
-    }
-    
-    OutputDebugString(L"\n================================Bytes received================================\n");
+    // Wait for the network thread to receive the position texture
+    OutputDebugString(L"\n\n= ServerRecv - Awaiting PosTex from client... =========\n\n");
+    while (!NetworkManager::mPosTexReceived) 
+        NetworkManager::mCvPosTexReceived.wait(lck);
+    // Reset to false so that we will need to wait for the network pass to flag it as received
+    // before we can continue rendering the next frame
+    NetworkManager::mPosTexReceived = false;
+    OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
 
-    // Load textures from GPU to CPU (other texture) - this belongs to serverRecv
+    // COMMENT
+    // Load camera data to scene
+    Camera::SharedPtr cam = mpScene->getCamera();
+    cam->setPosition(camData[0]);
+    cam->setUpVector(camData[1]);
+    cam->setTarget(camData[2]);
+
+    std::string camPosStr = std::to_string(camData[0].x) + std::string(", ") + std::to_string(camData[0].y) + std::string(", ") + std::to_string(camData[0].z);
+    std::string camUpStr = std::to_string(camData[1].x) + std::string(", ") + std::to_string(camData[1].y) + std::string(", ") + std::to_string(camData[1].z);
+    std::string camTargetStr = std::to_string(camData[2].x) + std::string(", ") + std::to_string(camData[2].y) + std::string(", ") + std::to_string(camData[2].z);
+    std::string camMsg = std::string("Cam Pos: ") + camPosStr + std::string(", ") + std::string("Cam Up: ") + camUpStr + std::string(", ") + std::string("Cam Target: ") + camTargetStr;
+    std::string camFinalMsg = std::string("\n================================ Camera Info:  ") + camMsg + std::string(" ================================\n");
+    OutputDebugString(string_2_wstring(camFinalMsg).c_str());
+
+    // Load position texture from CPU to GPU
     Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
-    auto dataCop = posData.data();
-    posTex2->apiInitPub(posData.data(), true);
+    posTex2->apiInitPub(NetworkPass::posData.data(), true);
+    OutputDebugString(L"\n\n= ServerRecv - Texture loaded to GPU =========\n\n");
 
-    OutputDebugString(L"\n\n================================NetworkPass 132, API INIT PUB================================\n\n");
-    
+    // After this, the server visibilty pass will render
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
 {
-    // Send back the visibility pass texture
-
-
-    //// Just emulating.
-    Texture::SharedPtr posTex2 = mpResManager->getTexture("WorldPosition2");
-    posData = texData(pRenderContext, posTex2);
-
+    OutputDebugString(L"\n\n= ServerSend - VisTex finished rendering =========\n\n");
+    // Load visibility texture from GPU to CPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    OutputDebugString(L"\n================================Network Manager 109================================\n");
-    std::vector<uint8_t> visData = visTex->getTextureData(pRenderContext, 0, 0, ""); 
-    OutputDebugString(L"\n================================Network Manager 111================================\n");
+    visibilityData = visTex->getTextureData(pRenderContext, 0, 0, "");
+    OutputDebugString(L"\n\n= ServerSend - VisTex loaded to CPU =========\n\n");
 
-        
-    // Echo the buffer back to the sender
-    int sentSoFar = 0;
-    while (sentSoFar < VIS_TEX_LEN) {
-        bool lastPacket = sentSoFar > VIS_TEX_LEN - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket * (VIS_TEX_LEN - sentSoFar) + !lastPacket * DEFAULT_BUFLEN;
-        int iResult = send(mpResManager->mNetworkManager->ClientSocket, (char*)&visData[sentSoFar], sizeToSend, 0);
-        if (iResult != SOCKET_ERROR) {
-            sentSoFar += iResult;
-        }
-    }
-
-    OutputDebugString(L"\n================================Bytes SENT BACK================================\n");
-
-    //NetworkManager::mServerAllowedToRender = false;
-    //NetworkManager::mServerFinishedRendering = false;
-    //mpResManager->mNetworkManager->mServerAllowedToRender = false;
-    //mpResManager->mNetworkManager->mServerFinishedRendering = true;
+    // Let the network thread send the visibilty texture
+    NetworkManager::mVisTexComplete = true;
+    NetworkManager::mCvVisTexComplete.notify_all();
 }
 
 void NetworkPass::renderGui(Gui::Window* pPassWindow)

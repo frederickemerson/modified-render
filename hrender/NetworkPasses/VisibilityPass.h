@@ -28,11 +28,15 @@ public:
     using SharedPtr = std::shared_ptr<VisibilityPass>;
     using SharedConstPtr = std::shared_ptr<const VisibilityPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new VisibilityPass(outBuf)); }
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, int texWidth = -1, int texHeight = -1) {
+        return SharedPtr(new VisibilityPass(outBuf, texWidth, texHeight));
+    }
     virtual ~VisibilityPass() = default;
 
 protected:
-    VisibilityPass(const std::string& outBuf) : ::RenderPass("Visibility Pass", "Visibility Pass Options") { mOutputTexName = outBuf; }
+    VisibilityPass(const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("Visibility Pass", "Visibility Pass Options") {
+        mOutputTexName = outBuf; mTexWidth = texWidth; mTexHeight = texHeight;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -52,4 +56,6 @@ protected:
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
     bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
+    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 };

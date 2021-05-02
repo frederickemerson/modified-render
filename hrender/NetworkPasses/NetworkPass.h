@@ -35,7 +35,9 @@ public:
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, Mode mode = Mode::Client) { return SharedPtr(new NetworkPass(outBuf, mode)); }
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, Mode mode = Mode::Client, int texWidth = -1, int texHeight = -1) {
+        return SharedPtr(new NetworkPass(outBuf, mode, texWidth, texHeight)); 
+    }
     virtual ~NetworkPass() = default;
 
     // Texture data from transfering
@@ -43,9 +45,12 @@ public:
     static std::vector<uint8_t> posData;
     //static std::vector<uint8_t> gBufData;
     static std::vector<uint8_t> visibilityData;
+    static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(const std::string& outBuf, Mode mode) : ::RenderPass("Network Pass", "Network Pass Options") { mOutputTexName = outBuf; mMode = mode; }
+    NetworkPass(const std::string& outBuf, Mode mode, int texWidth=-1, int texHeight=-1) : ::RenderPass("Network Pass", "Network Pass Options") { 
+        mOutputTexName = outBuf; mMode = mode; mTexWidth = texWidth; mTexHeight = texHeight;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -76,6 +81,7 @@ protected:
     bool                                    mFirstRender = true;    ///< If this is the first time rendering, need to send scene
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
-
+    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 };
 

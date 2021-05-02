@@ -26,6 +26,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "../Libraries/minilzo.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -34,43 +35,60 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define POS_TEX_LEN 33177600
-#define VIS_TEX_LEN 8294400
+#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
+
+#define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
 using namespace Falcor;
 
 class ResourceManager;
+class NetworkPass;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
 public:
     // Used by Server
-    SOCKET ListenSocket = INVALID_SOCKET;
-    SOCKET ClientSocket = INVALID_SOCKET;
+    SOCKET mListenSocket = INVALID_SOCKET;
+    SOCKET mClientSocket = INVALID_SOCKET;
 
     // Used by client
-    SOCKET ConnectSocket = INVALID_SOCKET;
+    SOCKET mConnectSocket = INVALID_SOCKET;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
 
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
-    static bool mServerAllowedToRender;
-    static bool mServerFinishedRendering;
+
+    // Used for thread synchronizing
+    static bool mPosTexReceived;
+    static bool mVisTexComplete;
+    static std::mutex mMutex;
+    static std::condition_variable mCvPosTexReceived;
+    static std::condition_variable mCvVisTexComplete;
+    static std::vector<char> wrkmem;
+    static std::vector<unsigned char> compData;
+
+    // Used to send and receive data over the network
+    void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
+    void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+    bool RecvInt(int& recvInt, SOCKET& s);
+    bool SendInt(int toSend, SOCKET& s);
+    bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
+    bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
+    char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
+    void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
 
     // Server
-    
-    bool SetUpServer(PCSTR port);
+    // Set up the sockets and connect to a client, and output the client's texture width/height
+    bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
 
-    bool AcceptAndListenServer(const std::vector<uint8_t>& buffer, RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager);
+    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
 
     bool CloseServerConnection();
 
     // Client 
-
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
-
-    bool SendDataFromClient(const std::vector<uint8_t>& data, int len, int flags, const std::vector<uint8_t>& out_data);
 
     bool CloseClientConnection();
 };

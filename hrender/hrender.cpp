@@ -42,12 +42,18 @@ void runClient();
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
     //NetworkPass::Mode mode = NetworkPass::Mode::Client;
-    NetworkPass::Mode mode = NetworkPass::Mode::Server;
+    //NetworkPass::Mode mode = NetworkPass::Mode::Server;
 
-    if (mode == NetworkPass::Mode::Client)
-        runClient();
-    else 
+    if (std::string(lpCmdLine) == std::string("server"))
+    {
+        OutputDebugString(L"\n\n\n\n\n======== SERVER MODE =========\n\n\n\n");
         runServer();
+    }
+    else
+    {
+        OutputDebugString(L"\n\n\n\n\n======== CLIENT MODE =========\n\n\n\n");
+        runClient();
+    }
    
     return 0;
 }
@@ -62,26 +68,28 @@ void runServer()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
 
-    ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT);
-
-    //ResourceManager::mNetworkManager->AcceptAndListenServer(positionData);
+    // Set up server - configure the sockets and await client connection. We need to await
+    // the client connection before we allow the server thread to create the textures, because
+    // we want to initialize our server textures the same size as the client
+    int texWidth, texHeight;
+    ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
 
     // -------------------------------- //
     // --- Pass 1 creates a GBuffer --- //
     pipeline->setPassOptions(0, {
-        NetworkPass::create("Receiver", NetworkPass::Mode::Server),
+        NetworkPass::create("Receiver", NetworkPass::Mode::Server, texWidth, texHeight),
     });
     // ------------------------------------------------------------------------------------- //
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, {
         // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap"),
+        VisibilityPass::create("VisibilityBitmap", texWidth, texHeight),
         LambertianPlusShadowPass::create("RTLambertian")
     });
     // -------------------------------------------------------------------- //
     // --- Pass 3 makes use of the visibility buffer to shade the scene --- //
     pipeline->setPassOptions(2, {
-        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend),
+        NetworkPass::create("Sender", NetworkPass::Mode::ServerSend, texWidth, texHeight),
     });
 
     // --------------------------------------------------------------- //
@@ -116,7 +124,7 @@ void runClient()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClient("172.25.107.160", DEFAULT_PORT);
+    ResourceManager::mNetworkManager->SetUpClient("192.168.1.144", DEFAULT_PORT);
     //NetworkManager::SharedPtr networkManager = NetworkManager::create();
     //networkManager->SetUpClient("localhost", "10871");
     //

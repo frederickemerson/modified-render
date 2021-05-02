@@ -42,8 +42,8 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float);
-    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint);
+    mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Set default environment map and scene
     //mpResManager->updateEnvironmentMap(kEnvironmentMap);
