@@ -61,10 +61,10 @@ public:
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
 
     // Used for thread synchronizing
-    static bool mPosTexReceived;
+    static bool mCamPosReceived;
     static bool mVisTexComplete;
     static std::mutex mMutex;
-    static std::condition_variable mCvPosTexReceived;
+    static std::condition_variable mCvCamPosReceived;
     static std::condition_variable mCvVisTexComplete;
 
     // Used for compression

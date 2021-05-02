@@ -2,12 +2,12 @@
 #include "../NetworkPasses/NetworkPass.h"
 #include "NetworkManager.h"
 
-bool NetworkManager::mPosTexReceived = false;
+bool NetworkManager::mCamPosReceived = false;
 bool NetworkManager::mVisTexComplete = false;
 bool NetworkManager::mCompression = true;
 std::mutex NetworkManager::mMutex;
 std::condition_variable NetworkManager::mCvVisTexComplete;
-std::condition_variable NetworkManager::mCvPosTexReceived;
+std::condition_variable NetworkManager::mCvCamPosReceived;
 std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
@@ -18,18 +18,17 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     mListenSocket = INVALID_SOCKET;
     mClientSocket = INVALID_SOCKET;
-
+    
     struct addrinfo* result = NULL;
     struct addrinfo hints;
 
-    OutputDebugString(L"\n\n===== Pre-Falcor Init - NetworkManager::SetUpServer - PIPELINE SERVER SETTING UP ================================\n\n");
+    OutputDebugString(L"\n\n===== Pre-Falcor Init - NetworkManager::SetUpServer - PIPELINE SERVER SETTING UP ================================");
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (iResult != 0)
-    {
+    if (iResult != 0) {
         std::string errString = std::string("\n\n= Pre-Falcor Init - getaddrinfo failed with error: ") + std::to_string(iResult);
-        OutputDebugString(string_2_wstring(errString).c_str());
+        OutputDebugString(string_2_wstring(errString).c_str()); 
         return false;
     }
 
@@ -41,8 +40,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     // Resolve the server address and port
     iResult = getaddrinfo(NULL, port, &hints, &result);
-    if (iResult != 0)
-    {
+    if (iResult != 0) {
         std::string errString = std::string("\n\n= Pre-Falcor Init - getaddrinfo failed with error: ") + std::to_string(iResult);
         OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
@@ -51,8 +49,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     // Create a SOCKET for connecting to server
     mListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-    if (mListenSocket == INVALID_SOCKET)
-    {
+    if (mListenSocket == INVALID_SOCKET) {
         std::string errString = std::string("\n\n= Pre-Falcor Init - socket failed with error: ") + std::to_string(WSAGetLastError());
         OutputDebugString(string_2_wstring(errString).c_str());
         freeaddrinfo(result);
@@ -62,8 +59,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     // Setup the TCP listening socket
     iResult = bind(mListenSocket, result->ai_addr, (int)result->ai_addrlen);
-    if (iResult == SOCKET_ERROR)
-    {
+    if (iResult == SOCKET_ERROR) {
         std::string errString = std::string("\n\n= Pre-Falcor Init - bind failed with error: ") + std::to_string(WSAGetLastError());
         OutputDebugString(string_2_wstring(errString).c_str());
         freeaddrinfo(result);
@@ -74,10 +70,10 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
 
     freeaddrinfo(result);
 
-    OutputDebugString(L"\n\n= Pre-Falcor Init - SETUP COMPLETE\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - SETUP COMPLETE =========");
 
     // Listening for client socket
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client... =========");
     iResult = listen(mListenSocket, SOMAXCONN);
     if (iResult == SOCKET_ERROR)
     {
@@ -88,7 +84,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
         return false;
     }
     // Accept the client socket
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to accept client... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to accept client... =========");
     mClientSocket = accept(mListenSocket, NULL, NULL);
     if (mClientSocket == INVALID_SOCKET)
     {
@@ -100,13 +96,13 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     }
     // No longer need server socket
     closesocket(mListenSocket);
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Connection with client established =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Connection with client established =========");
 
     // Get the client texture width/height
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Getting client texture width/height... =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Getting client texture width/height... =========");
     RecvInt(outTexWidth, mClientSocket);
     RecvInt(outTexHeight, mClientSocket);
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========\n\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========");
 
     return true;
 }
@@ -119,37 +115,33 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
     int numFramesRendered = 0;
 
     // Receive until the peer shuts down the connection
-    do
-    {
-        std::string frameMsg = std::string("\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================\n");
+    do {
+        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
-
-        // COMMENT
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========\n\n");
+        
+        // Receive the camera position from the sender
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
         RecvCameraData(NetworkPass::camData, mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
-        // Receive the position texture from the sender
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting posTex receiving over network... =========\n\n");
-        RecvTexture(posTexSize, (char*)&NetworkPass::posData[0], mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - Position texture received over network =========\n\n");
+        NetworkManager::mCamPosReceived = true;
+        NetworkManager::mCvCamPosReceived.notify_all();
 
-        // Allow rendering using the posTex to begin, and wait for visTex to complete rendering
-        NetworkManager::mPosTexReceived = true;
-        NetworkManager::mCvPosTexReceived.notify_all();
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========\n\n");
+        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
         while (!NetworkManager::mVisTexComplete)
             NetworkManager::mCvVisTexComplete.wait(lck);
+        
         // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
         // before we can continue sending the next frame
         NetworkManager::mVisTexComplete = false;
 
         // Send the visBuffer back to the sender
-        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========\n\n");
+        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
         SendTexture(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket);
-        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========\n\n");
-
-        std::string endMsg = std::string("\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================\n");
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
+        
+        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
     } while (true);
 
@@ -159,8 +151,7 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
 bool NetworkManager::CloseServerConnection()
 {
     int iResult = shutdown(mClientSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR)
-    {
+    if (iResult == SOCKET_ERROR) {
         std::string errString = std::string("\n\n= CloseServerConnection - shutdown failed with error: ") + std::to_string(WSAGetLastError());
         OutputDebugString(string_2_wstring(errString).c_str());
         closesocket(mClientSocket);
@@ -178,17 +169,16 @@ bool NetworkManager::CloseServerConnection()
 bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 {
     mConnectSocket = INVALID_SOCKET;
-
+    
     WSADATA wsaData;
     struct addrinfo* result = NULL,
         * ptr = NULL,
         hints;
     int iResult;
-
+    
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (iResult != 0)
-    {
+    if (iResult != 0) {
         std::string errString = std::string("\n\n= SetUpClient - WSAStartup failed with error: ") + std::to_string(iResult);
         OutputDebugString(string_2_wstring(errString).c_str());
         return 1;
@@ -201,8 +191,7 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 
     // Resolve the server address and port
     iResult = getaddrinfo(serverName, serverPort, &hints, &result);
-    if (iResult != 0)
-    {
+    if (iResult != 0) {
         std::string errString = std::string("\n\n= SetUpClient - getaddrinfo failed with error: ") + std::to_string(iResult);
         OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
@@ -210,14 +199,12 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
     }
 
     // Attempt to connect to an address until one succeeds
-    for (ptr = result; ptr != NULL; ptr = ptr->ai_next)
-    {
+    for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
 
         // Create a SOCKET for connecting to server
         mConnectSocket = socket(ptr->ai_family, ptr->ai_socktype,
             ptr->ai_protocol);
-        if (mConnectSocket == INVALID_SOCKET)
-        {
+        if (mConnectSocket == INVALID_SOCKET) {
             std::string errString = std::string("\n\n= SetUpClient - socket failed with error: ") + std::to_string(WSAGetLastError());
             OutputDebugString(string_2_wstring(errString).c_str());
             WSACleanup();
@@ -226,8 +213,7 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 
         // Connect to server.
         iResult = connect(mConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-        if (iResult == SOCKET_ERROR)
-        {
+        if (iResult == SOCKET_ERROR) {
             closesocket(mConnectSocket);
             mConnectSocket = INVALID_SOCKET;
             continue;
@@ -237,8 +223,7 @@ bool NetworkManager::SetUpClient(PCSTR serverName, PCSTR serverPort)
 
     freeaddrinfo(result);
 
-    if (mConnectSocket == INVALID_SOCKET)
-    {
+    if (mConnectSocket == INVALID_SOCKET) {
         std::string errString = std::string("\n\n= SetUpClient - Unable to connect to server!");
         OutputDebugString(string_2_wstring(errString).c_str());
         WSACleanup();
@@ -255,8 +240,7 @@ bool NetworkManager::CloseClientConnection()
 
     // Shutdown the connection
     int iResult = shutdown(mConnectSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR)
-    {
+    if (iResult == SOCKET_ERROR) {
         printf("shutdown failed with error: %d\n", WSAGetLastError());
         closesocket(mConnectSocket);
         WSACleanup();
@@ -264,8 +248,7 @@ bool NetworkManager::CloseClientConnection()
     }
 
     // Receive until the peer closes the connection
-    do
-    {
+    do {
         iResult = recv(mConnectSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0)
             printf("Bytes received: %d\n", iResult);
@@ -288,14 +271,14 @@ char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compT
     int maxCompLen = OUT_LEN(inTexSize);
     lzo_uint compLen;
     lzo1x_1_compress((unsigned char*)inTexData, (lzo_uint)inTexSize, &NetworkManager::compData[0], &compLen, &wrkmem[0]);
-    compTexSize = (int)compLen;
+    compTexSize = (int) compLen;
     return (char*)&NetworkManager::compData[0];
 }
 
 void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
 {
     lzo_uint new_len = outTexSize;
-    lzo1x_decompress((unsigned char*)compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
+    lzo1x_decompress((unsigned char*) compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
 }
 
 void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket)
@@ -307,15 +290,15 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     int recvSize = recvTexSize;
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========");
         RecvInt(recvSize, socket);
-        OutputDebugString(L"\n\n= RecvTexture: received int =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: received int =========");
 
     }
 
     // Receive the texture
     int recvSoFar = 0;
-    OutputDebugString(L"\n\n= RecvTexture: Receiving tex...c =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========");
 
     while (recvSoFar < recvSize)
     {
@@ -325,17 +308,17 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
             recvSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= RecvTexture: receievd tex =========\n\n");
+    OutputDebugString(L"\n\n= RecvTexture: received tex =========");
 
-
+    
     // Decompress the texture if using compression
 
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========");
 
         DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
-        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========\n\n");
+        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========");
 
     }
 }
@@ -345,25 +328,25 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     // If no compression occurs, we directly send the texture with the expected texture size
     char* srcTex = sendTexData;
     int sendSize = sendTexSize;
-
+    
     // But if compression occurs, we perform compression and send the compressed texture size
     // to the other device
-    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string("=========");
+    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string(" =========");
     OutputDebugString(string_2_wstring(message).c_str());
 
     if (mCompression)
     {
-        OutputDebugString(L"\n\n= RecvTexture: Compressing tex... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========");
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
-        OutputDebugString(L"\n\n= RecvTexture: Compressed  tex... =========\n\n");
-        OutputDebugString(L"\n\n= RecvTexture: Sending int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========");
+        OutputDebugString(L"\n\n= SendTexture: Sending int... =========");
         SendInt(sendSize, socket);
-        OutputDebugString(L"\n\n= RecvTexture: Sent int... =========\n\n");
+        OutputDebugString(L"\n\n= SendTexture: Sent int... =========");
 
     }
-
+    
     // Send the texture
-    OutputDebugString(L"\n\n= RecvTexture: Sending tex... =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========");
     int sentSoFar = 0;
     while (sentSoFar < sendSize)
     {
@@ -375,7 +358,7 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
             sentSoFar += iResult;
         }
     }
-    OutputDebugString(L"\n\n= RecvTexture: Sent tex =========\n\n");
+    OutputDebugString(L"\n\n= SendTexture: Sent tex =========");
 
 }
 
@@ -425,6 +408,7 @@ bool NetworkManager::RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s
 bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 {
     std::array<float3, 3> cameraData = { cam->getPosition(), cam->getUpVector(), cam->getTarget() };
+    
     char* data = (char*)&cameraData;
     int amtToSend = sizeof(cameraData);
     int sentSoFar = 0;

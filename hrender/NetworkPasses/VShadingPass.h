@@ -52,4 +52,7 @@ protected:
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
     bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
+    
+    bool                                    mDecodeMode = false;    ///< Do we perform shading, or just debug the visibility bitmap?
+    int32_t                                 mDecodeBit = 0;         ///< If we are debugging visibility bitmap, which light should we see?
 };

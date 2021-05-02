@@ -36,14 +36,13 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition"); // Only for client
+    mpResManager->requestTextureResource("WorldPosition", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Only for client
     // For server buffers, we are creating them here, so we specify their width/height accordingly
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
-    if (mpScene)
-    {
+    if (mpScene) {
         mpRays->setScene(mpScene);
     }
 
@@ -55,8 +54,7 @@ void NetworkPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pSce
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (!mpScene) return;
-    if (mpRays)
-    {
+    if (mpRays) {
         mpRays->setScene(mpScene);
     }
 }
@@ -67,8 +65,10 @@ void NetworkPass::execute(RenderContext* pRenderContext)
         executeServerSend(pRenderContext);
     else if (mMode == Mode::Server)
         executeServerRecv(pRenderContext);
+    else if (mMode == Mode::ClientSend)
+        executeClientSend(pRenderContext);
     else
-        executeClient(pRenderContext);
+        executeClientRecv(pRenderContext);
 }
 
 std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
@@ -81,43 +81,49 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 {
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
     // Send the texture size to the server
-    OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========");
     pNetworkManager->SendInt(mpResManager->getWidth(), pNetworkManager->mConnectSocket);
     pNetworkManager->SendInt(mpResManager->getHeight(), pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= width/height sent over network =========\n\n");
+    OutputDebugString(L"\n\n= width/height sent over network =========");
 
     // TODO: Send scene
 
-    mFirstRender = false;
+    // Populate posTexWidth and Height
+    NetworkPass::posTexWidth = mpResManager->getWidth();
+    NetworkPass::posTexHeight = mpResManager->getHeight();
 
+    mFirstRender = false;
+    
     return true;
 }
 
-void NetworkPass::executeClient(RenderContext* pRenderContext)
+void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 {
+    static int numFramesRendered = 0;
+    std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
+    OutputDebugString(string_2_wstring(frameMsg).c_str());
+
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-    mFirstRender&& firstClientRender(pRenderContext);
+    mFirstRender && firstClientRender(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
-    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
     pNetworkManager->SendCameraData(cam, pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= camData sent over network =========\n\n");
+    OutputDebugString(L"\n\n= camData sent over network =========");
+}
 
-    // Send the position texture to server
-    int posTexLen = int(NetworkPass::posData.size());
-    assert(posTexLen == NetworkPass::posTexWidth * NetworkPass::posTexHeight * 16);
-    OutputDebugString(L"\n\n= Awaiting posTex sending over network... =========\n\n");
-    pNetworkManager->SendTexture(posTexLen, (char*)&NetworkPass::posData[0], pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= posTex sent over network =========\n\n");
+void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
+{
+    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
-    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========\n\n");
+    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
     pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
-    OutputDebugString(L"\n\n= visTex received over network =========\n\n");
+    OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
@@ -126,12 +132,11 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
 
     mFirstRender = false;
 
-    auto serverListen = [&]()
-    {
+    auto serverListen = [&]() {
         ResourceManager::mNetworkManager->ListenServer(pRenderContext, mpResManager, mTexWidth, mTexHeight);
     };
     Threading::dispatchTask(serverListen);
-    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========\n\n");
+    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");
     return true;
 }
 
@@ -140,18 +145,32 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
 
     // Perform the first render steps (start the network thread)
-    mFirstRender&& firstServerRender(pRenderContext);
+    mFirstRender && firstServerRender(pRenderContext);
 
-    // Wait for the network thread to receive the position texture
-    OutputDebugString(L"\n\n= ServerRecv - Awaiting PosTex from client... =========\n\n");
-    while (!NetworkManager::mPosTexReceived)
-        NetworkManager::mCvPosTexReceived.wait(lck);
+    // Wait for the network thread to receive the cameraPosition
+    OutputDebugString(L"\n\n= ServerRecv - Awaiting camPos from client... =========");
+    while (!NetworkManager::mCamPosReceived) 
+        NetworkManager::mCvCamPosReceived.wait(lck);
+
+    // Load camera data to scene
+    Camera::SharedPtr cam = mpScene->getCamera();
+    cam->setPosition(NetworkPass::camData[0]);
+    cam->setUpVector(NetworkPass::camData[1]);
+    cam->setTarget(NetworkPass::camData[2]);
+
+    // Update the scene. Ideally, this should be baked into RenderingPipeline.cpp and executed
+    // before the pass even starts and after the network thread receives the data.
+    mpScene->update(pRenderContext, gpFramework->getGlobalClock().getTime());
+
     // Reset to false so that we will need to wait for the network pass to flag it as received
     // before we can continue rendering the next frame
-    NetworkManager::mPosTexReceived = false;
-    OutputDebugString(L"\n\n= ServerRecv - PosTex received from client =========\n\n");
+    NetworkManager::mCamPosReceived = false;
+    // Recalculate, if we could do calculateCameraParameters() instead, we would.
+    cam->getViewMatrix(); 
 
-    // After this, the server visibilty pass will render
+    OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========");
+
+    // After this, the server JitteredGBuffer pass will render
 }
 
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
@@ -171,3 +190,4 @@ void NetworkPass::renderGui(Gui::Window* pPassWindow)
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
 }
+
