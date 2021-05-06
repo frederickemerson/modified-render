@@ -20,8 +20,10 @@
 #include "../DxrTutorSharedUtils/RenderPass.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 
-/** Ray traced ambient occlusion pass.
-*/
+/**
+ * Transfer data from server to client or client to server
+ * based on the configuration setting.
+ */
 class NetworkPass : public ::RenderPass
 {
 
@@ -37,7 +39,7 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
 
     static SharedPtr create(Mode mode = Mode::Client, int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new NetworkPass(mode, texWidth, texHeight)); 
+        return SharedPtr(new NetworkPass(mode, texWidth, texHeight));
     }
     virtual ~NetworkPass() = default;
 
@@ -50,7 +52,7 @@ public:
     static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(Mode mode, int texWidth=-1, int texHeight=-1) : ::RenderPass("Network Pass", "Network Pass Options") { 
+    NetworkPass(Mode mode, int texWidth = -1, int texHeight = -1) : ::RenderPass("Network Pass", "Network Pass Options") {
         mMode = mode; mTexWidth = texWidth; mTexHeight = texHeight;
     }
 
@@ -59,7 +61,7 @@ protected:
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
-    
+
     // Different execution functions
     void executeClientSend(RenderContext* pRenderContext);
     void executeClientRecv(RenderContext* pRenderContext);
@@ -78,7 +80,7 @@ protected:
     // Rendering state
     RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
-    
+
     // Various internal parameters
     Mode                                    mMode;                  ///< Whether this pass runs as client or server
     bool                                    mFirstRender = true;    ///< If this is the first time rendering, need to send scene

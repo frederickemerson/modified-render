@@ -71,15 +71,28 @@ void NetworkPass::execute(RenderContext* pRenderContext)
         executeClientRecv(pRenderContext);
 }
 
+/// <summary>
+/// Fetch the texture data from the texture pointer under the given render context.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
+/// <param name="tex">- texture pointer</param>
+/// <returns></returns>
 std::vector<uint8_t> NetworkPass::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
 {
     return tex->getTextureData(pRenderContext, 0, 0);
 }
 
-
+/// <summary>
+/// Executes on the first frame of program run on client side, responsible to send datas that
+/// are only required to be sent once. Currently sends the width and height of the
+/// window to server, and internally keep track of it.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
+/// <returns></returns>
 bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
 {
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+
     // Send the texture size to the server
     OutputDebugString(L"\n\n= Awaiting width/height sending over network... =========");
     pNetworkManager->SendInt(mpResManager->getWidth(), pNetworkManager->mConnectSocket);
@@ -93,20 +106,21 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
     NetworkPass::posTexHeight = mpResManager->getHeight();
 
     mFirstRender = false;
-    
+
     return true;
 }
 
+/// <summary>
+/// Executes on every frame of program run on client side, responsible to send datas that
+/// are required to be sent on every frame. Currently sends the camera data to the server.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
 void NetworkPass::executeClientSend(RenderContext* pRenderContext)
 {
-    static int numFramesRendered = 0;
-    std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
-    OutputDebugString(string_2_wstring(frameMsg).c_str());
-
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-    mFirstRender && firstClientRender(pRenderContext);
+    mFirstRender&& firstClientRender(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
@@ -115,6 +129,12 @@ void NetworkPass::executeClientSend(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= camData sent over network =========");
 }
 
+/// <summary>
+/// Executes on every frame of program run on client side, responsible to receive datas that
+/// are required to be received on every frame. Currently receives the visibility bitmap
+/// from the server.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
 void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
 {
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
@@ -126,6 +146,13 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
+/// <summary>
+/// Executes on the first frame of program run on server side, responsible to receive datas that
+/// are only required to be received once. Currently is set to start a separate thread that will accept
+/// client connection.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
+/// <returns></returns>
 bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
 {
     // TODO: By right, we should receive scene as well
@@ -140,16 +167,21 @@ bool NetworkPass::firstServerRender(RenderContext* pRenderContext)
     return true;
 }
 
+/// <summary>
+/// Executes on every frame of program run on server side, responsible to receive datas that
+/// are required to be received on every frame. Currently receives the camera data from the client.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
 void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
 {
     std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
 
     // Perform the first render steps (start the network thread)
-    mFirstRender && firstServerRender(pRenderContext);
+    mFirstRender&& firstServerRender(pRenderContext);
 
     // Wait for the network thread to receive the cameraPosition
     OutputDebugString(L"\n\n= ServerRecv - Awaiting camPos from client... =========");
-    while (!NetworkManager::mCamPosReceived) 
+    while (!NetworkManager::mCamPosReceived)
         NetworkManager::mCvCamPosReceived.wait(lck);
 
     // Load camera data to scene
@@ -165,14 +197,21 @@ void NetworkPass::executeServerRecv(RenderContext* pRenderContext)
     // Reset to false so that we will need to wait for the network pass to flag it as received
     // before we can continue rendering the next frame
     NetworkManager::mCamPosReceived = false;
+
     // Recalculate, if we could do calculateCameraParameters() instead, we would.
-    cam->getViewMatrix(); 
+    cam->getViewMatrix();
 
     OutputDebugString(L"\n\n= ServerRecv - CamPos received from client =========");
 
     // After this, the server JitteredGBuffer pass will render
 }
 
+/// <summary>
+/// Executes on every frame of program run on server side, responsible to send datas that
+/// are required to be sent on every frame. Server send only notifies the mutex such that
+/// NetworkManager can send the actual data.
+/// </summary>
+/// <param name="pRenderContext">- render context</param>
 void NetworkPass::executeServerSend(RenderContext* pRenderContext)
 {
     // Let the network thread send the visibilty texture

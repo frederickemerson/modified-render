@@ -17,26 +17,14 @@
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp">
-      <Filter>TestPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp">
-      <Filter>TestPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
       <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
       <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
-      <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
       <Filter>CommonPasses</Filter>
@@ -47,14 +35,8 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
-    <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp">
-      <Filter>TestPasses</Filter>
-    </ClCompile>
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp">
-      <Filter>RasterizedPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
       <Filter>NetworkPasses</Filter>
@@ -71,16 +53,7 @@
     <ClCompile Include="Libraries\minilzo.c">
       <Filter>Libraries</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPass.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
@@ -104,26 +77,14 @@
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h">
-      <Filter>TestPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h">
-      <Filter>TestPasses</Filter>
-    </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h">
       <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h">
-      <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h">
       <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
-      <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h">
       <Filter>CommonPasses</Filter>
@@ -135,14 +96,8 @@
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h">
-      <Filter>TestPasses</Filter>
-    </ClInclude>
     <ClInclude Include="TestPasses\DecodeGBufferPass.h">
       <Filter>TestPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="RasterizedPasses\RasterLightingPass.h">
-      <Filter>RasterizedPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\VisibilityPass.h">
       <Filter>NetworkPasses</Filter>
@@ -165,16 +120,7 @@
     <ClInclude Include="Libraries\minilzo.h">
       <Filter>Libraries</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPass.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassClientGPU_CPU.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassServerCPU_GPU.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
@@ -196,12 +142,6 @@
     </Filter>
     <Filter Include="CommonPasses\Shaders">
       <UniqueIdentifier>{0b52c825-e6bc-4c0b-9af9-8052bbb5839f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RasterizedPasses">
-      <UniqueIdentifier>{39787612-65b8-4dad-9e27-e14ce972a9f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RasterizedPasses\Shaders">
-      <UniqueIdentifier>{c6bd3c7f-5a16-431b-9531-b23c8841573f}</UniqueIdentifier>
     </Filter>
     <Filter Include="NetworkPasses">
       <UniqueIdentifier>{b9a14148-3d9f-48ac-87b5-68b25218a304}</UniqueIdentifier>
@@ -282,21 +222,6 @@
     </ShaderSource>
     <ShaderSource Include="TestPasses\GBufferComponents.slang">
       <Filter>TestPasses</Filter>
-    </ShaderSource>
-    <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl">
-      <Filter>RasterizedPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.ps.hlsl">
-      <Filter>RasterizedPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.vs.hlsl">
-      <Filter>RasterizedPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli">
-      <Filter>RasterizedPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl">
-      <Filter>RasterizedPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>

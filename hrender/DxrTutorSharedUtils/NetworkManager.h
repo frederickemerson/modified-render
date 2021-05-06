@@ -35,8 +35,8 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
-#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
+#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 // 32593920
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 // 800000
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
@@ -83,15 +83,11 @@ public:
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
 
     // Server
-    // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
-
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
-
     bool CloseServerConnection();
 
-    // Client 
+    // Client
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
-
     bool CloseClientConnection();
 };
