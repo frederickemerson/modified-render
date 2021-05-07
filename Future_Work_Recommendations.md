@@ -6,7 +6,7 @@ The following are the recommendations for future work. Although these are discus
   - Implementation of H.264/AVC encoding to compress the textures sent over the network (for now, just the visibility bitmap)
 - Network improvements
   - Implementation of UDP instead of TCP for the network manager
-    - Even with a single hop router, packets will be dropped eventually, so a robust implementation is necessary. There is a branch (server-g) that has a basic implementation of UDP that you may reference, although it is not up to date, but the network manager code is still usable
+    - Even with a single hop router, packets will be dropped eventually, so a robust implementation is necessary. There is a branch ([udp-server](https://github.com/loveandbejoyful/hrender/tree/udp-server)) that has a basic implementation of UDP that you may reference, although it is not up to date, but the network manager code is still usable
   - Make it possible to reuse frames if no changes were made - more sophisticated messaging between the client and network, as well as multithreading is necessary
 - Visual quality
   - Make a rendering algorithm that supports global illumination and denoising
