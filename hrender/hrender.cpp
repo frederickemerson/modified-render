@@ -27,6 +27,7 @@
  **************************************************************************/
 #include "hrender.h"
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
+#include "TestPasses/DecodeGBufferPass.h"
 #include "DxrTutorCommonPasses/JitteredGBufferPass.h"
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
@@ -91,8 +92,8 @@ void runDebug()
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPassOptions(1, { VisibilityPass::create("VisibilityBitmap", "WorldPosition") });
 
-    // --- Pass 3 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(2, { VShadingPass::create("V-shading") });
+    // --- Pass 3 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
+    pipeline->setPassOptions(2, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
 
     // --- Pass 4 just lets us select which pass to view on screen --- //
     pipeline->setPass(3, CopyToOutputPass::create());
@@ -104,7 +105,8 @@ void runDebug()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1 })
         });
 
     // Start our program
