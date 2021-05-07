@@ -11,62 +11,51 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\GGXGlobalIllumination.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\LightProbeGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\SimpleGBufferPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\ThinLensGBufferPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
-    <ClCompile Include="DxrTutorTestPasses\ConstantColorPass.cpp" />
-    <ClCompile Include="DxrTutorTestPasses\SinusoidRasterPass.cpp" />
     <ClCompile Include="hrender.cpp" />
-    <ClCompile Include="RasterizedPasses\RasterLightingPass.cpp" />
-    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
-    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
-    <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
+    <ClCompile Include="Libraries\minilzo.c" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
+    <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
+    <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
-    <ClCompile Include="TestPasses\ModulateAlbedoIllumPass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\GGXGlobalIllumination.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\LightProbeGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\SimpleDiffuseGIPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\SimpleGBufferPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\ThinLensGBufferPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
-    <ClInclude Include="DxrTutorTestPasses\ConstantColorPass.h" />
-    <ClInclude Include="DxrTutorTestPasses\SinusoidRasterPass.h" />
     <ClInclude Include="hrender.h" />
-    <ClInclude Include="RasterizedPasses\RasterLightingPass.h" />
+    <ClInclude Include="Libraries\lzoconf.h" />
+    <ClInclude Include="Libraries\lzodefs.h" />
+    <ClInclude Include="Libraries\minilzo.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
+    <ClInclude Include="NetworkPasses\NetworkPass.h" />
+    <ClInclude Include="NetworkPasses\VisibilityPass.h" />
+    <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
-    <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
-    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
-    <ClInclude Include="SVGFPasses\SVGFPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
-    <ClInclude Include="TestPasses\ModulateAlbedoIllumPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
@@ -95,23 +84,9 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
-    <ShaderSource Include="RasterizedPasses\Data\rasterLighting.hlsl" />
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapCommon.hlsli" />
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapCubePass.ps.hlsl" />
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.ps.hlsl" />
-    <ShaderSource Include="RasterizedPasses\Data\shadowmapPass.vs.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>
@@ -165,10 +140,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -182,12 +160,15 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

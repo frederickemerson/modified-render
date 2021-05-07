@@ -219,7 +219,7 @@ namespace Falcor
         }
     }
 
-    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex)
+    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
     {
         SharedPtr pThis = SharedPtr(new ReadTextureTask);
         pThis->mpContext = pCtx;
@@ -240,10 +240,15 @@ namespace Falcor
         return pThis;
     }
 
-    std::vector<uint8_t> CopyContext::ReadTextureTask::getData()
+    std::vector<uint8_t> CopyContext::ReadTextureTask::getData(std::vector<uint8_t>* result_ptr)
     {
         mpFence->syncCpu();
         // Map and read the results
+        std::vector<uint8_t> result;
+        if (result_ptr != nullptr)
+        {
+            result = (*result_ptr);
+        }
         std::vector<uint8> result(mDataSize);
         uint8* pData = reinterpret_cast<uint8*>(mpBuffer->map(Buffer::MapType::Read));
         std::memcpy(result.data(), pData, mDataSize);
