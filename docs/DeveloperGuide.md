@@ -16,7 +16,8 @@ If you are reading this, it is assumed that you have read through the [README](.
   - RasterizedPasses - This contains a cascaded/omnidirectional mapped shadows implementation - for now this is not used, but can be used in future. Not included in the solution right now.
   - SVGFPasses - This contains code from [NVIDIA's page](https://research.nvidia.com/publication/2017-07_Spatiotemporal-Variance-Guided-Filtering%3A), ported to Falcor 4.3 and abstracted. It is slightly buggy with walls aligned with the XZ-plane. Not included in the solution right now.
   - TestPasses - More test passes for our use.
-    - ModulateAlbedoIllum pass - this is used to debug the SVGF GBuffer and render passes. For example usage, please refer to the other [HRender repo](https://github.com/loveandbejoyful/hrender).
+    - ModulateAlbedoIllum pass - this is used to debug the SVGF GBuffer and render passes. For example usage, please refer to the branch prior to the implementation of the network passes [here](https://github.com/loveandbejoyful/hrender/tree/pre-network).
+      - Over there, you will find that hrender.cpp has some sequences of how you can make use of it, along with the SVGF passes, but currently it will have a run time error when using the SVGF passes as the shader does not get copied to the binary folder for some reason (probably an optimization issue). A quick fix is to copy the shader manually to the build folder that is specified in the error message where it says "failed to find include file 'svgfGBufData.hlsli'".
     - DecodeGBufferPass - This is used to preview the GBuffer's contents, because we compacted the GBuffer as mentioned in the report.
 
 ## Changes to the DXR Tutorial rendering pipeline
