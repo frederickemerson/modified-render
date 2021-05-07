@@ -88,6 +88,8 @@ namespace Falcor
         */
         ResourceFormat getFormat() const { return mFormat; }
 
+        void apiInitPub(const void* pData, bool autoGenMips) { apiInit(pData, autoGenMips); }
+
         /** Create a new texture from an existing API handle.
             \param[in] handle Handle of already allocated resource.
             \param[in] type The type of texture.
@@ -230,6 +232,9 @@ namespace Falcor
             \param[in] exportFlags Save flags, see Bitmap::ExportFlags
         */
         void captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format = Bitmap::FileFormat::PngFile, Bitmap::ExportFlags exportFlags = Bitmap::ExportFlags::None);
+
+        std::vector<uint8_t> getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr=nullptr);
+
 
         /** Generates mipmaps for a specified texture object.
         */

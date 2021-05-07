@@ -25,10 +25,10 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mpResManager = pResManager;
 
     // We write to these output textures; tell our resource manager that we expect them to exist
-    mpResManager->requestTextureResource("WorldPosition",       ResourceFormat::RGBA32Float);
-    mpResManager->requestTextureResource("WorldNormal",         ResourceFormat::RGBA16Float);
-    mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float); // Stores 16 x uint8
-    mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
+    mpResManager->requestTextureResource("WorldPosition", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("WorldNormal",         ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Stores 16 x uint8
+    mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags, mTexWidth, mTexHeight);
 
     // Set default environment map and scene
     mpResManager->updateEnvironmentMap(kEnvironmentMap);
@@ -81,6 +81,8 @@ void JitteredGBufferPass::renderGui(Gui::Window* pPassWindow)
 
 void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 {
+    OutputDebugString(L"\n\n= JitteredGBuffer: Executing... =========");
+
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
         { "WorldPosition", "WorldNormal", "__TextureData" }, 
@@ -133,4 +135,6 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
     
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
+
+    OutputDebugString(L"\n\n= JitteredGBuffer: Finished executing =========");
 }

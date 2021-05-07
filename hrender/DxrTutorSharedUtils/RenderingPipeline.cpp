@@ -29,9 +29,10 @@ namespace {
 };
 
 
-RenderingPipeline::RenderingPipeline() 
+RenderingPipeline::RenderingPipeline(bool overridingSize, uint2 overrideSize)
     : IRenderer()
 {
+    mOverrideSize = overrideSize; mOverridingSize = overridingSize;
 }
 
 uint32_t RenderingPipeline::addPass(::RenderPass::SharedPtr pNewPass)
@@ -216,7 +217,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         if (w.button("Load Scene", true))
         {
             // A wrapper function to open a window, load a UI, and do some sanity checking
-            Scene::SharedPtr loadedScene = loadScene(mLastKnownSize);
+            Scene::SharedPtr loadedScene = loadScene(mOverridingSize ? mOverrideSize : mLastKnownSize);
 
             // We have a method that explicitly initializes all render passes given our new scene.
             if (loadedScene)
@@ -633,7 +634,7 @@ void RenderingPipeline::onFirstRun()
     // Did the user ask for us to load a scene by default?
     if (mPipeNeedsDefaultScene)
     {
-        Scene::SharedPtr loadedScene = loadScene(mLastKnownSize, mpResourceManager->getDefaultSceneName().c_str());
+        Scene::SharedPtr loadedScene = loadScene(mOverridingSize ? mOverrideSize : mLastKnownSize, mpResourceManager->getDefaultSceneName().c_str());
         if (loadedScene) onInitNewScene(gpFramework->getRenderContext(), loadedScene);
     }
 

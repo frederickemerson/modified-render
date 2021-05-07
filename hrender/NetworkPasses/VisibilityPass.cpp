@@ -16,20 +16,24 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "LambertianPlusShadowPass.h"
+#include "VisibilityPass.h"
 
 namespace {
+    // Where is our environment map and scene located?
+    //const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    const char* kDefaultScene = "pink_room\\pink_room.fscene";
+
     // Where is our shaders located?
-    const char* kFileRayTrace = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\lambertianPlusShadows.rt.hlsl";
+    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\visibilityPass.rt.hlsl";
 
     // What are the entry points in that shader for various ray tracing shaders?
-    const char* kEntryPointRayGen  = "LambertShadowsRayGen";
+    const char* kEntryPointRayGen  = "SimpleShadowsRayGen";
     const char* kEntryPointMiss0   = "ShadowMiss";
     const char* kEntryAoAnyHit     = "ShadowAnyHit";
     const char* kEntryAoClosestHit = "ShadowClosestHit";
 };
 
-bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
@@ -38,11 +42,12 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("WorldPosition");
-    mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("WorldNormal2");
-    mpResManager->requestTextureResource("__TextureData");
-    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
+    mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+
+    // Set default environment map and scene
+    //mpResManager->updateEnvironmentMap(kEnvironmentMap);
+    mpResManager->setDefaultSceneName(kDefaultScene);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
@@ -58,7 +63,7 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     return true;
 }
 
-void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
@@ -69,7 +74,7 @@ void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::S
     }
 }
 
-void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
+void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
@@ -81,16 +86,14 @@ void LambertianPlusShadowPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
-    rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-    rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
+    rayVars["gPos"]         = mpResManager->getTexture(mPosBufName);
     rayVars["gOutput"]      = pDstTex;
 
     // Shoot our rays and shade our primary hit points
     mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
 }
 
-void LambertianPlusShadowPass::renderGui(Gui::Window* pPassWindow)
+void VisibilityPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 

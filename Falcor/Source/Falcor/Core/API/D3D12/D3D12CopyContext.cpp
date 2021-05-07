@@ -142,7 +142,7 @@ namespace Falcor
         pBuffer->unmap();
     }
 
-    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex)
+    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
     {
         SharedPtr pThis = SharedPtr(new ReadTextureTask);
         pThis->mpContext = pCtx;
@@ -172,7 +172,7 @@ namespace Falcor
         return pThis;
     }
 
-    std::vector<uint8_t> CopyContext::ReadTextureTask::getData()
+    std::vector<uint8_t> CopyContext::ReadTextureTask::getData(std::vector<uint8_t>* result_ptr)
     {
         mpFence->syncCpu();
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT& footprint = mFootprint;
@@ -183,13 +183,15 @@ namespace Falcor
 
         // Get buffer data
         std::vector<uint8_t> result;
-        result.resize(mRowCount * actualRowSize);
+        if (result_ptr == nullptr)
+            result.resize(mRowCount * actualRowSize);
+
         uint8_t* pData = reinterpret_cast<uint8_t*>(mpBuffer->map(Buffer::MapType::Read));
 
         for (uint32_t z = 0; z < footprint.Footprint.Depth; z++)
         {
             const uint8_t* pSrcZ = pData + z * footprint.Footprint.RowPitch * mRowCount;
-            uint8_t* pDstZ = result.data() + z * actualRowSize * mRowCount;
+            uint8_t* pDstZ = (result_ptr == nullptr ? result.data() : (*result_ptr).data()) + z * actualRowSize * mRowCount;
             for (uint32_t y = 0; y < mRowCount; y++)
             {
                 const uint8_t* pSrc = pSrcZ + y * footprint.Footprint.RowPitch;
@@ -199,7 +201,7 @@ namespace Falcor
         }
 
         mpBuffer->unmap();
-        return result;
+        return result_ptr == nullptr ? result : (*result_ptr);
     }
 
     static void d3d12ResourceBarrier(const Resource* pResource, Resource::State newState, Resource::State oldState, uint32_t subresourceIndex, ID3D12GraphicsCommandList* pCmdList)

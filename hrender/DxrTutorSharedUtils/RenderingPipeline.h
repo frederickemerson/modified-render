@@ -20,6 +20,7 @@
 #include "Falcor.h"
 #include "RenderPass.h"
 #include "ResourceManager.h"
+#include "NetworkManager.h"
 
 class RenderingPipeline : public IRenderer
 {
@@ -36,7 +37,7 @@ public:
     };
 
     // Our publically-visible constructors 
-    RenderingPipeline();
+    RenderingPipeline(bool overridingSize=false, uint2 overrideSize=uint2(0,0));
     virtual ~RenderingPipeline() = default;
 
     /** Lets derived classes setup a pipeline. Function can be called before or after the renderer has been initialized.
@@ -83,6 +84,8 @@ public:
     virtual bool onMouseEvent(const MouseEvent& mouseEvent) override;
     virtual void onGuiRender(Gui* pGui) override;
     virtual void onDroppedFile(const std::string& filename) override {}
+
+    NetworkManager::SharedPtr getNetworkManager() { return mpNetworkManager; }
     
 protected:
     /** When a new scene is loaded, this gets called to let any passes in this pipeline know there's a new scene.
@@ -158,6 +161,8 @@ private:
     std::vector< bool > mEnablePassGui;                     ///< Stores whether the UI window for each pass is enabled
     std::vector< int32_t > mEnableAddRemove;                ///< Stores whether the UI allows adding after this pass or removing this pass
     uint2 mLastKnownSize = uint2(0);                        ///< Last known size sent to onResizeSwapChain().
+    bool mOverridingSize = false;
+    uint2 mOverrideSize = uint2(1920, 1080);                ///< Used to force the size of the window, for server rendering
     bool mPipelineChanged = true;                           ///< A flag to keep track of pipeline changes
     bool mIsInitialized = false;
     bool mDoProfiling = false;
@@ -167,6 +172,7 @@ private:
     bool mEnableAllPassGui = false;                         ///< When true, all guis should be enabled.
     bool mResetWindowPositions = false;                     ///< When true, all window positions will be reset
     ResourceManager::SharedPtr mpResourceManager;
+    NetworkManager::SharedPtr mpNetworkManager;
     int32_t mOutputBufferIndex = 0;
     Scene::SharedPtr mpScene = nullptr;                     ///< Stash a copy of our scene
     GraphicsState::SharedPtr mpDefaultGfxState;
