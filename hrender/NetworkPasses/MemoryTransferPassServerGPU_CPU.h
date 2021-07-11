@@ -21,8 +21,9 @@
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include "../NetworkPasses/NetworkPass.h"
 
-/** Ray traced ambient occlusion pass.
-*/
+/**
+ * Memory transfer on server side, from GPU to CPU.
+ */
 class MemoryTransferPassServerGPU_CPU : public ::RenderPass
 {
 public:

@@ -27,9 +27,9 @@ namespace {
     const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\visibilityPass.rt.hlsl";
 
     // What are the entry points in that shader for various ray tracing shaders?
-    const char* kEntryPointRayGen  = "SimpleShadowsRayGen";
-    const char* kEntryPointMiss0   = "ShadowMiss";
-    const char* kEntryAoAnyHit     = "ShadowAnyHit";
+    const char* kEntryPointRayGen = "SimpleShadowsRayGen";
+    const char* kEntryPointMiss0 = "ShadowMiss";
+    const char* kEntryAoAnyHit = "ShadowAnyHit";
     const char* kEntryAoClosestHit = "ShadowClosestHit";
 };
 
@@ -82,15 +82,15 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
-    // Set our ray tracing shader variables 
+    // Set our ray tracing shader variables
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
-    rayVars["gPos"]         = mpResManager->getTexture(mPosBufName);
-    rayVars["gOutput"]      = pDstTex;
+    rayVars["gPos"] = mpResManager->getTexture(mPosBufName);
+    rayVars["gOutput"] = pDstTex;
 
     // Shoot our rays and shade our primary hit points
-    mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
+    mpRays->execute(pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 }
 
 void VisibilityPass::renderGui(Gui::Window* pPassWindow)

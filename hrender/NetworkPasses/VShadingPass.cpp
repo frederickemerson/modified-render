@@ -23,7 +23,7 @@ namespace {
     const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
 
     // What are the entry points in that shader for various ray tracing shaders?
-    const char* kEntryPointRayGen  = "VShadowsRayGen";
+    const char* kEntryPointRayGen = "VShadowsRayGen";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -72,26 +72,27 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
-    // Set our ray tracing shader variables 
+    // Set our ray tracing shader variables
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
-    rayVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-    rayVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    rayVars["gVisibility"]  = mpResManager->getTexture("VisibilityBitmap");
-    rayVars["gTexData"]     = mpResManager->getTexture("__TextureData");
-    rayVars["gOutput"]      = pDstTex;
+    rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
+    rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
+    rayVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
+    rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
+    rayVars["gOutput"] = pDstTex;
 
     // Shoot our rays and shade our primary hit points
-    mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
+    mpRays->execute(pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 }
 
 void VShadingPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
+    // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
     if (mDecodeMode)
