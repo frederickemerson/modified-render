@@ -134,7 +134,7 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     OutputDebugString(L"\n\n= Pre-Falcor Init - Initialised. =========");
 
     //Create a socket
-    if ((mServerUdpSock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
+    if ((mServerUdpSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET)
     {
         char buffer[65];
         sprintf(buffer, "\n\n= Pre-Falcor Init - Could not create socket: %d", WSAGetLastError());
@@ -146,9 +146,10 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     mServer.sin_family = AF_INET;
     mServer.sin_addr.s_addr = INADDR_ANY;
     mServer.sin_port = htons((u_short)std::strtoul(port, NULL, 0));
+    memset(&(mServer.sin_zero), 0, 8);
 
     //Bind
-    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
+    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(*mServer)) == SOCKET_ERROR)
     {
         char buffer[69];
         sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
@@ -395,9 +396,8 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     memset((char*)&mSi_otherUdp, 0, sizeof(mSi_otherUdp));
     mSi_otherUdp.sin_family = AF_INET;
     mSi_otherUdp.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
-
-
     inet_pton(AF_INET, serverName, &mSi_otherUdp.sin_addr.S_un.S_addr);
+    
     //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
     return true;
 }
@@ -815,16 +815,20 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         return false;
     }
 
+    struct sockaddr clientAddr;
+    int addrLen;
     // Read header for packet size
     do
     {
-        sockaddr clientAddr;
-        int addrLen;
-        int iResult = recvfrom(socketUdp, &headerData[headerRecvSoFar], headerSize - headerRecvSoFar, 0,
-                               &clientAddr, &addrLen);
+        int iResult = recvfrom(socketUdp, &(headerData[headerRecvSoFar]), DEFAULT_BUFLEN,
+                               0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
             headerRecvSoFar += iResult;
+        } else {
+            char buffer[57];
+            sprintf(buffer, "RecvUdpCustom: Error receiving header: %d", WSAGetLastError());
+            OutputDebugStringA(buffer);
         }
     } while (headerRecvSoFar < headerSize);
 
@@ -845,10 +849,15 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int dataRecvSoFar = 0;
     do
     {
-        int iResult = recv(socketUdp, recvData.getUdpDataPointer(), pktSize - dataRecvSoFar, 0);
+        int iResult = recvfrom(socketUdp, recvData.getUdpDataPointer(), DEFAULT_BUFLEN,
+                               0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
             headerRecvSoFar += iResult;
+        } else {
+            char buffer[55];
+            sprintf(buffer, "RecvUdpCustom: Error receiving data: %d", WSAGetLastError());
+            OutputDebugStringA(buffer);
         }
     } while (dataRecvSoFar < pktSize);
 
