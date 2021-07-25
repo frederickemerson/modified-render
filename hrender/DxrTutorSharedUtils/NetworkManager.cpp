@@ -809,7 +809,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
 {
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
-    int dataRecievedSoFar = 0;
+    int dataReceivedSoFar = 0;
 
     // Set timeout for the socket
     if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(int)) != 0)
@@ -825,11 +825,11 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     // Read header for packet size
     do
     {
-        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecievedSoFar]), DEFAULT_BUFLEN,
+        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataReceivedSoFar]), DEFAULT_BUFLEN,
                                0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
-            dataRecievedSoFar += iResult;
+            dataReceivedSoFar += iResult;
         }
         else
         {
@@ -837,7 +837,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             sprintf(buffer, "\nRecvUdpCustom: Error receiving header: %d", WSAGetLastError());
             OutputDebugStringA(buffer);
         }
-    } while (dataRecievedSoFar < headerSize);
+    } while (dataReceivedSoFar < headerSize);
 
     int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
     int seqNum = headerData[0];
@@ -855,15 +855,15 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Receive the rest of the packet
-    if (dataRecievedSoFar < dataSize)
+    if (dataReceivedSoFar < dataSize)
     {
         do
         {
-            int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecievedSoFar]),
+            int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataReceivedSoFar]),
                                    DEFAULT_BUFLEN, 0, &clientAddr, &addrLen);
             if (iResult != SOCKET_ERROR)
             {
-                dataRecievedSoFar += iResult;
+                dataReceivedSoFar += iResult;
             }
             else
             {
@@ -871,7 +871,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
                 sprintf(buffer, "\nRecvUdpCustom: Error receiving data: %d", WSAGetLastError());
                 OutputDebugStringA(buffer);
             }
-        } while (dataRecievedSoFar < dataSize);
+        } while (dataReceivedSoFar < dataSize);
     }
 
     recvData.packetSize = dataSize;
