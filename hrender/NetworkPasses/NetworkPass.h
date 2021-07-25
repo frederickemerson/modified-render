@@ -67,6 +67,8 @@ protected:
     void executeServerSend(RenderContext* pRenderContext);
     void executeServerRecv(RenderContext* pRenderContext);
     bool firstClientRender(RenderContext* pRenderContext);
+    // For first client render on UDP, send the client's window width and height
+    bool firstClientRenderUdp(RenderContext* pRenderContext);
     bool firstServerRender(RenderContext* pRenderContext);
 
     // Get the texture data from the GPU into a RAM array

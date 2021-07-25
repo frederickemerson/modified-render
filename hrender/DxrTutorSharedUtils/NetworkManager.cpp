@@ -38,7 +38,7 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
-        std::string errString = std::string("\n\n= Pre-Falcor Init - getaddrinfo failed with error: ") + std::to_string(iResult);
+        std::string errString = std::string("\n\n= Pre-Falcor Init - WSAStartup failed with error: ") + std::to_string(iResult);
         OutputDebugString(string_2_wstring(errString).c_str());
         return false;
     }
@@ -118,25 +118,29 @@ bool NetworkManager::SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight
     return true;
 }
 
-bool NetworkManager::SetUpServerUdp(PCSTR port)
+bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight)
 {
     WSADATA wsa;
 
     //Initialise winsock
-    printf("\nInitialising Winsock...");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - NetworkManager::SetUpServerUdp - Initialising Winsock... =========");
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
-        printf("Failed. Error Code : %d", WSAGetLastError());
+        char buffer[70];
+        sprintf(buffer, "\n\n= Pre-Falcor Init - WSAStartup failed with error: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
         exit(EXIT_FAILURE);
     }
-    printf("Initialised.\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Initialised. =========");
 
     //Create a socket
-    if ((mSUdpS = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
+    if ((mServerUdpSock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
     {
-        printf("Could not create socket : %d", WSAGetLastError());
+        char buffer[65];
+        sprintf(buffer, "\n\n= Pre-Falcor Init - Could not create socket: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
     }
-    printf("Socket created.\n");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Socket created. =========\n");
 
     //Prepare the sockaddr_in structure
     mServer.sin_family = AF_INET;
@@ -144,12 +148,38 @@ bool NetworkManager::SetUpServerUdp(PCSTR port)
     mServer.sin_port = htons((u_short)std::strtoul(port, NULL, 0));
 
     //Bind
-    if (bind(mSUdpS, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
+    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
     {
-        printf("Bind failed with error code : %d", WSAGetLastError());
+        char buffer[69];
+        sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
         exit(EXIT_FAILURE);
     }
-    puts("Bind done");
+    OutputDebugString(L"\n\n= Pre-Falcor Init - UDP SOCKET SETUP COMPLETE =========");
+
+    // Listening for client socket
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client width/height... =========");
+
+    // Get the client texture width/height
+    UdpCustomPacket firstPacket(0); // expected sequence number of 0
+    if (!RecvUdpCustom(firstPacket, mServerUdpSock, UDP_FIRST_TIMEOUT_MS))
+    {
+        OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
+        return false;
+    }
+    
+    // Packet should consist of two ints
+    if (firstPacket.packetSize != 8)
+    {
+        OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED: UDP packet from client has wrong size =========");
+        return false;
+    }
+
+    int* widthAndHeight = reinterpret_cast<int*>(firstPacket.udpData);
+    outTexWidth = widthAndHeight[0];
+    outTexHeight = widthAndHeight[1];
+
+    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========");
     return true;
 }
 
@@ -185,7 +215,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
 
         // Send the visBuffer back to the sender
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        SendTextureUdp(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket, mSUdpS);
+        SendTextureUdp(visTexSize, (char*)&NetworkPass::visibilityData[0], mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
 
         std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
@@ -239,7 +269,7 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
 }
 bool NetworkManager::CloseServerConnectionUdp()
 {
-    closesocket(mSUdpS);
+    closesocket(mServerUdpSock);
     WSACleanup();
     return true;
 }
@@ -355,7 +385,7 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     printf("Initialised.\n");
 
     //create socket
-    if ((mUdpS = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
+    if ((mClientUdpSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR)
     {
         printf("socket() failed with error code : %d", WSAGetLastError());
         exit(EXIT_FAILURE);
@@ -372,7 +402,7 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
-void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketTcp, SOCKET& socketUdp)
+void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp)
 {
     //char message[DEFAULT_BUFLEN];
     //char buf[DEFAULT_BUFLEN];
@@ -385,7 +415,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
 
 
     //    //send the message
-    //    if (sendto(mUdpS, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
+    //    if (sendto(mClientUdpSock, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
     //    {
     //        printf("sendto() failed with error code : %d", WSAGetLastError());
     //        exit(EXIT_FAILURE);
@@ -395,7 +425,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
     //    //clear the buffer by filling null, it might have previously received data
     //    memset(buf, '\0', DEFAULT_BUFLEN);
     //    //try to receive some data, this is a blocking call
-    //    if (recvfrom(mUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
+    //    if (recvfrom(mClientUdpSock, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
     //    {
     //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
     //        exit(EXIT_FAILURE);
@@ -410,8 +440,8 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
     // Server is going to send texture via UDP so it waits for the client to send an int via
     // TCP to synchronize.
     int dummy = 102342;
-    SendInt(dummy, socketTcp);
-    RecvInt(dummy, socketTcp); // Block until server sends
+    // SendInt(dummy, socketTcp);
+    // RecvInt(dummy, socketTcp); // Block until server sends
     char message[] = "this is the message from client";
     sendto(socketUdp, message, (int)strlen(message), 0, (struct sockaddr*)&mSi_otherUdp, slen);
 
@@ -420,7 +450,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
     if (mCompression)
     {
         OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========");
-        RecvInt(recvSize, socketTcp);
+        // RecvInt(recvSize, socketTcp);
         OutputDebugString(L"\n\n= RecvTexture: received int =========");
 
     }
@@ -454,7 +484,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& 
     }
 }
 
-void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketTcp, SOCKET& socketUdp)
+void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
 {
     //char buf[DEFAULT_BUFLEN];    
     //int slen, recv_len;
@@ -470,7 +500,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     //    memset(buf, '\0', DEFAULT_BUFLEN);
 
     //    //try to receive some data, this is a blocking call
-    //    if ((recv_len = recvfrom(mSUdpS, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
+    //    if ((recv_len = recvfrom(mServerUdpSock, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
     //    {
     //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
     //        exit(EXIT_FAILURE);
@@ -481,7 +511,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     //    printf("Data: %s\n", buf);
 
     //    //now reply the client with the same data
-    //    if (sendto(mSUdpS, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
+    //    if (sendto(mServerUdpSock, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
     //    {
     //        printf("sendto() failed with error code : %d", WSAGetLastError());
     //        exit(EXIT_FAILURE);
@@ -491,8 +521,8 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     // Server is going to send texture via UDP, so receive a int via TCP first to signal that
     // client is waiting
     int dummy = 0;
-    RecvInt(dummy, socketTcp);
-    SendInt(dummy, socketTcp);
+    // RecvInt(dummy, socketTcp);
+    // SendInt(dummy, socketTcp);
     std::string msg = std::string("\n\n= Received dummy int: ") + std::to_string(dummy) + std::string(" =========");
     OutputDebugString(string_2_wstring(msg).c_str());
     char buf[DEFAULT_BUFLEN]; memset(buf, '\0', DEFAULT_BUFLEN);
@@ -514,7 +544,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
         OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========");
         OutputDebugString(L"\n\n= SendTexture: Sending int... =========");
-        SendInt(sendSize, socketTcp);
+        // SendInt(sendSize, socketTcp);
         OutputDebugString(L"\n\n= SendTexture: Sent int... =========");
 
     }
@@ -544,7 +574,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
 
 bool NetworkManager::CloseClientConnectionUdp()
 {
-    closesocket(mUdpS);
+    closesocket(mClientUdpSock);
     WSACleanup();
     return true;
 }
@@ -768,5 +798,87 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
         if (iResult != SOCKET_ERROR) sentSoFar += iResult;
     } while (sentSoFar < amtToSend);
 
+    return true;
+}
+
+bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout)
+{
+    int headerSize = UdpCustomPacket::headerSizeBytes;
+    char headerData[UdpCustomPacket::headerSizeBytes];
+    int headerRecvSoFar = 0;
+
+    // Set timeout for the socket
+    uintptr_t timeoutPtr = timeout;
+    if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(timeoutPtr), sizeof(int)) != 0) {
+        char buffer[61];
+        sprintf(buffer, "Set socket options failed with error code: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
+        return false;
+    }
+
+    // Read header for packet size
+    do
+    {
+        int iResult = recv(socketUdp, &headerData[headerRecvSoFar], headerSize - headerRecvSoFar, 0);
+        if (iResult != SOCKET_ERROR)
+        {
+            headerRecvSoFar += iResult;
+        }
+    } while (headerRecvSoFar < headerSize);
+
+    int* headerNumbers = reinterpret_cast<int*>(&headerData);
+    int seqNum = headerNumbers[0];
+    int pktSize = headerNumbers[1];
+
+    // Check the sequence number
+    if (seqNum != recvData.sequenceNumber) {
+        char buffer[87];
+        sprintf(buffer, "Sequence number does not match, expected %d, received %d",
+                        recvData.sequenceNumber, seqNum);
+        OutputDebugStringA(buffer);
+        return false;
+    }
+
+    // Receive the rest of the packet
+    int dataRecvSoFar = 0;
+    do
+    {
+        int iResult = recv(socketUdp, recvData.getUdpDataPointer(), pktSize - dataRecvSoFar, 0);
+        if (iResult != SOCKET_ERROR)
+        {
+            headerRecvSoFar += iResult;
+        }
+    } while (dataRecvSoFar < pktSize);
+
+    recvData.packetSize = pktSize;
+    return true;
+}
+
+bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp)
+{
+    std::unique_ptr<char[]> udpToSend = dataToSend.createUdpPacket();
+
+    // Send the data
+    OutputDebugString(L"\n\n= SendUdpCustom: Sending packets... =========");
+    struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&mSi_otherUdp);
+    int socketLen = sizeof(mSi_otherUdp);
+    int sendSize = UdpCustomPacket::headerSizeBytes + dataToSend.packetSize;
+    int sentSoFar = 0;
+
+    while (sentSoFar < sendSize)
+    {
+        int iResult = sendto(socketUdp, &(udpToSend[sentSoFar]), sendSize, 0, toSocket, socketLen);
+        if (iResult != SOCKET_ERROR)
+        {
+            sentSoFar += iResult;
+        }
+        else
+        {
+            OutputDebugString(L"\n\n= SendUdpCustom: Socket error =========");
+            return false;
+        }
+    }
+    
+    OutputDebugString(L"\n\n= SendUdpCustom: Sent packets =========");
     return true;
 }

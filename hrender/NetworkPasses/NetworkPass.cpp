@@ -110,6 +110,27 @@ bool NetworkPass::firstClientRender(RenderContext* pRenderContext)
     return true;
 }
 
+bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
+{
+    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+
+    // Send the texture size to the server
+    OutputDebugString(L"\n\n= Sending width/height over network... =========");
+    int32_t* widthAndHeight = new int32_t[2];
+    widthAndHeight[0] = mpResManager->getWidth();
+    widthAndHeight[1] = mpResManager->getHeight();
+    UdpCustomPacket packet(0, 8, reinterpret_cast<uint8_t*>(widthAndHeight));
+    pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
+    OutputDebugString(L"\n\n= width/height sent over network =========");
+
+    // Populate posTexWidth and Height
+    NetworkPass::posTexWidth = mpResManager->getWidth();
+    NetworkPass::posTexHeight = mpResManager->getHeight();
+
+    mFirstRender = false;
+    return true;
+}
+
 /// <summary>
 /// Executes on every frame of program run on client side, responsible to send datas that
 /// are required to be sent on every frame. Currently sends the camera data to the server.
@@ -120,7 +141,7 @@ void NetworkPass::executeClientSend(RenderContext* pRenderContext)
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-    mFirstRender&& firstClientRender(pRenderContext);
+    mFirstRender && firstClientRenderUdp(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();

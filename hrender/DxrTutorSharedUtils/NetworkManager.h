@@ -26,6 +26,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "./UdpCustomPacket.h"
 #include "../Libraries/minilzo.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -35,9 +36,17 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define DEFAULT_PORT_UDP "27016"
+#define DEFAULT_PORT_UDP "1505"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
-#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000 
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
+
+// While waiting for the first packet from the client, wait
+// this amount of time in milliseconds before giving up
+#define UDP_FIRST_TIMEOUT_MS 1000000
+
+// While listening for a specific sequence number with texture data,
+// wait this amount of time in milliseconds before giving up
+#define UDP_LISTENING_TIMEOUT_MS 1000
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
@@ -52,12 +61,12 @@ public:
     // Used by Server
     SOCKET mListenSocket = INVALID_SOCKET;
     SOCKET mClientSocket = INVALID_SOCKET;
-    SOCKET mSUdpS;
+    SOCKET mServerUdpSock = INVALID_SOCKET;
     struct sockaddr_in mServer, mSsi_other;
 
     // Used by client
     SOCKET mConnectSocket = INVALID_SOCKET;
-    SOCKET mUdpS; 
+    SOCKET mClientUdpSock = INVALID_SOCKET; 
     struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
@@ -79,21 +88,30 @@ public:
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
-    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketTcp, SOCKET& socketUdp);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
-    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketTcp, SOCKET& socketUdp);
+    // Use UDP to receive and send instead
+    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp);
+    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
+    // Send and receive data with UDP custom protocol
+    // RecvUdpCustom: Expected sequence number must be specified in recvData
+    bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout);
+    // SendUdpCustom: Assumes that the packet to send is smaller than
+    // the specified maximum size in UdpCustomPacket::maxPacketSize
+    bool SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp);
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
-    bool SetUpServerUdp(PCSTR port);
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+    // Set up UDP socket and listen for client's texture width/height
+    bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
+    // Listen to UDP packets with custom protocol
     bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
     bool CloseServerConnection();
     bool CloseServerConnectionUdp();
