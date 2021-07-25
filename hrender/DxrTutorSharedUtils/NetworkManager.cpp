@@ -181,6 +181,10 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     outTexHeight = widthAndHeight[1];
 
     OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========");
+    char printWidthHeight[52];
+    sprintf(printWidthHeight, "\nWidth: %d\nHeight: %d", outTexWidth, outTexHeight);
+    OutputDebugStringA(printWidthHeight);
+
     return true;
 }
 
@@ -804,7 +808,7 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout)
 {
     int headerSize = UdpCustomPacket::headerSizeBytes;
-    char headerData[UdpCustomPacket::headerSizeBytes];
+    char udpReceiveBuffer[DEFAULT_BUFLEN];
     int headerRecvSoFar = 0;
 
     // Set timeout for the socket
@@ -820,26 +824,26 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     // Read header for packet size
     do
     {
-        int iResult = recvfrom(socketUdp, &(headerData[headerRecvSoFar]), DEFAULT_BUFLEN,
+        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[headerRecvSoFar]), DEFAULT_BUFLEN,
                                0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
             headerRecvSoFar += iResult;
         } else {
-            char buffer[57];
-            sprintf(buffer, "RecvUdpCustom: Error receiving header: %d", WSAGetLastError());
+            char buffer[58];
+            sprintf(buffer, "\nRecvUdpCustom: Error receiving header: %d", WSAGetLastError());
             OutputDebugStringA(buffer);
         }
     } while (headerRecvSoFar < headerSize);
 
-    int* headerNumbers = reinterpret_cast<int*>(&headerData);
-    int seqNum = headerNumbers[0];
-    int pktSize = headerNumbers[1];
+    int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
+    int seqNum = headerData[0];
+    int pktSize = headerData[1];
 
     // Check the sequence number
     if (seqNum != recvData.sequenceNumber) {
-        char buffer[87];
-        sprintf(buffer, "Sequence number does not match, expected %d, received %d",
+        char buffer[88];
+        sprintf(buffer, "\nSequence number does not match, expected %d, received %d",
                         recvData.sequenceNumber, seqNum);
         OutputDebugStringA(buffer);
         return false;
@@ -849,19 +853,24 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int dataRecvSoFar = 0;
     do
     {
-        int iResult = recvfrom(socketUdp, recvData.getUdpDataPointer(), DEFAULT_BUFLEN,
+        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecvSoFar]), DEFAULT_BUFLEN,
                                0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
-            headerRecvSoFar += iResult;
+            dataRecvSoFar += iResult;
         } else {
-            char buffer[55];
-            sprintf(buffer, "RecvUdpCustom: Error receiving data: %d", WSAGetLastError());
+            char buffer[56];
+            sprintf(buffer, "\nRecvUdpCustom: Error receiving data: %d", WSAGetLastError());
             OutputDebugStringA(buffer);
         }
     } while (dataRecvSoFar < pktSize);
 
     recvData.packetSize = pktSize;
+    char* dataPointer = recvData.getUdpDataPointer();
+    // Copy data from buffer into UdpCustomPacket object
+    for (int i = 0; i < pktSize; i++) {
+        dataPointer[i] = udpReceiveBuffer[i];
+    }
     return true;
 }
 
