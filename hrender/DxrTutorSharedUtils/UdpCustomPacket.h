@@ -37,17 +37,20 @@ public:
     ~UdpCustomPacket();
 
     // Create a UDP packet to send
-    std::unique_ptr<char[]> createUdpPacket();
+    std::unique_ptr<char[]> createUdpPacket() const;
 
     // Splits the packet and returns a pair of
     // the next sequence number and the packets
     // 
     // Packets returned are guaranteed to be smaller
     // or equal to the max packet size
-    std::pair<int32_t, std::vector<UdpCustomPacket>> splitPacket();
+    std::pair<int32_t, std::vector<UdpCustomPacket>> splitPacket() const;
 
     // Get the address of the packet data as a char pointer
-    char* getUdpDataPointer();
+    char* getUdpDataPointer() const;
+
+    // Sets the udpData of this UdpCustomPacket
+    void setDataPointer(uint8_t* data);
 };
 
 #endif UDP_CUSTOM_PACKET_H

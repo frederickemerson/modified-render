@@ -876,6 +876,13 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
 
     recvData.packetSize = packetSize;
     char* dataPointer = recvData.getUdpDataPointer();
+    if (dataPointer == nullptr)
+    {
+        uint8_t* uintPointer = new uint8_t[packetSize];
+        recvData.setDataPointer(uintPointer);
+        dataPointer = recvData.getUdpDataPointer();
+    }
+
     // Copy data from buffer into UdpCustomPacket object
     for (int i = 0; i < packetSize; i++) {
         dataPointer[i] = udpReceiveBuffer[i + headerSize];

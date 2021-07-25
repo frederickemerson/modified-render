@@ -34,20 +34,20 @@ UdpCustomPacket& UdpCustomPacket::operator=(UdpCustomPacket&& ucp)
     return *this;
 }
 
-std::unique_ptr<char[]> UdpCustomPacket::createUdpPacket()
+std::unique_ptr<char[]> UdpCustomPacket::createUdpPacket() const
 {
     int32_t totalSize = UdpCustomPacket::headerSizeBytes + packetSize;
     std::unique_ptr<char[]> udpPacket = std::make_unique<char[]>(totalSize);\
 
     // Append header
     int sizeOfSeqNum = 4;
-    uint8_t* seqNum = reinterpret_cast<uint8_t*>(&sequenceNumber);
+    const uint8_t* seqNum = reinterpret_cast<const uint8_t*>(&sequenceNumber);
     int i = 0;
     for (i = 0; i < sizeOfSeqNum; i++)
     {
         udpPacket[i] = static_cast<char>(seqNum[i]);
     }
-    uint8_t* pktSize = reinterpret_cast<uint8_t*>(&packetSize);
+    const uint8_t* pktSize = reinterpret_cast<const uint8_t*>(&packetSize);
     for (i = sizeOfSeqNum; i < UdpCustomPacket::headerSizeBytes; i++)
     {
         udpPacket[i] = static_cast<char>(pktSize[i - sizeOfSeqNum]);
@@ -62,7 +62,7 @@ std::unique_ptr<char[]> UdpCustomPacket::createUdpPacket()
     return udpPacket;
 }
 
-std::pair<int32_t, std::vector<UdpCustomPacket>> UdpCustomPacket::splitPacket()
+std::pair<int32_t, std::vector<UdpCustomPacket>> UdpCustomPacket::splitPacket() const
 {
     int32_t currentSeqNum = sequenceNumber;
     std::vector<UdpCustomPacket> splitPackets{};
@@ -84,7 +84,12 @@ std::pair<int32_t, std::vector<UdpCustomPacket>> UdpCustomPacket::splitPacket()
     return std::pair<int32_t, std::vector<UdpCustomPacket>>(currentSeqNum, std::move(splitPackets));
 }
 
-char* UdpCustomPacket::getUdpDataPointer()
+char* UdpCustomPacket::getUdpDataPointer() const
 {
     return reinterpret_cast<char*>(udpData);
+}
+
+void UdpCustomPacket::setDataPointer(uint8_t* data)
+{
+    udpData = data;
 }
