@@ -808,8 +808,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int headerRecvSoFar = 0;
 
     // Set timeout for the socket
-    uintptr_t timeoutPtr = timeout;
-    if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(timeoutPtr), sizeof(int)) != 0) {
+    if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(int)) != 0) {
         char buffer[61];
         sprintf(buffer, "Set socket options failed with error code: %d", WSAGetLastError());
         OutputDebugStringA(buffer);
