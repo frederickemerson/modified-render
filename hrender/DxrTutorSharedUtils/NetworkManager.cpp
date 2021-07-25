@@ -842,7 +842,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
     int seqNum = headerData[0];
     int dataSize = headerData[1];
-    int packetSize = dataSize + headerSize;
+    int totalSize = dataSize + headerSize;
 
     // Check the sequence number
     if (seqNum != recvData.sequenceNumber)
@@ -874,17 +874,17 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         } while (dataRecievedSoFar < dataSize);
     }
 
-    recvData.packetSize = packetSize;
+    recvData.packetSize = dataSize;
     char* dataPointer = recvData.getUdpDataPointer();
     if (dataPointer == nullptr)
     {
-        uint8_t* uintPointer = new uint8_t[packetSize];
+        uint8_t* uintPointer = new uint8_t[dataSize];
         recvData.setDataPointer(uintPointer);
         dataPointer = recvData.getUdpDataPointer();
     }
 
     // Copy data from buffer into UdpCustomPacket object
-    for (int i = 0; i < packetSize; i++) {
+    for (int i = 0; i < dataSize; i++) {
         dataPointer[i] = udpReceiveBuffer[i + headerSize];
     }
     return true;
