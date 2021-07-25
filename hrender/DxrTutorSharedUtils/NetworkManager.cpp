@@ -809,10 +809,11 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
 {
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
-    int headerRecvSoFar = 0;
+    int dataRecievedSoFar = 0;
 
     // Set timeout for the socket
-    if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(int)) != 0) {
+    if (setsockopt(socketUdp, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&timeout), sizeof(int)) != 0)
+    {
         char buffer[61];
         sprintf(buffer, "Set socket options failed with error code: %d", WSAGetLastError());
         OutputDebugStringA(buffer);
@@ -824,24 +825,28 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     // Read header for packet size
     do
     {
-        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[headerRecvSoFar]), DEFAULT_BUFLEN,
+        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecievedSoFar]), DEFAULT_BUFLEN,
                                0, &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
-            headerRecvSoFar += iResult;
-        } else {
+            dataRecievedSoFar += iResult;
+        }
+        else
+        {
             char buffer[58];
             sprintf(buffer, "\nRecvUdpCustom: Error receiving header: %d", WSAGetLastError());
             OutputDebugStringA(buffer);
         }
-    } while (headerRecvSoFar < headerSize);
+    } while (dataRecievedSoFar < headerSize);
 
     int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
     int seqNum = headerData[0];
-    int pktSize = headerData[1];
+    int dataSize = headerData[1];
+    int packetSize = dataSize + headerSize;
 
     // Check the sequence number
-    if (seqNum != recvData.sequenceNumber) {
+    if (seqNum != recvData.sequenceNumber)
+    {
         char buffer[88];
         sprintf(buffer, "\nSequence number does not match, expected %d, received %d",
                         recvData.sequenceNumber, seqNum);
@@ -850,26 +855,30 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Receive the rest of the packet
-    int dataRecvSoFar = 0;
-    do
+    if (dataRecievedSoFar < dataSize)
     {
-        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecvSoFar]), DEFAULT_BUFLEN,
-                               0, &clientAddr, &addrLen);
-        if (iResult != SOCKET_ERROR)
+        do
         {
-            dataRecvSoFar += iResult;
-        } else {
-            char buffer[56];
-            sprintf(buffer, "\nRecvUdpCustom: Error receiving data: %d", WSAGetLastError());
-            OutputDebugStringA(buffer);
-        }
-    } while (dataRecvSoFar < pktSize);
+            int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataRecievedSoFar]),
+                                   DEFAULT_BUFLEN, 0, &clientAddr, &addrLen);
+            if (iResult != SOCKET_ERROR)
+            {
+                dataRecievedSoFar += iResult;
+            }
+            else
+            {
+                char buffer[56];
+                sprintf(buffer, "\nRecvUdpCustom: Error receiving data: %d", WSAGetLastError());
+                OutputDebugStringA(buffer);
+            }
+        } while (dataRecievedSoFar < dataSize);
+    }
 
-    recvData.packetSize = pktSize;
+    recvData.packetSize = packetSize;
     char* dataPointer = recvData.getUdpDataPointer();
     // Copy data from buffer into UdpCustomPacket object
-    for (int i = 0; i < pktSize; i++) {
-        dataPointer[i] = udpReceiveBuffer[i];
+    for (int i = 0; i < packetSize; i++) {
+        dataPointer[i] = udpReceiveBuffer[i + headerSize];
     }
     return true;
 }
