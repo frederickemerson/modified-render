@@ -50,6 +50,12 @@
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.h">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
     <ClCompile Include="Libraries\minilzo.c">
       <Filter>Libraries</Filter>
     </ClCompile>
