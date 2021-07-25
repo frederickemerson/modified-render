@@ -149,7 +149,7 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     memset(&(mServer.sin_zero), 0, 8);
 
     //Bind
-    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(*mServer)) == SOCKET_ERROR)
+    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
     {
         char buffer[69];
         sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
