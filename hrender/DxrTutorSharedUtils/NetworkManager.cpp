@@ -818,7 +818,10 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     // Read header for packet size
     do
     {
-        int iResult = recv(socketUdp, &headerData[headerRecvSoFar], headerSize - headerRecvSoFar, 0);
+        sockaddr clientAddr;
+        int addrLen;
+        int iResult = recvfrom(socketUdp, &headerData[headerRecvSoFar], headerSize - headerRecvSoFar, 0,
+                               &clientAddr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
             headerRecvSoFar += iResult;
