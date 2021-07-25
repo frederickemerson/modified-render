@@ -816,7 +816,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     struct sockaddr clientAddr;
-    int addrLen;
+    int addrLen = sizeof(clientAddr);
     // Read header for packet size
     do
     {
