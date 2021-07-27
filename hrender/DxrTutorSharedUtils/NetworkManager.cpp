@@ -205,7 +205,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
 
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
-        RecvCameraData(NetworkPass::camData, mServerUdpSock);
+        RecvCameraDataUdp(NetworkPass::camData, mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
         NetworkManager::mCamPosReceived = true;
