@@ -163,11 +163,13 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
 
     // Get the client texture width/height
     UdpCustomPacket firstPacket(0); // expected sequence number of 0
-    if (!RecvUdpCustom(firstPacket, mServerUdpSock, UDP_FIRST_TIMEOUT_MS))
+    if (!RecvUdpCustom(firstPacket, mServerUdpSock, UDP_FIRST_TIMEOUT_MS, true))
     {
         OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
         return false;
     }
+    // Next sequence number should be 1
+    currentSeqNum = 1;
     
     // Packet should consist of two ints
     if (firstPacket.packetSize != 8)
@@ -203,7 +205,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
 
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
-        RecvCameraData(NetworkPass::camData, mClientSocket);
+        RecvCameraData(NetworkPass::camData, mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
         NetworkManager::mCamPosReceived = true;
@@ -406,176 +408,6 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
-void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp)
-{
-    //char message[DEFAULT_BUFLEN];
-    //char buf[DEFAULT_BUFLEN];
-    int slen = sizeof(mSi_otherUdp);
-    ////start communication
-    //while (1)
-    //{
-    //    printf("Enter message : ");
-    //    std::cin >> message;
-
-
-    //    //send the message
-    //    if (sendto(mClientUdpSock, message, (int)strlen(message), 0, (struct sockaddr*) & mSi_otherUdp, slen) == SOCKET_ERROR)
-    //    {
-    //        printf("sendto() failed with error code : %d", WSAGetLastError());
-    //        exit(EXIT_FAILURE);
-    //    }
-
-    //    //receive a reply and print it
-    //    //clear the buffer by filling null, it might have previously received data
-    //    memset(buf, '\0', DEFAULT_BUFLEN);
-    //    //try to receive some data, this is a blocking call
-    //    if (recvfrom(mClientUdpSock, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen) == SOCKET_ERROR)
-    //    {
-    //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
-    //        exit(EXIT_FAILURE);
-    //    }
-
-    //    puts(buf);
-    //}
-    // If no compression occurs, we write directly to the recvTex with the expected texture size,
-    // but if we are using compression, we need to receive a compressed texture to an intermediate
-    // array and decompress
-
-    // Server is going to send texture via UDP so it waits for the client to send an int via
-    // TCP to synchronize.
-    int dummy = 102342;
-    // SendInt(dummy, socketTcp);
-    // RecvInt(dummy, socketTcp); // Block until server sends
-    char message[] = "this is the message from client";
-    sendto(socketUdp, message, (int)strlen(message), 0, (struct sockaddr*)&mSi_otherUdp, slen);
-
-    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexData;
-    int recvSize = recvTexSize;
-    if (mCompression)
-    {
-        OutputDebugString(L"\n\n= RecvTexture: Receiving int... =========");
-        // RecvInt(recvSize, socketTcp);
-        OutputDebugString(L"\n\n= RecvTexture: received int =========");
-
-    }
-
-    // Receive the texture
-    int recvSoFar = 0;
-    OutputDebugString(L"\n\n= RecvTexture: Receiving tex... =========");
-
-    while (recvSoFar < recvSize)
-    {
-        int iResult = recvfrom(socketUdp, &recvDest[recvSoFar], DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSi_otherUdp, &slen);
-
-        //int iResult = recv(socketTcp, &recvDest[recvSoFar], DEFAULT_BUFLEN, 0);
-        if (iResult > 0)
-        {
-            recvSoFar += iResult;
-        }
-    }
-    OutputDebugString(L"\n\n= RecvTexture: received tex =========");
-
-
-    // Decompress the texture if using compression
-
-    if (mCompression)
-    {
-        OutputDebugString(L"\n\n= RecvTexture: Decompressing tex... =========");
-
-        DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
-        OutputDebugString(L"\n\n= RecvTexture: Decompressed tex =========");
-
-    }
-}
-
-void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
-{
-    //char buf[DEFAULT_BUFLEN];    
-    //int slen, recv_len;
-
-    int slen = sizeof(mSsi_other);
-    //keep listening for data
-    //while (1)
-    //{
-    //    printf("Waiting for data...");
-    //    fflush(stdout);
-
-    //    //clear the buffer by filling null, it might have previously received data
-    //    memset(buf, '\0', DEFAULT_BUFLEN);
-
-    //    //try to receive some data, this is a blocking call
-    //    if ((recv_len = recvfrom(mServerUdpSock, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen)) == SOCKET_ERROR)
-    //    {
-    //        printf("recvfrom() failed with error code : %d", WSAGetLastError());
-    //        exit(EXIT_FAILURE);
-    //    }
-
-    //    //print details of the client/peer and the data received
-    //    printf("Received packet from\n");
-    //    printf("Data: %s\n", buf);
-
-    //    //now reply the client with the same data
-    //    if (sendto(mServerUdpSock, buf, recv_len, 0, (struct sockaddr*) & mSsi_other, slen) == SOCKET_ERROR)
-    //    {
-    //        printf("sendto() failed with error code : %d", WSAGetLastError());
-    //        exit(EXIT_FAILURE);
-    //    }
-    //}
-
-    // Server is going to send texture via UDP, so receive a int via TCP first to signal that
-    // client is waiting
-    int dummy = 0;
-    // RecvInt(dummy, socketTcp);
-    // SendInt(dummy, socketTcp);
-    std::string msg = std::string("\n\n= Received dummy int: ") + std::to_string(dummy) + std::string(" =========");
-    OutputDebugString(string_2_wstring(msg).c_str());
-    char buf[DEFAULT_BUFLEN]; memset(buf, '\0', DEFAULT_BUFLEN);
-    recvfrom(socketUdp, buf, DEFAULT_BUFLEN, 0, (struct sockaddr*) & mSsi_other, &slen);
-    OutputDebugString(string_2_wstring(std::string(buf)).c_str());
-
-    // If no compression occurs, we directly send the texture with the expected texture size
-    char* srcTex = sendTexData;
-    int sendSize = sendTexSize;
-
-    // But if compression occurs, we perform compression and send the compressed texture size
-    // to the other device
-    std::string message = std::string("\n\n= Size of texture: ") + std::to_string(sendSize) + std::string(" =========");
-    OutputDebugString(string_2_wstring(message).c_str());
-
-    if (mCompression)
-    {
-        OutputDebugString(L"\n\n= SendTexture: Compressing tex... =========");
-        srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
-        OutputDebugString(L"\n\n= SendTexture: Compressed  tex... =========");
-        OutputDebugString(L"\n\n= SendTexture: Sending int... =========");
-        // SendInt(sendSize, socketTcp);
-        OutputDebugString(L"\n\n= SendTexture: Sent int... =========");
-
-    }
-
-    // Send the texture
-    OutputDebugString(L"\n\n= SendTexture: Sending tex... =========");
-    int sentSoFar = 0;
-    while (sentSoFar < sendSize)
-    {
-        bool lastPacket = sentSoFar > sendSize - DEFAULT_BUFLEN;
-        int sizeToSend = lastPacket ? (sendSize - sentSoFar) : DEFAULT_BUFLEN;
-        //int iResult = send(socketTcp, &srcTex[sentSoFar], sizeToSend, 0);
-
-        int iResult = sendto(socketUdp, &srcTex[sentSoFar], sizeToSend, 0, (struct sockaddr*) & mSsi_other, slen);
-
-        if (iResult != SOCKET_ERROR)
-        {
-            sentSoFar += iResult;
-        }
-        /*std::string mmsg = std::string("<") + std::to_string(sentSoFar) + std::string(">");
-        OutputDebugString(string_2_wstring(mmsg).c_str());*/
-
-    }
-    OutputDebugString(L"\n\n= SendTexture: Sent tex =========");
-
-}
-
 bool NetworkManager::CloseClientConnectionUdp()
 {
     closesocket(mClientUdpSock);
@@ -722,6 +554,71 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     }
 }
 
+void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp)
+{
+    // Note, compression is currenlty not implemented for UDP
+
+    int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
+                          ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
+
+    int receivedDataSoFar = 0;
+    for (int i = 0; i < numberOfPackets; i++)
+    {
+        UdpCustomPacket toReceive(currentSeqNum);
+        if (!RecvUdpCustom(toReceive, socketUdp))
+        {
+            char buffer[73];
+            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
+            OutputDebugStringA(buffer);
+            return;
+        }
+        else
+        {
+            currentSeqNum++;
+            // Copy the packet data to the char* given
+            for (int j = 0; j < toReceive.packetSize; j++)
+            {
+                recvTexDataOut[receivedDataSoFar] = toReceive.udpData[j];
+                receivedDataSoFar++;
+            }
+        }
+    }
+
+    if (receivedDataSoFar != recvTexSize)
+    {
+        char buffer[137];
+        sprintf(buffer, "\n\n= RecvTextureUdp: Error, received size does not match expected size."
+                "\nExpected %d, received %d =========", recvTexSize, receivedDataSoFar - 1);
+        OutputDebugStringA(buffer);
+        return;
+    }
+
+    OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
+}
+
+void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
+{
+    // Note, compression is currenlty not implemented for UDP
+
+    uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
+    UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
+    std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
+    currentSeqNum = packets.first;
+
+    for (UdpCustomPacket& toSend : packets.second)
+    { 
+        if (!SendUdpCustom(toSend, socketUdp))
+        {
+            char buffer[70];
+            sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========", toSend.sequenceNumber);
+            OutputDebugStringA(buffer);
+            return;
+        }
+    }
+
+    OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
+}
+
 /// <summary>
 /// Receive an integer from the socket.
 /// </summary>
@@ -805,7 +702,52 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
     return true;
 }
 
-bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout)
+bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
+{
+    uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
+    UdpCustomPacket toReceive(currentSeqNum, sizeof(cameraData), data);
+    // Note: If packet received has the correct sequence number, but it reports
+    // a size larger than the size of cameraData, RecvUdpCustom will attempt to
+    // still write all the data and cause a memory out-of-bounds access error
+    // 
+    // Fix will be to know the size of the packet to be received beforehand
+    // and check for it. In this case we know the size, but we may not have
+    // this knowledge in all cases
+    // 
+    // Hence, it is actually unnecessary to give the correct size of
+    // std::array<float3, 3> in the constructor of UdpCustomPacket
+    if (!RecvUdpCustom(toReceive, socketUdp, UDP_LISTENING_TIMEOUT_MS))
+    {
+        OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
+        return false;
+    }
+    else
+    {
+        // Increment sequence number for next communication
+        currentSeqNum++;
+        return true;
+    }
+}
+
+bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
+{
+    std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
+
+    uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
+    UdpCustomPacket toSend(currentSeqNum, sizeof(cameraData), data);
+    currentSeqNum++;
+    if (!SendUdpCustom(toSend, socketUdp))
+    {
+        OutputDebugString(L"\n\n= SendCameraDataUdp: Failed to send =========");
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)
 {
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
@@ -820,13 +762,14 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         return false;
     }
 
-    struct sockaddr clientAddr;
-    int addrLen = sizeof(clientAddr);
+    struct sockaddr_in clientAddr;
+    struct sockaddr* clientAddrPtr = reinterpret_cast<struct sockaddr*>(&clientAddr);
+    int addrLen = sizeof(*clientAddrPtr);
     // Read header for packet size
     do
     {
-        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataReceivedSoFar]), DEFAULT_BUFLEN,
-                               0, &clientAddr, &addrLen);
+        int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataReceivedSoFar]),
+                               DEFAULT_BUFLEN, 0, clientAddrPtr, &addrLen);
         if (iResult != SOCKET_ERROR)
         {
             dataReceivedSoFar += iResult;
@@ -853,14 +796,23 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         OutputDebugStringA(buffer);
         return false;
     }
+    // Sequence number is correct, try to store a reply address
+    else if (storeAddress)
+    {
+        // Set up the address for replying
+        memset(reinterpret_cast<char*>(&mSi_otherUdp), 0, sizeof(mSi_otherUdp));
+        mSi_otherUdp.sin_family = clientAddr.sin_family;
+        mSi_otherUdp.sin_port = clientAddr.sin_port;
+        mSi_otherUdp.sin_addr.S_un.S_addr = clientAddr.sin_addr.S_un.S_addr;
+    }
 
-    // Receive the rest of the packet
+    // Receive the rest of the packet, if needed
     if (dataReceivedSoFar < dataSize)
     {
         do
         {
             int iResult = recvfrom(socketUdp, &(udpReceiveBuffer[dataReceivedSoFar]),
-                                   DEFAULT_BUFLEN, 0, &clientAddr, &addrLen);
+                                   DEFAULT_BUFLEN, 0, clientAddrPtr, &addrLen);
             if (iResult != SOCKET_ERROR)
             {
                 dataReceivedSoFar += iResult;
@@ -910,7 +862,15 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
         }
         else
         {
-            OutputDebugString(L"\n\n= SendUdpCustom: Socket error =========");
+            char buffer1[61];
+            sprintf(buffer1, "\n\n= SendUdpCustom: Socket error, %d =========", WSAGetLastError());
+            OutputDebugStringA(buffer1);
+
+            char buffer2[89];
+            sprintf(buffer2, "\n= SendUdpCustom: Failed to send packet with sequence number %d =========",
+                    dataToSend.sequenceNumber);
+            OutputDebugStringA(buffer2);
+
             return false;
         }
     }

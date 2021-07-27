@@ -119,8 +119,11 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     int32_t* widthAndHeight = new int32_t[2];
     widthAndHeight[0] = mpResManager->getWidth();
     widthAndHeight[1] = mpResManager->getHeight();
+    // Sequence number of 0
     UdpCustomPacket packet(0, 8, reinterpret_cast<uint8_t*>(widthAndHeight));
     pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
+    // Next sequence number should be 1
+    pNetworkManager->currentSeqNum = 1;
     OutputDebugString(L"\n\n= firstClientRenderUdp: width/height sent over network =========");
 
     // Populate posTexWidth and Height
@@ -146,7 +149,7 @@ void NetworkPass::executeClientSend(RenderContext* pRenderContext)
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
     OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
-    pNetworkManager->SendCameraData(cam, pNetworkManager->mConnectSocket);
+    pNetworkManager->SendCameraDataUdp(cam, pNetworkManager->mClientUdpSock);
     OutputDebugString(L"\n\n= camData sent over network =========");
 }
 
@@ -163,7 +166,7 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
+    pNetworkManager->RecvTextureUdp(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mClientUdpSock);
     OutputDebugString(L"\n\n= visTex received over network =========");
 }
 

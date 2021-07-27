@@ -67,6 +67,9 @@ public:
     // Used by client
     SOCKET mConnectSocket = INVALID_SOCKET;
     SOCKET mClientUdpSock = INVALID_SOCKET; 
+
+    // Used by both server and client in UDP communication
+    int32_t currentSeqNum = 0;
     struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
@@ -89,18 +92,23 @@ public:
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
-    // Use UDP to receive and send instead
+    // Use UDP to receive and send texture data
     void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp);
     void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
+    // Use UDP to receive and send camera data
+    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp);
+    bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     // Send and receive data with UDP custom protocol
     // RecvUdpCustom: Expected sequence number must be specified in recvData
-    bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout);
+    bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
+                       int timeout = UDP_LISTENING_TIMEOUT_MS,
+                       bool storeAddress = false);
     // SendUdpCustom: Assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
     bool SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp);
