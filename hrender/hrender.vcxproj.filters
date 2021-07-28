@@ -126,6 +126,36 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp.hpp">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\bitcomp.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\bitcomp.hpp">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\cascaded.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\cascaded.hpp">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\gdeflate.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\lz4.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\lz4.hpp">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\nvcomp-main\include\nvcomp\snappy.h">
+      <Filter>NetworkPasses\compression</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -151,6 +181,9 @@
     </Filter>
     <Filter Include="Libraries">
       <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkPasses\compression">
+      <UniqueIdentifier>{cb5ca9f7-6e28-4f18-a7cd-7345b7034ce5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -235,5 +268,15 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NetworkPasses\compression.h">
+      <Filter>NetworkPasses</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="NetworkPasses\compression.cu">
+      <Filter>NetworkPasses</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

@@ -18,6 +18,9 @@
 
 #include "VisibilityPass.h"
 
+// for nvcomp compression
+#include "compression.h"
+
 namespace {
     // Where is our environment map and scene located?
     //const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
@@ -39,7 +42,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mpResManager = pResManager;
 
     // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(int2(300, 70));
+    setGuiSize(Falcor::int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
@@ -77,7 +80,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, Falcor::float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -90,7 +93,16 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     rayVars["gOutput"] = pDstTex;
 
     // Shoot our rays and shade our primary hit points
-    mpRays->execute(pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()));
+    mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
+    size_t uncompressed_bytes = pDstTex->getTextureSizeInBytes();
+    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
+    std::vector<uint8_t> uncompressed_data = std::vector<uint8_t>(uncompressed_bytes, 0);
+    uncompressed_data = visTex->getTextureData(pRenderContext, 0, 0, &uncompressed_data);
+    
+    printToDebugWindow(std::to_string(uncompressed_bytes)+"\n");
+
+    PlsWork::compress(&uncompressed_bytes, uncompressed_data);
+    printToDebugWindow(std::to_string(uncompressed_bytes) + "\n");
 }
 
 void VisibilityPass::renderGui(Gui::Window* pPassWindow)
