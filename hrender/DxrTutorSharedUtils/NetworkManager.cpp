@@ -576,7 +576,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         {
             currentSeqNum++;
             // Copy the packet data to the char* given
-            assert(toReceive.packetSize == recvTexSize);
             toReceive.copyInto(reinterpret_cast<uint8_t*>(recvTexDataOut));
         }
     }
