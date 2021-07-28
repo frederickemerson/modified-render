@@ -576,11 +576,8 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         {
             currentSeqNum++;
             // Copy the packet data to the char* given
-            for (int j = 0; j < toReceive.packetSize; j++)
-            {
-                recvTexDataOut[receivedDataSoFar] = toReceive.udpData[j];
-                receivedDataSoFar++;
-            }
+            assert(toReceive.packetSize == recvTexSize);
+            toReceive.copyInto(reinterpret_cast<uint8_t*>(recvTexDataOut));
         }
     }
 
@@ -604,6 +601,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
     currentSeqNum = packets.first;
+    allDataToSend.releaseDataPointer();
 
     for (UdpCustomPacket& toSend : packets.second)
     { 
@@ -615,7 +613,6 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
             return;
         }
     }
-
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
 }
 
@@ -704,18 +701,7 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 
 bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
 {
-    uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
-    UdpCustomPacket toReceive(currentSeqNum, sizeof(cameraData), data);
-    // Note: If packet received has the correct sequence number, but it reports
-    // a size larger than the size of cameraData, RecvUdpCustom will attempt to
-    // still write all the data and cause a memory out-of-bounds access error
-    // 
-    // Fix will be to know the size of the packet to be received beforehand
-    // and check for it. In this case we know the size, but we may not have
-    // this knowledge in all cases
-    // 
-    // Hence, it is actually unnecessary to give the correct size of
-    // std::array<float3, 3> in the constructor of UdpCustomPacket
+    UdpCustomPacket toReceive(currentSeqNum);
     if (!RecvUdpCustom(toReceive, socketUdp, UDP_LISTENING_TIMEOUT_MS))
     {
         OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
@@ -725,6 +711,10 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
     {
         // Increment sequence number for next communication
         currentSeqNum++;
+        // Copy the data to the pointer
+        assert(toReceive.packetSize == sizeof(cameraData));
+        uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
+        toReceive.copyInto(data);
         return true;
     }
 }
@@ -732,19 +722,18 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
 bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
-
     uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
     UdpCustomPacket toSend(currentSeqNum, sizeof(cameraData), data);
     currentSeqNum++;
+
+    bool wasDataSent = true;
     if (!SendUdpCustom(toSend, socketUdp))
     {
         OutputDebugString(L"\n\n= SendCameraDataUdp: Failed to send =========");
-        return false;
+        wasDataSent = false;
     }
-    else
-    {
-        return true;
-    }
+    toSend.releaseDataPointer();
+    return wasDataSent;
 }
 
 bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)

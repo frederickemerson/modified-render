@@ -51,6 +51,18 @@ public:
 
     // Sets the udpData of this UdpCustomPacket
     void setDataPointer(uint8_t* data);
+
+    // Copies the data from this packet into another array
+    // Note: User must ensure that the array has enough
+    //       allocated space!
+    void copyInto(uint8_t* dataOut);
+
+    // Returns the data pointer and sets the pointer
+    // of this UdpCustomPacket to nullptr
+    // 
+    // Used to ensure that this UdpCustomPacket does not
+    // delete the pointer when it is deleted
+    uint8_t* releaseDataPointer();
 };
 
 #endif UDP_CUSTOM_PACKET_H

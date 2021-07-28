@@ -93,3 +93,18 @@ void UdpCustomPacket::setDataPointer(uint8_t* data)
 {
     udpData = data;
 }
+
+void UdpCustomPacket::copyInto(uint8_t* dataOut)
+{
+    for (int i = 0; i < packetSize; i++)
+    {
+        dataOut[i] = udpData[i];
+    }
+}
+
+uint8_t* UdpCustomPacket::releaseDataPointer()
+{
+    uint8_t* ptr = udpData;
+    udpData = nullptr;
+    return ptr;
+}
