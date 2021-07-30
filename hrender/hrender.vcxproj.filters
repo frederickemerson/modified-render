@@ -269,14 +269,4 @@
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="NetworkPasses\compression.h">
-      <Filter>NetworkPasses</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="NetworkPasses\compression.cu">
-      <Filter>NetworkPasses</Filter>
-    </CudaCompile>
-  </ItemGroup>
 </Project>

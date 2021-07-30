@@ -17,9 +17,15 @@
 **********************************************************************************************************************/
 
 #include "VisibilityPass.h"
+#include "lz4.h"
+#include <chrono>
+#include <iostream>
+#include <cuda.h>
+using namespace std::chrono;
+using namespace std;
 
 // for nvcomp compression
-#include "compression.h"
+//#include "compression.h"
 
 namespace {
     // Where is our environment map and scene located?
@@ -63,6 +69,10 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
         mpRays->compileRayProgram();
     }
 
+    // initialisation for compression
+    dstData = (char*)malloc(8294400);
+    srcData2 = (char*)malloc(8294400);
+
     return true;
 }
 
@@ -94,15 +104,81 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
+
+    
+    // 1. set srcSize once only
+    if (srcSize == 0) {
+        srcSize = static_cast<int>(pDstTex->getTextureSizeInBytes());
+        visibilityData = std::vector<uint8_t>(srcSize, 0);
+    }
+    // needed for lzo compression
+    //std::vector<char> wrkmem(LZO1X_1_MEM_COMPRESS, 0); 
+
+    //increment counter, every 60 counts prints statistics
+    counter += 1;
+
+    // 2. GPU-CPU trsf
+    auto start = high_resolution_clock::now();
+    srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0, &visibilityData);
+    srcData[0];
+    //srcData = (char*)&(visibilityData)[0];
+    auto stop = high_resolution_clock::now();
+    gpucpu_duration += duration_cast<microseconds>(stop - start).count();
+
+    // 3. Compress
+    start = high_resolution_clock::now();
+    int dstSize = LZ4_compress_default(srcData, dstData, 8294400, 8294400);
+    //lzo_uint dstSize;
+    //lzo1x_1_compress((unsigned char*)srcData, srcSize, (unsigned char*)dstData, &dstSize, &wrkmem[0]);
+
+    stop = high_resolution_clock::now();
+    compress_duration += duration_cast<microseconds>(stop - start).count();
+    compressed_size += dstSize;
+    //compressed_size += (int)dstSize;
+
+    // 4. Decompress
+    start = high_resolution_clock::now();
+    int srcSize2 = LZ4_decompress_safe(dstData, srcData2, dstSize, 8294400);
+    //lzo_uint srcSize2;
+    //lzo1x_decompress((unsigned char*)dstData, dstSize, (unsigned char*)srcData2, &srcSize2, NULL);
+
+    stop = high_resolution_clock::now();
+    decompress_duration += duration_cast<microseconds>(stop - start).count();
+
+    // 5. CPU-GPU trsf
+    start = high_resolution_clock::now();
+    pDstTex->apiInitPub(srcData2, true);
+    stop = high_resolution_clock::now();
+    cpugpu_duration += duration_cast<microseconds>(stop - start).count();
+
+    if (counter % frequency == 0) {
+        // print statistics every {frequency} frames
+        printToDebugWindow("\nGPU-CPU duration: " + to_string(gpucpu_duration / frequency));
+        printToDebugWindow("\nCompress: " + to_string(compress_duration / frequency));
+        printToDebugWindow("\nDecompress: " + to_string(decompress_duration / frequency));
+        printToDebugWindow("\nCPU-GPU duration: " + to_string(cpugpu_duration / frequency));
+        printToDebugWindow("\nCompressed size:" + std::to_string(compressed_size / frequency));
+        // reset to 0;
+        gpucpu_duration = 0;
+        cpugpu_duration = 0;
+        compress_duration = 0;
+        decompress_duration = 0;
+        compressed_size = 0;
+    }
+
+
+    /*
+    // nvcomp GPU compression - currently cant build/install
     size_t uncompressed_bytes = pDstTex->getTextureSizeInBytes();
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
     std::vector<uint8_t> uncompressed_data = std::vector<uint8_t>(uncompressed_bytes, 0);
     uncompressed_data = visTex->getTextureData(pRenderContext, 0, 0, &uncompressed_data);
-    
+
     printToDebugWindow(std::to_string(uncompressed_bytes)+"\n");
 
     PlsWork::compress(&uncompressed_bytes, uncompressed_data);
     printToDebugWindow(std::to_string(uncompressed_bytes) + "\n");
+    */
 }
 
 void VisibilityPass::renderGui(Gui::Window* pPassWindow)
@@ -114,4 +190,3 @@ void VisibilityPass::renderGui(Gui::Window* pPassWindow)
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
 }
-

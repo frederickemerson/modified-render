@@ -81,7 +81,7 @@ void JitteredGBufferPass::renderGui(Gui::Window* pPassWindow)
 
 void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 {
-    OutputDebugString(L"\n\n= JitteredGBuffer: Executing... =========");
+    //OutputDebugString(L"\n\n= JitteredGBuffer: Executing... =========");
 
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
@@ -136,5 +136,5 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
 
-    OutputDebugString(L"\n\n= JitteredGBuffer: Finished executing =========");
+    //OutputDebugString(L"\n\n= JitteredGBuffer: Finished executing =========");
 }

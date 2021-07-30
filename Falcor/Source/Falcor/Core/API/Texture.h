@@ -235,6 +235,8 @@ namespace Falcor
 
         std::vector<uint8_t> getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr=nullptr);
 
+        uint8_t* getTextureData2(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr);
+
 
         /** Generates mipmaps for a specified texture object.
         */

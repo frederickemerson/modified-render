@@ -2,6 +2,9 @@
 #include "../NetworkPasses/NetworkPass.h"
 #include "NetworkManager.h"
 
+//lz4 compression
+#include "lz4.h"
+
 bool NetworkManager::mCamPosReceived = false;
 bool NetworkManager::mVisTexComplete = false;
 bool NetworkManager::mCompression = true;
@@ -380,6 +383,13 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
         srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
         SendInt(sendSize, socket);
     }
+
+    //lz4 compression
+    char* dstTex = (char*)malloc(sizeof(char) * sendSize);
+    printToDebugWindow("uncompressed size:" + std::to_string(sendSize) + "\n");
+
+    int dstSize = LZ4_compress_default(sendTexData, dstTex, sendSize, sendSize);
+    printToDebugWindow("compressed size:" + std::to_string(dstSize) + "\n");
 
     // Send the texture
     int sentSoFar = 0;
