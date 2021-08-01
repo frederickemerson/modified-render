@@ -580,6 +580,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
                 {
                     dataPtr[j] = 0;
                 }
+                receivedDataSoFar = recvTexSize;
             }
             else
             {
@@ -589,7 +590,10 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
                     *dataPtr = 0;
                     dataPtr++;
                 }
+                receivedDataSoFar += UdpCustomPacket::maxPacketSize;
             }
+            // Try to receive the next packet
+            currentSeqNum++;
         }
         else
         {
