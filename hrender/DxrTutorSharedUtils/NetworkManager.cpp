@@ -554,7 +554,7 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     }
 }
 
-void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp)
+void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
     // Note, compression is currenlty not implemented for UDP
 
@@ -566,7 +566,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
     for (int i = 0; i < numberOfPackets; i++)
     {
         UdpCustomPacket toReceive(currentSeqNum);
-        if (!RecvUdpCustom(toReceive, socketUdp))
+        if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
             char buffer[73];
             sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);

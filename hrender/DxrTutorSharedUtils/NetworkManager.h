@@ -93,7 +93,8 @@ public:
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     // Use UDP to receive and send texture data
-    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp);
+    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp,
+                        int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
