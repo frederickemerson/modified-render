@@ -562,6 +562,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
                           ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
+    uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
     for (int i = 0; i < numberOfPackets; i++)
     {
         UdpCustomPacket toReceive(currentSeqNum);
@@ -570,13 +571,33 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
             char buffer[73];
             sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
             OutputDebugStringA(buffer);
-            return;
+            // Fill missing bits with 0
+            if (i == numberOfPackets - 1)
+            {
+                // Last packet, fill in all the other bits
+                int dataLeft = recvTexSize - receivedDataSoFar;
+                for (int j = 0; j < dataLeft; j++)
+                {
+                    dataPtr[j] = 0;
+                }
+            }
+            else
+            {
+                // Not the last packet, fill in the maximum amount of bits
+                for (int j = 0; j < UdpCustomPacket::maxPacketSize; j++)
+                {
+                    *dataPtr = 0;
+                    dataPtr++;
+                }
+            }
         }
         else
         {
             currentSeqNum++;
             // Copy the packet data to the char* given
-            toReceive.copyInto(reinterpret_cast<uint8_t*>(recvTexDataOut));
+            toReceive.copyInto(dataPtr);
+            dataPtr += toReceive.packetSize;
+            receivedDataSoFar += toReceive.packetSize;
         }
     }
 
