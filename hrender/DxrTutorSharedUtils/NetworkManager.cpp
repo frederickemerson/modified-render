@@ -758,6 +758,9 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
 
 bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)
 {
+    // Number of tries to receive the packet header before failing
+    int numberOfTriesForHeader = 10;
+
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
     int dataReceivedSoFar = 0;
@@ -774,6 +777,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     struct sockaddr_in clientAddr;
     struct sockaddr* clientAddrPtr = reinterpret_cast<struct sockaddr*>(&clientAddr);
     int addrLen = sizeof(*clientAddrPtr);
+    int headerTriesLeft = numberOfTriesForHeader;
     // Read header for packet size
     do
     {
@@ -788,8 +792,18 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             char buffer[58];
             sprintf(buffer, "\nRecvUdpCustom: Error receiving header: %d", WSAGetLastError());
             OutputDebugStringA(buffer);
+            headerTriesLeft--;
         }
-    } while (dataReceivedSoFar < headerSize);
+    } while (dataReceivedSoFar < headerSize && headerTriesLeft > 0);
+
+    if (headerTriesLeft == 0)
+    {
+        char buffer[89];
+        sprintf(buffer, "\nTried %d times to receive header for packet %d, giving up",
+                        numberOfTriesForHeader, recvData.sequenceNumber);
+        OutputDebugStringA(buffer);
+        return false;
+    }
 
     int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
     int seqNum = headerData[0];
