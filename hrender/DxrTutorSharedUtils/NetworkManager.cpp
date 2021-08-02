@@ -890,7 +890,8 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     {
         dataPointer = packetCache.at(seqNum).getUdpDataPointer();
     }
-    else {
+    else
+    {
         dataPointer = recvData.getUdpDataPointer();
     }
 
@@ -906,7 +907,8 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     {
         dataPointer[i] = udpReceiveBuffer[i + headerSize];
     }
-    return true;
+    // Return false if packet was stored in cache
+    return !doStoreInCache;
 }
 
 bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp)
