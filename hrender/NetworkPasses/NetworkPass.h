@@ -88,5 +88,7 @@ protected:
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
     int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
     int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
+
+    bool firstClientReceive = true; // Use a longer timeout for first client receive
 };
 

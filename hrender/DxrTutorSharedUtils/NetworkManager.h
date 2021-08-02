@@ -103,6 +103,13 @@ public:
     // Maximum number of data entries
     int maxCamDataCacheSize = 5;
 
+    // A place to store the most updated texture data
+    // Note   : Assumes all frames have the same size 
+    // Note #2: This pointer is not yet freed anywhere,
+    //          it could cause a memory leak
+    // Will be initialised by SetUpServerUDP
+    char* latestTextureData = nullptr;
+
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
