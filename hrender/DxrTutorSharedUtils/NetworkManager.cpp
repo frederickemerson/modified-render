@@ -770,8 +770,15 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         sprintf(buffer, "RecvUdpCustom: Packet #%d found in cache", recvData.sequenceNumber);
         OutputDebugStringA(buffer);
 
+        if (recvData.udpData == nullptr)
+        {
+            uint8_t* uintPointer = new uint8_t[cached->second.packetSize];
+            recvData.setDataPointer(uintPointer);
+        }
         cached->second.copyInto(recvData.udpData);
         cached->second.releaseDataPointer();
+        recvData.packetSize = cached->second.packetSize;
+        packetCache.erase(cached);
         return true;
     }
 
