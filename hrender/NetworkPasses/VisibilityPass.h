@@ -63,7 +63,7 @@ protected:
     //void*                                   state; // for compression buffer
 
     // benchmarking
-    int                                     frequency = 10000;
+    int                                     frequency = 600;
     int                                     counter = 0;
     int                                     compressed_size = 0;
     std::chrono::microseconds::rep          gpucpu_duration = 0;
