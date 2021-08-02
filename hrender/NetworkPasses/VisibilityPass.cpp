@@ -70,8 +70,9 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     }
 
     // initialisation for compression
-    dstData = (char*)malloc(8294400);
-    srcData2 = (char*)malloc(8294400);
+    dstData = (char*)malloc(8847360);
+    srcData2 = (char*)malloc(8847360);
+    //state = malloc(LZ4_sizeofState());
 
     return true;
 }
@@ -128,7 +129,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // 3. Compress
     start = high_resolution_clock::now();
-    int dstSize = LZ4_compress_default(srcData, dstData, 8294400, 8294400);
+    int dstSize = LZ4_compress_default(srcData, dstData, 8294400, 8847360);
     //lzo_uint dstSize;
     //lzo1x_1_compress((unsigned char*)srcData, srcSize, (unsigned char*)dstData, &dstSize, &wrkmem[0]);
 
@@ -139,7 +140,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // 4. Decompress
     start = high_resolution_clock::now();
-    int srcSize2 = LZ4_decompress_safe(dstData, srcData2, dstSize, 8294400);
+    int srcSize2 = LZ4_decompress_safe(dstData, srcData2, dstSize, 8847360);
     //lzo_uint srcSize2;
     //lzo1x_decompress((unsigned char*)dstData, dstSize, (unsigned char*)srcData2, &srcSize2, NULL);
 
