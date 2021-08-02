@@ -26,6 +26,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <deque>
 #include <unordered_map>
 #include "./UdpCustomPacket.h"
 #include "../Libraries/minilzo.h"
@@ -93,6 +94,11 @@ public:
     // A place to store packets that arrive out-of-order
     // Map of sequence number to the received packet
     std::unordered_map<int32_t, UdpCustomPacket> packetCache;
+
+    // A place to store old camera data
+    std::deque<std::array<float3, 3>> cameraDataCache;
+    // Maximum number of data entries
+    int maxCamDataCacheSize = 5;
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);

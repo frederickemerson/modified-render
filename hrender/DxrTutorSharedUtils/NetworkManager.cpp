@@ -729,7 +729,20 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
     if (!RecvUdpCustom(toReceive, socketUdp, UDP_LISTENING_TIMEOUT_MS))
     {
         OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
-        return false;
+        if (cameraDataCache.empty())
+        {   
+            OutputDebugString(L"\n= Camera data cache empty =========");
+            // Fail, nothing in cache
+            return false;
+        }
+        else
+        {
+            OutputDebugString(L"\n= Using old camera data value =========");
+            // Take from the cache
+            cameraData = cameraDataCache.back();
+            currentSeqNum++;
+            return true;
+        }
     }
     else
     {
@@ -739,6 +752,12 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
         assert(toReceive.packetSize == sizeof(cameraData));
         uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
         toReceive.copyInto(data);
+        // Populate the cache
+        cameraDataCache.push_back(cameraData);
+        if (cameraDataCache.size() > maxCamDataCacheSize)
+        {
+            cameraDataCache.pop_front();
+        }
         return true;
     }
 }
@@ -783,7 +802,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Number of tries to receive the packet header before failing
-    int numberOfTriesForHeader = 10;
+    int numberOfTriesForHeader = 1;
 
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
