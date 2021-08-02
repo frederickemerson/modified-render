@@ -802,7 +802,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Number of tries to receive the packet header before failing
-    int numberOfTriesForHeader = 1;
+    int numberOfTriesForHeader = 10;
 
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
