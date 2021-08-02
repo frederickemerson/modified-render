@@ -47,7 +47,7 @@
 
 // While listening for a specific sequence number with texture data,
 // wait this amount of time in milliseconds before giving up
-#define UDP_LISTENING_TIMEOUT_MS 1000
+#define UDP_LISTENING_TIMEOUT_MS 30
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
