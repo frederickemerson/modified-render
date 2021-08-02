@@ -99,6 +99,7 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     {
         dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
     }
+
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
 }
