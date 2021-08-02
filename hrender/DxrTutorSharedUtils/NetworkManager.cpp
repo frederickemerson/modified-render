@@ -762,6 +762,19 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
 
 bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)
 {
+    // Check cache to see if the packet has been received already
+    std::unordered_map<int32_t, UdpCustomPacket>::iterator cached = packetCache.find(recvData.sequenceNumber);
+    if (cached != packetCache.end())
+    {
+        char buffer[56];
+        sprintf(buffer, "RecvUdpCustom: Packet #%d found in cache", recvData.sequenceNumber);
+        OutputDebugStringA(buffer);
+
+        cached->second.copyInto(recvData.udpData);
+        cached->second.releaseDataPointer();
+        return true;
+    }
+
     // Number of tries to receive the packet header before failing
     int numberOfTriesForHeader = 10;
 
@@ -814,6 +827,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int dataSize = headerData[1];
     int totalSize = dataSize + headerSize;
 
+    bool doStoreInCache = false;
     // Check the sequence number
     if (seqNum != recvData.sequenceNumber)
     {
@@ -821,10 +835,20 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         sprintf(buffer, "\nSequence number does not match, expected %d, received %d",
                         recvData.sequenceNumber, seqNum);
         OutputDebugStringA(buffer);
-        return false;
+        if (seqNum < recvData.sequenceNumber)
+        {
+            // Packet received is an older one, regard it as lost
+            return false;
+        }
+        else
+        {
+            doStoreInCache = true;
+            packetCache.emplace(seqNum, UdpCustomPacket(seqNum, dataSize, new uint8_t[dataSize]));
+        }
     }
-    // Sequence number is correct, try to store a reply address
-    else if (storeAddress)
+
+    // Try to store a reply address
+    if (storeAddress)
     {
         // Set up the address for replying
         memset(reinterpret_cast<char*>(&mSi_otherUdp), 0, sizeof(mSi_otherUdp));
@@ -852,9 +876,17 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             }
         } while (dataReceivedSoFar < dataSize);
     }
-
     recvData.packetSize = dataSize;
-    char* dataPointer = recvData.getUdpDataPointer();
+
+    char* dataPointer;
+    if (doStoreInCache)
+    {
+        dataPointer = packetCache.at(seqNum).getUdpDataPointer();
+    }
+    else {
+        dataPointer = recvData.getUdpDataPointer();
+    }
+
     if (dataPointer == nullptr)
     {
         uint8_t* uintPointer = new uint8_t[dataSize];
@@ -863,7 +895,8 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Copy data from buffer into UdpCustomPacket object
-    for (int i = 0; i < dataSize; i++) {
+    for (int i = 0; i < dataSize; i++)
+    {
         dataPointer[i] = udpReceiveBuffer[i + headerSize];
     }
     return true;

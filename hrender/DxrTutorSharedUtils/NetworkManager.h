@@ -26,6 +26,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unordered_map>
 #include "./UdpCustomPacket.h"
 #include "../Libraries/minilzo.h"
 
@@ -88,6 +89,10 @@ public:
     static bool mCompression;
     static std::vector<char> wrkmem;
     static std::vector<unsigned char> compData;
+
+    // A place to store packets that arrive out-of-order
+    // Map of sequence number to the received packet
+    std::unordered_map<int32_t, UdpCustomPacket> packetCache;
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
