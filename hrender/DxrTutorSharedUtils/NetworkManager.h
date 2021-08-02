@@ -50,6 +50,9 @@
 // wait this amount of time in milliseconds before giving up
 #define UDP_LISTENING_TIMEOUT_MS 50
 
+// Wait a longer time for camera data
+#define UDP_CAMERA_DATA_TIMEOUT_MS 5000
+
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
 using namespace Falcor;

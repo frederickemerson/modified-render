@@ -726,7 +726,7 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
 {
     UdpCustomPacket toReceive(currentSeqNum);
-    if (!RecvUdpCustom(toReceive, socketUdp, UDP_LISTENING_TIMEOUT_MS))
+    if (!RecvUdpCustom(toReceive, socketUdp, UDP_CAMERA_DATA_TIMEOUT_MS))
     {
         OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
         if (cameraDataCache.empty())
@@ -802,7 +802,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Number of tries to receive the packet header before failing
-    int numberOfTriesForHeader = 10;
+    int numberOfTriesForHeader = 1;
 
     int headerSize = UdpCustomPacket::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
