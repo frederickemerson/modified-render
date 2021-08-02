@@ -31,6 +31,9 @@
 #include "Buffer.h"
 #include "GpuFence.h"
 
+#include <chrono>
+using namespace std::chrono;
+
 namespace Falcor
 {
     CopyContext::~CopyContext() = default;
@@ -81,8 +84,22 @@ namespace Falcor
 
     uint8_t* CopyContext::readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
     {
+        auto start = high_resolution_clock::now();
         CopyContext::ReadTextureTask::SharedPtr pTask = asyncReadTextureSubresource(pTexture, subresourceIndex, result_ptr);
-        return pTask->getData2(result_ptr);
+        auto stop = high_resolution_clock::now();
+        printToDebugWindow("\nReadTextureTask create: " + std::to_string(duration_cast<microseconds>(stop - start).count()));
+
+        start = high_resolution_clock::now();
+        uint8_t* ptr = pTask->getData2(result_ptr);
+        stop = high_resolution_clock::now();
+        printToDebugWindow("\nReadTextureTask getData: " + std::to_string(duration_cast<microseconds>(stop - start).count()));
+        return ptr;
+    }
+
+    CopyContext::ReadTextureTask::SharedPtr CopyContext::readTextureSubresource3(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
+    {
+        CopyContext::ReadTextureTask::SharedPtr pTask = asyncReadTextureSubresource(pTexture, subresourceIndex, result_ptr);
+        return pTask;
     }
 
     bool CopyContext::resourceBarrier(const Resource* pResource, Resource::State newState, const ResourceViewInfo* pViewInfo)

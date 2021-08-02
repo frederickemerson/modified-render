@@ -110,6 +110,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     if (srcSize == 0) {
         srcSize = static_cast<int>(pDstTex->getTextureSizeInBytes());
         visibilityData = std::vector<uint8_t>(srcSize, 0);
+        //srcData = (char*)pDstTex->getTextureData3(pRenderContext, 0, 0, &visibilityData);
     }
     // needed for lzo compression
     //std::vector<char> wrkmem(LZO1X_1_MEM_COMPRESS, 0); 
@@ -119,8 +120,8 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // 2. GPU-CPU trsf
     auto start = high_resolution_clock::now();
+    //pDstTex->sync();
     srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0, &visibilityData);
-    srcData[0];
     //srcData = (char*)&(visibilityData)[0];
     auto stop = high_resolution_clock::now();
     gpucpu_duration += duration_cast<microseconds>(stop - start).count();
@@ -147,6 +148,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // 5. CPU-GPU trsf
     start = high_resolution_clock::now();
+
     pDstTex->apiInitPub(srcData2, true);
     stop = high_resolution_clock::now();
     cpugpu_duration += duration_cast<microseconds>(stop - start).count();
@@ -157,7 +159,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         printToDebugWindow("\nCompress: " + to_string(compress_duration / frequency));
         printToDebugWindow("\nDecompress: " + to_string(decompress_duration / frequency));
         printToDebugWindow("\nCPU-GPU duration: " + to_string(cpugpu_duration / frequency));
-        printToDebugWindow("\nCompressed size:" + std::to_string(compressed_size / frequency));
+        printToDebugWindow("\nCompressed size:" + std::to_string(compressed_size / frequency) + "\n");
         // reset to 0;
         gpucpu_duration = 0;
         cpugpu_duration = 0;
@@ -165,7 +167,6 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
-
 
     /*
     // nvcomp GPU compression - currently cant build/install
