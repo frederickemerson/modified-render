@@ -33,16 +33,6 @@
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\nvcomp-main\include\nvcomp.h" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp.hpp" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\bitcomp.h" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\bitcomp.hpp" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\cascaded.h" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\cascaded.hpp" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\gdeflate.h" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\lz4.h" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\lz4.hpp" />
-    <ClInclude Include="..\nvcomp-main\include\nvcomp\snappy.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
