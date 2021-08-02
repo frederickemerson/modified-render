@@ -24,7 +24,7 @@
  * Transfer data from server to client or client to server
  * based on the configuration setting.
  */
-class NetworkPass : public ::RenderPass
+class NetworkPass : public :: RenderPass
 {
 
 public:
@@ -34,6 +34,10 @@ public:
         ClientSend = 1,
         Server = 2,
         ServerSend = 3,
+        ClientUdp = 4,
+        ClientUdpSend = 5,
+        ServerUdp = 6,
+        ServerUdpSend = 7,
     };
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
@@ -67,9 +71,15 @@ protected:
     void executeServerSend(RenderContext* pRenderContext);
     void executeServerRecv(RenderContext* pRenderContext);
     bool firstClientRender(RenderContext* pRenderContext);
+    bool firstServerRender(RenderContext* pRenderContext);
+
+    // Execution functions for UDP
+    void executeClientUdpSend(RenderContext* pRenderContext);
+    void executeClientUdpRecv(RenderContext* pRenderContext);
+    void executeServerUdpRecv(RenderContext* pRenderContext);
     // For first client render on UDP, send the client's window width and height
     bool firstClientRenderUdp(RenderContext* pRenderContext);
-    bool firstServerRender(RenderContext* pRenderContext);
+    bool firstServerRenderUdp(RenderContext* pRenderContext);
 
     // Get the texture data from the GPU into a RAM array
     std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);

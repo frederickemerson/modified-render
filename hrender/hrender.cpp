@@ -39,8 +39,8 @@
 #include "NetworkPasses/MemoryTransferPassServerGPU_CPU.h"
 #include "NetworkPasses/NetworkPass.h"
 
-void runServer();
-void runClient();
+void runServer(bool useTcp);
+void runClient(bool useTcp);
 void runDebug();
 
 /**
@@ -58,12 +58,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== SERVER MODE =========");
-        runServer();
+        runServer(!(std::string(lpCmdLine).find(std::string("udp")) != std::string::npos));
     }
     else if (std::string(lpCmdLine).find(std::string("client")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== CLIENT MODE =========");
-        runClient();
+        runClient(!(std::string(lpCmdLine).find(std::string("udp")) != std::string::npos));
     }
     else
     {
@@ -120,18 +120,25 @@ void runDebug()
  * compute its own GBuffer, and perform raytracing on said bufferto produce
  * visibility bitmap. The bitmap is send back to the client afterwards.
  */
-void runServer()
+void runServer(bool useTcp)
 {
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = "NRender Server";
+    config.windowDesc.title = useTcp ? "NRender Server" : "NRender UDP Server";
     config.windowDesc.resizableWindow = true;
 
     // Set up server - configure the sockets and await client connection. We need to await
     // the client connection before we allow the server thread to create the textures, because
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
-    ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
+    if (useTcp)
+    {   
+        ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
+    }
+    else
+    {
+        ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
+    }
     
     NetworkPass::posTexHeight = texHeight;
     NetworkPass::posTexWidth = texWidth;
@@ -143,7 +150,8 @@ void runServer()
 
     // --- Pass 1 Receive camera data from client --- //
     pipeline->setPassOptions(0, {
-        NetworkPass::create(NetworkPass::Mode::Server, texWidth, texHeight),
+        NetworkPass::create(useTcp ? NetworkPass::Mode::Server : NetworkPass::Mode::ServerUdp,
+                            texWidth, texHeight)
     });
 
     // --- Pass 2 creates a GBuffer on server side--- //
@@ -164,7 +172,8 @@ void runServer()
 
     // --- Pass 5 Send visibility bitmap back to client --- //
     pipeline->setPassOptions(4, {
-        NetworkPass::create(NetworkPass::Mode::ServerSend, texWidth, texHeight),
+        NetworkPass::create(useTcp ? NetworkPass::Mode::ServerSend : NetworkPass::Mode::ServerUdpSend,
+                            texWidth, texHeight)
     });
 
     // --- Pass 6 makes use of the visibility bitmap to shade the scene --- //
@@ -196,21 +205,28 @@ void runServer()
  * waits for visibility bitmap from the server. Client will make use of the received
  * visibility bitmap to compute the final scene.
  */
-void runClient()
+void runClient(bool useTcp)
 {
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = "NRender";
+    config.windowDesc.title = useTcp ? "NRender" : "NRender UDP";
     config.windowDesc.resizableWindow = true;
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    if (useTcp)
+    {
+        ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
+    }
+    else
+    {
+        ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    }
 
     // --- Pass 1 Send camera data to server--- //
     pipeline->setPassOptions(0, {
-        NetworkPass::create(NetworkPass::Mode::ClientSend)
+        NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend)
     });
 
     // --- Pass 2 creates a GBuffer on client side--- //
@@ -221,7 +237,7 @@ void runClient()
 
     // --- Pass 3 receive visibility bitmap from server --- //
     pipeline->setPassOptions(2, {
-        NetworkPass::create(NetworkPass::Mode::Client)
+        NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
     });
 
     // --- Pass 4 transfers CPU information into GPU --- //
