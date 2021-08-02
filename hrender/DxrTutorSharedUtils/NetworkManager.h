@@ -51,7 +51,7 @@
 #define UDP_LISTENING_TIMEOUT_MS 50
 
 // Wait a longer time for camera data
-#define UDP_CAMERA_DATA_TIMEOUT_MS 5000
+#define UDP_CAMERA_DATA_TIMEOUT_MS 20000
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 

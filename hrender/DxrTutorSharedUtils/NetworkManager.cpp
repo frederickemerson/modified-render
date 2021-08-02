@@ -785,8 +785,8 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     std::unordered_map<int32_t, UdpCustomPacket>::iterator cached = packetCache.find(recvData.sequenceNumber);
     if (cached != packetCache.end())
     {
-        char buffer[56];
-        sprintf(buffer, "RecvUdpCustom: Packet #%d found in cache", recvData.sequenceNumber);
+        char buffer[57];
+        sprintf(buffer, "\nRecvUdpCustom: Packet #%d found in cache", recvData.sequenceNumber);
         OutputDebugStringA(buffer);
 
         if (recvData.udpData == nullptr)
