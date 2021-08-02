@@ -186,11 +186,6 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     char printWidthHeight[52];
     sprintf(printWidthHeight, "\nWidth: %d\nHeight: %d", outTexWidth, outTexHeight);
     OutputDebugStringA(printWidthHeight);
-
-    // Initialise the latest texture cache
-    int visTexSize = outTexWidth * outTexHeight * 4;
-    latestTextureData = new char[visTexSize];
-
     return true;
 }
 

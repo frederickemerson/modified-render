@@ -107,7 +107,7 @@ public:
     // Note   : Assumes all frames have the same size 
     // Note #2: This pointer is not yet freed anywhere,
     //          it could cause a memory leak
-    // Will be initialised by SetUpServerUDP
+    // Will be initialised by firstClientRenderUdp
     char* latestTextureData = nullptr;
 
     // Used to send and receive data over the network

@@ -127,6 +127,10 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     pNetworkManager->currentSeqNum = 1;
     OutputDebugString(L"\n\n= firstClientRenderUdp: width/height sent over network =========");
 
+    // Initialise the latest texture cache
+    int visTexSize = widthAndHeight[0] * widthAndHeight[1] * 4;
+    pNetworkManager->latestTextureData = new char[visTexSize];
+
     // Populate posTexWidth and Height
     NetworkPass::posTexWidth = mpResManager->getWidth();
     NetworkPass::posTexHeight = mpResManager->getHeight();
