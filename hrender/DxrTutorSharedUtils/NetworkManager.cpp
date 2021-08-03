@@ -606,7 +606,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         UdpCustomPacket toReceive(currentSeqNum);
         if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
-            /*
             char buffer[73];
             sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
             OutputDebugStringA(buffer);
@@ -633,11 +632,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
             }
             // Try to receive the next packet
             currentSeqNum++;
-            */
-            recvTexSize = receivedDataSoFar;
-            char buffer[73];
-            sprintf(buffer, "\n\n= Terminated Recv early: Received bytes %d =========", recvTexSize);
-            OutputDebugStringA(buffer);
         }
         else
         {
@@ -682,6 +676,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     {
         char buffer[70];
         sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", sendTexSize);
+        OutputDebugStringA(buffer);
         sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
         sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", sendTexSize);
         OutputDebugStringA(buffer);
