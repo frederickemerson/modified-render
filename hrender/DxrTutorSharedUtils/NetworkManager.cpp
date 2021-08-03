@@ -643,6 +643,16 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         }
     }
 
+    // Decompress the texture from NetworkManager::compData[0] to recvTexDataOut if using compression
+// todo: replace first argument of decompress by the size of original texture sent
+    if (mCompression)
+    {
+        char buffer[70];
+        sprintf(buffer, "\n\n= Decompressing Texture: Original size: %d =========", recvTexSize);
+        recvTexSize = DecompressTextureLZ4(VIS_TEX_LEN, recvTexDataOut, recvTexSize, (char*)&NetworkManager::compData[0]);
+        sprintf(buffer, "\n\n= Compressed Texture: Uncompressed size: %d =========", recvTexSize);
+    }
+
     if (receivedDataSoFar != recvTexSize)
     {
         char buffer[137];
@@ -653,16 +663,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
     }
 
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
-
-    // Decompress the texture from NetworkManager::compData[0] to recvTexDataOut if using compression
-    // todo: replace first argument of decompress by the size of original texture sent
-    if (mCompression)
-    {
-        char buffer[70];
-        sprintf(buffer, "\n\n= Decompressing Texture: Original size: %d =========", recvTexSize);
-        recvTexSize = DecompressTextureLZ4(VIS_TEX_LEN, recvTexDataOut, recvTexSize, (char*)&NetworkManager::compData[0]);
-        sprintf(buffer, "\n\n= Compressed Texture: Uncompressed size: %d =========", recvTexSize);
-    }
 }
 
 void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
