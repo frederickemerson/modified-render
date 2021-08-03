@@ -638,6 +638,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
             char buffer[73];
             sprintf(buffer, "\n\n= Terminated Recv early: Received bytes %d =========", recvTexSize);
             OutputDebugStringA(buffer);
+            break;
         }
         else
         {
