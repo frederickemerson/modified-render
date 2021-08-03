@@ -24,7 +24,7 @@
  * Transfer data from server to client or client to server
  * based on the configuration setting.
  */
-class NetworkPass : public ::RenderPass
+class NetworkPass : public :: RenderPass
 {
 
 public:
@@ -34,6 +34,10 @@ public:
         ClientSend = 1,
         Server = 2,
         ServerSend = 3,
+        ClientUdp = 4,
+        ClientUdpSend = 5,
+        ServerUdp = 6,
+        ServerUdpSend = 7,
     };
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
@@ -61,7 +65,6 @@ protected:
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
-
     // Different execution functions
     void executeClientSend(RenderContext* pRenderContext);
     void executeClientRecv(RenderContext* pRenderContext);
@@ -69,6 +72,14 @@ protected:
     void executeServerRecv(RenderContext* pRenderContext);
     bool firstClientRender(RenderContext* pRenderContext);
     bool firstServerRender(RenderContext* pRenderContext);
+
+    // Execution functions for UDP
+    void executeClientUdpSend(RenderContext* pRenderContext);
+    void executeClientUdpRecv(RenderContext* pRenderContext);
+    void executeServerUdpRecv(RenderContext* pRenderContext);
+    // For first client render on UDP, send the client's window width and height
+    bool firstClientRenderUdp(RenderContext* pRenderContext);
+    bool firstServerRenderUdp(RenderContext* pRenderContext);
 
     // Get the texture data from the GPU into a RAM array
     std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);
@@ -80,7 +91,6 @@ protected:
     // Rendering state
     RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
-
     // Various internal parameters
     Mode                                    mMode;                  ///< Whether this pass runs as client or server
     bool                                    mFirstRender = true;    ///< If this is the first time rendering, need to send scene
@@ -88,5 +98,7 @@ protected:
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
     int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
     int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
+
+    bool firstClientReceive = true; // Use a longer timeout for first client receive
 };
 

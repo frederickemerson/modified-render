@@ -62,12 +62,20 @@ Then simply run the program.
 ### Running the distributed algorithm on two machines
 To run the distributed pipeline, have the program set up on two separate machines. On one machine, the command arguments should be `no-compression server`, and the other should be `no-compression client` (you may exlude "no-compression", which will enable LZO compresion, which may worsen performance). For now, we have not implemented running both the server and client on a single device.
 
-On the client PC, `hrender.cpp` must specify the server's IP address under the line  
-`ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);`
+To enable use of communication over UDP, add `udp` to to command arguments. For example, the server
+should be `no-compression udp server`, and the other should be `no-compression udp client`.
+
+On the client PC, `hrender.cpp` must specify the server's IP address for TCP communication under the line
+`ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);`, or for UDP, under the line
+`ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);`
+You may change the value of `DEFAULT_PORT` or `DEFAULT_PORT_UDP` for the program to communicate on a different port.
 
 The server's IP address can be acquired using command prompt and `ipconfig`.
 
-The server should start running, then the client. 
+The server should start running first, then the client. A debug message will be shown 
+in the server when it is waiting for the client, if you run the program with the
+help of Visual Studio:
+`= Pre-Falcor Init - Trying to listen for client width/height... =========`
 
 An example of what the server and client will see is available on the [demonstration video](Demonstration_Video.mkv).
 

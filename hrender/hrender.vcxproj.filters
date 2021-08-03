@@ -50,6 +50,12 @@
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.h">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
     <ClCompile Include="Libraries\minilzo.c">
       <Filter>Libraries</Filter>
     </ClCompile>
@@ -152,6 +158,15 @@
     <Filter Include="Libraries">
       <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NetworkPasses">
+      <UniqueIdentifier>{b9a14148-3d9f-48ac-87b5-68b25218a304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkPasses\Shaders">
+      <UniqueIdentifier>{4a32609a-0aa9-4b18-ba4d-c1caa118fda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl">
@@ -222,6 +237,15 @@
     </ShaderSource>
     <ShaderSource Include="TestPasses\GBufferComponents.slang">
       <Filter>TestPasses</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>

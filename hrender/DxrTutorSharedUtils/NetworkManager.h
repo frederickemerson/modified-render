@@ -26,6 +26,9 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <deque>
+#include <unordered_map>
+#include "./UdpCustomPacket.h"
 #include "../Libraries/minilzo.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -35,8 +38,20 @@
 
 #define DEFAULT_BUFLEN 65536
 #define DEFAULT_PORT "27015"
-#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 // 32593920
-#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 // 800000
+#define DEFAULT_PORT_UDP "1505"
+#define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
+
+// While waiting for the first packet from the client, wait
+// this amount of time in milliseconds before giving up
+#define UDP_FIRST_TIMEOUT_MS 1000000
+
+// While listening for a specific sequence number with texture data,
+// wait this amount of time in milliseconds before giving up
+#define UDP_LISTENING_TIMEOUT_MS 50
+
+// Wait a longer time for camera data
+#define UDP_CAMERA_DATA_TIMEOUT_MS 20000
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
@@ -51,9 +66,16 @@ public:
     // Used by Server
     SOCKET mListenSocket = INVALID_SOCKET;
     SOCKET mClientSocket = INVALID_SOCKET;
+    SOCKET mServerUdpSock = INVALID_SOCKET;
+    struct sockaddr_in mServer, mSsi_other;
 
     // Used by client
     SOCKET mConnectSocket = INVALID_SOCKET;
+    SOCKET mClientUdpSock = INVALID_SOCKET; 
+
+    // Used by both server and client in UDP communication
+    int32_t currentSeqNum = 0;
+    struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
     using SharedConstPtr = std::shared_ptr<const NetworkManager>;
@@ -72,22 +94,61 @@ public:
     static std::vector<char> wrkmem;
     static std::vector<unsigned char> compData;
 
+    // A place to store packets that arrive out-of-order
+    // Map of sequence number to the received packet
+    std::unordered_map<int32_t, UdpCustomPacket> packetCache;
+
+    // A place to store old camera data
+    std::deque<std::array<float3, 3>> cameraDataCache;
+    // Maximum number of data entries
+    int maxCamDataCacheSize = 5;
+
+    // A place to store the most updated texture data
+    // Note   : Assumes all frames have the same size 
+    // Note #2: This pointer is not yet freed anywhere,
+    //          it could cause a memory leak
+    // Will be initialised by firstClientRenderUdp
+    char* latestTextureData = nullptr;
+
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
+    // Use UDP to receive and send texture data
+    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp,
+                        int timeout = UDP_LISTENING_TIMEOUT_MS);
+    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
+    // Use UDP to receive and send camera data
+    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp);
+    bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
+    // Send and receive data with UDP custom protocol
+    // RecvUdpCustom: Expected sequence number must be specified in recvData
+    bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
+                       int timeout = UDP_LISTENING_TIMEOUT_MS,
+                       bool storeAddress = false);
+    // SendUdpCustom: Assumes that the packet to send is smaller than
+    // the specified maximum size in UdpCustomPacket::maxPacketSize
+    bool SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp);
 
     // Server
+    // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+    // Set up UDP socket and listen for client's texture width/height
+    bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
+    // Listen to UDP packets with custom protocol
+    bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
     bool CloseServerConnection();
+    bool CloseServerConnectionUdp();
 
-    // Client
+    // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
+    bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
     bool CloseClientConnection();
+    bool CloseClientConnectionUdp();
 };
