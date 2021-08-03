@@ -169,6 +169,8 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     }
     */
 
+
+
     /*
     // nvcomp GPU compression - currently cant build/install
     size_t uncompressed_bytes = pDstTex->getTextureSizeInBytes();
