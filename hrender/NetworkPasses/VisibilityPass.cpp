@@ -69,8 +69,8 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     }
 
     // initialisation for compression
-    dstData = (char*)malloc(8847360);
-    srcData2 = (char*)malloc(8847360);
+    //dstData = (char*)malloc(8847360);
+    //srcData2 = (char*)malloc(8847360);
     //state = malloc(LZ4_sizeofState());
 
     return true;
