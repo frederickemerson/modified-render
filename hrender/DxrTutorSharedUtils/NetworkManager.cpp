@@ -2,7 +2,7 @@
 #include "../NetworkPasses/NetworkPass.h"
 #include "NetworkManager.h"
 
-//lz4 compression
+// for LZ4 compression
 #include "lz4.h"
 
 bool NetworkManager::mCamPosReceived = false;
@@ -470,6 +470,13 @@ char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compT
     return (char*)&NetworkManager::compData[0];
 }
 
+int NetworkManager::CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData)
+{
+    // int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
+    int compTexSize = LZ4_compress_default(inTexData, compTexData, inTexSize, inTexSize);
+    return compTexSize;
+}
+
 /// <summary>
 /// Decompress given data.
 /// </summary>
@@ -481,6 +488,13 @@ void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int com
 {
     lzo_uint new_len = outTexSize;
     lzo1x_decompress((unsigned char*)compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
+}
+
+int NetworkManager::DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
+{
+    // int LZ4_decompress_safe (const char* src, char* dst, int compressedSize, int dstCapacity);
+    int outputSize = LZ4_decompress_safe(compTexData, outTexData, compTexSize, outTexSize);
+    return outputSize;
 }
 
 /// <summary>
@@ -515,7 +529,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     // Decompress the texture if using compression
     if (mCompression)
     {
-        DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
+        recvTexSize = DecompressTextureLZ4(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
     }
 }
 
@@ -538,16 +552,24 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
     if (mCompression)
     {
-        srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        //srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        sendSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
         SendInt(sendSize, socket);
+
+        // Send the compressed texture
+        int sentSoFar = 0;
+        while (sentSoFar < sendSize)
+        {
+            bool lastPacket = sentSoFar > sendSize - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket ? (sendSize - sentSoFar) : DEFAULT_BUFLEN;
+            int iResult = send(socket, (char*)&NetworkManager::compData[0], sizeToSend, 0);
+            if (iResult != SOCKET_ERROR)
+            {
+                sentSoFar += iResult;
+            }
+        }
+        return;
     }
-
-    //lz4 compression
-    char* dstTex = (char*)malloc(sizeof(char) * sendSize);
-    printToDebugWindow("uncompressed size:" + std::to_string(sendSize) + "\n");
-
-    int dstSize = LZ4_compress_default(sendTexData, dstTex, sendSize, sendSize);
-    printToDebugWindow("compressed size:" + std::to_string(dstSize) + "\n");
 
     // Send the texture
     int sentSoFar = 0;

@@ -20,7 +20,6 @@
 #include "lz4.h"
 #include <chrono>
 #include <iostream>
-#include <cuda.h>
 using namespace std::chrono;
 using namespace std;
 
@@ -106,7 +105,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 
-    
+    /* LZ4 compression
     // 1. set srcSize once only
     if (srcSize == 0) {
         srcSize = static_cast<int>(pDstTex->getTextureSizeInBytes());
@@ -168,6 +167,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
+    */
 
     /*
     // nvcomp GPU compression - currently cant build/install
