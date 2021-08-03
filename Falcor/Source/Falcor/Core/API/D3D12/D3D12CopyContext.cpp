@@ -31,8 +31,8 @@
 #include "Core/API/Texture.h"
 #include "D3D12DescriptorData.h"
 #include "D3D12Resource.h"
-#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda.h"
-#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda_runtime_api.h"
+//#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda.h"
+//#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda_runtime_api.h"
 
 namespace Falcor
 {
