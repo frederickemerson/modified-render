@@ -141,13 +141,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\lib;%(AdditionalIncludeDirectories);%(SolutionDir)..\nvcomp-main\include;C:\Users\Nicholas\Desktop\hrender\nvcomp-main\build</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);cudart.lib;liblz4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -164,15 +164,15 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\lib;%(AdditionalIncludeDirectories);%(SolutionDir)..\nvcomp-main\include;C:\Users\Nicholas\Desktop\hrender\nvcomp-main\build</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories);$(CudaToolkitLibDir)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);cudart.lib;liblz4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Nicholas\Desktop\hrender\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
