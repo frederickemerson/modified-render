@@ -587,6 +587,9 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
 void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
+    char buffer[73];
+    sprintf(buffer, "\n\n= RecvTexSizeUdp: %d =========", recvTexSize);
+    OutputDebugStringA(buffer);
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
                           ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
@@ -655,6 +658,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
     {
         char buffer[70];
         sprintf(buffer, "\n\n= Decompressing Texture: Original size: %d =========", recvTexSize);
+        OutputDebugStringA(buffer);
         recvTexSize = DecompressTextureLZ4(VIS_TEX_LEN, recvTexDataOut, recvTexSize, (char*)&NetworkManager::compData[0]);
         sprintf(buffer, "\n\n= Compressed Texture: Uncompressed size: %d =========", recvTexSize);
         OutputDebugStringA(buffer);
