@@ -835,7 +835,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Externals\.packman\deps\debug\lib;$(ProjectDir)..\Externals\.packman\deps\lib;$(ProjectDir)..\Externals\.packman\nvapi\amd64;$(ProjectDir)..\Externals\.packman\vulkansdk\Lib;$(ProjectDir)..\Externals\.packman\slang\bin\windows-x64\release;$(ProjectDir)..\Externals\.packman\python\libs;$(ProjectDir)..\Externals\.packman\WinPixEventRuntime\bin\x64;$(ProjectDir)..\Externals\.packman\Cuda\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Externals\.packman\deps\debug\lib;$(ProjectDir)..\Externals\.packman\deps\lib;$(ProjectDir)..\Externals\.packman\nvapi\amd64;$(ProjectDir)..\Externals\.packman\vulkansdk\Lib;$(ProjectDir)..\Externals\.packman\slang\bin\windows-x64\release;$(ProjectDir)..\Externals\.packman\python\libs;$(ProjectDir)..\Externals\.packman\WinPixEventRuntime\bin\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>WinPixEventRuntime.lib;glfw3dll.lib;slang.lib;Comctl32.lib;Shlwapi.lib;assimp-vc142-mt.lib;mikktspaced.lib;FreeImaged.lib;avcodec.lib;avutil.lib;avformat.lib;swscale.lib;Shcore.lib;DirectXTex.lib;Half-2_5_d.lib;openvdb.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
