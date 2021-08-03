@@ -587,10 +587,6 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
 void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
-    // my hypothesis is that mCompression in other parts of the code causing the visibility map to screw up. we set it to true here
-    // and false back again at the end of the function 
-    mCompression = true;
-
     char buffer[73];
     sprintf(buffer, "\n\n= RecvTexSizeUdp: %d =========", recvTexSize);
     OutputDebugStringA(buffer);
@@ -639,6 +635,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
                 currentSeqNum++;
             }
             else {
+                currentSeqNum++;
                 char buffer[73];
                 sprintf(buffer, "\n\n= Terminated Recv early: Received bytes %d =========", receivedDataSoFar);
                 OutputDebugStringA(buffer);
@@ -670,7 +667,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         OutputDebugStringA(buffer);
     }
     free(compData);
-    mCompression = false;
 
     if (receivedDataSoFar != recvTexSize)
     {
@@ -686,8 +682,6 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
 
 void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
 {
-    mCompression = true;
-
     char* compDataSend;
     if (mCompression)
     {
@@ -721,7 +715,6 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     {
         free(compDataSend);
     }
-    mCompression = false;
 }
 
 /// <summary>
