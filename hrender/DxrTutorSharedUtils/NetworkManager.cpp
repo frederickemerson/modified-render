@@ -587,17 +587,15 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
 void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
-    // If no compression occurs, we write directly to the recvTex with the expected texture size,
-    // but if we are using compression, we need to receive a compressed texture to an intermediate
-    // array and decompress
-    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexDataOut;
-
-
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
                           ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
-    uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvDest);
+    // If no compression occurs, we write directly to the recvTex with the expected texture size,
+    // but if we are using compression, we need to receive a compressed texture to an intermediate
+    // array and decompress
+
+    uint8_t* dataPtr = mCompression ? reinterpret_cast<uint8_t*>(&NetworkManager::compData[0]) : reinterpret_cast<uint8_t*>(recvTexDataOut);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
@@ -668,12 +666,10 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
 {
     if (mCompression)
     {
-        //srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
         sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
-        sendTexData = (char*)&NetworkManager::compData[0];
     }
 
-    uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
+    uint8_t* data = mCompression ? reinterpret_cast<uint8_t*>(&NetworkManager::compData[0]) : reinterpret_cast<uint8_t*>(sendTexData);
     UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
     currentSeqNum = packets.first;
