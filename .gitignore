@@ -17,3 +17,6 @@ Media
 Tools/.packman
 Tests/data
 packages/
+
+nvcomp_exts/*
+nvcomp_main/*

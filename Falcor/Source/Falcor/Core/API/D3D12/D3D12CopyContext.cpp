@@ -31,6 +31,8 @@
 #include "Core/API/Texture.h"
 #include "D3D12DescriptorData.h"
 #include "D3D12Resource.h"
+#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda.h"
+#include "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.2\include\cuda_runtime_api.h"
 
 namespace Falcor
 {
@@ -202,6 +204,27 @@ namespace Falcor
 
         mpBuffer->unmap();
         return result_ptr == nullptr ? result : (*result_ptr);
+    }
+
+    uint8_t* CopyContext::ReadTextureTask::getData2(std::vector<uint8_t>* result_ptr)
+    {
+        mpFence->syncCpu();
+        //D3D12_PLACED_SUBRESOURCE_FOOTPRINT& footprint = mFootprint;
+
+        // Calculate row size. GPU pitch can be different because it is aligned to D3D12_TEXTURE_DATA_PITCH_ALIGNMENT
+        //assert(footprint.Footprint.Width % getFormatWidthCompressionRatio(mTextureFormat) == 0); // Should divide evenly
+        //uint32_t actualRowSize = (footprint.Footprint.Width / getFormatWidthCompressionRatio(mTextureFormat)) * getFormatBytesPerBlock(mTextureFormat);
+
+        // Get buffer data
+        //size_t sz = footprint.Footprint.Depth * actualRowSize * mRowCount;
+        uint8_t* pData = reinterpret_cast<uint8_t*>(mpBuffer->map(Buffer::MapType::Read));
+        //memcpy((*result_ptr).data(), pData, sz);
+        mpBuffer->unmap();
+        return pData;
+    }
+
+    void CopyContext::ReadTextureTask::sync() {
+        mpFence->syncCpu();
     }
 
     static void d3d12ResourceBarrier(const Resource* pResource, Resource::State newState, Resource::State oldState, uint32_t subresourceIndex, ID3D12GraphicsCommandList* pCmdList)
