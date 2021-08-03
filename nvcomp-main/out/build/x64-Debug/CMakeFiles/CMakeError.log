@@ -1,0 +1,60 @@
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: 
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: 
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: -D_WINDOWS;-Xcompiler=";/GR;/EHsc"
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.3/bin/nvcc.exe 
+Build flags: 
+Id flags:  -v
+
+The output was:
+The system cannot find the file specified
+
+

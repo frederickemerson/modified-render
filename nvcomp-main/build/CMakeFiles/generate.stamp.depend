@@ -1,0 +1,39 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/BasicConfigVersion-SameMinorVersion.cmake.in
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCUDAInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCXXInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakePackageConfigHelpers.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/NVIDIA-CUDA.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindCUDAToolkit.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-MSVC-CXX.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-NVIDIA-CUDA.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/WriteBasicConfigVersionFile.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/CMakeLists.txt
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/3.21.0-rc1/CMakeCCompiler.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/3.21.0-rc1/CMakeCUDACompiler.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/3.21.0-rc1/CMakeCXXCompiler.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/3.21.0-rc1/CMakeRCCompiler.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/3.21.0-rc1/CMakeSystem.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/cmake/Findgdeflate.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp-main/cmake/nvcomp-config.cmake.in
+C:/Users/Nicholas/Desktop/hrender/nvcomp_exts/11.2/lib/cmake/bitcomp/bitcompConfig.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp_exts/11.2/lib/cmake/bitcomp/bitcompConfigVersion.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp_exts/11.2/lib/cmake/bitcomp/bitcompTargets-release.cmake
+C:/Users/Nicholas/Desktop/hrender/nvcomp_exts/11.2/lib/cmake/bitcomp/bitcompTargets.cmake

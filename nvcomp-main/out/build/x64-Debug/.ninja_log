@@ -1,0 +1,16 @@
+# ninja log v5
+33	1034	6478648996996951	src/CMakeFiles/nvcomp.dir/Check.cpp.obj	7c373d87c72cfd9f
+1035	1620	6478649002858383	src/CMakeFiles/nvcomp.dir/SnappyBatch.cpp.obj	828525851f12dfd
+1620	2826	6478649014931202	src/CMakeFiles/nvcomp.dir/highlevel/BitcompNvcomp.cpp.obj	682ee0fe8bbb914f
+2827	3181	6478649018441991	src/CMakeFiles/nvcomp.dir/TempSpaceBroker.cpp.obj	4c43debb9ed042f3
+3182	3805	6478649024443343	src/CMakeFiles/nvcomp.dir/highlevel/BitcompMetadata.cpp.obj	22c28324a2810b7c
+3805	4538	6478649032025049	src/CMakeFiles/nvcomp.dir/highlevel/CascadedMetadata.cpp.obj	8ac2cb04c446485c
+4538	5329	6478649039796801	src/CMakeFiles/nvcomp.dir/highlevel/CascadedSelector.cpp.obj	407b85915e01a945
+5330	5927	6478649045883211	src/CMakeFiles/nvcomp.dir/highlevel/LZ4Metadata.cpp.obj	4479875aff19051b
+3	8903	6491403938977055	src/CMakeFiles/nvcomp.dir/SnappyKernels.cu.obj	9de0d049f3612fe0
+29	549	6478650171242166	src/CMakeFiles/nvcomp.dir/highlevel/Metadata.cpp.obj	252e72d90b56c0be
+32	633	6478650172082453	src/CMakeFiles/nvcomp.dir/highlevel/HighLevelLZ4API.cpp.obj	23179f1b1d53cb51
+634	993	6478650175643257	src/CMakeFiles/nvcomp.dir/highlevel/MutableLZ4MetadataOnGPU.cpp.obj	32dd72d3a74c5ea7
+550	1110	6478650176833524	src/CMakeFiles/nvcomp.dir/nvcomp_api.cpp.obj	11915edb097c38c3
+993	1598	6478650181664717	src/CMakeFiles/nvcomp.dir/lowlevel/gdeflateBatch.cpp.obj	a3dea73abe6dc18
+1110	1737	6478650183095037	src/CMakeFiles/nvcomp.dir/lowlevel/LZ4Batch.cpp.obj	e36d91de571d29a4

@@ -99,7 +99,7 @@
     <ProjectGuid>{3F318569-891B-4D35-952C-9162D29F97F7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hrender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
