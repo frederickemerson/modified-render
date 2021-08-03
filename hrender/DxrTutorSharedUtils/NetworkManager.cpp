@@ -587,13 +587,17 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
 void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
-    // Note, compression is currently not implemented for UDP
+    // If no compression occurs, we write directly to the recvTex with the expected texture size,
+    // but if we are using compression, we need to receive a compressed texture to an intermediate
+    // array and decompress
+    char* recvDest = mCompression ? (char*)&NetworkManager::compData[0] : recvTexDataOut;
+
 
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
                           ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
-    uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
+    uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvDest);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
@@ -651,11 +655,23 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
     }
 
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
+
+    // Decompress the texture from NetworkManager::compData[0] to recvTexDataOut if using compression
+    // todo: replace first argument of decompress by the size of original texture sent
+    if (mCompression)
+    {
+        recvTexSize = DecompressTextureLZ4(VIS_TEX_LEN, recvTexDataOut, recvTexSize, (char*)&NetworkManager::compData[0]);
+    }
 }
 
 void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
 {
-    // Note, compression is currenlty not implemented for UDP
+    if (mCompression)
+    {
+        //srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
+        sendTexData = (char*)&NetworkManager::compData[0];
+    }
 
     uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
     UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
