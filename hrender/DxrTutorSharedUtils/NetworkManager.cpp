@@ -651,6 +651,7 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
         sprintf(buffer, "\n\n= Decompressing Texture: Original size: %d =========", recvTexSize);
         recvTexSize = DecompressTextureLZ4(VIS_TEX_LEN, recvTexDataOut, recvTexSize, (char*)&NetworkManager::compData[0]);
         sprintf(buffer, "\n\n= Compressed Texture: Uncompressed size: %d =========", recvTexSize);
+        OutputDebugStringA(buffer);
     }
 
     if (receivedDataSoFar != recvTexSize)
@@ -673,6 +674,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
         sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", sendTexSize);
         sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
         sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", sendTexSize);
+        OutputDebugStringA(buffer);
     }
 
     uint8_t* data = mCompression ? reinterpret_cast<uint8_t*>(&NetworkManager::compData[0]) : reinterpret_cast<uint8_t*>(sendTexData);
