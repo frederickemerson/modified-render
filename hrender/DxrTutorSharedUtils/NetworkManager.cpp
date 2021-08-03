@@ -679,18 +679,18 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
 
 void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
 {
-    char* compData;
+    char* compDataSend;
     if (mCompression)
     {
-        compData = (char*)malloc(sendTexSize);
+        compDataSend = (char*)malloc(sendTexSize);
         char buffer[70];
         sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", sendTexSize);
-        sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, compData);
+        sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, compDataSend);
         sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", sendTexSize);
         OutputDebugStringA(buffer);
     }
 
-    uint8_t* data = mCompression ? (uint8_t*)compData : reinterpret_cast<uint8_t*>(sendTexData);
+    uint8_t* data = mCompression ? (uint8_t*)compDataSend : reinterpret_cast<uint8_t*>(sendTexData);
     UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
     currentSeqNum = packets.first;
@@ -710,7 +710,7 @@ void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& 
     
     if (mCompression)
     {
-        free(compData);
+        free(compDataSend);
     }
 }
 
