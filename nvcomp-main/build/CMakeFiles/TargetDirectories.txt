@@ -1,5 +1,0 @@
-C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/INSTALL.dir
-C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/src/CMakeFiles/nvcomp.dir
-C:/Users/Nicholas/Desktop/hrender/nvcomp-main/build/src/CMakeFiles/INSTALL.dir
