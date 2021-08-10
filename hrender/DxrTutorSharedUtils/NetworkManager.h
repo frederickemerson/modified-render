@@ -58,7 +58,14 @@
 using namespace Falcor;
 
 class ResourceManager;
-class NetworkPass;
+
+// Stores the metadata for a specific frame
+typedef struct FrameData
+{
+    int frameSize;      // Total size of the frame in bytes
+    int frameNumber;    // Number associated to the current frame
+    int timestamp;      // Time offset from the start in milliseconds
+} FrameData;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
@@ -114,9 +121,9 @@ public:
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     // Use UDP to receive and send texture data
-    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp,
+    void RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp,
                         int timeout = UDP_LISTENING_TIMEOUT_MS);
-    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
+    void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);

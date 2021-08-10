@@ -69,6 +69,12 @@ public:
     //       allocated space!
     void copyInto(uint8_t* dataOut) const;
 
+    // Copies the data from this packet into another UdpCustomPacket
+    // and releases the pointer that is held by this packet
+    //
+    // Note: This calls delete[] on the data pointer in the copy
+    void copyIntoAndRelease(UdpCustomPacket& copy);
+
     // Returns the data pointer and sets the pointer
     // of this UdpCustomPacket to nullptr
     // 

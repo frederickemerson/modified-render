@@ -139,6 +139,26 @@ void UdpCustomPacket::copyInto(uint8_t* dataOut) const
     }
 }
 
+void UdpCustomPacket::copyIntoAndRelease(UdpCustomPacket& copy)
+{    
+    // Free the data pointer originally used in the copy
+    delete[] copy.udpData;
+
+    copy.sequenceNumber = this->sequenceNumber;
+    copy.packetSize = this->packetSize;
+    copy.frameNumber = this->frameNumber;
+    copy.numOfFramePackets = this->numOfFramePackets;
+    copy.timestamp = this->timestamp;
+    copy.udpData = this->udpData;
+
+    this->sequenceNumber = -1;
+    this->packetSize = 0;
+    this->frameNumber = -1;
+    this->numOfFramePackets = 0;
+    this->timestamp = -1;
+    this->udpData = nullptr;
+}
+
 uint8_t* UdpCustomPacket::releaseDataPointer()
 {
     uint8_t* ptr = udpData;
