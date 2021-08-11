@@ -278,6 +278,10 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
                                         pNetworkManager->mClientUdpSock);
     }
     OutputDebugString(L"\n\n= visTex received over network =========");
+    char frameDataMessage[89];
+    sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
+            rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
+    OutputDebugStringA(frameDataMessage);
 }
 
 void NetworkPass::executeServerUdpRecv(RenderContext* pRenderContext)
