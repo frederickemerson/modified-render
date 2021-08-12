@@ -262,9 +262,10 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
     // Need to take a while to wait for the server,
     // so we use a longer time out for the first time
+    FrameData rcvdFrameData = { visTexLen, 0, 0 };
     if (firstClientReceive)
     {
-        pNetworkManager->RecvTextureUdp(visTexLen,
+        pNetworkManager->RecvTextureUdp(rcvdFrameData,
                                         (char*)&NetworkPass::visibilityData[0],
                                         pNetworkManager->mClientUdpSock,
                                         UDP_FIRST_TIMEOUT_MS);
@@ -272,11 +273,15 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     }
     else
     {
-        pNetworkManager->RecvTextureUdp(visTexLen,
+        pNetworkManager->RecvTextureUdp(rcvdFrameData,
                                         (char*)&NetworkPass::visibilityData[0],
                                         pNetworkManager->mClientUdpSock);
     }
     OutputDebugString(L"\n\n= visTex received over network =========");
+    char frameDataMessage[89];
+    sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
+            rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
+    OutputDebugStringA(frameDataMessage);
 }
 
 void NetworkPass::executeServerUdpRecv(RenderContext* pRenderContext)
