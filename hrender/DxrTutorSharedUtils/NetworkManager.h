@@ -132,7 +132,9 @@ public:
     bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
+    int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
+    int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     // Send and receive data with UDP custom protocol
     // RecvUdpCustom: Expected sequence number must be specified in recvData
     bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,

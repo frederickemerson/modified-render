@@ -286,6 +286,61 @@ namespace Falcor
         return textureData;
     }
 
+    uint8_t* Texture::getTextureData2(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr)
+    {
+
+        assert(mType == Type::Texture2D);
+        RenderContext* pContext = gpDevice->getRenderContext();
+        // Handle the special case where we have an HDR texture with less then 3 channels
+        FormatType type = getFormatType(mFormat);
+        uint32_t channels = getFormatChannelCount(mFormat);
+        std::vector<uint8_t> textureData;
+        ResourceFormat resourceFormat = mFormat;
+
+        if (type == FormatType::Float && channels < 3)
+        {
+            Texture::SharedPtr pOther = Texture::create2D(getWidth(mipLevel), getHeight(mipLevel), ResourceFormat::RGBA32Float, 1, 1, nullptr, ResourceBindFlags::RenderTarget | ResourceBindFlags::ShaderResource);
+            pContext->blit(getSRV(mipLevel, 1, arraySlice, 1), pOther->getRTV(0, 0, 1));
+            return pContext->readTextureSubresource2(pOther.get(), 0, result_ptr);
+            resourceFormat = ResourceFormat::RGBA32Float;
+        }
+        else
+        {
+            uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
+            return pContext->readTextureSubresource2(this, subresource, result_ptr);
+        }
+    }
+
+    uint8_t* Texture::getTextureData3(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr)
+    {
+
+        assert(mType == Type::Texture2D);
+        RenderContext* pContext = gpDevice->getRenderContext();
+        // Handle the special case where we have an HDR texture with less then 3 channels
+        FormatType type = getFormatType(mFormat);
+        uint32_t channels = getFormatChannelCount(mFormat);
+        std::vector<uint8_t> textureData;
+        ResourceFormat resourceFormat = mFormat;
+
+        if (type == FormatType::Float && channels < 3)
+        {
+            Texture::SharedPtr pOther = Texture::create2D(getWidth(mipLevel), getHeight(mipLevel), ResourceFormat::RGBA32Float, 1, 1, nullptr, ResourceBindFlags::RenderTarget | ResourceBindFlags::ShaderResource);
+            pContext->blit(getSRV(mipLevel, 1, arraySlice, 1), pOther->getRTV(0, 0, 1));
+            textureTask = pContext->readTextureSubresource3(pOther.get(), 0, result_ptr);
+            resourceFormat = ResourceFormat::RGBA32Float;
+        }
+        else
+        {
+            uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
+            textureTask = pContext->readTextureSubresource3(this, subresource, result_ptr);
+        }
+        return textureTask->getData2(result_ptr);
+    }
+
+    uint8_t* Texture::sync(std::vector<uint8_t>* result_ptr) {
+        return textureTask->getData2(result_ptr);
+    }
+
     void Texture::captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format, Bitmap::ExportFlags exportFlags)
     {
         if (format == Bitmap::FileFormat::DdsFile)

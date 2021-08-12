@@ -3,6 +3,7 @@
 #include "NetworkManager.h"
 
 #include <chrono>
+#include "lz4.h"
 
 bool NetworkManager::mCamPosReceived = false;
 bool NetworkManager::mVisTexComplete = false;
@@ -491,6 +492,13 @@ char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compT
     return (char*)&NetworkManager::compData[0];
 }
 
+int NetworkManager::CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData)
+{
+    // int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
+    int compTexSize = LZ4_compress_default(inTexData, compTexData, inTexSize, inTexSize);
+    return compTexSize;
+}
+
 /// <summary>
 /// Decompress given data.
 /// </summary>
@@ -502,6 +510,13 @@ void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int com
 {
     lzo_uint new_len = outTexSize;
     lzo1x_decompress((unsigned char*)compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
+}
+
+int NetworkManager::DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
+{
+    // int LZ4_decompress_safe (const char* src, char* dst, int compressedSize, int dstCapacity);
+    int outputSize = LZ4_decompress_safe(compTexData, outTexData, compTexSize, outTexSize);
+    return outputSize;
 }
 
 /// <summary>
@@ -536,7 +551,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     // Decompress the texture if using compression
     if (mCompression)
     {
-        DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
+        recvTexSize = DecompressTextureLZ4(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
     }
 }
 
@@ -559,8 +574,23 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
     if (mCompression)
     {
-        srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        //srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        sendSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
         SendInt(sendSize, socket);
+
+        // Send the compressed texture
+        int sentSoFar = 0;
+        while (sentSoFar < sendSize)
+        {
+            bool lastPacket = sentSoFar > sendSize - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket ? (sendSize - sentSoFar) : DEFAULT_BUFLEN;
+            int iResult = send(socket, (char*)&NetworkManager::compData[0], sizeToSend, 0);
+            if (iResult != SOCKET_ERROR)
+            {
+                sentSoFar += iResult;
+            }
+        }
+        return;
     }
 
     // Send the texture
@@ -579,14 +609,24 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
 void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
+//<<<<<<< udp-headers
     // Note, compression is currently not implemented for UDP
 
     int recvTexSize = frameDataOut.frameSize;
+//=======
+    char buffer[73];
+    sprintf(buffer, "\n\n= RecvTexSizeUdp: %d =========", recvTexSize);
+    OutputDebugStringA(buffer);
+//>>>>>>> master
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
                           ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
-    uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
+    // If no compression occurs, we write directly to the recvTex with the expected texture size,
+    // but if we are using compression, we need to receive a compressed texture to an intermediate
+    // array and decompress
+    uint8_t* compData = (uint8_t*)malloc(recvTexSize);
+    uint8_t* dataPtr = mCompression ? compData : reinterpret_cast<uint8_t*>(recvTexDataOut);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
@@ -594,32 +634,41 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
         UdpCustomPacket toReceive(currentSeqNum);
         if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
-            char buffer[73];
-            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
-            OutputDebugStringA(buffer);
-            // Fill missing bits with data from latest
-            if (i == numberOfPackets - 1)
-            {
-                // Last packet, fill in all the other bits
-                int dataLeft = recvTexSize - receivedDataSoFar;
-                for (int j = 0; j < dataLeft; j++)
+            if (!mCompression) {
+                char buffer[73];
+                sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
+                OutputDebugStringA(buffer);
+                // Fill missing bits with data from latest
+                if (i == numberOfPackets - 1)
                 {
-                    dataPtr[j] = latestTextureData[receivedDataSoFar + j];
+                    // Last packet, fill in all the other bits
+                    int dataLeft = recvTexSize - receivedDataSoFar;
+                    for (int j = 0; j < dataLeft; j++)
+                    {
+                        dataPtr[j] = latestTextureData[receivedDataSoFar + j];
+                    }
+                    receivedDataSoFar = recvTexSize;
                 }
-                receivedDataSoFar = recvTexSize;
-            }
-            else
-            {
-                // Not the last packet, fill in the maximum amount of bits
-                for (int j = 0; j < UdpCustomPacket::maxPacketSize; j++)
+                else
                 {
-                    *dataPtr = latestTextureData[offset + j];
-                    dataPtr++;
+                    // Not the last packet, fill in the maximum amount of bits
+                    for (int j = 0; j < UdpCustomPacket::maxPacketSize; j++)
+                    {
+                        *dataPtr = latestTextureData[offset + j];
+                        dataPtr++;
+                    }
+                    receivedDataSoFar += UdpCustomPacket::maxPacketSize;
                 }
-                receivedDataSoFar += UdpCustomPacket::maxPacketSize;
+                // Try to receive the next packet
+                currentSeqNum++;
             }
-            // Try to receive the next packet
-            currentSeqNum++;
+            else {
+                currentSeqNum++;
+                char buffer[73];
+                sprintf(buffer, "\n\n= Terminated Recv early: Received bytes %d =========", receivedDataSoFar);
+                OutputDebugStringA(buffer);
+                break;
+            }
         }
         else
         {
@@ -643,6 +692,19 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
         }
     }
 
+    // Decompress the texture from NetworkManager::compData[0] to recvTexDataOut if using compression
+// todo: replace first argument of decompress by the size of original texture sent
+    if (mCompression)
+    {
+        char buffer[70];
+        sprintf(buffer, "\n\n= Decompressing Texture: Original size: %d =========", receivedDataSoFar);
+        OutputDebugStringA(buffer);
+        receivedDataSoFar = DecompressTextureLZ4(recvTexSize , recvTexDataOut, receivedDataSoFar, (char*)compData);
+        sprintf(buffer, "\n\n= Compressed Texture: Uncompressed size: %d =========", receivedDataSoFar);
+        OutputDebugStringA(buffer);
+    }
+    free(compData);
+
     if (receivedDataSoFar != recvTexSize)
     {
         char buffer[137];
@@ -657,11 +719,25 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
 
 void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
 {
-    // Note, compression is currenlty not implemented for UDP
+    char* compDataSend;
+    if (mCompression)
+    {
+        compDataSend = (char*)malloc(sendTexSize);
+        char buffer[70];
+        sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", sendTexSize);
+        sendTexSize = CompressTextureLZ4(sendTexSize, sendTexData, compDataSend);
+        sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", sendTexSize);
+        OutputDebugStringA(buffer);
+    }
 
+// udp-headers
     uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
     UdpCustomPacket allDataToSend(currentSeqNum, frameData.frameSize,
                                   frameData.frameNumber, 1, frameData.timestamp, data);
+//=======
+    uint8_t* data = mCompression ? (uint8_t*)compDataSend : reinterpret_cast<uint8_t*>(sendTexData);
+    UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
+//// master
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
     currentSeqNum = packets.first;
     allDataToSend.releaseDataPointer();
@@ -677,6 +753,11 @@ void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCK
         }
     }
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
+    
+    if (mCompression)
+    {
+        free(compDataSend);
+    }
 }
 
 /// <summary>

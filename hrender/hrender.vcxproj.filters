@@ -50,9 +50,6 @@
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.h">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
@@ -132,6 +129,7 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
