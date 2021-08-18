@@ -54,6 +54,7 @@ public:
 
     static std::vector<uint8_t> visibilityData;
     static std::vector<uint8_t> compressionBuffer;
+    static uint8_t* pVisibilityData;
     static std::array<float3, 3> camData;
 
 protected:

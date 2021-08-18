@@ -45,7 +45,7 @@ namespace Falcor
             using SharedPtr = std::shared_ptr<ReadTextureTask>;
             static SharedPtr create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
             std::vector<uint8_t> getData(std::vector<uint8_t>* result_ptr = nullptr);
-            uint8_t* getData2(std::vector<uint8_t>* result_ptr);
+            uint8_t* getData2();
             void sync();
         private:
             ReadTextureTask() = default;
@@ -73,11 +73,6 @@ namespace Falcor
             \param[in] wait If true, will block execution until the GPU finished processing the commands
         */
         virtual void flush(bool wait = false);
-
-        /*
-        lightweight version of flush for NetworkPass::visibilityData (added by nicholas)
-        */
-        void smallFlush();
 
         /** Check if we have pending commands
         */
@@ -132,7 +127,7 @@ namespace Falcor
         */
         std::vector<uint8_t> readTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
 
-        uint8_t* readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr);
+        uint8_t* readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex);
 
         CopyContext::ReadTextureTask::SharedPtr readTextureSubresource3(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr);
 

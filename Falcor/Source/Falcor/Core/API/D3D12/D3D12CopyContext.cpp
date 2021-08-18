@@ -206,7 +206,7 @@ namespace Falcor
         return result_ptr == nullptr ? result : (*result_ptr);
     }
 
-    uint8_t* CopyContext::ReadTextureTask::getData2(std::vector<uint8_t>* result_ptr)
+    uint8_t* CopyContext::ReadTextureTask::getData2()
     {
         mpFence->syncCpu();
         //D3D12_PLACED_SUBRESOURCE_FOOTPRINT& footprint = mFootprint;

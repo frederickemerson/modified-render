@@ -107,6 +107,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 
+    /*
     // LZ4 compression
     // 1. set srcSize once only
     if (srcSize == 0) {
@@ -123,7 +124,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // 2. GPU-CPU trsf
     auto start = high_resolution_clock::now();
     //pDstTex->sync();
-    srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0, &visibilityData);
+    srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0);
     //srcData = (char*)&(visibilityData)[0];
     auto stop = high_resolution_clock::now();
     gpucpu_duration += duration_cast<microseconds>(stop - start).count();
@@ -169,9 +170,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
-    
-
-
+    */
 
     /*
     // nvcomp GPU compression - currently cant build/install

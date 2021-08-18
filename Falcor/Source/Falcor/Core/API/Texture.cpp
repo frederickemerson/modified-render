@@ -286,7 +286,7 @@ namespace Falcor
         return textureData;
     }
 
-    uint8_t* Texture::getTextureData2(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr)
+    uint8_t* Texture::getTextureData2(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice)
     {
 
         assert(mType == Type::Texture2D);
@@ -301,13 +301,13 @@ namespace Falcor
         {
             Texture::SharedPtr pOther = Texture::create2D(getWidth(mipLevel), getHeight(mipLevel), ResourceFormat::RGBA32Float, 1, 1, nullptr, ResourceBindFlags::RenderTarget | ResourceBindFlags::ShaderResource);
             pContext->blit(getSRV(mipLevel, 1, arraySlice, 1), pOther->getRTV(0, 0, 1));
-            return pContext->readTextureSubresource2(pOther.get(), 0, result_ptr);
+            return pContext->readTextureSubresource2(pOther.get(), 0);
             resourceFormat = ResourceFormat::RGBA32Float;
         }
         else
         {
             uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
-            return pContext->readTextureSubresource2(this, subresource, result_ptr);
+            return pContext->readTextureSubresource2(this, subresource);
         }
     }
 
@@ -334,11 +334,11 @@ namespace Falcor
             uint32_t subresource = getSubresourceIndex(arraySlice, mipLevel);
             textureTask = pContext->readTextureSubresource3(this, subresource, result_ptr);
         }
-        return textureTask->getData2(result_ptr);
+        return textureTask->getData2();
     }
 
     uint8_t* Texture::sync(std::vector<uint8_t>* result_ptr) {
-        return textureTask->getData2(result_ptr);
+        return textureTask->getData2();
     }
 
     void Texture::captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format, Bitmap::ExportFlags exportFlags)

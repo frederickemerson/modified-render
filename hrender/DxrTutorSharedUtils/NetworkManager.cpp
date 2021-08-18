@@ -239,7 +239,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
         // before we can continue sending the next frame
         NetworkManager::mVisTexComplete = false;
 
-        char* toSendData = (char*)&NetworkPass::visibilityData[0];
+        char* toSendData = (char*)NetworkPass::pVisibilityData;
         int toSendSize = visTexSize; // visTexSize is currently hard-coded
         
         // if compress
