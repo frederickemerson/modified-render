@@ -92,7 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTexName, Falcor::float4(0.0f));
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, Falcor::float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;

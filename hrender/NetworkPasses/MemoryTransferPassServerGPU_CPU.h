@@ -50,7 +50,4 @@ protected:
 
     // Rendering state
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
-
-    // remember the texture that we will be transferring from
-    Texture::SharedPtr visTex;
 };

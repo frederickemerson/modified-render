@@ -30,7 +30,7 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     mpResManager->requestTextureResource("WorldPosition");
 
     // store the texture we will be transferring from
-    visTex = mpResManager->getTexture("VisibilityBitmap");
+    
 
     return true;
 }
@@ -45,6 +45,7 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
     // Load visibility texture from GPU to CPU
+    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
 
     // OLD METHOD: use if bugs start appearing
     //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
