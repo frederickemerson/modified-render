@@ -26,7 +26,7 @@ int NetworkPass::posTexHeight = 0;
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
 std::vector<uint8_t> NetworkPass::compressionBuffer = std::vector<uint8_t>(VIS_TEX_LEN, 0); // for compression
-uint8_t* NetworkPass::pVisibilityData = NULL; // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
+uint8_t* NetworkPass::pVisibilityData = NetworkPass::visibilityData.data(); // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
 std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)

@@ -82,15 +82,15 @@ namespace Falcor
         return pTask->getData(result_ptr);
     }
 
-    uint8_t* CopyContext::readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex)
+    uint8_t* CopyContext::readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
     {
         //auto start = high_resolution_clock::now();
-        CopyContext::ReadTextureTask::SharedPtr pTask = asyncReadTextureSubresource(pTexture, subresourceIndex, NULL);
+        CopyContext::ReadTextureTask::SharedPtr pTask = asyncReadTextureSubresource(pTexture, subresourceIndex, nullptr);
         //auto stop = high_resolution_clock::now();
         //printToDebugWindow("\nReadTextureTask create: " + std::to_string(duration_cast<microseconds>(stop - start).count()));
 
         //start = high_resolution_clock::now();
-        uint8_t* ptr = pTask->getData2();
+        uint8_t* ptr = pTask->getData2(result_ptr);
         //stop = high_resolution_clock::now();
         //printToDebugWindow("\nReadTextureTask getData: " + std::to_string(duration_cast<microseconds>(stop - start).count()));
         return ptr;

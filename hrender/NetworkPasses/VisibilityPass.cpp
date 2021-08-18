@@ -124,7 +124,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // 2. GPU-CPU trsf
     auto start = high_resolution_clock::now();
     //pDstTex->sync();
-    srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0);
+    srcData = (char*)pDstTex->getTextureData2(pRenderContext, 0, 0, &visibilityData);
     //srcData = (char*)&(visibilityData)[0];
     auto stop = high_resolution_clock::now();
     gpucpu_duration += duration_cast<microseconds>(stop - start).count();

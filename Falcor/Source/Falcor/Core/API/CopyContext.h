@@ -45,7 +45,7 @@ namespace Falcor
             using SharedPtr = std::shared_ptr<ReadTextureTask>;
             static SharedPtr create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
             std::vector<uint8_t> getData(std::vector<uint8_t>* result_ptr = nullptr);
-            uint8_t* getData2();
+            uint8_t* getData2(std::vector<uint8_t>* result_ptr = nullptr);
             void sync();
         private:
             ReadTextureTask() = default;
@@ -127,7 +127,7 @@ namespace Falcor
         */
         std::vector<uint8_t> readTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr = nullptr);
 
-        uint8_t* readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex);
+        uint8_t* readTextureSubresource2(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr);
 
         CopyContext::ReadTextureTask::SharedPtr readTextureSubresource3(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr);
 
