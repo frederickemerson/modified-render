@@ -44,7 +44,8 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex finished rendering =========");
     // Load visibility texture from GPU to CPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+    //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+    visTex->getTextureData2(pRenderContext, 0, 0, &NetworkPass::visibilityData);
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 
