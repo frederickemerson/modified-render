@@ -50,4 +50,8 @@ protected:
 
     // Rendering state
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
+
+    // index of textures we will be accessing
+    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+
 };

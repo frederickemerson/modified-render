@@ -243,15 +243,18 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
         int toSendSize = visTexSize; // visTexSize is currently hard-coded
         
         // if compress
-        char* compressedData;
         if (mCompression) {
-            compressedData = (char*)malloc(toSendSize);
             char buffer[70];
             sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
-            toSendSize = CompressTextureLZ4(visTexSize, toSendData, compressedData);
+            
+            // compress from src: toSendData to dst: NetworkPass::visiblityData
+            toSendSize = CompressTextureLZ4(visTexSize, toSendData, (char*)NetworkPass::visibilityData.data());
+            
             sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
             OutputDebugStringA(buffer);
-            toSendData = compressedData;
+
+            // now we send the compressed data instead
+            toSendData = (char*)NetworkPass::visibilityData.data(); //
         }
 
         // Send the visBuffer back to the sender
@@ -263,10 +266,6 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
                        toSendData,
                        mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
-
-        if (mCompression) {
-            free(compressedData);
-        }
 
         std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());

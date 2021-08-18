@@ -74,6 +74,7 @@ protected:
     // Various internal parameters
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
+    int32_t                                 mPosIndex;              ///< An index for our position buffer
     std::string                             mPosBufName = "WorldPosition";            ///< Where to find the position buffer
     bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
     int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client

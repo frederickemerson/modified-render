@@ -52,7 +52,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     setGuiSize(Falcor::int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mPosIndex = mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Set default environment map and scene
@@ -92,7 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, Falcor::float4(0.0f));
+    Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -101,13 +101,13 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
-    rayVars["gPos"] = mpResManager->getTexture(mPosBufName);
+    rayVars["gPos"] = mpResManager->getTexture(mPosIndex);
     rayVars["gOutput"] = pDstTex;
 
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 
-    /*
+    
     // LZ4 compression
     // 1. set srcSize once only
     if (srcSize == 0) {
@@ -170,7 +170,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
-    */
+    
 
     /*
     // nvcomp GPU compression - currently cant build/install
