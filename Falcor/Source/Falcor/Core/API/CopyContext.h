@@ -74,6 +74,11 @@ namespace Falcor
         */
         virtual void flush(bool wait = false);
 
+        /*
+        lightweight version of flush for NetworkPass::visibilityData (added by nicholas)
+        */
+        void smallFlush();
+
         /** Check if we have pending commands
         */
         bool hasPendingCommands() const { return mCommandsPending; }

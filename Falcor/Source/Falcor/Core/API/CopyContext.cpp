@@ -71,6 +71,14 @@ namespace Falcor
         }
     }
 
+    void CopyContext::smallFlush() {
+        if (mCommandsPending)
+        {
+            mpLowLevelData->flush();
+            mCommandsPending = false;
+        }
+    }
+
     CopyContext::ReadTextureTask::SharedPtr CopyContext::asyncReadTextureSubresource(const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
     {
         return CopyContext::ReadTextureTask::create(this, pTexture, subresourceIndex);

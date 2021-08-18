@@ -20,6 +20,8 @@
 #include "lz4.h"
 #include <chrono>
 #include <iostream>
+#include "NetworkPass.h"
+
 using namespace std::chrono;
 using namespace std;
 
@@ -69,8 +71,8 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     }
 
     // initialisation for compression
-    //dstData = (char*)malloc(8847360);
-    //srcData2 = (char*)malloc(8847360);
+    dstData = (char*)malloc(8847360);
+    srcData2 = (char*)malloc(8847360);
     //state = malloc(LZ4_sizeofState());
 
     return true;
@@ -90,7 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, Falcor::float4(0.0f));
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTexName, Falcor::float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
@@ -105,7 +107,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 
-    /* LZ4 compression
+    // LZ4 compression
     // 1. set srcSize once only
     if (srcSize == 0) {
         srcSize = static_cast<int>(pDstTex->getTextureSizeInBytes());
@@ -139,7 +141,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
 
     // 4. Decompress
     start = high_resolution_clock::now();
-    int srcSize2 = LZ4_decompress_safe(dstData, srcData2, dstSize, 8847360);
+    int srcSize2 = LZ4_decompress_safe(dstData, (char*)&NetworkPass::visibilityData[0], dstSize, 8847360);
     //lzo_uint srcSize2;
     //lzo1x_decompress((unsigned char*)dstData, dstSize, (unsigned char*)srcData2, &srcSize2, NULL);
 
@@ -149,7 +151,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // 5. CPU-GPU trsf
     start = high_resolution_clock::now();
 
-    pDstTex->apiInitPub(srcData2, true);
+    pDstTex->apiInitPub((char*)&NetworkPass::visibilityData[0], true);
     stop = high_resolution_clock::now();
     cpugpu_duration += duration_cast<microseconds>(stop - start).count();
 
@@ -167,7 +169,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
-    */
+    
 
 
 

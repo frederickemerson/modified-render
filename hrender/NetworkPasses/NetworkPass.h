@@ -53,6 +53,7 @@ public:
     static int posTexHeight;
 
     static std::vector<uint8_t> visibilityData;
+    static std::vector<uint8_t> compressionBuffer;
     static std::array<float3, 3> camData;
 
 protected:

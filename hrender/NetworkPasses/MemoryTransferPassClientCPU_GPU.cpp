@@ -43,6 +43,7 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
     // Put visibility texture from network (on CPU) into GPU
     Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
+    pRenderContext->flush(true);
     visTex->apiInitPub(NetworkPass::visibilityData.data(), true);
 }
 

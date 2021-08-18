@@ -266,7 +266,10 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     
     char* toRecvData;
     if (NetworkManager::mCompression) {
-        toRecvData = (char*)malloc(visTexLen);
+        if (firstClientReceive) {
+            NetworkPass::compressionBuffer = std::vector<uint8_t>(VIS_TEX_LEN, 0);
+        }
+        toRecvData = (char*)&NetworkPass::compressionBuffer[0];
     }
     else {
         toRecvData = (char*)&NetworkPass::visibilityData[0];
@@ -295,7 +298,6 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     // if compress
     if (pNetworkManager->mCompression) {
         pNetworkManager->DecompressTextureLZ4(visTexLen, (char*)&NetworkPass::visibilityData[0], rcvdFrameData.frameSize, toRecvData);
-        free(toRecvData);
     }
     
     OutputDebugStringA(frameDataMessage);

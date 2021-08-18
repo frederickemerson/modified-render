@@ -55,21 +55,21 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
 
     // compression
-    //std::vector<uint8_t>                    visibilityData;
-    //int                                     srcSize = 0;
-    //char*                                   srcData;
-    //char*                                   dstData;
-    //char*                                   srcData2;
-    //void*                                   state; // for compression buffer
+    std::vector<uint8_t>                    visibilityData;
+    int                                     srcSize = 0;
+    char*                                   srcData;
+    char*                                   dstData;
+    char*                                   srcData2;
+    void*                                   state; // for compression buffer
 
     // benchmarking
-    //int                                     frequency = 600;
-    //int                                     counter = 0;
-    //int                                     compressed_size = 0;
-    //std::chrono::microseconds::rep          gpucpu_duration = 0;
-    //std::chrono::microseconds::rep          compress_duration = 0;
-    //std::chrono::microseconds::rep          cpugpu_duration = 0;
-    //std::chrono::microseconds::rep          decompress_duration = 0;
+    int                                     frequency = 600;
+    int                                     counter = 0;
+    int                                     compressed_size = 0;
+    std::chrono::microseconds::rep          gpucpu_duration = 0;
+    std::chrono::microseconds::rep          compress_duration = 0;
+    std::chrono::microseconds::rep          cpugpu_duration = 0;
+    std::chrono::microseconds::rep          decompress_duration = 0;
 
     // Various internal parameters
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
