@@ -25,6 +25,7 @@ int NetworkPass::posTexHeight = 0;
 
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
+std::vector<uint8_t> NetworkPass::compressionBuffer = std::vector<uint8_t>(VIS_TEX_LEN, 0); // for compression
 std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -266,9 +267,6 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     
     char* toRecvData;
     if (NetworkManager::mCompression) {
-        if (firstClientReceive) {
-            NetworkPass::compressionBuffer = std::vector<uint8_t>(VIS_TEX_LEN, 0);
-        }
         toRecvData = (char*)&NetworkPass::compressionBuffer[0];
     }
     else {
@@ -296,7 +294,7 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
             rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
     
     // if compress
-    if (pNetworkManager->mCompression) {
+    if (NetworkManager::mCompression) {
         pNetworkManager->DecompressTextureLZ4(visTexLen, (char*)&NetworkPass::visibilityData[0], rcvdFrameData.frameSize, toRecvData);
     }
     
