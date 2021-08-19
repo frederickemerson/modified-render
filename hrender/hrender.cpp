@@ -223,21 +223,25 @@ void runClient(bool useTcp)
     {
         ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
     }
-
-    // --- Pass 1 Send camera data to server--- //
-    pipeline->setPassOptions(0, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend)
-    });
+    
+    NetworkPass::SharedPtr networkPass = NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend);
+    // testing new ordering of commands
+    networkPass->firstClientSendUdp();
 
     // --- Pass 2 creates a GBuffer on client side--- //
-    pipeline->setPassOptions(1, {
+    pipeline->setPassOptions(0, {
         // Rasterized GBuffer
         JitteredGBufferPass::create()
     });
 
     // --- Pass 3 receive visibility bitmap from server --- //
-    pipeline->setPassOptions(2, {
+    pipeline->setPassOptions(1, {
         NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
+    });
+
+    // --- Pass 1 Send camera data to server--- //
+    pipeline->setPassOptions(2, {
+        networkPass
     });
 
     // --- Pass 4 transfers CPU information into GPU --- //

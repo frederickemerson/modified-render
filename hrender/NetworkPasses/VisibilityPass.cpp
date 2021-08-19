@@ -107,7 +107,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     // Shoot our rays and shade our primary hit points
     mpRays->execute(pRenderContext, Falcor::uint2(pDstTex->getWidth(), pDstTex->getHeight()));
 
-    
+    /*
     // LZ4 compression
     // 1. set srcSize once only
     if (srcSize == 0) {
@@ -170,7 +170,7 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
         decompress_duration = 0;
         compressed_size = 0;
     }
-    
+    */
 
     /*
     // nvcomp GPU compression - currently cant build/install

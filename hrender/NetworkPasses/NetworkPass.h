@@ -47,6 +47,9 @@ public:
     }
     virtual ~NetworkPass() = default;
 
+    //testing new ordering for render graph
+    void firstClientSendUdp();
+
     // Texture data from transfering
     static std::vector<uint8_t> posData;
     static int posTexWidth;
