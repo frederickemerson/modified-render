@@ -78,6 +78,9 @@ void NetworkPass::execute(RenderContext* pRenderContext)
         executeServerUdpRecv(pRenderContext);
     else if (mMode == Mode::ClientUdpSend)
         executeClientUdpSend(pRenderContext);
+    // testing new ordering of commands
+    else if (mMode == Mode::ClientUdpSendFirst)
+        firstClientSendUdp();
     else // (mMode == Mode::ClientUdp)
         executeClientUdpRecv(pRenderContext);
 }
@@ -246,16 +249,27 @@ void NetworkPass::executeClientUdpSend(RenderContext* pRenderContext)
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Slight branch optimization over:
-    //mFirstRender && firstClientRenderUdp(pRenderContext);
+    mFirstRender && firstClientRenderUdp(pRenderContext);
 
     // Send camera data from client to server
     Camera::SharedPtr cam = mpScene->getCamera();
+
+    // store cameraU, V, W specifically for GBuffer rendering later
+    const CameraData& cameraData = cam->getData();
+    pNetworkManager->cameraU = cameraData.cameraU;
+    pNetworkManager->cameraV = cameraData.cameraV;
+    pNetworkManager->cameraW = cameraData.cameraW;
+
     OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
     pNetworkManager->SendCameraDataUdp(cam, pNetworkManager->mClientUdpSock);
     OutputDebugString(L"\n\n= camData sent over network =========");
 }
 
 void NetworkPass::firstClientSendUdp() {
+    if (!mFirstRender) {
+        return;
+    }
+    
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Send the texture size to the server
@@ -289,6 +303,11 @@ void NetworkPass::firstClientSendUdp() {
 
 void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
 {
+    // dont render the first time because visibilityBuffer doesnt exist yet (new ordering sends camera Data after receive visibilityBuffer)
+    /*if (mFirstRender) {
+        mFirstRender = false;
+        return;
+    }*/
     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
 
     // Await server to send back the visibility pass texture

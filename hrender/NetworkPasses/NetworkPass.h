@@ -38,6 +38,7 @@ public:
         ClientUdpSend = 5,
         ServerUdp = 6,
         ServerUdpSend = 7,
+        ClientUdpSendFirst = 8
     };
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;

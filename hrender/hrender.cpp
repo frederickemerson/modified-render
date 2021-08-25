@@ -223,42 +223,45 @@ void runClient(bool useTcp)
     {
         ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
     }
-    
-    NetworkPass::SharedPtr networkPass = NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend);
-    // testing new ordering of commands
-    networkPass->firstClientSendUdp();
-
-    // --- Pass 2 creates a GBuffer on client side--- //
-    pipeline->setPassOptions(0, {
-        // Rasterized GBuffer
-        JitteredGBufferPass::create()
-    });
-
-    // --- Pass 3 receive visibility bitmap from server --- //
-    pipeline->setPassOptions(1, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
-    });
 
     // --- Pass 1 Send camera data to server--- //
-    pipeline->setPassOptions(2, {
-        networkPass
+    /*pipeline->setPassOptions(2, {
+        NetworkPass::create(NetworkPass::Mode::ClientUdpSendFirst)
+    });*/
+
+
+
+    // --- Pass 1 Send camera data to server--- //
+    pipeline->setPassOptions(0, {
+        NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend)
     });
 
     // --- Pass 4 transfers CPU information into GPU --- //
-    pipeline->setPassOptions(3, {
+    pipeline->setPassOptions(1, {
         MemoryTransferPassClientCPU_GPU::create()
     });
 
     // --- Pass 5 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(4, {
+    pipeline->setPassOptions(2, {
         VShadingPass::create("V-shading"),
     });
 
     // --- Pass 6 just lets us select which pass to view on screen --- //
-    pipeline->setPass(5, CopyToOutputPass::create());
+    pipeline->setPass(3, CopyToOutputPass::create());
 
     // --- Pass 7 temporally accumulates frames for denoising --- //
-    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // --- Pass 2 creates a GBuffer on client side--- //
+    pipeline->setPassOptions(5, {
+        // Rasterized GBuffer
+        JitteredGBufferPass::create()
+        });
+
+    // --- Pass 3 receive visibility bitmap from server --- //
+    pipeline->setPassOptions(6, {
+        NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
+        });
 
     // ============================ //
     // Set presets for the pipeline //

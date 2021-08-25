@@ -117,6 +117,12 @@ public:
     // Will be initialised by firstClientRenderUdp
     char* latestTextureData = nullptr;
 
+    // last camera data sent out to server, this helps us render the GBuffer with matching camera data
+    // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
+    float3 cameraU = float3(0, 0, 0);
+    float3 cameraV = float3(0, 0, 0);
+    float3 cameraW = float3(0, 0, 0);
+
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
