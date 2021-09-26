@@ -1021,7 +1021,10 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
     std::unique_ptr<char[]> udpToSend = dataToSend.createUdpPacket();
 
     // Send the data
-    OutputDebugString(L"\n\n= SendUdpCustom: Sending packets... =========");
+    char buffer0[65];
+    sprintf(buffer0, "\n\n= SendUdpCustom: Sending packet %d... =========", dataToSend.sequenceNumber);
+    OutputDebugStringA(buffer0);
+
     struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&mSi_otherUdp);
     int socketLen = sizeof(mSi_otherUdp);
     int sendSize = UdpCustomPacket::headerSizeBytes + dataToSend.packetSize;
