@@ -350,16 +350,18 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
         std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
         if (timeDifference > std::chrono::milliseconds::zero())
         {
-            char sleepMessage[89];
-            sprintf(sleepMessage, "\nSleeping for %d=========", static_cast<int>(timeDifference.count()));
-            OutputDebugStringA(sleepMessage);
-            // std::this_thread::sleep_for(timeDifference);
+            char slowerMessage[77];
+            sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
+                    static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(slowerMessage);
         }
         else
         {
-            char sleepMessage[89];
-            sprintf(sleepMessage, "\nBehind by %d=========", static_cast<int>(timeDifference.count()));
-            OutputDebugStringA(sleepMessage);
+            char fasterMessage[77];
+            sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
+                    static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(fasterMessage);
+            // std::this_thread::sleep_for(-timeDifference);
         }
     }
     OutputDebugString(L"\n\n= visTex received over network =========");
