@@ -176,22 +176,11 @@ void runServer(bool useTcp)
                             texWidth, texHeight)
     });
 
-    // --- Pass 6 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(5, {
-        VShadingPass::create("V-shading"),
-    });
-
-    // --- Pass 7 just lets us select which pass to view on screen --- //
-    pipeline->setPass(6, CopyToOutputPass::create());
-
-    // --- Pass 8 temporally accumulates frames for denoising --- //
-    pipeline->setPass(7, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
-
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
         });
 
     // Start our program
@@ -228,8 +217,6 @@ void runClient(bool useTcp)
     /*pipeline->setPassOptions(2, {
         NetworkPass::create(NetworkPass::Mode::ClientUdpSendFirst)
     });*/
-
-
 
     // --- Pass 1 Send camera data to server--- //
     pipeline->setPassOptions(0, {

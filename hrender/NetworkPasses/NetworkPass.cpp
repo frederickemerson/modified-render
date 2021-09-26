@@ -314,8 +314,6 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    // Need to take a while to wait for the server,
-    // so we use a longer time out for the first time
     FrameData rcvdFrameData = { visTexLen, 0, 0 };
     
     char* toRecvData;
@@ -328,7 +326,9 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
 
 
     if (firstClientReceive)
-    {
+    {        
+        // Need to take a while to wait for the server,
+        // so we use a longer time out for the first time
         pNetworkManager->RecvTextureUdp(rcvdFrameData,
                                         toRecvData,
                                         pNetworkManager->mClientUdpSock,
