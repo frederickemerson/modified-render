@@ -1,8 +1,8 @@
 #include "ResourceManager.h"
 #include "../NetworkPasses/NetworkPass.h"
+#include "../NetworkPasses/NetworkUtils.h"
 #include "NetworkManager.h"
 
-#include <chrono>
 #include "lz4.h"
 
 bool NetworkManager::mCamPosReceived = false;
@@ -190,14 +190,6 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     sprintf(printWidthHeight, "\nWidth: %d\nHeight: %d", outTexWidth, outTexHeight);
     OutputDebugStringA(printWidthHeight);
     return true;
-}
-
-// Helper function for ListenServerUdp
-std::chrono::milliseconds getCurrentTime()
-{
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()
-    );
 }
 
 bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
@@ -690,14 +682,14 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
         frameDataOut.frameSize = receivedDataSoFar;
     }
 
-    if (receivedDataSoFar != recvTexSize)
-    {
-        char buffer[137];
-        sprintf(buffer, "\n\n= RecvTextureUdp: Error, received size does not match expected size."
-            "\nExpected %d, received %d =========", recvTexSize, receivedDataSoFar - 1);
-        OutputDebugStringA(buffer);
-        return;
-    }
+    // if (receivedDataSoFar != recvTexSize)
+    // {
+    //     char buffer[137];
+    //     sprintf(buffer, "\n\n= RecvTextureUdp: Error, received size does not match expected size."
+    //         "\nExpected %d, received %d =========", recvTexSize, receivedDataSoFar - 1);
+    //     OutputDebugStringA(buffer);
+    //     return;
+    // }
 
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
 }

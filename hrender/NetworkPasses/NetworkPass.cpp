@@ -17,6 +17,7 @@
 **********************************************************************************************************************/
 
 #include "NetworkPass.h"
+#include "NetworkUtils.h"
 
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
@@ -332,6 +333,9 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
                                         toRecvData,
                                         pNetworkManager->mClientUdpSock,
                                         UDP_FIRST_TIMEOUT_MS);
+        // Store the time when the first frame was received
+        // (server sends timestamps relative to the time when the first frame was fully rendered)
+        startTime = getCurrentTime();
         firstClientReceive = false;
     }
     else
@@ -339,6 +343,23 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
         pNetworkManager->RecvTextureUdp(rcvdFrameData,
                                         toRecvData,
                                         pNetworkManager->mClientUdpSock);
+        
+        // TODO: make use of timestamp to delay if needed
+        std::chrono::milliseconds currentTime = getComparisonTimestamp();
+        std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
+        if (timeDifference > std::chrono::milliseconds::zero())
+        {
+            char sleepMessage[89];
+            sprintf(sleepMessage, "\nSleeping for %d=========", static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(sleepMessage);
+            std::this_thread::sleep_for(timeDifference);
+        }
+        else
+        {
+            char sleepMessage[89];
+            sprintf(sleepMessage, "\nBehind by %d=========", static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(sleepMessage);
+        }
     }
     OutputDebugString(L"\n\n= visTex received over network =========");
     char frameDataMessage[89];
@@ -427,4 +448,9 @@ bool NetworkPass::firstServerRenderUdp(RenderContext* pRenderContext)
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");
     return true;
+}
+
+std::chrono::milliseconds NetworkPass::getComparisonTimestamp()
+{
+    return getCurrentTime() - startTime;
 }
