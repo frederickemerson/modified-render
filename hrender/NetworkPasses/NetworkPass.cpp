@@ -352,7 +352,7 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
             char sleepMessage[89];
             sprintf(sleepMessage, "\nSleeping for %d=========", static_cast<int>(timeDifference.count()));
             OutputDebugStringA(sleepMessage);
-            std::this_thread::sleep_for(timeDifference);
+            // std::this_thread::sleep_for(timeDifference);
         }
         else
         {
