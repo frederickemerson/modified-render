@@ -171,8 +171,8 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
         OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
         return false;
     }
-    // Next sequence number should be 1
-    currentSeqNum = 1;
+    // Next client sequence number should be 1
+    clientSeqNum = 1;
     
     // Packet should consist of two ints
     if (firstPacket.packetSize != 8)
@@ -629,11 +629,12 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
     {
         // Total offset of the pointer from the start for this packet
         int offset = UdpCustomPacket::maxPacketSize * i;
-        UdpCustomPacket toReceive(currentSeqNum);
+        // Assumes client is receiving texture from server
+        UdpCustomPacket toReceive(serverSeqNum);
         if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
             char buffer[73];
-            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
+            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", serverSeqNum);
             OutputDebugStringA(buffer);
             // Fill missing bits with data from latest
             if (i == numberOfPackets - 1)
@@ -657,11 +658,11 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
                 receivedDataSoFar += UdpCustomPacket::maxPacketSize;
             }
             // Try to receive the next packet
-            currentSeqNum++;
+            serverSeqNum++;
         }
         else
         {
-            currentSeqNum++;
+            serverSeqNum++;
             // Copy the packet data to the char* given
             toReceive.copyInto(dataPtr);
             dataPtr += toReceive.packetSize;
@@ -697,10 +698,11 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
 void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
-    UdpCustomPacket allDataToSend(currentSeqNum, frameData.frameSize,
+    // Assumes server is sending to client
+    UdpCustomPacket allDataToSend(serverSeqNum, frameData.frameSize,
                                   frameData.frameNumber, 1, frameData.timestamp, data);
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
-    currentSeqNum = packets.first;
+    serverSeqNum = packets.first;
     allDataToSend.releaseDataPointer();
 
     for (UdpCustomPacket& toSend : packets.second)
@@ -801,7 +803,8 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
 
 bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
 {
-    UdpCustomPacket toReceive(currentSeqNum);
+    // Assumes server is receiving cam data from client
+    UdpCustomPacket toReceive(clientSeqNum);
     if (!RecvUdpCustom(toReceive, socketUdp, UDP_CAMERA_DATA_TIMEOUT_MS))
     {
         OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
@@ -816,14 +819,14 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
             OutputDebugString(L"\n= Using old camera data value =========");
             // Take from the cache
             cameraData = cameraDataCache.back();
-            currentSeqNum++;
+            clientSeqNum++;
             return true;
         }
     }
     else
     {
         // Increment sequence number for next communication
-        currentSeqNum++;
+        clientSeqNum++;
         // Copy the data to the pointer
         assert(toReceive.packetSize == sizeof(cameraData));
         uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
@@ -842,8 +845,9 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
     uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
-    UdpCustomPacket toSend(currentSeqNum, sizeof(cameraData), data);
-    currentSeqNum++;
+    // Assumes client sending to server
+    UdpCustomPacket toSend(clientSeqNum, sizeof(cameraData), data);
+    clientSeqNum++;
 
     bool wasDataSent = true;
     if (!SendUdpCustom(toSend, socketUdp))
@@ -965,7 +969,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Receive the rest of the packet, if needed
-    if (dataReceivedSoFar < dataSize)
+    if (dataReceivedSoFar < dataSize + headerSize)
     {
         do
         {
@@ -982,6 +986,13 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
                 OutputDebugStringA(buffer);
             }
         } while (dataReceivedSoFar < dataSize);
+    }
+    else if (dataReceivedSoFar > dataSize + headerSize)
+    {
+        char extraDataBuffer[85];
+        sprintf(extraDataBuffer, "\nRecvUdpCustom: Ignoring extra %d bytes for packet #%d",
+                dataReceivedSoFar - dataSize, recvData.sequenceNumber);
+        OutputDebugStringA(extraDataBuffer);
     }
 
     char* dataPointer;

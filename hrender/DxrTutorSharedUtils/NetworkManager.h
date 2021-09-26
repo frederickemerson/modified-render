@@ -81,7 +81,8 @@ public:
     SOCKET mClientUdpSock = INVALID_SOCKET; 
 
     // Used by both server and client in UDP communication
-    int32_t currentSeqNum = 0;
+    int32_t serverSeqNum = 0;
+    int32_t clientSeqNum = 0;
     struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
