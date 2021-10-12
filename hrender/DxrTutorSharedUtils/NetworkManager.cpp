@@ -452,6 +452,7 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 
 void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeForever)
 {
+    bool firstClientReceive = isFirstClientReceive;
     // for compression
     std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
     while (true)
@@ -471,15 +472,18 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         char* visWritingBuffer = reinterpret_cast<char*>(&(*NetworkPass::visibilityDataForWritingClient)[0]);
         char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
-        if (isFirstClientReceive)
+        if (firstClientReceive)
         {        
             // Need to take a while to wait for the server,
             // so we use a longer time out for the first time
             RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock, UDP_FIRST_TIMEOUT_MS);
             // Store the time when the first frame was received
             // (server sends timestamps relative to the time when the first frame was fully rendered)
-            startTime = getCurrentTime();
-            isFirstClientReceive = false;
+            if (startTime == NULL)
+            {
+                startTime = getCurrentTime();
+            }
+            firstClientReceive = false;
         }
         else
         {
@@ -510,7 +514,8 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         OutputDebugStringA(frameDataMessage);
         
         // if compress
-        if (NetworkManager::mCompression) {
+        if (NetworkManager::mCompression)
+        {
             DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, compressionBuffer.get());
         }
 
@@ -521,7 +526,10 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         NetworkPass::visibilityDataForWritingClient = tempPtr;
         // mutex and lock are released at the end of scope
 
-        if (!executeForever) break;
+        if (!executeForever)
+        {
+            break;
+        }
     }
 }
 

@@ -299,13 +299,13 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
     if (firstClientReceive)
     {
         NetworkManager::SharedPtr mpNetworkManager = mpResManager->mNetworkManager;
-        // First client listen in sequence
+        // First client listen to be run in sequence
         mpNetworkManager->ListenClientUdp(true, false);
 
         // Start the client receiving thread
         auto clientListen = [mpNetworkManager]()
         {
-            mpNetworkManager->ListenClientUdp(false, true);
+            mpNetworkManager->ListenClientUdp(true, true);
         };
         Threading::dispatchTask(clientListen);
         firstClientReceive = false;

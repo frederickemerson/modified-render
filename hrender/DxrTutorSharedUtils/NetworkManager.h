@@ -194,8 +194,8 @@ public:
     bool CloseClientConnectionUdp();
 
 private:
-    std::chrono::milliseconds startTime; // The time when the client first receives
-                                         // a rendered frame from the server
+    std::chrono::milliseconds startTime = NULL; // The time when the client first receives
+                                                // a rendered frame from the server
 
     // A helper function to get the time from startTime
     std::chrono::milliseconds getComparisonTimestamp();
