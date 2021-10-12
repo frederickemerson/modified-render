@@ -52,7 +52,9 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
 
     pRenderContext->flush(true);
-    visTex->apiInitPub(NetworkPass::visibilityData.data(), true);
+
+    std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
+    visTex->apiInitPub(NetworkPass::visibilityDataForReadingClient->data(), true);
 }
 
 void MemoryTransferPassClientCPU_GPU::renderGui(Gui::Window* pPassWindow)

@@ -56,9 +56,13 @@ public:
     static int posTexWidth;
     static int posTexHeight;
 
-    static std::vector<uint8_t> visibilityData;
-    static std::vector<uint8_t> compressionBuffer;
-    static uint8_t* pVisibilityData;
+    // Client - Two buffers for writing and reading at the same time
+    static std::vector<uint8_t>* visibilityDataForReadingClient;
+    static std::vector<uint8_t>* visibilityDataForWritingClient;
+    // Server - TODO
+    static std::vector<uint8_t> visibilityDataServer;
+    // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
+    static uint8_t* pVisibilityDataServer;
     static std::array<float3, 3> camData;
 
 protected:
@@ -90,9 +94,6 @@ protected:
     // Get the texture data from the GPU into a RAM array
     std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);
 
-    // A helper function to get the time from startTime
-    std::chrono::milliseconds getComparisonTimestamp();
-
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }
     bool usesRayTracing() override { return true; }
@@ -109,7 +110,5 @@ protected:
     int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 
     bool                                    firstClientReceive = true; // Use a longer timeout for first client receive
-    std::chrono::milliseconds               startTime;                 // The time when the client first receives
-                                                                       // a rendered frame from the server
 };
 

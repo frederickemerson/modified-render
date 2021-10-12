@@ -57,7 +57,7 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
     // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
     // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
-    NetworkPass::pVisibilityData = visTex->getTextureData2(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+    NetworkPass::pVisibilityDataServer = visTex->getTextureData2(pRenderContext, 0, 0, &NetworkPass::visibilityDataServer);
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 

@@ -17,7 +17,6 @@
 **********************************************************************************************************************/
 
 #include "NetworkPass.h"
-#include "NetworkUtils.h"
 
 //std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
 std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
@@ -25,9 +24,11 @@ int NetworkPass::posTexWidth = 0;
 int NetworkPass::posTexHeight = 0;
 
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
-std::vector<uint8_t> NetworkPass::visibilityData = std::vector<uint8_t>(VIS_TEX_LEN, 0);
-std::vector<uint8_t> NetworkPass::compressionBuffer = std::vector<uint8_t>(VIS_TEX_LEN, 0); // for compression
-uint8_t* NetworkPass::pVisibilityData = NetworkPass::visibilityData.data(); // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
+std::vector<uint8_t>* NetworkPass::visibilityDataForReadingClient = new std::vector<uint8_t>(VIS_TEX_LEN, 0);
+std::vector<uint8_t>* NetworkPass::visibilityDataForWritingClient = new std::vector<uint8_t>(VIS_TEX_LEN, 0);
+std::vector<uint8_t> NetworkPass::visibilityDataServer(VIS_TEX_LEN, 0);
+// for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
+uint8_t* NetworkPass::pVisibilityDataServer = NetworkPass::visibilityDataServer.data();
 std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -158,7 +159,7 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    pNetworkManager->RecvTexture(visTexLen, (char*)&NetworkPass::visibilityData[0], pNetworkManager->mConnectSocket);
+    pNetworkManager->RecvTexture(visTexLen, (char*)(*NetworkPass::visibilityDataForReadingClient)[0], pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
@@ -295,75 +296,20 @@ void NetworkPass::executeClientUdpSend(RenderContext* pRenderContext)
 
 void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
 {
-    // dont render the first time because visibilityBuffer doesnt exist yet (new ordering sends camera Data after receive visibilityBuffer)
-    /*if (mFirstRender) {
-        mFirstRender = false;
-        return;
-    }*/
-    NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
-
-    // Await server to send back the visibility pass texture
-    int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
-    OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    FrameData rcvdFrameData = { visTexLen, 0, 0 };
-    
-    char* toRecvData;
-    if (NetworkManager::mCompression) {
-        toRecvData = (char*)&NetworkPass::compressionBuffer[0];
-    }
-    else {
-        toRecvData = (char*)&NetworkPass::visibilityData[0];
-    }
-
-
     if (firstClientReceive)
-    {        
-        // Need to take a while to wait for the server,
-        // so we use a longer time out for the first time
-        pNetworkManager->RecvTextureUdp(rcvdFrameData,
-                                        toRecvData,
-                                        pNetworkManager->mClientUdpSock,
-                                        UDP_FIRST_TIMEOUT_MS);
-        // Store the time when the first frame was received
-        // (server sends timestamps relative to the time when the first frame was fully rendered)
-        startTime = getCurrentTime();
+    {
+        NetworkManager::SharedPtr mpNetworkManager = mpResManager->mNetworkManager;
+        // First client listen in sequence
+        mpNetworkManager->ListenClientUdp(true, false);
+
+        // Start the client receiving thread
+        auto clientListen = [mpNetworkManager]()
+        {
+            mpNetworkManager->ListenClientUdp(false, true);
+        };
+        Threading::dispatchTask(clientListen);
         firstClientReceive = false;
     }
-    else
-    {
-        pNetworkManager->RecvTextureUdp(rcvdFrameData,
-                                        toRecvData,
-                                        pNetworkManager->mClientUdpSock);
-        
-        std::chrono::milliseconds currentTime = getComparisonTimestamp();
-        std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
-        if (timeDifference > std::chrono::milliseconds::zero())
-        {
-            char slowerMessage[77];
-            sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
-                    static_cast<int>(timeDifference.count()));
-            OutputDebugStringA(slowerMessage);
-        }
-        else
-        {
-            char fasterMessage[77];
-            sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
-                    static_cast<int>(timeDifference.count()));
-            OutputDebugStringA(fasterMessage);
-            // std::this_thread::sleep_for(-timeDifference);
-        }
-    }
-    OutputDebugString(L"\n\n= visTex received over network =========");
-    char frameDataMessage[89];
-    sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
-            rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
-    
-    // if compress
-    if (NetworkManager::mCompression) {
-        pNetworkManager->DecompressTextureLZ4(visTexLen, (char*)&NetworkPass::visibilityData[0], rcvdFrameData.frameSize, toRecvData);
-    }
-    
-    OutputDebugStringA(frameDataMessage);
 }
 
 void NetworkPass::executeServerUdpRecv(RenderContext* pRenderContext)
@@ -448,9 +394,4 @@ bool NetworkPass::firstServerRenderUdp(RenderContext* pRenderContext)
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");
     return true;
-}
-
-std::chrono::milliseconds NetworkPass::getComparisonTimestamp()
-{
-    return getCurrentTime() - startTime;
 }

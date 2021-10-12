@@ -233,7 +233,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
         // before we can continue sending the next frame
         NetworkManager::mVisTexComplete = false;
 
-        char* toSendData = (char*)NetworkPass::pVisibilityData;
+        char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
         int toSendSize = visTexSize; // visTexSize is currently hard-coded
         
         // if compress
@@ -242,13 +242,13 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
             sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
             
             // compress from src: toSendData to dst: NetworkPass::visiblityData
-            toSendSize = CompressTextureLZ4(visTexSize, toSendData, (char*)NetworkPass::visibilityData.data());
+            toSendSize = CompressTextureLZ4(visTexSize, toSendData, (char*)NetworkPass::visibilityDataServer.data());
             
             sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
             OutputDebugStringA(buffer);
 
             // now we send the compressed data instead
-            toSendData = (char*)NetworkPass::visibilityData.data(); //
+            toSendData = (char*)NetworkPass::visibilityDataServer.data(); //
         }
 
         // Send the visBuffer back to the sender
@@ -309,7 +309,7 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
 
         // Send the visBuffer back to the sender
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        SendTexture(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket);
+        SendTexture(visTexSize, (char*)&NetworkPass::visibilityDataServer[0], mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
     } while (true);
 
@@ -449,9 +449,79 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
-void NetworkManager::ListenClientUdp()
+void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeForever)
 {
+    // for compression
+    char compressionBuffer[VIS_TEX_LEN];
+    while (true)
+    {
+        // dont render the first time because visibilityBuffer doesnt exist yet
+        // (new ordering sends camera Data after receive visibilityBuffer)
+        /*if (mFirstRender) {
+            mFirstRender = false;
+            return;
+        }*/
 
+        // Await server to send back the visibility pass texture
+        int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
+        OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
+        FrameData rcvdFrameData = { visTexLen, 0, 0 };
+        
+        char* visWritingBuffer = reinterpret_cast<char*>(&NetworkPass::visibilityDataForWritingClient[0]);
+        char* toRecvData = NetworkManager::mCompression ? compressionBuffer : visWritingBuffer;
+
+        if (isFirstClientReceive)
+        {        
+            // Need to take a while to wait for the server,
+            // so we use a longer time out for the first time
+            RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock, UDP_FIRST_TIMEOUT_MS);
+            // Store the time when the first frame was received
+            // (server sends timestamps relative to the time when the first frame was fully rendered)
+            startTime = getCurrentTime();
+            isFirstClientReceive = false;
+        }
+        else
+        {
+            RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
+            
+            std::chrono::milliseconds currentTime = getComparisonTimestamp();
+            std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
+            if (timeDifference > std::chrono::milliseconds::zero())
+            {
+                char slowerMessage[77];
+                sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
+                        static_cast<int>(timeDifference.count()));
+                OutputDebugStringA(slowerMessage);
+            }
+            else
+            {
+                char fasterMessage[77];
+                sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
+                        static_cast<int>(timeDifference.count()));
+                OutputDebugStringA(fasterMessage);
+                // std::this_thread::sleep_for(-timeDifference);
+            }
+        }
+        OutputDebugString(L"\n\n= visTex received over network =========");
+        char frameDataMessage[89];
+        sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
+                rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
+        OutputDebugStringA(frameDataMessage);
+        
+        // if compress
+        if (NetworkManager::mCompression) {
+            DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, compressionBuffer);
+        }
+
+        // acquire reading buffer mutex to swap buffers
+        std::lock_guard readingLock(mMutexClientVisTexRead);
+        std::vector<uint8_t>* tempPtr = NetworkPass::visibilityDataForReadingClient;
+        NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
+        NetworkPass::visibilityDataForWritingClient = tempPtr;
+        // mutex and lock are released at the end of scope
+
+        if (!executeForever) break;
+    }
 }
 
 void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
@@ -1102,4 +1172,9 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
     
     OutputDebugString(L"\n\n= SendUdpCustom: Sent packets =========");
     return true;
+}
+
+std::chrono::milliseconds NetworkManager::getComparisonTimestamp()
+{
+    return getCurrentTime() - startTime;
 }

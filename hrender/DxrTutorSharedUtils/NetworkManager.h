@@ -32,6 +32,7 @@
 #include "./UdpCustomPacket.h"
 #include "./Semaphore.h"
 #include "../Libraries/minilzo.h"
+#include "../NetworkPasses/NetworkUtils.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -101,6 +102,8 @@ public:
     // Client's mutexes
     // Synchronise client sending thread with the rendering
     static Semaphore mSpClientCamPosReadyToSend;
+    // Protect the client visibility textures with mutexes
+    static std::mutex mMutexClientVisTexRead;  // For reading buffer
 
     // Used for compression
     static bool mCompression;
@@ -125,15 +128,15 @@ public:
 
     // last camera data sent out to server, this helps us render the GBuffer with matching camera data
     // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
-    std::atomic<float> cameraUX= 0;
-    std::atomic<float> cameraUY= 0;
-    std::atomic<float> cameraUZ= 0;
-    std::atomic<float> cameraVX= 0;
-    std::atomic<float> cameraVY= 0;
-    std::atomic<float> cameraVZ= 0;
-    std::atomic<float> cameraWX= 0;
-    std::atomic<float> cameraWY= 0;
-    std::atomic<float> cameraWZ= 0;
+    std::atomic<float> cameraUX = 0;
+    std::atomic<float> cameraUY = 0;
+    std::atomic<float> cameraUZ = 0;
+    std::atomic<float> cameraVX = 0;
+    std::atomic<float> cameraVY = 0;
+    std::atomic<float> cameraVZ = 0;
+    std::atomic<float> cameraWX = 0;
+    std::atomic<float> cameraWY = 0;
+    std::atomic<float> cameraWZ = 0;
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
@@ -182,10 +185,18 @@ public:
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
     // Client's receiving thread
-    void ListenClientUdp();
+    // Set executeForever to true for an infinite loop
+    void ListenClientUdp(bool isFirstClientReceive, bool executeForever);
     // Client's sending thread
     void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
 
     bool CloseClientConnection();
     bool CloseClientConnectionUdp();
+
+private:
+    std::chrono::milliseconds startTime; // The time when the client first receives
+                                         // a rendered frame from the server
+
+    // A helper function to get the time from startTime
+    std::chrono::milliseconds getComparisonTimestamp();
 };
