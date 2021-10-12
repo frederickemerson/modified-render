@@ -16,6 +16,7 @@ std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
 Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
+std::mutex NetworkManager::mMutexClientVisTexRead;
 
 /// <summary>
 /// Initialise server side connection, opens up a TCP listening socket at given port
