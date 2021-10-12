@@ -468,7 +468,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
-        char* visWritingBuffer = reinterpret_cast<char*>(&NetworkPass::visibilityDataForWritingClient[0]);
+        char* visWritingBuffer = reinterpret_cast<char*>(&(*NetworkPass::visibilityDataForWritingClient)[0]);
         char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
         if (isFirstClientReceive)
