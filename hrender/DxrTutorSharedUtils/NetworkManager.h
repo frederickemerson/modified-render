@@ -51,7 +51,7 @@
 
 // While listening for a specific sequence number with texture data,
 // wait this amount of time in milliseconds before giving up
-#define UDP_LISTENING_TIMEOUT_MS 50
+#define UDP_LISTENING_TIMEOUT_MS 100
 
 // Wait a longer time for camera data
 #define UDP_CAMERA_DATA_TIMEOUT_MS 20000
