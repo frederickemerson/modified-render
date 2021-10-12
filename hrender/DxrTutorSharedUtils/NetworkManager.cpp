@@ -514,7 +514,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         }
 
         // acquire reading buffer mutex to swap buffers
-        std::lock_guard readingLock(mMutexClientVisTexRead);
+        std::lock_guard readingLock(NetworkPass::mMutexClientVisTexRead);
         std::vector<uint8_t>* tempPtr = NetworkPass::visibilityDataForReadingClient;
         NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
         NetworkPass::visibilityDataForWritingClient = tempPtr;
