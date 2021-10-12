@@ -57,8 +57,8 @@ public:
     static int posTexHeight;
 
     // Client - Two buffers for writing and reading at the same time
-    static std::vector<uint8_t>* visibilityDataForReadingClient;
-    static std::vector<uint8_t>* visibilityDataForWritingClient;
+    static char* visibilityDataForReadingClient;
+    static char* visibilityDataForWritingClient;
     // Server - TODO
     static std::vector<uint8_t> visibilityDataServer;
     // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame

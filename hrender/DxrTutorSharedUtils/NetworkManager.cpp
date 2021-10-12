@@ -469,7 +469,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
-        char* visWritingBuffer = reinterpret_cast<char*>(&(*NetworkPass::visibilityDataForWritingClient)[0]);
+        char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
         char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
         if (firstClientReceive)
@@ -521,7 +521,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
 
         // acquire reading buffer mutex to swap buffers
         std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-        std::vector<uint8_t>* tempPtr = NetworkPass::visibilityDataForReadingClient;
+        char* tempPtr = NetworkPass::visibilityDataForReadingClient;
         NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
         NetworkPass::visibilityDataForWritingClient = tempPtr;
         // mutex and lock are released at the end of scope
