@@ -453,7 +453,7 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeForever)
 {
     // for compression
-    char compressionBuffer[VIS_TEX_LEN];
+    std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
     while (true)
     {
         // dont render the first time because visibilityBuffer doesnt exist yet
@@ -469,7 +469,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
         char* visWritingBuffer = reinterpret_cast<char*>(&NetworkPass::visibilityDataForWritingClient[0]);
-        char* toRecvData = NetworkManager::mCompression ? compressionBuffer : visWritingBuffer;
+        char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
         if (isFirstClientReceive)
         {        
@@ -511,7 +511,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         
         // if compress
         if (NetworkManager::mCompression) {
-            DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, compressionBuffer);
+            DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, compressionBuffer.get());
         }
 
         // acquire reading buffer mutex to swap buffers
