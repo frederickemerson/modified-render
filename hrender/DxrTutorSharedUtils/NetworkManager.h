@@ -26,9 +26,11 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <atomic>
 #include <deque>
 #include <unordered_map>
 #include "./UdpCustomPacket.h"
+#include "./Semaphore.h"
 #include "../Libraries/minilzo.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -96,6 +98,9 @@ public:
     static std::mutex mMutex;
     static std::condition_variable mCvCamPosReceived;
     static std::condition_variable mCvVisTexComplete;
+    // Client's mutexes
+    // Synchronise client sending thread with the rendering
+    static Semaphore mSpClientCamPosReadyToSend;
 
     // Used for compression
     static bool mCompression;
@@ -120,9 +125,15 @@ public:
 
     // last camera data sent out to server, this helps us render the GBuffer with matching camera data
     // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
-    float3 cameraU = float3(0, 0, 0);
-    float3 cameraV = float3(0, 0, 0);
-    float3 cameraW = float3(0, 0, 0);
+    std::atomic<float> cameraUX= 0;
+    std::atomic<float> cameraUY= 0;
+    std::atomic<float> cameraUZ= 0;
+    std::atomic<float> cameraVX= 0;
+    std::atomic<float> cameraVY= 0;
+    std::atomic<float> cameraVZ= 0;
+    std::atomic<float> cameraWX= 0;
+    std::atomic<float> cameraWY= 0;
+    std::atomic<float> cameraWZ= 0;
 
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
@@ -155,16 +166,26 @@ public:
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+
     // Set up UDP socket and listen for client's texture width/height
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
+    // Server's receiving thread
     // Listen to UDP packets with custom protocol
     bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+    // Server's sending thread
+    void SendWhenReadyServerUdp();
+
     bool CloseServerConnection();
     bool CloseServerConnectionUdp();
 
     // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
+    // Client's receiving thread
+    void ListenClientUdp();
+    // Client's sending thread
+    void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
+
     bool CloseClientConnection();
     bool CloseClientConnectionUdp();
 };

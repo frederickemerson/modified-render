@@ -18,6 +18,7 @@
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
+    <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />

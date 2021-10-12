@@ -15,6 +15,8 @@ std::condition_variable NetworkManager::mCvCamPosReceived;
 std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
+Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
+
 /// <summary>
 /// Initialise server side connection, opens up a TCP listening socket at given port
 /// and waits for client to connect to the socket. This call is blocking until a client
@@ -266,6 +268,11 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
     return true;
 }
 
+void NetworkManager::SendWhenReadyServerUdp()
+{
+
+}
+
 /// <summary>
 /// Server is set to listen for incoming data from the client until the connection is closed down.
 /// Server will take incoming bytes and process it based on the given texture width and height.
@@ -440,6 +447,36 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     
     //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
     return true;
+}
+
+void NetworkManager::ListenClientUdp()
+{
+
+}
+
+void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
+{
+    while (true)
+    {
+        mSpClientCamPosReadyToSend.wait();
+
+        // store cameraU, V, W specifically for GBuffer rendering later
+        Camera::SharedPtr cam = mpScene->getCamera();
+        const CameraData& cameraData = cam->getData();
+        cameraUX = cameraData.cameraU.x;
+        cameraUY = cameraData.cameraU.y;
+        cameraUZ = cameraData.cameraU.z;
+        cameraVX = cameraData.cameraV.x;
+        cameraVY = cameraData.cameraV.y;
+        cameraVZ = cameraData.cameraV.z;
+        cameraWX = cameraData.cameraV.x;
+        cameraWY = cameraData.cameraV.y;
+        cameraWZ = cameraData.cameraV.z;
+
+        OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
+        SendCameraDataUdp(cam, mClientUdpSock);
+        OutputDebugString(L"\n\n= camData sent over network =========");
+    }   
 }
 
 bool NetworkManager::CloseClientConnectionUdp()

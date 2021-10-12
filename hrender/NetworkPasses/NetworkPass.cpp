@@ -253,18 +253,8 @@ void NetworkPass::executeClientUdpSend(RenderContext* pRenderContext)
     // Slight branch optimization over:
     mFirstRender && firstClientRenderUdp(pRenderContext);
 
-    // Send camera data from client to server
-    Camera::SharedPtr cam = mpScene->getCamera();
-
-    // store cameraU, V, W specifically for GBuffer rendering later
-    const CameraData& cameraData = cam->getData();
-    pNetworkManager->cameraU = cameraData.cameraU;
-    pNetworkManager->cameraV = cameraData.cameraV;
-    pNetworkManager->cameraW = cameraData.cameraW;
-
-    OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
-    pNetworkManager->SendCameraDataUdp(cam, pNetworkManager->mClientUdpSock);
-    OutputDebugString(L"\n\n= camData sent over network =========");
+    // Signal sending thread to send the camera data
+    pNetworkManager->mSpClientCamPosReadyToSend.signal();
 }
 
 // void NetworkPass::firstClientSendUdp() {
@@ -345,7 +335,6 @@ void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
                                         toRecvData,
                                         pNetworkManager->mClientUdpSock);
         
-        // TODO: make use of timestamp to delay if needed
         std::chrono::milliseconds currentTime = getComparisonTimestamp();
         std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
         if (timeDifference > std::chrono::milliseconds::zero())
@@ -435,6 +424,14 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     // Populate posTexWidth and Height
     NetworkPass::posTexWidth = mpResManager->getWidth();
     NetworkPass::posTexHeight = mpResManager->getHeight();
+
+    // Start the client sending thread
+    auto clientSendWhenReady = [&]()
+    {
+        ResourceManager::mNetworkManager->SendWhenReadyClientUdp(mpScene);
+    };
+    Threading::dispatchTask(clientSendWhenReady);
+
     mFirstRender = false;
     return true;
 }
