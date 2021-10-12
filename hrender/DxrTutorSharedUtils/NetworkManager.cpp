@@ -479,7 +479,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
             RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock, UDP_FIRST_TIMEOUT_MS);
             // Store the time when the first frame was received
             // (server sends timestamps relative to the time when the first frame was fully rendered)
-            if (startTime == NULL)
+            if (startTime == std::chrono::milliseconds::zero())
             {
                 startTime = getCurrentTime();
             }
