@@ -2,7 +2,7 @@
 
 Semaphore::Semaphore(bool initialValue): isReady(initialValue) {}
 
-inline void Semaphore::signal()
+void Semaphore::signal()
 {
     {   // extra scope to ensure the lifetime of the mutex
         std::lock_guard<std::mutex> lock(mutex);
@@ -14,7 +14,7 @@ inline void Semaphore::signal()
 }
 
 
-inline void Semaphore::wait()
+void Semaphore::wait()
 {
     // acquire the mutex using std::unique_lock
     std::unique_lock<std::mutex> lock(mutex);

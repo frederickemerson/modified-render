@@ -12,8 +12,8 @@ public:
     //           First wait() will block until the first signal()
     Semaphore(bool initialValue);
     
-    inline void signal();
-    inline void wait();
+    void signal();
+    void wait();
 
 private:
     std::mutex mutex;
