@@ -465,8 +465,8 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         }*/
 
         // Await server to send back the visibility pass texture
-        int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
+        int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
         char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
