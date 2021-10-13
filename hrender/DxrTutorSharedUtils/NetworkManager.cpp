@@ -741,6 +741,7 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
+    uint8_t* cachePtr = reinterpret_cast<uint8_t*>(latestTextureData);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
@@ -785,8 +786,8 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
             receivedDataSoFar += toReceive.packetSize;
 
             // Copy the packet data into the latest data cache
-            uint8_t* offsetPtr = reinterpret_cast<uint8_t*>(&(latestTextureData[offset]));
-            toReceive.copyInto(offsetPtr);
+            toReceive.copyInto(cachePtr);
+            cachePtr += toReceive.packetSize;
 
             // Retrieve frame data for the first packet received
             if (i == 0)
