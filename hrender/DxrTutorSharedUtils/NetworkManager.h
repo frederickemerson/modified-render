@@ -94,16 +94,27 @@ public:
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
 
     // Used for thread synchronizing
-    static bool mCamPosReceived;
-    static bool mVisTexComplete;
-    static std::mutex mMutex;
-    static std::condition_variable mCvCamPosReceived;
-    static std::condition_variable mCvVisTexComplete;
-    // Client's mutexes
+    // 
+    // Client's side
     // Synchronise client sending thread with the rendering
     static Semaphore mSpClientCamPosReadyToSend;
     // Protect the client visibility textures with mutexes
-    static std::mutex mMutexClientVisTexRead;  // For reading buffer
+    static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
+
+    // Server's side
+    // Synchronise server sending thread with the rendering
+    static Semaphore mSpServerCVisTexComplete;
+    // Protect the server visibility textures
+    static std::mutex mMutexServerVisTexRead;  // For reading from Falcor Buffer
+    // Protect the server's camera data
+    static std::mutex mMutexServerCamData;
+
+    // For TCP communication
+    static bool mCamPosReceivedTcp;
+    static bool mVisTexCompleteTcp;
+    static std::mutex mMutexServerVisTexTcp;
+    static std::condition_variable mCvCamPosReceived;
+    static std::condition_variable mCvVisTexComplete;
 
     // Used for compression
     static bool mCompression;
@@ -150,7 +161,7 @@ public:
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
     // Use UDP to receive and send camera data
-    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp);
+    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
@@ -174,9 +185,12 @@ public:
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
     // Server's receiving thread
     // Listen to UDP packets with custom protocol
-    bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+    bool ListenServerUdp(bool executeForever);
     // Server's sending thread
-    void SendWhenReadyServerUdp();
+    void SendWhenReadyServerUdp(RenderContext* pRenderContext,
+                                std::shared_ptr<ResourceManager> pResManager,
+                                int texWidth,
+                                int texHeight);
 
     bool CloseServerConnection();
     bool CloseServerConnectionUdp();

@@ -59,8 +59,8 @@ public:
     // Client - Two buffers for writing and reading at the same time
     static std::vector<uint8_t>* visibilityDataForReadingClient;
     static std::vector<uint8_t>* visibilityDataForWritingClient;
-    // Server - TODO
-    static std::vector<uint8_t> visibilityDataServer;
+    // Server - Just one pointer to a Falcor Buffer that allows for reading safely
+    // This Buffer will be set by MemoryTransferPassClientGPU_CPU
     // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
     static uint8_t* pVisibilityDataServer;
     static std::array<float3, 3> camData;
@@ -87,6 +87,7 @@ protected:
     void executeClientUdpSend(RenderContext* pRenderContext);
     void executeClientUdpRecv(RenderContext* pRenderContext);
     void executeServerUdpRecv(RenderContext* pRenderContext);
+    void executeServerUdpSend(RenderContext* pRenderContext);
     // For first client render on UDP, send the client's window width and height
     bool firstClientRenderUdp(RenderContext* pRenderContext);
     bool firstServerRenderUdp(RenderContext* pRenderContext);
@@ -99,16 +100,17 @@ protected:
     bool usesRayTracing() override { return true; }
 
     // Rendering state
-    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
-    Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
+    RayLaunch::SharedPtr                    mpRays;                    ///< Our wrapper around a DX Raytracing pass
+    Scene::SharedPtr                        mpScene;                   ///< Our scene file (passed in from app)
     // Various internal parameters
-    Mode                                    mMode;                  ///< Whether this pass runs as client or server
-    bool                                    mFirstRender = true;    ///< If this is the first time rendering, need to send scene
-    int32_t                                 mOutputIndex;           ///< An index for our output buffer
-    std::string                             mOutputTexName;         ///< Where do we want to store the results?
-    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
-    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
+    Mode                                    mMode;                     ///< Whether this pass runs as client or server
+    bool                                    mFirstRender = true;       ///< If this is the first time rendering, need to send scene
+    int32_t                                 mOutputIndex;              ///< An index for our output buffer
+    std::string                             mOutputTexName;            ///< Where do we want to store the results?
+    int                                     mTexWidth = -1;            ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;           ///< The height of the texture we render, based on the client
 
     bool                                    firstClientReceive = true; // Use a longer timeout for first client receive
+    bool                                    firstServerSend    = true; // Set off the server network thread on first send
 };
 

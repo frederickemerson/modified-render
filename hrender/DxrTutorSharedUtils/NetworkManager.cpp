@@ -5,18 +5,26 @@
 
 #include "lz4.h"
 
-bool NetworkManager::mCamPosReceived = false;
-bool NetworkManager::mVisTexComplete = false;
+bool NetworkManager::mCamPosReceivedTcp = false;
+bool NetworkManager::mVisTexCompleteTcp = false;
 bool NetworkManager::mCompression = true;
 
-std::mutex NetworkManager::mMutex;
-std::condition_variable NetworkManager::mCvVisTexComplete;
-std::condition_variable NetworkManager::mCvCamPosReceived;
 std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
+// UDP Client
 Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
 std::mutex NetworkManager::mMutexClientVisTexRead;
+
+// UDP Server
+Semaphore NetworkManager::mSpServerCVisTexComplete(false);
+std::mutex NetworkManager::mMutexServerVisTexRead;
+std::mutex NetworkManager::mMutexServerCamData;
+
+// TCP
+std::mutex NetworkManager::mMutexServerVisTexTcp;
+std::condition_variable NetworkManager::mCvCamPosReceived;
+std::condition_variable NetworkManager::mCvVisTexComplete;
 
 /// <summary>
 /// Initialise server side connection, opens up a TCP listening socket at given port
@@ -195,83 +203,82 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     return true;
 }
 
-bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
+bool NetworkManager::ListenServerUdp(bool executeForever)
 {
-    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
-    int posTexSize = texWidth * texHeight * 16;
-    int visTexSize = texWidth * texHeight * 4;
-    int numFramesRendered = 0;
-
-    // Keep track of time
-    std::chrono::milliseconds timeOfFirstFrame;
-
     // Receive until the peer shuts down the connection
     do
     {
-        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
-        OutputDebugString(string_2_wstring(frameMsg).c_str());
-
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
-        RecvCameraDataUdp(NetworkPass::camData, mServerUdpSock);
+        // Mutex will be locked in RecvCameraDataUdp
+        RecvCameraDataUdp(NetworkPass::camData, NetworkManager::mMutexServerCamData, mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
-
-        NetworkManager::mCamPosReceived = true;
-        NetworkManager::mCvCamPosReceived.notify_all();
-
-        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        while (!NetworkManager::mVisTexComplete)
-        {
-            NetworkManager::mCvVisTexComplete.wait(lck);
-            if (numFramesRendered == 1)
-            {
-                timeOfFirstFrame = getCurrentTime();
-            }
-        }
-
-        // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
-        // before we can continue sending the next frame
-        NetworkManager::mVisTexComplete = false;
-
-        char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
-        int toSendSize = visTexSize; // visTexSize is currently hard-coded
-        
-        // if compress
-        if (mCompression) {
-            char buffer[70];
-            sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
-            
-            // compress from src: toSendData to dst: NetworkPass::visiblityData
-            toSendSize = CompressTextureLZ4(visTexSize, toSendData, (char*)NetworkPass::visibilityDataServer.data());
-            
-            sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
-            OutputDebugStringA(buffer);
-
-            // now we send the compressed data instead
-            toSendData = (char*)NetworkPass::visibilityDataServer.data(); //
-        }
-
-        // Send the visBuffer back to the sender
-        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        // Generate timestamp
-        std::chrono::milliseconds currentTime = getCurrentTime();
-        int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-        SendTextureUdp({ toSendSize, numFramesRendered, timestamp },
-                       toSendData,
-                       mServerUdpSock);
-        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
-
-        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
-        OutputDebugString(string_2_wstring(endMsg).c_str());
-    } while (true);
+    }
+    while (executeForever);
 
     return true;
 }
 
-void NetworkManager::SendWhenReadyServerUdp()
+void NetworkManager::SendWhenReadyServerUdp(
+    RenderContext* pRenderContext,
+    std::shared_ptr<ResourceManager> pResManager,
+    int texWidth,
+    int texHeight)
 {
+    int numFramesRendered = 0;
+    // Keep track of time
+    std::chrono::milliseconds timeOfFirstFrame;
+    // for compression
+    std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
 
+    while (true)
+    {
+        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
+        OutputDebugString(string_2_wstring(frameMsg).c_str());
+
+        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
+        mSpServerCVisTexComplete.wait();
+        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
+
+        {
+            std::lock_guard lock(mMutexServerVisTexRead);
+            char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
+            int toSendSize = VIS_TEX_LEN; // visTexSize is currently hard-coded
+            
+            // if compress
+            if (mCompression) {
+                char buffer[70];
+                sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
+                
+                // compress from src: toSendData to dst: NetworkPass::visiblityData
+                toSendSize = CompressTextureLZ4(VIS_TEX_LEN, toSendData, compressionBuffer.get());
+                
+                sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
+                OutputDebugStringA(buffer);
+
+                // now we send the compressed data instead
+                toSendData = compressionBuffer.get();
+            }
+
+            // Send the visBuffer back to the sender
+            // Generate timestamp
+            std::chrono::milliseconds currentTime = getCurrentTime();
+            int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
+            SendTextureUdp({ toSendSize, numFramesRendered, timestamp },
+                           toSendData,
+                           mServerUdpSock);
+        }
+
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
+        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
+        OutputDebugString(string_2_wstring(endMsg).c_str());
+        
+        if (numFramesRendered == 1)
+        {
+            timeOfFirstFrame = getCurrentTime();
+        }
+    }
 }
 
 /// <summary>
@@ -285,7 +292,7 @@ void NetworkManager::SendWhenReadyServerUdp()
 /// <returns></returns>
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
-    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutexServerVisTexTcp);
     int posTexSize = texWidth * texHeight * 16;
     int visTexSize = texWidth * texHeight * 4;
 
@@ -296,21 +303,21 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         RecvCameraData(NetworkPass::camData, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
-        NetworkManager::mCamPosReceived = true;
+        NetworkManager::mCamPosReceivedTcp = true;
         NetworkManager::mCvCamPosReceived.notify_all();
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        while (!NetworkManager::mVisTexComplete)
+        while (!NetworkManager::mVisTexCompleteTcp)
             NetworkManager::mCvVisTexComplete.wait(lck);
 
         // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
         // before we can continue sending the next frame
-        NetworkManager::mVisTexComplete = false;
+        NetworkManager::mVisTexCompleteTcp = false;
 
         // Send the visBuffer back to the sender
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        SendTexture(visTexSize, (char*)&NetworkPass::visibilityDataServer[0], mClientSocket);
+        SendTexture(visTexSize, (char*)NetworkPass::pVisibilityDataServer, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
     } while (true);
 
@@ -917,7 +924,7 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
     return true;
 }
 
-bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
+bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp)
 {
     // Assumes server is receiving cam data from client
     UdpCustomPacket toReceive(clientSeqNum);
@@ -944,9 +951,13 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
         // Increment sequence number for next communication
         clientSeqNum++;
         // Copy the data to the pointer
-        assert(toReceive.packetSize == sizeof(cameraData));
-        uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
-        toReceive.copyInto(data);
+        {
+            std::lock_guard<std::mutex> lock(mutexForCameraData);
+            assert(toReceive.packetSize == sizeof(cameraData));
+            uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
+            toReceive.copyInto(data);
+        }
+
         // Populate the cache
         cameraDataCache.push_back(cameraData);
         if (cameraDataCache.size() > maxCamDataCacheSize)
