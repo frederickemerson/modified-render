@@ -258,6 +258,7 @@ void NetworkPass::executeClientUdpSend(RenderContext* pRenderContext)
 
 void NetworkPass::executeServerUdpSend(RenderContext* pRenderContext)
 {
+    NetworkManager::mSpServerCVisTexComplete.signal();
     if (firstServerSend)
     {
         // Start the server sending thread
@@ -402,6 +403,6 @@ bool NetworkPass::firstServerRenderUdp(RenderContext* pRenderContext)
         ResourceManager::mNetworkManager->ListenServerUdp(true);
     };
     Threading::dispatchTask(serverListen);
-    OutputDebugString(L"\n\n= ServerRecv - Network thread dispatched =========");
+    OutputDebugString(L"\n\n= firstServerRenderUdp - Network thread dispatched =========");
     return true;
 }
