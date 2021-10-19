@@ -244,7 +244,15 @@ void NetworkManager::SendWhenReadyServerUdp(
         {
             std::lock_guard lock(mMutexServerVisTexRead);
             char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
-            int toSendSize = VIS_TEX_LEN; // visTexSize is currently hard-coded
+
+            // The size of the actual Buffer (pointed to by pVisibilityDataServer)
+            // that is given by Falcor is less then VIS_TEX_LEN
+            // 
+            // The actual size is the screen width and height * 4
+            // We send VIS_TEX_LEN but we need to compress with the actual
+            // size to prevent reading outside of the Falcor Buffer
+            int visTexSizeActual = texWidth * texHeight * 4;
+            int toSendSize = VIS_TEX_LEN;
             
             // if compress
             if (mCompression) {
@@ -252,7 +260,7 @@ void NetworkManager::SendWhenReadyServerUdp(
                 sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
                 
                 // compress from src: toSendData to dst: NetworkPass::visiblityData
-                toSendSize = CompressTextureLZ4(VIS_TEX_LEN, toSendData, compressionBuffer.get());
+                toSendSize = CompressTextureLZ4(visTexSizeActual, toSendData, compressionBuffer.get());
                 
                 sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
                 OutputDebugStringA(buffer);
