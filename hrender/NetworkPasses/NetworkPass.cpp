@@ -24,8 +24,8 @@ int NetworkPass::posTexWidth = 0;
 int NetworkPass::posTexHeight = 0;
 
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
-std::vector<uint8_t>* NetworkPass::visibilityDataForReadingClient = new std::vector<uint8_t>(VIS_TEX_LEN, 0);
-std::vector<uint8_t>* NetworkPass::visibilityDataForWritingClient = new std::vector<uint8_t>(VIS_TEX_LEN, 0);
+char* NetworkPass::visibilityDataForReadingClient = new char[VIS_TEX_LEN];
+char* NetworkPass::visibilityDataForWritingClient = new char[VIS_TEX_LEN];
 // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
 uint8_t* NetworkPass::pVisibilityDataServer = nullptr;
 std::array<float3, 3> NetworkPass::camData;
@@ -157,7 +157,7 @@ void NetworkPass::executeClientRecv(RenderContext* pRenderContext)
     // Await server to send back the visibility pass texture
     int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
     OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-    pNetworkManager->RecvTexture(visTexLen, (char*)(*NetworkPass::visibilityDataForReadingClient)[0], pNetworkManager->mConnectSocket);
+    pNetworkManager->RecvTexture(visTexLen, NetworkPass::visibilityDataForReadingClient, pNetworkManager->mConnectSocket);
     OutputDebugString(L"\n\n= visTex received over network =========");
 }
 
@@ -373,8 +373,7 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     OutputDebugString(L"\n\n= firstClientRenderUdp: width/height sent over network =========");
 
     // Initialise the latest texture cache
-    int visTexSize = widthAndHeight[0] * widthAndHeight[1] * 4;
-    pNetworkManager->latestTextureData = new char[visTexSize];
+    pNetworkManager->latestTextureData = new char[VIS_TEX_LEN];
 
     // Populate posTexWidth and Height
     NetworkPass::posTexWidth = mpResManager->getWidth();

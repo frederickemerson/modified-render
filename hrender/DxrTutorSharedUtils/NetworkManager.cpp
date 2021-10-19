@@ -472,11 +472,11 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         }*/
 
         // Await server to send back the visibility pass texture
-        int visTexLen = NetworkPass::posTexWidth * NetworkPass::posTexHeight * 4;
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
+        int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
-        char* visWritingBuffer = reinterpret_cast<char*>(&(*NetworkPass::visibilityDataForWritingClient)[0]);
+        char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
         char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
         if (firstClientReceive)
@@ -528,7 +528,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
 
         // acquire reading buffer mutex to swap buffers
         std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-        std::vector<uint8_t>* tempPtr = NetworkPass::visibilityDataForReadingClient;
+        char* tempPtr = NetworkPass::visibilityDataForReadingClient;
         NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
         NetworkPass::visibilityDataForWritingClient = tempPtr;
         // mutex and lock are released at the end of scope
@@ -748,6 +748,7 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
+    uint8_t* cachePtr = reinterpret_cast<uint8_t*>(latestTextureData);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
@@ -792,8 +793,8 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
             receivedDataSoFar += toReceive.packetSize;
 
             // Copy the packet data into the latest data cache
-            uint8_t* offsetPtr = reinterpret_cast<uint8_t*>(&(latestTextureData[offset]));
-            toReceive.copyInto(offsetPtr);
+            toReceive.copyInto(cachePtr);
+            cachePtr += toReceive.packetSize;
 
             // Retrieve frame data for the first packet received
             if (i == 0)

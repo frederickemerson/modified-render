@@ -54,7 +54,7 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     pRenderContext->flush(true);
 
     std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
-    visTex->apiInitPub(NetworkPass::visibilityDataForReadingClient->data(), true);
+    visTex->apiInitPub(NetworkPass::visibilityDataForReadingClient, true);
 }
 
 void MemoryTransferPassClientCPU_GPU::renderGui(Gui::Window* pPassWindow)
