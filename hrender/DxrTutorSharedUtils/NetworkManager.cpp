@@ -209,12 +209,19 @@ bool NetworkManager::ListenServerUdp(bool executeForever)
     // Receive until the peer shuts down the connection
     do
     {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
         // Mutex will be locked in RecvCameraDataUdp
         RecvCameraDataUdp(NetworkPass::camData, NetworkManager::mMutexServerCamData, mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
         mSpServerCamPosUpdated.signal();
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[102];
+        sprintf(printFps, "\n\n= ListenServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
     }
     while (executeForever);
 
@@ -235,6 +242,7 @@ void NetworkManager::SendWhenReadyServerUdp(
 
     while (true)
     {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
 
@@ -289,6 +297,12 @@ void NetworkManager::SendWhenReadyServerUdp(
         {
             timeOfFirstFrame = getCurrentTime();
         }
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[109];
+        sprintf(printFps, "\n\n= SendWhenReadyServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
     }
 }
 
@@ -475,6 +489,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
     std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
     while (true)
     {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         // dont render the first time because visibilityBuffer doesnt exist yet
         // (new ordering sends camera Data after receive visibilityBuffer)
         /*if (mFirstRender) {
@@ -544,6 +559,12 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         NetworkPass::visibilityDataForWritingClient = tempPtr;
         // mutex and lock are released at the end of scope
 
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[102];
+        sprintf(printFps, "\n\n= ListenClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
+
         if (!executeForever)
         {
             break;
@@ -555,6 +576,7 @@ void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
 {
     while (true)
     {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         mSpClientCamPosReadyToSend.wait();
 
         // store cameraU, V, W specifically for GBuffer rendering later
@@ -573,6 +595,12 @@ void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
         SendCameraDataUdp(cam, mClientUdpSock);
         OutputDebugString(L"\n\n= camData sent over network =========");
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[109];
+        sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
     }   
 }
 

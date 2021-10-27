@@ -6,3 +6,8 @@ std::chrono::milliseconds getCurrentTime()
         std::chrono::system_clock::now().time_since_epoch()
     );
 }
+
+double getFps(std::chrono::duration<double> timeForOneFrame)
+{
+    return std::chrono::duration<double>(1.0f) / timeForOneFrame;
+}
