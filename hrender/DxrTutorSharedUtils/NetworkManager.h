@@ -103,7 +103,9 @@ public:
 
     // Server's side
     // Synchronise server sending thread with the rendering
-    static Semaphore mSpServerCVisTexComplete;
+    static Semaphore mSpServerVisTexComplete;
+    // Check whether the camera position is updated before rendering
+    static Semaphore mSpServerCamPosUpdated;
     // Protect the server visibility textures
     static std::mutex mMutexServerVisTexRead;  // For reading from Falcor Buffer
     // Protect the server's camera data

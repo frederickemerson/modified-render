@@ -258,7 +258,7 @@ void NetworkPass::executeClientUdpSend(RenderContext* pRenderContext)
 
 void NetworkPass::executeServerUdpSend(RenderContext* pRenderContext)
 {
-    NetworkManager::mSpServerCVisTexComplete.signal();
+    NetworkManager::mSpServerVisTexComplete.signal();
     if (firstServerSend)
     {
         // Start the server sending thread
@@ -331,6 +331,9 @@ void NetworkPass::executeServerUdpRecv(RenderContext* pRenderContext)
     // Perform the first render steps (start the network thread)
     mFirstRender && firstServerRenderUdp(pRenderContext);
 
+    // Wait if the network thread has not received yt
+    NetworkManager::mSpServerCamPosUpdated.wait();
+
     // Load camera data to scene
     Camera::SharedPtr cam = mpScene->getCamera();
     {
@@ -343,10 +346,6 @@ void NetworkPass::executeServerUdpRecv(RenderContext* pRenderContext)
     // Update the scene. Ideally, this should be baked into RenderingPipeline.cpp and executed
     // before the pass even starts and after the network thread receives the data.
     mpScene->update(pRenderContext, gpFramework->getGlobalClock().getTime());
-
-    // Reset to false so that we will need to wait for the network pass to flag it as received
-    // before we can continue rendering the next frame
-    NetworkManager::mCamPosReceivedTcp = false;
 
     // Recalculate, if we could do calculateCameraParameters() instead, we would.
     cam->getViewMatrix();

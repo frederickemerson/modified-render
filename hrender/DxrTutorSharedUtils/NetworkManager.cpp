@@ -17,7 +17,8 @@ Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
 std::mutex NetworkManager::mMutexClientVisTexRead;
 
 // UDP Server
-Semaphore NetworkManager::mSpServerCVisTexComplete(false);
+Semaphore NetworkManager::mSpServerVisTexComplete(false);
+Semaphore NetworkManager::mSpServerCamPosUpdated(false);
 std::mutex NetworkManager::mMutexServerVisTexRead;
 std::mutex NetworkManager::mMutexServerCamData;
 
@@ -213,6 +214,7 @@ bool NetworkManager::ListenServerUdp(bool executeForever)
         // Mutex will be locked in RecvCameraDataUdp
         RecvCameraDataUdp(NetworkPass::camData, NetworkManager::mMutexServerCamData, mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
+        mSpServerCamPosUpdated.signal();
     }
     while (executeForever);
 
@@ -238,7 +240,7 @@ void NetworkManager::SendWhenReadyServerUdp(
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        mSpServerCVisTexComplete.wait();
+        mSpServerVisTexComplete.wait();
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
 
         {
@@ -255,7 +257,8 @@ void NetworkManager::SendWhenReadyServerUdp(
             int toSendSize = VIS_TEX_LEN;
             
             // if compress
-            if (mCompression) {
+            if (mCompression)
+            {
                 char buffer[70];
                 sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
                 
