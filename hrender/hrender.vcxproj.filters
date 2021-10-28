@@ -62,6 +62,12 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkUtils.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -129,7 +135,15 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
+    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Semaphore.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkUtils.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
