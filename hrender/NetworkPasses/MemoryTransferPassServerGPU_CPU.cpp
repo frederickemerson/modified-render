@@ -29,6 +29,9 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
 
+    // store index of texture(s) we will be transferring from
+    mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+
     return true;
 }
 
@@ -41,10 +44,22 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
-    OutputDebugString(L"\n\n= MemoryTransferPass - VisTex finished rendering =========");
     // Load visibility texture from GPU to CPU
-    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");  // original call using string
+    /*if (mVisibilityIndex == -1) {                                             // getting visibility index was moved to initialize()
+        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+    }*/
+    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+
+    // OLD METHOD: use if bugs start appearing
+    //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+
+    // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
+    // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
+    // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
+    uint8_t* newBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
+    NetworkPass::pVisibilityDataServer = newBuffer;
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 

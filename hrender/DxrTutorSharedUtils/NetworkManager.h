@@ -26,10 +26,13 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <atomic>
 #include <deque>
 #include <unordered_map>
 #include "./UdpCustomPacket.h"
+#include "./Semaphore.h"
 #include "../Libraries/minilzo.h"
+#include "../NetworkPasses/NetworkUtils.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -48,7 +51,7 @@
 
 // While listening for a specific sequence number with texture data,
 // wait this amount of time in milliseconds before giving up
-#define UDP_LISTENING_TIMEOUT_MS 50
+#define UDP_LISTENING_TIMEOUT_MS 100
 
 // Wait a longer time for camera data
 #define UDP_CAMERA_DATA_TIMEOUT_MS 20000
@@ -58,7 +61,14 @@
 using namespace Falcor;
 
 class ResourceManager;
-class NetworkPass;
+
+// Stores the metadata for a specific frame
+typedef struct FrameData
+{
+    int frameSize;      // Total size of the frame in bytes
+    int frameNumber;    // Number associated to the current frame
+    int timestamp;      // Time offset from the start in milliseconds
+} FrameData;
 
 class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
 
@@ -74,7 +84,8 @@ public:
     SOCKET mClientUdpSock = INVALID_SOCKET; 
 
     // Used by both server and client in UDP communication
-    int32_t currentSeqNum = 0;
+    int32_t serverSeqNum = 0;
+    int32_t clientSeqNum = 0;
     struct sockaddr_in mSi_otherUdp;
 
     using SharedPtr = std::shared_ptr<NetworkManager>;
@@ -83,9 +94,27 @@ public:
     static SharedPtr create() { return SharedPtr(new NetworkManager()); }
 
     // Used for thread synchronizing
-    static bool mCamPosReceived;
-    static bool mVisTexComplete;
-    static std::mutex mMutex;
+    // 
+    // Client's side
+    // Synchronise client sending thread with the rendering
+    static Semaphore mSpClientCamPosReadyToSend;
+    // Protect the client visibility textures with mutexes
+    static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
+
+    // Server's side
+    // Synchronise server sending thread with the rendering
+    static Semaphore mSpServerVisTexComplete;
+    // Check whether the camera position is updated before rendering
+    static Semaphore mSpServerCamPosUpdated;
+    // Protect the server visibility textures
+    static std::mutex mMutexServerVisTexRead;  // For reading from Falcor Buffer
+    // Protect the server's camera data
+    static std::mutex mMutexServerCamData;
+
+    // For TCP communication
+    static bool mCamPosReceivedTcp;
+    static bool mVisTexCompleteTcp;
+    static std::mutex mMutexServerVisTexTcp;
     static std::condition_variable mCvCamPosReceived;
     static std::condition_variable mCvVisTexComplete;
 
@@ -110,22 +139,36 @@ public:
     // Will be initialised by firstClientRenderUdp
     char* latestTextureData = nullptr;
 
+    // last camera data sent out to server, this helps us render the GBuffer with matching camera data
+    // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
+    std::atomic<float> cameraUX = 0;
+    std::atomic<float> cameraUY = 0;
+    std::atomic<float> cameraUZ = 0;
+    std::atomic<float> cameraVX = 0;
+    std::atomic<float> cameraVY = 0;
+    std::atomic<float> cameraVZ = 0;
+    std::atomic<float> cameraWX = 0;
+    std::atomic<float> cameraWY = 0;
+    std::atomic<float> cameraWZ = 0;
+
     // Used to send and receive data over the network
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     // Use UDP to receive and send texture data
-    void RecvTextureUdp(int recvTexSize, char* recvTexData, SOCKET& socketUdp,
+    void RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp,
                         int timeout = UDP_LISTENING_TIMEOUT_MS);
-    void SendTextureUdp(int visTexSize, char* sendTexData, SOCKET& socketUdp);
+    void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
     // Use UDP to receive and send camera data
-    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp);
+    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
+    int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
+    int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     // Send and receive data with UDP custom protocol
     // RecvUdpCustom: Expected sequence number must be specified in recvData
     bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
@@ -139,16 +182,37 @@ public:
     // Set up the sockets and connect to a client, and output the client's texture width/height
     bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
     bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+
     // Set up UDP socket and listen for client's texture width/height
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
+    // Server's receiving thread
     // Listen to UDP packets with custom protocol
-    bool ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
+    bool ListenServerUdp(bool executeForever);
+    // Server's sending thread
+    void SendWhenReadyServerUdp(RenderContext* pRenderContext,
+                                std::shared_ptr<ResourceManager> pResManager,
+                                int texWidth,
+                                int texHeight);
+
     bool CloseServerConnection();
     bool CloseServerConnectionUdp();
 
     // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
+    // Client's receiving thread
+    // Set executeForever to true for an infinite loop
+    void ListenClientUdp(bool isFirstClientReceive, bool executeForever);
+    // Client's sending thread
+    void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
+
     bool CloseClientConnection();
     bool CloseClientConnectionUdp();
+
+private:
+    // The time when the client first receives a rendered frame from the server
+    std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
+
+    // A helper function to get the time from startTime
+    std::chrono::milliseconds getComparisonTimestamp();
 };

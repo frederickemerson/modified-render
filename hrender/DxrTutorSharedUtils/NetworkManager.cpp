@@ -1,16 +1,31 @@
 #include "ResourceManager.h"
 #include "../NetworkPasses/NetworkPass.h"
+#include "../NetworkPasses/NetworkUtils.h"
 #include "NetworkManager.h"
 
-bool NetworkManager::mCamPosReceived = false;
-bool NetworkManager::mVisTexComplete = false;
+#include "lz4.h"
+
+bool NetworkManager::mCamPosReceivedTcp = false;
+bool NetworkManager::mVisTexCompleteTcp = false;
 bool NetworkManager::mCompression = true;
 
-std::mutex NetworkManager::mMutex;
-std::condition_variable NetworkManager::mCvVisTexComplete;
-std::condition_variable NetworkManager::mCvCamPosReceived;
 std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
+
+// UDP Client
+Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
+std::mutex NetworkManager::mMutexClientVisTexRead;
+
+// UDP Server
+Semaphore NetworkManager::mSpServerVisTexComplete(false);
+Semaphore NetworkManager::mSpServerCamPosUpdated(false);
+std::mutex NetworkManager::mMutexServerVisTexRead;
+std::mutex NetworkManager::mMutexServerCamData;
+
+// TCP
+std::mutex NetworkManager::mMutexServerVisTexTcp;
+std::condition_variable NetworkManager::mCvCamPosReceived;
+std::condition_variable NetworkManager::mCvVisTexComplete;
 
 /// <summary>
 /// Initialise server side connection, opens up a TCP listening socket at given port
@@ -168,8 +183,8 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
         OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
         return false;
     }
-    // Next sequence number should be 1
-    currentSeqNum = 1;
+    // Next client sequence number should be 1
+    clientSeqNum = 1;
     
     // Packet should consist of two ints
     if (firstPacket.packetSize != 8)
@@ -189,46 +204,106 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     return true;
 }
 
-bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
+bool NetworkManager::ListenServerUdp(bool executeForever)
 {
-    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
-    int posTexSize = texWidth * texHeight * 16;
-    int visTexSize = texWidth * texHeight * 4;
-    int numFramesRendered = 0;
-
     // Receive until the peer shuts down the connection
     do
     {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
+        // Receive the camera position from the sender
+        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
+        // Mutex will be locked in RecvCameraDataUdp
+        RecvCameraDataUdp(NetworkPass::camData, NetworkManager::mMutexServerCamData, mServerUdpSock);
+        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
+        mSpServerCamPosUpdated.signal();
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[102];
+        sprintf(printFps, "\n\n= ListenServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
+    }
+    while (executeForever);
+
+    return true;
+}
+
+void NetworkManager::SendWhenReadyServerUdp(
+    RenderContext* pRenderContext,
+    std::shared_ptr<ResourceManager> pResManager,
+    int texWidth,
+    int texHeight)
+{
+    int numFramesRendered = 0;
+    // Keep track of time
+    std::chrono::milliseconds timeOfFirstFrame;
+    // for compression
+    std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
+
+    while (true)
+    {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
 
-        // Receive the camera position from the sender
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
-        RecvCameraDataUdp(NetworkPass::camData, mServerUdpSock);
-        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
-
-        NetworkManager::mCamPosReceived = true;
-        NetworkManager::mCvCamPosReceived.notify_all();
-
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        while (!NetworkManager::mVisTexComplete)
-            NetworkManager::mCvVisTexComplete.wait(lck);
-
-        // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
-        // before we can continue sending the next frame
-        NetworkManager::mVisTexComplete = false;
-
-        // Send the visBuffer back to the sender
+        mSpServerVisTexComplete.wait();
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        SendTextureUdp(visTexSize, (char*)&NetworkPass::visibilityData[0], mServerUdpSock);
-        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
 
+        {
+            std::lock_guard lock(mMutexServerVisTexRead);
+            char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
+
+            // The size of the actual Buffer (pointed to by pVisibilityDataServer)
+            // that is given by Falcor is less then VIS_TEX_LEN
+            // 
+            // The actual size is the screen width and height * 4
+            // We send VIS_TEX_LEN but we need to compress with the actual
+            // size to prevent reading outside of the Falcor Buffer
+            int visTexSizeActual = texWidth * texHeight * 4;
+            int toSendSize = VIS_TEX_LEN;
+            
+            // if compress
+            if (mCompression)
+            {
+                char buffer[70];
+                sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
+                
+                // compress from src: toSendData to dst: NetworkPass::visiblityData
+                toSendSize = CompressTextureLZ4(visTexSizeActual, toSendData, compressionBuffer.get());
+                
+                sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
+                OutputDebugStringA(buffer);
+
+                // now we send the compressed data instead
+                toSendData = compressionBuffer.get();
+            }
+
+            // Send the visBuffer back to the sender
+            // Generate timestamp
+            std::chrono::milliseconds currentTime = getCurrentTime();
+            int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
+            SendTextureUdp({ toSendSize, numFramesRendered, timestamp },
+                           toSendData,
+                           mServerUdpSock);
+        }
+
+        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
         std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
-    } while (true);
+        
+        if (numFramesRendered == 1)
+        {
+            timeOfFirstFrame = getCurrentTime();
+        }
 
-    return true;
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[109];
+        sprintf(printFps, "\n\n= SendWhenReadyServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
+    }
 }
 
 /// <summary>
@@ -242,7 +317,7 @@ bool NetworkManager::ListenServerUdp(RenderContext* pRenderContext, std::shared_
 /// <returns></returns>
 bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight)
 {
-    std::unique_lock<std::mutex> lck(NetworkManager::mMutex);
+    std::unique_lock<std::mutex> lck(NetworkManager::mMutexServerVisTexTcp);
     int posTexSize = texWidth * texHeight * 16;
     int visTexSize = texWidth * texHeight * 4;
 
@@ -253,21 +328,21 @@ bool NetworkManager::ListenServer(RenderContext* pRenderContext, std::shared_ptr
         RecvCameraData(NetworkPass::camData, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
-        NetworkManager::mCamPosReceived = true;
+        NetworkManager::mCamPosReceivedTcp = true;
         NetworkManager::mCvCamPosReceived.notify_all();
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        while (!NetworkManager::mVisTexComplete)
+        while (!NetworkManager::mVisTexCompleteTcp)
             NetworkManager::mCvVisTexComplete.wait(lck);
 
         // We reset it to false so that we need to wait for NetworkPass::executeServerSend to flag it as true
         // before we can continue sending the next frame
-        NetworkManager::mVisTexComplete = false;
+        NetworkManager::mVisTexCompleteTcp = false;
 
         // Send the visBuffer back to the sender
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-        SendTexture(visTexSize, (char*)&NetworkPass::visibilityData[0], mClientSocket);
+        SendTexture(visTexSize, (char*)NetworkPass::pVisibilityDataServer, mClientSocket);
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
     } while (true);
 
@@ -407,6 +482,128 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     return true;
 }
 
+void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeForever)
+{
+    bool firstClientReceive = isFirstClientReceive;
+    // for compression
+    std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
+    while (true)
+    {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
+        // dont render the first time because visibilityBuffer doesnt exist yet
+        // (new ordering sends camera Data after receive visibilityBuffer)
+        /*if (mFirstRender) {
+            mFirstRender = false;
+            return;
+        }*/
+
+        // Await server to send back the visibility pass texture
+        OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
+        int visTexLen = VIS_TEX_LEN;
+        FrameData rcvdFrameData = { visTexLen, 0, 0 };
+        
+        char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
+        char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
+
+        if (firstClientReceive)
+        {        
+            // Need to take a while to wait for the server,
+            // so we use a longer time out for the first time
+            RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock, UDP_FIRST_TIMEOUT_MS);
+            // Store the time when the first frame was received
+            // (server sends timestamps relative to the time when the first frame was fully rendered)
+            if (startTime == std::chrono::milliseconds::zero())
+            {
+                startTime = getCurrentTime();
+            }
+            firstClientReceive = false;
+        }
+        else
+        {
+            RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
+            
+            std::chrono::milliseconds currentTime = getComparisonTimestamp();
+            std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
+            if (timeDifference > std::chrono::milliseconds::zero())
+            {
+                char slowerMessage[77];
+                sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
+                        static_cast<int>(timeDifference.count()));
+                OutputDebugStringA(slowerMessage);
+            }
+            else
+            {
+                char fasterMessage[77];
+                sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
+                        static_cast<int>(timeDifference.count()));
+                OutputDebugStringA(fasterMessage);
+                // std::this_thread::sleep_for(-timeDifference);
+            }
+        }
+        OutputDebugString(L"\n\n= visTex received over network =========");
+        char frameDataMessage[89];
+        sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
+                rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
+        OutputDebugStringA(frameDataMessage);
+        
+        // if compress
+        if (NetworkManager::mCompression)
+        {
+            DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, compressionBuffer.get());
+        }
+
+        // acquire reading buffer mutex to swap buffers
+        std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
+        char* tempPtr = NetworkPass::visibilityDataForReadingClient;
+        NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
+        NetworkPass::visibilityDataForWritingClient = tempPtr;
+        // mutex and lock are released at the end of scope
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[102];
+        sprintf(printFps, "\n\n= ListenClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
+
+        if (!executeForever)
+        {
+            break;
+        }
+    }
+}
+
+void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
+{
+    while (true)
+    {
+        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
+        mSpClientCamPosReadyToSend.wait();
+
+        // store cameraU, V, W specifically for GBuffer rendering later
+        Camera::SharedPtr cam = mpScene->getCamera();
+        const CameraData& cameraData = cam->getData();
+        cameraUX = cameraData.cameraU.x;
+        cameraUY = cameraData.cameraU.y;
+        cameraUZ = cameraData.cameraU.z;
+        cameraVX = cameraData.cameraV.x;
+        cameraVY = cameraData.cameraV.y;
+        cameraVZ = cameraData.cameraV.z;
+        cameraWX = cameraData.cameraV.x;
+        cameraWY = cameraData.cameraV.y;
+        cameraWZ = cameraData.cameraV.z;
+
+        OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
+        SendCameraDataUdp(cam, mClientUdpSock);
+        OutputDebugString(L"\n\n= camData sent over network =========");
+
+        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        char printFps[109];
+        sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        OutputDebugStringA(printFps);
+    }   
+}
+
 bool NetworkManager::CloseClientConnectionUdp()
 {
     closesocket(mClientUdpSock);
@@ -467,6 +664,13 @@ char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compT
     return (char*)&NetworkManager::compData[0];
 }
 
+int NetworkManager::CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData)
+{
+    // int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
+    int compTexSize = LZ4_compress_default(inTexData, compTexData, inTexSize, inTexSize);
+    return compTexSize;
+}
+
 /// <summary>
 /// Decompress given data.
 /// </summary>
@@ -478,6 +682,13 @@ void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int com
 {
     lzo_uint new_len = outTexSize;
     lzo1x_decompress((unsigned char*)compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
+}
+
+int NetworkManager::DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
+{
+    // int LZ4_decompress_safe (const char* src, char* dst, int compressedSize, int dstCapacity);
+    int outputSize = LZ4_decompress_safe(compTexData, outTexData, compTexSize, outTexSize);
+    return outputSize;
 }
 
 /// <summary>
@@ -512,7 +723,7 @@ void NetworkManager::RecvTexture(int recvTexSize, char* recvTexData, SOCKET& soc
     // Decompress the texture if using compression
     if (mCompression)
     {
-        DecompressTexture(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
+        recvTexSize = DecompressTextureLZ4(recvTexSize, recvTexData, recvSize, (char*)&NetworkManager::compData[0]);
     }
 }
 
@@ -535,8 +746,23 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 
     if (mCompression)
     {
-        srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        //srcTex = CompressTexture(sendTexSize, sendTexData, sendSize);
+        sendSize = CompressTextureLZ4(sendTexSize, sendTexData, (char*)&NetworkManager::compData[0]);
         SendInt(sendSize, socket);
+
+        // Send the compressed texture
+        int sentSoFar = 0;
+        while (sentSoFar < sendSize)
+        {
+            bool lastPacket = sentSoFar > sendSize - DEFAULT_BUFLEN;
+            int sizeToSend = lastPacket ? (sendSize - sentSoFar) : DEFAULT_BUFLEN;
+            int iResult = send(socket, (char*)&NetworkManager::compData[0], sizeToSend, 0);
+            if (iResult != SOCKET_ERROR)
+            {
+                sentSoFar += iResult;
+            }
+        }
+        return;
     }
 
     // Send the texture
@@ -553,24 +779,25 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
     }
 }
 
-void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
+void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
-    // Note, compression is currently not implemented for UDP
-
+    int recvTexSize = frameDataOut.frameSize;
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
-                          ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
+        ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
+    uint8_t* cachePtr = reinterpret_cast<uint8_t*>(latestTextureData);
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
         int offset = UdpCustomPacket::maxPacketSize * i;
-        UdpCustomPacket toReceive(currentSeqNum);
+        // Assumes client is receiving texture from server
+        UdpCustomPacket toReceive(serverSeqNum);
         if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
             char buffer[73];
-            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", currentSeqNum);
+            sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", serverSeqNum);
             OutputDebugStringA(buffer);
             // Fill missing bits with data from latest
             if (i == numberOfPackets - 1)
@@ -594,41 +821,51 @@ void NetworkManager::RecvTextureUdp(int recvTexSize, char* recvTexDataOut, SOCKE
                 receivedDataSoFar += UdpCustomPacket::maxPacketSize;
             }
             // Try to receive the next packet
-            currentSeqNum++;
+            serverSeqNum++;
         }
         else
         {
-            currentSeqNum++;
+            serverSeqNum++;
             // Copy the packet data to the char* given
             toReceive.copyInto(dataPtr);
             dataPtr += toReceive.packetSize;
             receivedDataSoFar += toReceive.packetSize;
+
             // Copy the packet data into the latest data cache
-            uint8_t* offsetPtr = reinterpret_cast<uint8_t*>(&(latestTextureData[offset]));
-            toReceive.copyInto(offsetPtr);
+            toReceive.copyInto(cachePtr);
+            cachePtr += toReceive.packetSize;
+
+            // Retrieve frame data for the first packet received
+            if (i == 0)
+            {
+                numberOfPackets = toReceive.numOfFramePackets;
+                frameDataOut.frameNumber = toReceive.frameNumber;
+                frameDataOut.timestamp = toReceive.timestamp;
+            }
         }
+        frameDataOut.frameSize = receivedDataSoFar;
     }
 
-    if (receivedDataSoFar != recvTexSize)
-    {
-        char buffer[137];
-        sprintf(buffer, "\n\n= RecvTextureUdp: Error, received size does not match expected size."
-                "\nExpected %d, received %d =========", recvTexSize, receivedDataSoFar - 1);
-        OutputDebugStringA(buffer);
-        return;
-    }
+    // if (receivedDataSoFar != recvTexSize)
+    // {
+    //     char buffer[137];
+    //     sprintf(buffer, "\n\n= RecvTextureUdp: Error, received size does not match expected size."
+    //         "\nExpected %d, received %d =========", recvTexSize, receivedDataSoFar - 1);
+    //     OutputDebugStringA(buffer);
+    //     return;
+    // }
 
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
 }
 
-void NetworkManager::SendTextureUdp(int sendTexSize, char* sendTexData, SOCKET& socketUdp)
+void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
 {
-    // Note, compression is currenlty not implemented for UDP
-
     uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
-    UdpCustomPacket allDataToSend(currentSeqNum, sendTexSize, data);
+    // Assumes server is sending to client
+    UdpCustomPacket allDataToSend(serverSeqNum, frameData.frameSize,
+                                  frameData.frameNumber, 1, frameData.timestamp, data);
     std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
-    currentSeqNum = packets.first;
+    serverSeqNum = packets.first;
     allDataToSend.releaseDataPointer();
 
     for (UdpCustomPacket& toSend : packets.second)
@@ -727,9 +964,10 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
     return true;
 }
 
-bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET& socketUdp)
+bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp)
 {
-    UdpCustomPacket toReceive(currentSeqNum);
+    // Assumes server is receiving cam data from client
+    UdpCustomPacket toReceive(clientSeqNum);
     if (!RecvUdpCustom(toReceive, socketUdp, UDP_CAMERA_DATA_TIMEOUT_MS))
     {
         OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
@@ -744,18 +982,22 @@ bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, SOCKET
             OutputDebugString(L"\n= Using old camera data value =========");
             // Take from the cache
             cameraData = cameraDataCache.back();
-            currentSeqNum++;
+            clientSeqNum++;
             return true;
         }
     }
     else
     {
         // Increment sequence number for next communication
-        currentSeqNum++;
+        clientSeqNum++;
         // Copy the data to the pointer
-        assert(toReceive.packetSize == sizeof(cameraData));
-        uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
-        toReceive.copyInto(data);
+        {
+            std::lock_guard<std::mutex> lock(mutexForCameraData);
+            assert(toReceive.packetSize == sizeof(cameraData));
+            uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
+            toReceive.copyInto(data);
+        }
+
         // Populate the cache
         cameraDataCache.push_back(cameraData);
         if (cameraDataCache.size() > maxCamDataCacheSize)
@@ -770,8 +1012,9 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
     uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
-    UdpCustomPacket toSend(currentSeqNum, sizeof(cameraData), data);
-    currentSeqNum++;
+    // Assumes client sending to server
+    UdpCustomPacket toSend(clientSeqNum, sizeof(cameraData), data);
+    clientSeqNum++;
 
     bool wasDataSent = true;
     if (!SendUdpCustom(toSend, socketUdp))
@@ -798,9 +1041,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             uint8_t* uintPointer = new uint8_t[cached->second.packetSize];
             recvData.setDataPointer(uintPointer);
         }
-        cached->second.copyInto(recvData.udpData);
-        cached->second.releaseDataPointer();
-        recvData.packetSize = cached->second.packetSize;
+        cached->second.copyIntoAndRelease(recvData);
         packetCache.erase(cached);
         return true;
     }
@@ -855,6 +1096,9 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     int* headerData = reinterpret_cast<int*>(&udpReceiveBuffer);
     int seqNum = headerData[0];
     int dataSize = headerData[1];
+    int frameNum = headerData[2];
+    int numFramePkts = headerData[3];
+    int timestamp = headerData[4];
     int totalSize = dataSize + headerSize;
 
     bool doStoreInCache = false;
@@ -873,7 +1117,11 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
         else
         {
             doStoreInCache = true;
-            packetCache.emplace(seqNum, UdpCustomPacket(seqNum, dataSize, new uint8_t[dataSize]));
+            packetCache.emplace(
+                seqNum,
+                UdpCustomPacket(seqNum, dataSize, frameNum,
+                                numFramePkts, timestamp, new uint8_t[dataSize])
+            );
         }
     }
 
@@ -888,7 +1136,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     }
 
     // Receive the rest of the packet, if needed
-    if (dataReceivedSoFar < dataSize)
+    if (dataReceivedSoFar < dataSize + headerSize)
     {
         do
         {
@@ -906,23 +1154,35 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             }
         } while (dataReceivedSoFar < dataSize);
     }
-    recvData.packetSize = dataSize;
+    else if (dataReceivedSoFar > dataSize + headerSize)
+    {
+        char extraDataBuffer[85];
+        sprintf(extraDataBuffer, "\nRecvUdpCustom: Ignoring extra %d bytes for packet #%d",
+                dataReceivedSoFar - dataSize, recvData.sequenceNumber);
+        OutputDebugStringA(extraDataBuffer);
+    }
 
     char* dataPointer;
     if (doStoreInCache)
     {
         dataPointer = packetCache.at(seqNum).getUdpDataPointer();
+        // dataPointer will not be null as we made a new array 
+        // for the packet that was stored in the cache
     }
     else
     {
-        dataPointer = recvData.getUdpDataPointer();
-    }
+        recvData.packetSize = dataSize;
+        recvData.frameNumber = frameNum;
+        recvData.numOfFramePackets = numFramePkts;
+        recvData.timestamp = timestamp;
 
-    if (dataPointer == nullptr)
-    {
-        uint8_t* uintPointer = new uint8_t[dataSize];
-        recvData.setDataPointer(uintPointer);
         dataPointer = recvData.getUdpDataPointer();
+        if (dataPointer == nullptr)
+        {
+            uint8_t* uintPointer = new uint8_t[dataSize];
+            recvData.setDataPointer(uintPointer);
+            dataPointer = recvData.getUdpDataPointer();
+        }
     }
 
     // Copy data from buffer into UdpCustomPacket object
@@ -939,7 +1199,10 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
     std::unique_ptr<char[]> udpToSend = dataToSend.createUdpPacket();
 
     // Send the data
-    OutputDebugString(L"\n\n= SendUdpCustom: Sending packets... =========");
+    char buffer0[65];
+    sprintf(buffer0, "\n\n= SendUdpCustom: Sending packet %d... =========", dataToSend.sequenceNumber);
+    OutputDebugStringA(buffer0);
+
     struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&mSi_otherUdp);
     int socketLen = sizeof(mSi_otherUdp);
     int sendSize = UdpCustomPacket::headerSizeBytes + dataToSend.packetSize;
@@ -969,4 +1232,9 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
     
     OutputDebugString(L"\n\n= SendUdpCustom: Sent packets =========");
     return true;
+}
+
+std::chrono::milliseconds NetworkManager::getComparisonTimestamp()
+{
+    return getCurrentTime() - startTime;
 }

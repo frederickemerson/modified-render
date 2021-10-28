@@ -29,6 +29,9 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
 
+    // store index of texture(s) we will be transferring to
+    mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+
     return true;
 }
 
@@ -41,9 +44,17 @@ void MemoryTransferPassClientCPU_GPU::initScene(RenderContext* pRenderContext, S
 
 void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
-    // Put visibility texture from network (on CPU) into GPU
-    Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");
-    visTex->apiInitPub(NetworkPass::visibilityData.data(), true);
+    // Load visibility texture from GPU to CPU
+    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");  // original call using string
+    /*if (mVisibilityIndex == -1) {                                             // getting visibility index was moved to initialize()
+        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+    }*/
+    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+
+    pRenderContext->flush(true);
+
+    std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
+    visTex->apiInitPub(NetworkPass::visibilityDataForReadingClient, true);
 }
 
 void MemoryTransferPassClientCPU_GPU::renderGui(Gui::Window* pPassWindow)

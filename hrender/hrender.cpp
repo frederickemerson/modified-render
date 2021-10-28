@@ -176,22 +176,11 @@ void runServer(bool useTcp)
                             texWidth, texHeight)
     });
 
-    // --- Pass 6 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(5, {
-        VShadingPass::create("V-shading"),
-    });
-
-    // --- Pass 7 just lets us select which pass to view on screen --- //
-    pipeline->setPass(6, CopyToOutputPass::create());
-
-    // --- Pass 8 temporally accumulates frames for denoising --- //
-    pipeline->setPass(7, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
-
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
         });
 
     // Start our program
@@ -225,36 +214,41 @@ void runClient(bool useTcp)
     }
 
     // --- Pass 1 Send camera data to server--- //
+    /*pipeline->setPassOptions(2, {
+        NetworkPass::create(NetworkPass::Mode::ClientUdpSendFirst)
+    });*/
+
+    // --- Pass 1 Send camera data to server--- //
     pipeline->setPassOptions(0, {
         NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend)
     });
 
-    // --- Pass 2 creates a GBuffer on client side--- //
+    // --- Pass 2 receive visibility bitmap from server --- //
     pipeline->setPassOptions(1, {
-        // Rasterized GBuffer
-        JitteredGBufferPass::create()
-    });
-
-    // --- Pass 3 receive visibility bitmap from server --- //
-    pipeline->setPassOptions(2, {
         NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
-    });
+        });
 
-    // --- Pass 4 transfers CPU information into GPU --- //
-    pipeline->setPassOptions(3, {
+    // --- Pass 3 transfers CPU information into GPU --- //
+    pipeline->setPassOptions(2, {
         MemoryTransferPassClientCPU_GPU::create()
     });
 
-    // --- Pass 5 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(4, {
+    // --- Pass 4 makes use of the visibility bitmap to shade the scene --- //
+    pipeline->setPassOptions(3, {
         VShadingPass::create("V-shading"),
     });
 
-    // --- Pass 6 just lets us select which pass to view on screen --- //
-    pipeline->setPass(5, CopyToOutputPass::create());
+    // --- Pass 5 just lets us select which pass to view on screen --- //
+    pipeline->setPass(4, CopyToOutputPass::create());
 
-    // --- Pass 7 temporally accumulates frames for denoising --- //
-    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 6 temporally accumulates frames for denoising --- //
+    pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    // --- Pass 7 creates a GBuffer on client side--- //
+    pipeline->setPassOptions(6, {
+        // Rasterized GBuffer
+        JitteredGBufferPass::create()
+        });
 
     // ============================ //
     // Set presets for the pipeline //

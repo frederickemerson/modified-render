@@ -9,26 +9,38 @@
 class UdpCustomPacket {
 public:
     // Header size in bytes
-    // Header contains two ints, sequence number and packet size
-    const static int headerSizeBytes = 8;
+    // Header contains 5 ints with 4 bytes each
+    const static int headerSizeBytes = 20;
     
     // The maximum size of the data encapsulated within this
     // With the header, the maximum size should add up to 65,507 bytes
-    const static int32_t maxPacketSize = 65499;
+    const static int32_t maxPacketSize = 65487;
 
+    // ======================= HEADER FIELDS =======================
+    // Total size of header: 5 * 4 bytes = 20 bytes
+    
+    // 1) Sequence number of this packet
+    int32_t sequenceNumber = -1;
+    // 2) Packet size in bytes, excluding header size
+    int32_t packetSize = 0;
+    // 3) Frame number which this packet belongs to
+    int32_t frameNumber = -1;
+    // 4) Number of packets that belong to the same frame
+    int32_t numOfFramePackets = 0;
+    // 5) Timestamp for when the frame should be played
+    int32_t timestamp = -1;
 
-    // Sequence number of this packet
-    int32_t sequenceNumber;
-    // Packet size in bytes, excluding header size
-    int32_t packetSize;
-
+    // =========================== DATA ============================
     // Raw UDP packet, an array of bytes
-    uint8_t* udpData;
+    uint8_t* udpData = nullptr;
 
     // Initialise a packet with just the sequence number
     UdpCustomPacket(int32_t expectedSequenceNumber);
-    // Initialise a packet with all the fields
+    // Initialise a packet with without frame information
     UdpCustomPacket(int32_t seqNum, int32_t pktSize, uint8_t* data);
+    // Initialise a packet with all the fields
+    UdpCustomPacket(int32_t seqNum, int32_t pktSize, int32_t frmNum,
+                    int32_t numFrmPkts, int32_t tmStmp, uint8_t* data);
     UdpCustomPacket() = delete;
     UdpCustomPacket(const UdpCustomPacket&) = delete;
     UdpCustomPacket& operator=(const UdpCustomPacket&) = delete;
@@ -55,7 +67,13 @@ public:
     // Copies the data from this packet into another array
     // Note: User must ensure that the array has enough
     //       allocated space!
-    void copyInto(uint8_t* dataOut);
+    void copyInto(uint8_t* dataOut) const;
+
+    // Copies the data from this packet into another UdpCustomPacket
+    // and releases the pointer that is held by this packet
+    //
+    // Note: This calls delete[] on the data pointer in the copy
+    void copyIntoAndRelease(UdpCustomPacket& copy);
 
     // Returns the data pointer and sets the pointer
     // of this UdpCustomPacket to nullptr
