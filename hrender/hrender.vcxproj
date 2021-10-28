@@ -132,12 +132,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>
-    </CustomBuildBeforeTargets>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -190,6 +191,12 @@ xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(Ou
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <CustomBuildStep>
+      <Command>devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
+xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"</Command>
+      <Message>LZ4 Setup</Message>
+      <Outputs>liblz4.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
