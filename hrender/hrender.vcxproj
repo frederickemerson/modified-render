@@ -132,9 +132,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Clean</CustomBuildBeforeTargets>
+    <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -163,6 +163,7 @@
       <Command>devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
 xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"</Command>
       <Outputs>liblz4.dll</Outputs>
+      <Message>LZ4 Setup</Message>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
