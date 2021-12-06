@@ -156,6 +156,12 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+    devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
+    xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
+)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -181,6 +187,12 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+    devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
+    xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
+)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
