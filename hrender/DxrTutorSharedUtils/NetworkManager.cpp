@@ -588,9 +588,9 @@ void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         cameraVX = cameraData.cameraV.x;
         cameraVY = cameraData.cameraV.y;
         cameraVZ = cameraData.cameraV.z;
-        cameraWX = cameraData.cameraV.x;
-        cameraWY = cameraData.cameraV.y;
-        cameraWZ = cameraData.cameraV.z;
+        cameraWX = cameraData.cameraW.x;
+        cameraWY = cameraData.cameraW.y;
+        cameraWZ = cameraData.cameraW.z;
 
         OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
         SendCameraDataUdp(cam, mClientUdpSock);
