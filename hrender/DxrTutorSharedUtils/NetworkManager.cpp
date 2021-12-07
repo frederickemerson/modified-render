@@ -204,7 +204,7 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     return true;
 }
 
-bool NetworkManager::ListenServerUdp(bool executeForever)
+bool NetworkManager::ListenServerUdp(bool executeForever, bool useLongTimeout)
 {
     // Receive until the peer shuts down the connection
     do
@@ -213,7 +213,10 @@ bool NetworkManager::ListenServerUdp(bool executeForever)
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
         // Mutex will be locked in RecvCameraDataUdp
-        RecvCameraDataUdp(NetworkPass::camData, NetworkManager::mMutexServerCamData, mServerUdpSock);
+        RecvCameraDataUdp(NetworkPass::camData,
+                          NetworkManager::mMutexServerCamData,
+                          mServerUdpSock,
+                          useLongTimeout);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
         mSpServerCamPosUpdated.signal();
 
@@ -964,13 +967,29 @@ bool NetworkManager::SendCameraData(Camera::SharedPtr cam, SOCKET& s)
     return true;
 }
 
-bool NetworkManager::RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp)
+bool NetworkManager::RecvCameraDataUdp(
+    std::array<float3, 3>& cameraData,
+    std::mutex& mutexForCameraData,
+    SOCKET& socketUdp,
+    bool useLongTimeout)
 {
     // Assumes server is receiving cam data from client
     UdpCustomPacket toReceive(clientSeqNum);
-    if (!RecvUdpCustom(toReceive, socketUdp, UDP_CAMERA_DATA_TIMEOUT_MS))
+    bool hasReceived;
+    if (useLongTimeout)
     {
-        OutputDebugString(L"\n\n= RecvCameraDataUdp: Failed to receive =========");
+        hasReceived = RecvUdpCustom(toReceive, socketUdp, UDP_FIRST_TIMEOUT_MS);
+    }
+    else
+    {
+        hasReceived = RecvUdpCustom(toReceive, socketUdp);
+    }
+
+    if (!hasReceived)
+    {
+        char bufferSn[75];
+        sprintf(bufferSn, "\n\n= RecvCameraDataUdp: Failed to receive %d =========", clientSeqNum);
+        OutputDebugStringA(bufferSn);
         if (cameraDataCache.empty())
         {   
             OutputDebugString(L"\n= Camera data cache empty =========");

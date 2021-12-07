@@ -163,7 +163,10 @@ public:
     bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
     bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
     // Use UDP to receive and send camera data
-    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData, std::mutex& mutexForCameraData, SOCKET& socketUdp);
+    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData,
+                           std::mutex& mutexForCameraData,
+                           SOCKET& socketUdp,
+                           bool useLongTimeout);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
     char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
@@ -187,7 +190,7 @@ public:
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
     // Server's receiving thread
     // Listen to UDP packets with custom protocol
-    bool ListenServerUdp(bool executeForever);
+    bool ListenServerUdp(bool executeForever, bool useLongTimeout);
     // Server's sending thread
     void SendWhenReadyServerUdp(RenderContext* pRenderContext,
                                 std::shared_ptr<ResourceManager> pResManager,

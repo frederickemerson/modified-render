@@ -397,9 +397,16 @@ bool NetworkPass::firstServerRenderUdp(RenderContext* pRenderContext)
     mFirstRender = false;
 
     // Wait for first cam data to be received (run in sequence)
-    ResourceManager::mNetworkManager->ListenServerUdp(false);
+    ResourceManager::mNetworkManager->ListenServerUdp(false, true);
     auto serverListen = [&]() {
-        ResourceManager::mNetworkManager->ListenServerUdp(true);
+        // First packet in parallel will take some time to arrive as well
+        int numOfTimes = 1;
+        for (int i = 0; i < numOfTimes; i++)
+        {
+            ResourceManager::mNetworkManager->ListenServerUdp(false, true);
+        }
+        // Afterwards, loop infinitely
+        ResourceManager::mNetworkManager->ListenServerUdp(true, false);
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= firstServerRenderUdp - Network thread dispatched =========");
