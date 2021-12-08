@@ -2,12 +2,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hrender", "..\hrender\hrender.vcxproj", "{3F318569-891B-4D35-952C-9162D29F97F7}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{350A0B15-98C0-45E3-872B-4FEFB47AA37C}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hrender", "..\hrender\hrender.vcxproj", "{3F318569-891B-4D35-952C-9162D29F97F7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{4B8EAC4B-FFDF-4CCA-A6FE-4505631E51EC}"
 EndProject
@@ -100,6 +100,22 @@ Global
 		RelWithDebInfo|x86 = RelWithDebInfo|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x64.ActiveCfg = Debug|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x64.Build.0 = Debug|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x86.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x86.Build.0 = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x64.ActiveCfg = Debug|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x64.Build.0 = Debug|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x86.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x86.Build.0 = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.Build.0 = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x86.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x86.Build.0 = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x86.ActiveCfg = Release|x64
+		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x86.Build.0 = Release|x64
 		{20401FAD-6022-8EB7-2F78-41369B8F0F49}.DebugD3D12|x64.ActiveCfg = Debug|x64
 		{20401FAD-6022-8EB7-2F78-41369B8F0F49}.DebugD3D12|x64.Build.0 = Debug|x64
 		{20401FAD-6022-8EB7-2F78-41369B8F0F49}.DebugD3D12|x86.ActiveCfg = Release|x64
@@ -610,22 +626,6 @@ Global
 		{B1715F7A-6EFD-4910-B271-7423AB6961CB}.RelWithDebInfo|x64.Build.0 = Release|x64
 		{B1715F7A-6EFD-4910-B271-7423AB6961CB}.RelWithDebInfo|x86.ActiveCfg = Release|x64
 		{B1715F7A-6EFD-4910-B271-7423AB6961CB}.RelWithDebInfo|x86.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x64.ActiveCfg = Debug|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x64.Build.0 = Debug|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x86.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.DebugD3D12|x86.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x64.ActiveCfg = Debug|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x64.Build.0 = Debug|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x86.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.MinSizeRel|x86.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x86.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x86.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x64.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x64.Build.0 = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x86.ActiveCfg = Release|x64
-		{3F318569-891B-4D35-952C-9162D29F97F7}.RelWithDebInfo|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
