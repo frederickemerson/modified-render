@@ -22,8 +22,8 @@
 #include <algorithm>
 
 namespace {
-    const char     *kNullPassDescriptor = "< None >";   ///< Name used in dropdown lists when no pass is selected.
-    const char     *kNullPresetDescriptor = "< No preset selected >"; ///< Name used in dropdown lists when no preset is selected.
+    const char* kNullPassDescriptor = "< None >";   ///< Name used in dropdown lists when no pass is selected.
+    const char* kNullPresetDescriptor = "< No preset selected >"; ///< Name used in dropdown lists when no preset is selected.
     const uint32_t  kNullPassId = 0xFFFFFFFFu;          ///< Id used to represent the null pass (using -1).
     const uint32_t  kNullPresetId = 0xFFFFFFFFu;        ///< Id used to represent the null preset (using -1).
 };
@@ -113,11 +113,11 @@ void RenderingPipeline::onLoad(RenderContext* pRenderContext)
     // Create identifiers for profiling.
     mProfileGPUTimes.resize(mActivePasses.size() * 2);
     mProfileLastGPUTimes.resize(mActivePasses.size() * 2);
-    for (uint32_t i = 0; i < mActivePasses.size()*2; i++)
+    for (uint32_t i = 0; i < mActivePasses.size() * 2; i++)
     {
         char buf[256];
         sprintf_s(buf, "Pass_%d", i);
-        mProfileNames.push_back( std::string(buf) );
+        mProfileNames.push_back(std::string(buf));
     }
 
     // We're going to create a default graphics state, and stash a reference in the resource manager
@@ -235,7 +235,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         if (mEnvMapSelector.empty()) populateEnvMapSelector();
 
         uint32_t selection = 0;
-        w.text( "Current environment map:" );
+        w.text("Current environment map:");
         w.text("     ");
         if (w.dropdown("##envMapSelector", mEnvMapSelector, selection, true))
         {
@@ -294,7 +294,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
         }
 
         // Add a blank line.
-        w.text(""); 
+        w.text("");
     }
 
     // Draw the checkbox that enables/disables all passes' GUIs
@@ -348,7 +348,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
 
             // Offset the positions of the GUIs depending on where they are in the pipeline.  If we move it down too far
             //    due to number of passes, give up and draw it just barely visibile at the bottom of the screen.
-            guiPos.y += yGuiOffset; 
+            guiPos.y += yGuiOffset;
             guiPos.y = glm::min(guiPos.y, int(mLastKnownSize.y) - 100);
 
             // Create a window.  Note: RS4 version does more; that doesn't work with recent Falcor; this is OK for just tutorials.
@@ -366,7 +366,7 @@ void RenderingPipeline::onGuiRender(Gui* pGui)
 
         // Offset the next GUI by the current one's height
         if (mActivePasses[i])
-            yGuiOffset += mActivePasses[i]->getGuiSize().y; 
+            yGuiOffset += mActivePasses[i]->getGuiSize().y;
     }
     mResetWindowPositions = false;
 
@@ -519,7 +519,7 @@ void RenderingPipeline::setPassOptions(uint32_t passNum, std::vector<::RenderPas
     mPassSelectors[passNum].push_back({ kNullPassId, kNullPassDescriptor });
 
     // Update the settings for the specified active pass.
-    mEnableAddRemove[passNum] = 0x0u; 
+    mEnableAddRemove[passNum] = 0x0u;
 
     uint32_t passIdx = kNullPassId;
     for (uint32_t i = 0; i < uint32_t(pPassList.size()); i++)
@@ -544,7 +544,7 @@ void RenderingPipeline::setPassOptions(uint32_t passNum, std::vector<::RenderPas
         }
 
         // Set the active pass to be the first one in the list
-        if (i==0) mPassId[passNum] = passIdx;
+        if (i == 0) mPassId[passNum] = passIdx;
     }
 
     if (mIsInitialized)
@@ -577,7 +577,7 @@ void RenderingPipeline::insertPassIntoPipeline(uint32_t afterPass)
     mPassSelectors.insert(mPassSelectors.begin() + insertLoc, nullSelector);
     mPassId.insert(mPassId.begin() + insertLoc, kNullPassId);
     mEnablePassGui.insert(mEnablePassGui.begin() + insertLoc, false);
-    mEnableAddRemove.insert(mEnableAddRemove.begin() + insertLoc, int32_t( UIOptions::CanAddAfter | UIOptions::CanRemove ) );
+    mEnableAddRemove.insert(mEnableAddRemove.begin() + insertLoc, int32_t(UIOptions::CanAddAfter | UIOptions::CanRemove));
 
     // (Re)-create a GUI selector for all passes (including and after the new pass)  
     for (uint32_t i = insertLoc; i < mPassSelectors.size(); i++)
@@ -652,7 +652,7 @@ void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::
 {
     // Is this the first time we've run onFrameRender()?  If som take care of things that happen on first execution.
     if (mFirstFrame) onFirstRun();
-    
+
     // Check to ensure we have all our resources initialized.  (This should be superfluous) 
     if (!mpResourceManager->isInitialized())
     {
@@ -675,7 +675,7 @@ void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::
         {
             if (mActivePasses[passNum])
             {
-                mActivePasses[passNum]->onPipelineUpdate( mpResourceManager );
+                mActivePasses[passNum]->onPipelineUpdate(mpResourceManager);
             }
         }
 
@@ -726,8 +726,20 @@ void RenderingPipeline::onFrameRender(RenderContext* pRenderContext, const std::
     // Once we're done rendering, clear the pipeline dirty state.
     mPipelineChanged = false;
 
-    // Print the FPS
-    TextRenderer::render(pRenderContext, gpFramework->getFrameRate().getMsg(), pTargetFbo, { 20, 20 });
+    // Toggle the FPS
+    static int time = 0;
+    time--;
+    if (gpFramework->isKeyPressed(KeyboardEvent::Key::U) && time < 0)
+    {
+        time = 10;
+        mShowFPS = !mShowFPS;
+    }
+
+    if (mShowFPS)
+    {
+        // Print the FPS
+        TextRenderer::render(pRenderContext, gpFramework->getFrameRate().getMsg(), pTargetFbo, { 20, 20 });
+    }
 }
 
 void RenderingPipeline::onInitNewScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
@@ -917,12 +929,12 @@ void RenderingPipeline::populateEnvMapSelector(void)
     }
 }
 
-void RenderingPipeline::addPipeInstructions(const std::string &str)
+void RenderingPipeline::addPipeInstructions(const std::string& str)
 {
     mPipeDescription.push_back(str);
 }
 
-void RenderingPipeline::run(RenderingPipeline *pipe, SampleConfig &config)
+void RenderingPipeline::run(RenderingPipeline* pipe, SampleConfig& config)
 {
     pipe->updatePipelineRequirementFlags();
     auto uPtrToPipe = std::unique_ptr<IRenderer>(pipe);

@@ -81,7 +81,14 @@ public:
     using SharedConstPtr = std::shared_ptr<const RayLaunch>;
     virtual ~RayLaunch() = default;
 
-    static SharedPtr create(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth=2);
+    /** Create a new binding table.
+    \param[in] missCount Number of miss shaders.
+    \param[in] rayTypeCount Number of ray types.
+    \param[in] geometryCount Number of geometries.
+    \return A new object, or throws an exception on error.
+*/
+
+    static SharedPtr create(uint32_t missCount, uint32_t rayTypeCount, const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth=2, int maxPayloadSize=24);
 
     // Create a new miss shader
     uint32_t addMissShader(const std::string& missShaderFile, const std::string& missEntryPoint);
@@ -91,7 +98,7 @@ public:
 
     // NOTE: Advanced. Not fully tested all the way through Falcor's abstractions.  May not work as desired/expected. 
     //    Create a new hit group with closest hit and any-hit shader. Use the null string "" for no shader.
-    uint32_t addHitGroup(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint);
+    uint32_t addHitGroup(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint, const std::string& intersectionEntryPoint);
 
     // Call once you have added all the desired ray types
     void compileRayProgram();
@@ -111,6 +118,9 @@ public:
     // Sets the max recursion depth (defaults to 2)
     void setMaxRecursionDepth(uint32_t maxDepth);
 
+    // Sets the max payload size (defaults to 24). The largest ray payload struct (PrimaryRayData) is 24 bytes. The payload size should be set as small as possible for maximum performance.
+    void setMaxPayloadSize(uint32_t maxPayloadSize);
+
     // Launch our ray tracing with the specified number of rays.  If viewCamera is null, uses the scene's active camera
     void execute(RenderContext::SharedPtr pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
     void execute(RenderContext* pRenderContext, uint2 rayLaunchDimensions, Camera::SharedPtr viewCamera = nullptr);
@@ -123,15 +133,21 @@ public:
     GroupVarsVector getHitVars(uint32_t rayType);
 
 protected:
-    RayLaunch(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth=2);
+    RayLaunch(uint32_t missCount, uint32_t rayTypeCount, const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth=2, int maxPayloadSize = 24);
 
     void createRayTracingVariables();
 
     RtProgram::SharedPtr          mpRayProg;        ///< Most abstract ray tracing pipeline (includes ray gen, miss, and hit shaders)
     RtProgram::Desc               mRayProgDesc;   
     std::string                   mpLastShaderFile;
-    uint32_t                      mNumMiss      = 0;
-    uint32_t                      mNumHitGroup  = 0;
+
+    RtBindingTable::SharedPtr     mpRtBindingTable;
+    std::string                   mpRayGenEntryPoint;
+    uint32_t                      mMissCount;
+    uint32_t                      mRayTypeCount;
+
+    uint32_t                      mNumMiss = 0;
+    uint32_t                      mNumHitGroup = 0;
 
     RtProgramVars::SharedPtr      mpRayVars;        ///< Accessor / reflector for variables in all ray tracing shaders
 

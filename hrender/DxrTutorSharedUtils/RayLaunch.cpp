@@ -18,21 +18,27 @@
 
 #include "RayLaunch.h"
 
-RayLaunch::SharedPtr RayLaunch::RayLaunch::create(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth)
+RayLaunch::SharedPtr RayLaunch::RayLaunch::create(uint32_t missCount, uint32_t rayTypeCount, const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth, int maxPayloadSize)
 {
-    return SharedPtr(new RayLaunch(rayGenFile, rayGenEntryPoint, recursionDepth));
+    return SharedPtr(new RayLaunch(missCount, rayTypeCount, rayGenFile, rayGenEntryPoint, recursionDepth, maxPayloadSize));
 }
 
-RayLaunch::RayLaunch(const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth)
+RayLaunch::RayLaunch(uint32_t missCount, uint32_t rayTypeCount, const std::string &rayGenFile, const std::string& rayGenEntryPoint, int recursionDepth, int maxPayloadSize)
 {
     setMaxRecursionDepth(recursionDepth);
-    mRayProgDesc.addShaderLibrary(rayGenFile).setRayGen(rayGenEntryPoint);
+    setMaxPayloadSize(maxPayloadSize);
+    mRayProgDesc.addShaderLibrary(rayGenFile);
     mpLastShaderFile = rayGenFile;
 
     mpRayProg = nullptr;
     mpRayVars = nullptr;
     mpScene = nullptr;
     mInvalidVarReflector = true;
+
+    mpRtBindingTable = nullptr;
+    mpRayGenEntryPoint = rayGenEntryPoint;
+    mMissCount = missCount;
+    mRayTypeCount = rayTypeCount;
 }
 
 uint32_t RayLaunch::addMissShader(const std::string& missShaderFile, const std::string& missEntryPoint)
@@ -40,7 +46,7 @@ uint32_t RayLaunch::addMissShader(const std::string& missShaderFile, const std::
     if (mpLastShaderFile != missShaderFile)
         mRayProgDesc.addShaderLibrary(missShaderFile);
 
-    mRayProgDesc.addMiss(mNumMiss, missEntryPoint);
+    mpRtBindingTable->setMiss(mNumMiss, mRayProgDesc.addMiss(missEntryPoint));
     return mNumMiss++;
 }
 
@@ -49,21 +55,21 @@ uint32_t RayLaunch::addHitShader(const std::string& hitShaderFile, const std::st
     if (mpLastShaderFile != hitShaderFile)
         mRayProgDesc.addShaderLibrary(hitShaderFile);
 
-    mRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint);
+    mpRtBindingTable->setHitGroupByType(mNumHitGroup, mpScene, Scene::GeometryType::TriangleMesh, mRayProgDesc.addHitGroup(closestHitEntryPoint, anyHitEntryPoint));
     return mNumHitGroup++;
 }
 
-uint32_t RayLaunch::addHitGroup(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint)
+uint32_t RayLaunch::addHitGroup(const std::string& hitShaderFile, const std::string& closestHitEntryPoint, const std::string& anyHitEntryPoint, const std::string& intersectionEntryPoint)
 {
     if (mpLastShaderFile != hitShaderFile)
         mRayProgDesc.addShaderLibrary(hitShaderFile);
 
-    mRayProgDesc.addHitGroup(mNumHitGroup, closestHitEntryPoint, anyHitEntryPoint);
+    mpRtBindingTable->setHitGroupByType(mNumHitGroup, mpScene, Scene::GeometryType::TriangleMesh, mRayProgDesc.addHitGroup(closestHitEntryPoint, anyHitEntryPoint, intersectionEntryPoint));
     return mNumHitGroup++;
 }
 
 void RayLaunch::compileRayProgram()
-{
+{    
     if (mpScene) {
         // RtPrograms must be created with RtProgram::Desc that references a scene. We make a
         // copy of the stashed Desc (created with the shaders that were added), then add the scene
@@ -98,6 +104,11 @@ void RayLaunch::setMaxRecursionDepth(uint32_t maxDepth)
     mInvalidVarReflector = true;
 }
 
+void RayLaunch::setMaxPayloadSize(uint32_t maxPayloadSize)
+{
+    mRayProgDesc.setMaxPayloadSize(maxPayloadSize);
+}
+
 void RayLaunch::setScene(Scene::SharedPtr pScene)
 {
     // Make sure we have a valid scene 
@@ -106,6 +117,10 @@ void RayLaunch::setScene(Scene::SharedPtr pScene)
 
     // Since the scene is an integral part of the variable reflector, we now need to update it!
     mInvalidVarReflector = true;
+
+    // Create RtBindingTable with scene geometry count
+    mpRtBindingTable = RtBindingTable::create(mMissCount, mRayTypeCount, mpScene->getGeometryCount());
+    mpRtBindingTable->setRayGen(mRayProgDesc.addRayGen(mpRayGenEntryPoint));
 
     // Since generating our ray tracing variables take quite a while (incl. build time), check if we can do it now
     if (mpRayProg) createRayTracingVariables();
@@ -127,11 +142,11 @@ void RayLaunch::createRayTracingVariables()
 {
     if (mpRayProg && mpScene)
     {
-        mpRayVars = RtProgramVars::create(mpRayProg, mpScene);
+        mpRayVars = RtProgramVars::create(mpRayProg, mpRtBindingTable);
         if (!mpRayVars) return;
         mInvalidVarReflector = false;
 
-        mpRayGenVars = mpRayVars->getRayGenVars(0);
+        mpRayGenVars = mpRayVars->getRayGenVars();
 
         mpMissVars.clear();
         for (int i = 0; i<int(mNumMiss); i++)

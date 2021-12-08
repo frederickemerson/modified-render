@@ -5,7 +5,7 @@ namespace
 {
     // Where is our environment map and scene located?
     const char *kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
-    const char *kDefaultScene   = "pink_room\\pink_room.fscene";
+    const char *kDefaultScene   = "pink_room\\pink_room.pyscene";
 
     // For basic jittering, we don't need to change our rasterized g-buffer, just jitter the camera position
     const char *kGbufVertShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.vs.hlsl";

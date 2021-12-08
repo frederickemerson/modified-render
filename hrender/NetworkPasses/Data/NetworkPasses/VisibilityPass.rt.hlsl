@@ -18,8 +18,8 @@
 
 // Include and import common Falcor utilities and data structures
 import Scene.Raytracing;
-import Scene.Shading;                      // Shading functions, etc   
-import Scene.Lights.Lights;                // Light structures for our current scene
+import Scene.Shading;                          // Shading functions, etc   
+import Experimental.Scene.Lights.LightHelpers; // Light structures for our current scene
 
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
@@ -54,7 +54,7 @@ float shadowRayVisibility( float3 origin, float3 direction, float minT, float ma
 
     // Query if anything is between the current point and the light (i.e., at maxT) 
     ShadowRayPayload rayPayload = { maxT + 1.0f }; 
-    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, hitProgramCount, 0, ray, rayPayload);
+    TraceRay(gScene.rtAccel, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, rayTypeCount, 0, ray, rayPayload);
 
     // Check if anyone was closer than our maxT distance (in which case we're occluded)
     return (rayPayload.hitDist > maxT) ? 1.0f : 0.0f;
@@ -66,11 +66,12 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 }
 
 [shader("anyhit")]
-void ShadowAnyHit(uniform HitShaderParams hitParams, inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     // Run a Falcor helper to extract the current hit point's geometric data
-    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
-    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
+    GeometryInstanceID instanceID = getGeometryInstanceID();
+    VertexData v = getVertexData(instanceID, PrimitiveIndex(), attribs);
+    const uint materialID = gScene.getMaterialID(instanceID);
 
     // Test if this hit point passes a standard alpha test.  If not, discard/ignore the hit.
     if (alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f))

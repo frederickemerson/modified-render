@@ -78,7 +78,7 @@ float4 unpackUnorm4x8(uint packed)
     \return A single uint4, with a packed format with 8 bits per component:
         r: diffuse.r,    diffuse.g,      diffuse.b,          opacity
         g: specular.r,   specular.g,     specular.b,         linear roughness
-        b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
+        b: emissive.r,   emissive.g,     emissive.b,         isDoubleSided() ? 1.0f : 0.0f
         a: IoR,          metallic,       specular trans,     eta
 */
 uint4 packTextureData(in ShadingData hitPt)
@@ -86,7 +86,7 @@ uint4 packTextureData(in ShadingData hitPt)
     return uint4(
         packUnorm4x8(float4(hitPt.diffuse, hitPt.opacity)),
         packUnorm4x8(float4(hitPt.specular, hitPt.linearRoughness)),
-        packUnorm4x8(float4(hitPt.emissive, hitPt.doubleSided ? 1.f : 0.f)),
+        packUnorm4x8(float4(hitPt.emissive, hitPt.isDoubleSided() ? 1.f : 0.f)),
         packUnorm4x8(float4(hitPt.IoR, hitPt.metallic, hitPt.specularTransmission, hitPt.eta))
     );
 }

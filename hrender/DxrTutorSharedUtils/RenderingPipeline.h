@@ -29,7 +29,7 @@ public:
 
     struct PresetData {
         PresetData() = default;
-        PresetData(const std::string &d, const std::string &o, const std::vector<uint32_t> &s) : descriptor(d), outBuf(o), selectedPassIdxs(s) {};
+        PresetData(const std::string& d, const std::string& o, const std::vector<uint32_t>& s) : descriptor(d), outBuf(o), selectedPassIdxs(s) {};
 
         const std::string descriptor; // The text displayed in the dropdown menu for this preset
         const std::string outBuf; // The desired output buffer name. Should use "" if there isn't one.
@@ -37,7 +37,7 @@ public:
     };
 
     // Our publically-visible constructors 
-    RenderingPipeline(bool overridingSize=false, uint2 overrideSize=uint2(0,0));
+    RenderingPipeline(bool overridingSize = false, uint2 overrideSize = uint2(0, 0));
     virtual ~RenderingPipeline() = default;
 
     /** Lets derived classes setup a pipeline. Function can be called before or after the renderer has been initialized.
@@ -68,11 +68,11 @@ public:
         to insert two presets, where the first preset has the displayed descriptor "Naive", will cause the CopyToOutputBuffer to
         display the "NaivePass" output, and selects option 1 for the first pass, option 2 for the second pass, and disables the third pass.
     */
-    void setPresets(const std::vector<PresetData> &presets);
+    void setPresets(const std::vector<PresetData>& presets);
 
     /** To start running the application with this rendering pipeline, call this method
     */
-    static void run(RenderingPipeline *pipe, SampleConfig &config);
+    static void run(RenderingPipeline* pipe, SampleConfig& config);
 
     // Overloaded methods from MyRenderer
     virtual void onLoad(RenderContext* pRenderContext) override;
@@ -86,7 +86,7 @@ public:
     virtual void onDroppedFile(const std::string& filename) override {}
 
     NetworkManager::SharedPtr getNetworkManager() { return mpNetworkManager; }
-    
+
 protected:
     /** When a new scene is loaded, this gets called to let any passes in this pipeline know there's a new scene.
     */
@@ -102,7 +102,7 @@ protected:
 
     /** Allows the developer to add a description to be displayed about the pass list
     */
-    void addPipeInstructions(const std::string &str);
+    void addPipeInstructions(const std::string& str);
 
 private:
 
@@ -169,6 +169,7 @@ private:
     bool mProfileToggle = false;
     bool mFirstFrame = true;
     bool mGlobalPipeRefresh = false;
+    bool mShowFPS = true;
     bool mEnableAllPassGui = false;                         ///< When true, all guis should be enabled.
     bool mResetWindowPositions = false;                     ///< When true, all window positions will be reset
     ResourceManager::SharedPtr mpResourceManager;
@@ -185,18 +186,18 @@ private:
     Gui::DropdownList mEnvMapSelector;
 
     // These are Chris-specific things...  He likes particular HDR lightprobes and inserts default menu options to load them
-    bool mHasMonValley = false; 
+    bool mHasMonValley = false;
     std::string mMonValleyFilename;
 
     // Whenever the pipeline changes, we query to see if any passes have the following properties
-    bool mPipeRequiresScene      = false;
-    bool mPipeRequiresRaster     = false;
+    bool mPipeRequiresScene = false;
+    bool mPipeRequiresRaster = false;
     bool mPipeRequiresRayTracing = false;
     bool mPipeAppliesPostprocess = false;
-    bool mPipeUsesCompute        = false;
-    bool mPipeUsesEnvMap         = false;
-    bool mPipeNeedsDefaultScene  = false;
-    bool mPipeHasAnimation       = true;
+    bool mPipeUsesCompute = false;
+    bool mPipeUsesEnvMap = false;
+    bool mPipeNeedsDefaultScene = false;
+    bool mPipeHasAnimation = true;
 
     // Helpers to clarify code querying if a pass can be removed (or another can be added after it)
     bool canRemovePass(uint32_t passNum);

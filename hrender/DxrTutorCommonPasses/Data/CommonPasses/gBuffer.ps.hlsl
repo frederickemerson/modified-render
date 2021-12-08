@@ -46,7 +46,7 @@ GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
     // Check if we hit the back of a double-sided material, in which case, we flip
     //     normals around here (so we don't need to when shading)
     float NdotV = dot(normalize(hitPt.N), viewDir);
-    if (NdotV <= 0.0f && hitPt.doubleSided)
+    if (NdotV <= 0.0f && hitPt.isDoubleSided())
         hitPt.N = -hitPt.N;
 
     // Dump out our G buffer channels

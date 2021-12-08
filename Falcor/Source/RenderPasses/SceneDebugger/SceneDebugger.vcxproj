@@ -14,7 +14,7 @@
     <ProjectGuid>{B1715F7A-6EFD-4910-B271-7423AB6961CB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SceneDebugger</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <ProjectName>SceneDebugger</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

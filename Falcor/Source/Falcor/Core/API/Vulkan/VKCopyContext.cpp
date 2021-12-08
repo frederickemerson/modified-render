@@ -1,5 +1,5 @@
 /***************************************************************************
- # Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ # Copyright (c) 2015-21, NVIDIA CORPORATION. All rights reserved.
  #
  # Redistribution and use in source and binary forms, with or without
  # modification, are permitted provided that the following conditions
@@ -219,7 +219,7 @@ namespace Falcor
         }
     }
 
-    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex, std::vector<uint8_t>* result_ptr)
+    CopyContext::ReadTextureTask::SharedPtr CopyContext::ReadTextureTask::create(CopyContext* pCtx, const Texture* pTexture, uint32_t subresourceIndex)
     {
         SharedPtr pThis = SharedPtr(new ReadTextureTask);
         pThis->mpContext = pCtx;
@@ -240,15 +240,10 @@ namespace Falcor
         return pThis;
     }
 
-    std::vector<uint8_t> CopyContext::ReadTextureTask::getData(std::vector<uint8_t>* result_ptr)
+    std::vector<uint8_t> CopyContext::ReadTextureTask::getData()
     {
         mpFence->syncCpu();
         // Map and read the results
-        std::vector<uint8_t> result;
-        if (result_ptr != nullptr)
-        {
-            result = (*result_ptr);
-        }
         std::vector<uint8> result(mDataSize);
         uint8* pData = reinterpret_cast<uint8*>(mpBuffer->map(Buffer::MapType::Read));
         std::memcpy(result.data(), pData, mDataSize);

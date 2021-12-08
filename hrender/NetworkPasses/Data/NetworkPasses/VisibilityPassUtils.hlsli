@@ -18,16 +18,12 @@
 
 void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3 lightIntensity, out float distToLight)
 {
-	// Use built-in Falcor functions to fill in a LightSample data structure
-	//   -> See "Lights.slang" for it's definition
-	LightSample ls;
-	if (gScene.getLight(index).type == uint32_t(LightType.Directional))
-		ls = evalDirectionalLight(gScene.getLight(index), hitPos);
-	else
-		ls = evalPointLight(gScene.getLight(index), hitPos);
+	LightData ld = gScene.getLight(index);
+	AnalyticLightSample ls;
+	evalLightApproximate(hitPos, ld, ls);
 
-	toLight = normalize(ls.L);
-	lightIntensity = ls.diffuse;
+	toLight = ls.dir;
+	lightIntensity = ld.intensity;
 	distToLight = length(ls.posW - hitPos);
 }
 

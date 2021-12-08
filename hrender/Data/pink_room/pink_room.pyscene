@@ -1,0 +1,36 @@
+# Load FBX
+sceneBuilder.importScene('pink_room.fbx')
+
+# Add camera
+camera = Camera()
+camera.position = float3(-2.706775665283203, 0.85294109582901, -3.112438678741455)
+camera.target = float3(-2.347264528274536, 0.7383297681808472, -2.1863629817962648)
+camera.up = float3(0.038521841168403628, 0.9933950304985046, 0.1079813688993454)
+camera.focalLength = 21.0
+camera.nearPlane = 0.10000000149011612
+camera.farPlane = 10000.0
+camera.aspectRatio = 1.0
+sceneBuilder.addCamera(camera)
+
+# Add lights
+dirLight0 = DirectionalLight('dirLight0')
+dirLight0.intensity = float3(1, 1, 0.9843137860298157)
+dirLight0.direction = float3(0.3642265796661377, -0.5452651977539063, 0.7549999952316284)
+sceneBuilder.addLight(dirLight0)
+
+pointLight1 = PointLight('pointLight1')
+pointLight1.intensity = float3(1, 1, 1)
+pointLight1.position = float3(-4.645481586456299, 1.5427508354187012, -1.488459825515747)
+pointLight1.direction = float3(0, -1, 0)
+pointLight1.openingAngle = 180.0
+pointLight1.penumbraAngle = 0.0
+sceneBuilder.addLight(pointLight1)
+
+pointLight2 = PointLight('pointLight2')
+pointLight2.intensity = float3(1, 1, 1)
+pointLight2.position = float3(-1.016136884689331, 1.4740270376205445, -1.4256235361099244)
+pointLight2.direction = float3(0, -1, 0)
+pointLight2.openingAngle = 180.0
+pointLight2.penumbraAngle = 0.0
+sceneBuilder.addLight(pointLight2)
+

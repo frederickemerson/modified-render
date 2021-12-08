@@ -18,8 +18,8 @@
 
 // Include and import common Falcor utilities and data structures
 import Scene.Raytracing;
-import Scene.Shading;                      // Shading functions, etc   
-import Scene.Lights.Lights;                // Light structures for our current scene
+import Scene.Shading;                          // Shading functions, etc   
+import Experimental.Scene.Lights.LightHelpers; // Light structures for our current scene
 
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
