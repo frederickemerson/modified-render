@@ -9,7 +9,6 @@ camera.up = float3(0.038521841168403628, 0.9933950304985046, 0.1079813688993454)
 camera.focalLength = 21.0
 camera.nearPlane = 0.10000000149011612
 camera.farPlane = 10000.0
-camera.aspectRatio = 1.0
 sceneBuilder.addCamera(camera)
 
 # Add lights
