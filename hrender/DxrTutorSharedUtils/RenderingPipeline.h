@@ -87,6 +87,9 @@ public:
 
     NetworkManager::SharedPtr getNetworkManager() { return mpNetworkManager; }
 
+    void setDefaultSceneName(const std::string& defaultSceneName) { mDefaultSceneName = defaultSceneName; }
+    void updateEnvironmentMap(const std::string& environmentMap) { mEnvironmentMap = environmentMap; }
+
 protected:
     /** When a new scene is loaded, this gets called to let any passes in this pipeline know there's a new scene.
     */
@@ -212,4 +215,7 @@ private:
     Gui::WindowFlags  mPassWindowFlags = Gui::WindowFlags::ShowTitleBar | Gui::WindowFlags::AllowMove | Gui::WindowFlags::SetFocus;
 
     std::string mTmpStr = "";
+
+    std::string mEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    std::string mDefaultSceneName = "pink_room\\pink_room.pyscene";
 };

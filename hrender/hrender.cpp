@@ -43,6 +43,24 @@ void runServer(bool useTcp);
 void runClient(bool useTcp);
 void runDebug();
 
+// ========= //
+// PINK ROOM //
+// ========= //
+// const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+// std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+
+// ========== //
+// SUN TEMPLE //
+// ========== //
+const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
+std::string defaultSceneName = "SunTemple\\SunTemple.pyscene";
+
+// ======= //
+// BISTRO //
+// ====== //
+// const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
+// std::string defaultSceneName = "Bistro\\BistroInterior.pyscene";
+
 /**
  * Determines the mode or configuration that the program runs
  * based on the command line argument.
@@ -85,6 +103,8 @@ void runDebug()
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 creates a GBuffer --- //
     pipeline->setPassOptions(0, { JitteredGBufferPass::create() });
@@ -147,6 +167,8 @@ void runServer(bool useTcp)
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 Receive camera data from client --- //
     pipeline->setPassOptions(0, {
@@ -203,6 +225,8 @@ void runClient(bool useTcp)
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
     
     if (useTcp)
     {

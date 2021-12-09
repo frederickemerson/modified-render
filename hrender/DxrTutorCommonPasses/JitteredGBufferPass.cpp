@@ -3,9 +3,9 @@
 
 namespace
 {
-    // Where is our environment map and scene located?
-    const char *kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
-    const char *kDefaultScene   = "pink_room\\pink_room.pyscene";
+    // // Where is our environment map and scene located?
+    // const char *kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    // const char *kDefaultScene   = "pink_room\\pink_room.pyscene";
 
     // For basic jittering, we don't need to change our rasterized g-buffer, just jitter the camera position
     const char *kGbufVertShader = "Samples\\hrender\\DxrTutorCommonPasses\\Data\\CommonPasses\\gBuffer.vs.hlsl";
@@ -30,9 +30,9 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Stores 16 x uint8
     mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags, mTexWidth, mTexHeight);
 
-    // Set default environment map and scene
-    mpResManager->updateEnvironmentMap(kEnvironmentMap);
-    mpResManager->setDefaultSceneName(kDefaultScene);
+    // // Set default environment map and scene
+    // mpResManager->updateEnvironmentMap(kEnvironmentMap);
+    // mpResManager->setDefaultSceneName(kDefaultScene);
 
     // Create our rasterization state and our raster shader wrapper
     mpGfxState = GraphicsState::create();

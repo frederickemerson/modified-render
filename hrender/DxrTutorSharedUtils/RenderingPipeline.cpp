@@ -85,6 +85,8 @@ void RenderingPipeline::onLoad(RenderContext* pRenderContext)
     // Create our resource manager
     mpResourceManager = ResourceManager::create(mLastKnownSize.x, mLastKnownSize.y);
     mOutputBufferIndex = mpResourceManager->requestTextureResource(ResourceManager::kOutputChannel);
+    mpResourceManager->setDefaultSceneName(mDefaultSceneName);
+    mpResourceManager->updateEnvironmentMap(mEnvironmentMap);
 
     // Initialize all of the RenderPasses we have available to select for our pipeline
     for (uint32_t i = 0; i < mAvailPasses.size(); i++)
