@@ -125,7 +125,7 @@ public:
 
     // A place to store packets that arrive out-of-order
     // Map of sequence number to the received packet
-    std::unordered_map<int32_t, UdpCustomPacket> packetCache;
+    std::unordered_map<int32_t, UdpCustomPacketHeader> packetCache;
 
     // A place to store old camera data
     std::deque<std::array<float3, 3>> cameraDataCache;
@@ -174,12 +174,12 @@ public:
     int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     // Send and receive data with UDP custom protocol
     // RecvUdpCustom: Expected sequence number must be specified in recvData
-    bool RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
+    bool RecvUdpCustom(UdpCustomPacketHeader& recvData, SOCKET& socketUdp,
                        int timeout = UDP_LISTENING_TIMEOUT_MS,
                        bool storeAddress = false);
     // SendUdpCustom: Assumes that the packet to send is smaller than
-    // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp);
+    // the specified maximum size in UdpCustomPacketHeader::maxPacketSize
+    bool SendUdpCustom(UdpCustomPacketHeader& dataToSend, SOCKET& socketUdp);
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height

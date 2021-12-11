@@ -285,7 +285,7 @@ void NetworkPass::executeServerUdpSend(RenderContext* pRenderContext)
 //     widthAndHeight[0] = mpResManager->getWidth();
 //     widthAndHeight[1] = mpResManager->getHeight();
 //     // Sequence number of 0
-//     UdpCustomPacket packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
+//     UdpCustomPacketHeader packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
 //     pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
 //     packet.releaseDataPointer();
 //     // Next sequence number should be 1
@@ -365,7 +365,7 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     widthAndHeight[0] = mpResManager->getWidth();
     widthAndHeight[1] = mpResManager->getHeight();
     // Sequence number of 0
-    UdpCustomPacket packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
+    UdpCustomPacketHeader packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
     pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
     packet.releaseDataPointer();
     // Next sequence number should be 1

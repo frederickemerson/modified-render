@@ -2,15 +2,15 @@
 
 #include "UdpCustomPacket.h"
 
-UdpCustomPacket::UdpCustomPacket(int32_t expectedSequenceNumber):
+UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t expectedSequenceNumber):
     sequenceNumber(expectedSequenceNumber)
 {}
 
-UdpCustomPacket::UdpCustomPacket(int32_t seqNum, int32_t pktSize, uint8_t* data):
+UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, uint8_t* data):
     sequenceNumber(seqNum), packetSize(pktSize), udpData(data)
 {}
 
-UdpCustomPacket::UdpCustomPacket(int32_t seqNum, int32_t pktSize, int32_t frmNum,
+UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, int32_t frmNum,
                                  int32_t numFrmPkts, int32_t tmStmp, uint8_t* data):
     sequenceNumber(seqNum),
     packetSize(pktSize),
@@ -20,12 +20,12 @@ UdpCustomPacket::UdpCustomPacket(int32_t seqNum, int32_t pktSize, int32_t frmNum
     udpData(data)
 {}
 
-UdpCustomPacket::~UdpCustomPacket()
+UdpCustomPacketHeader::~UdpCustomPacketHeader()
 {
     delete[] udpData;
 }
 
-UdpCustomPacket::UdpCustomPacket(UdpCustomPacket&& ucp):
+UdpCustomPacketHeader::UdpCustomPacketHeader(UdpCustomPacketHeader&& ucp):
     sequenceNumber(ucp.sequenceNumber),
     packetSize(ucp.packetSize),
     frameNumber(ucp.frameNumber),
@@ -41,7 +41,7 @@ UdpCustomPacket::UdpCustomPacket(UdpCustomPacket&& ucp):
     ucp.udpData = nullptr;
 }
 
-UdpCustomPacket& UdpCustomPacket::operator=(UdpCustomPacket&& ucp)
+UdpCustomPacketHeader& UdpCustomPacketHeader::operator=(UdpCustomPacketHeader&& ucp)
 {
     this->sequenceNumber = ucp.sequenceNumber;
     this->packetSize = ucp.packetSize;
@@ -73,9 +73,9 @@ int addInt32ToCharPtr(int32_t data, std::unique_ptr<char[]>& array, int offset)
     return offset + sizeOfData;
 }
 
-std::unique_ptr<char[]> UdpCustomPacket::createUdpPacket() const
+std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket() const
 {
-    int32_t totalSize = UdpCustomPacket::headerSizeBytes + packetSize;
+    int32_t totalSize = UdpCustomPacketHeader::headerSizeBytes + packetSize;
     std::unique_ptr<char[]> udpPacket = std::make_unique<char[]>(totalSize);
 
     // Append header
@@ -94,19 +94,19 @@ std::unique_ptr<char[]> UdpCustomPacket::createUdpPacket() const
     return udpPacket;
 }
 
-std::pair<int32_t, std::vector<UdpCustomPacket>> UdpCustomPacket::splitPacket() const
+std::pair<int32_t, std::vector<UdpCustomPacketHeader>> UdpCustomPacketHeader::splitPacket() const
 {
     int32_t currentSeqNum = sequenceNumber;
-    std::vector<UdpCustomPacket> splitPackets{};
+    std::vector<UdpCustomPacketHeader> splitPackets{};
 
-    int numberOfNewPackets = packetSize / UdpCustomPacket::maxPacketSize +
-                             ((packetSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
+    int numberOfNewPackets = packetSize / UdpCustomPacketHeader::maxPacketSize +
+                             ((packetSize % UdpCustomPacketHeader::maxPacketSize > 0) ? 1 : 0);
     int newNumOfFramePackets = numOfFramePackets - 1 + numberOfNewPackets;
 
     int currentIndex = 0;
     for (int32_t amountLeft = packetSize; amountLeft > 0; amountLeft -= maxPacketSize)
     {
-        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
+        int32_t size = std::min(amountLeft, UdpCustomPacketHeader::maxPacketSize);
         uint8_t* data = new uint8_t[size];
         for (int i = 0; i < size; i++)
         {
@@ -118,20 +118,20 @@ std::pair<int32_t, std::vector<UdpCustomPacket>> UdpCustomPacket::splitPacket() 
         currentSeqNum++;
     }
 
-    return std::pair<int32_t, std::vector<UdpCustomPacket>>(currentSeqNum, std::move(splitPackets));
+    return std::pair<int32_t, std::vector<UdpCustomPacketHeader>>(currentSeqNum, std::move(splitPackets));
 }
 
-char* UdpCustomPacket::getUdpDataPointer() const
+char* UdpCustomPacketHeader::getUdpDataPointer() const
 {
     return reinterpret_cast<char*>(udpData);
 }
 
-void UdpCustomPacket::setDataPointer(uint8_t* data)
+void UdpCustomPacketHeader::setDataPointer(uint8_t* data)
 {
     udpData = data;
 }
 
-void UdpCustomPacket::copyInto(uint8_t* dataOut) const
+void UdpCustomPacketHeader::copyInto(uint8_t* dataOut) const
 {
     for (int i = 0; i < packetSize; i++)
     {
@@ -139,7 +139,7 @@ void UdpCustomPacket::copyInto(uint8_t* dataOut) const
     }
 }
 
-void UdpCustomPacket::copyIntoAndRelease(UdpCustomPacket& copy)
+void UdpCustomPacketHeader::copyIntoAndRelease(UdpCustomPacketHeader& copy)
 {    
     // Free the data pointer originally used in the copy
     delete[] copy.udpData;
@@ -159,7 +159,7 @@ void UdpCustomPacket::copyIntoAndRelease(UdpCustomPacket& copy)
     this->udpData = nullptr;
 }
 
-uint8_t* UdpCustomPacket::releaseDataPointer()
+uint8_t* UdpCustomPacketHeader::releaseDataPointer()
 {
     uint8_t* ptr = udpData;
     udpData = nullptr;

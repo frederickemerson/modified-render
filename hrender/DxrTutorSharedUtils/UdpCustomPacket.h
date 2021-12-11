@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-class UdpCustomPacket {
+class UdpCustomPacketHeader {
 public:
     // Header size in bytes
     // Header contains 5 ints with 4 bytes each
@@ -35,18 +35,18 @@ public:
     uint8_t* udpData = nullptr;
 
     // Initialise a packet with just the sequence number
-    UdpCustomPacket(int32_t expectedSequenceNumber);
+    UdpCustomPacketHeader(int32_t expectedSequenceNumber);
     // Initialise a packet with without frame information
-    UdpCustomPacket(int32_t seqNum, int32_t pktSize, uint8_t* data);
+    UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, uint8_t* data);
     // Initialise a packet with all the fields
-    UdpCustomPacket(int32_t seqNum, int32_t pktSize, int32_t frmNum,
+    UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, int32_t frmNum,
                     int32_t numFrmPkts, int32_t tmStmp, uint8_t* data);
-    UdpCustomPacket() = delete;
-    UdpCustomPacket(const UdpCustomPacket&) = delete;
-    UdpCustomPacket& operator=(const UdpCustomPacket&) = delete;
-    UdpCustomPacket(UdpCustomPacket&&);
-    UdpCustomPacket& operator=(UdpCustomPacket&&);
-    ~UdpCustomPacket();
+    UdpCustomPacketHeader() = delete;
+    UdpCustomPacketHeader(const UdpCustomPacketHeader&) = delete;
+    UdpCustomPacketHeader& operator=(const UdpCustomPacketHeader&) = delete;
+    UdpCustomPacketHeader(UdpCustomPacketHeader&&);
+    UdpCustomPacketHeader& operator=(UdpCustomPacketHeader&&);
+    ~UdpCustomPacketHeader();
 
     // Create a UDP packet to send
     std::unique_ptr<char[]> createUdpPacket() const;
@@ -56,7 +56,7 @@ public:
     // 
     // Packets returned are guaranteed to be smaller
     // or equal to the max packet size
-    std::pair<int32_t, std::vector<UdpCustomPacket>> splitPacket() const;
+    std::pair<int32_t, std::vector<UdpCustomPacketHeader>> splitPacket() const;
 
     // Get the address of the packet data as a char pointer
     char* getUdpDataPointer() const;
@@ -73,7 +73,7 @@ public:
     // and releases the pointer that is held by this packet
     //
     // Note: This calls delete[] on the data pointer in the copy
-    void copyIntoAndRelease(UdpCustomPacket& copy);
+    void copyIntoAndRelease(UdpCustomPacketHeader& copy);
 
     // Returns the data pointer and sets the pointer
     // of this UdpCustomPacket to nullptr

@@ -177,7 +177,7 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
     OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client width/height... =========");
 
     // Get the client texture width/height
-    UdpCustomPacket firstPacket(0); // expected sequence number of 0
+    UdpCustomPacketHeader firstPacket(0); // expected sequence number of 0
     if (!RecvUdpCustom(firstPacket, mServerUdpSock, UDP_FIRST_TIMEOUT_MS, true))
     {
         OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
@@ -785,8 +785,8 @@ void NetworkManager::SendTexture(int sendTexSize, char* sendTexData, SOCKET& soc
 void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp, int timeout)
 {
     int recvTexSize = frameDataOut.frameSize;
-    int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
-        ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
+    int numberOfPackets = recvTexSize / UdpCustomPacketHeader::maxPacketSize +
+        ((recvTexSize % UdpCustomPacketHeader::maxPacketSize > 0) ? 1 : 0);
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(recvTexDataOut);
@@ -794,9 +794,9 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
     for (int i = 0; i < numberOfPackets; i++)
     {
         // Total offset of the pointer from the start for this packet
-        int offset = UdpCustomPacket::maxPacketSize * i;
+        int offset = UdpCustomPacketHeader::maxPacketSize * i;
         // Assumes client is receiving texture from server
-        UdpCustomPacket toReceive(serverSeqNum);
+        UdpCustomPacketHeader toReceive(serverSeqNum);
         if (!RecvUdpCustom(toReceive, socketUdp, timeout))
         {
             char buffer[73];
@@ -816,12 +816,12 @@ void NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOu
             else
             {
                 // Not the last packet, fill in the maximum amount of bits
-                for (int j = 0; j < UdpCustomPacket::maxPacketSize; j++)
+                for (int j = 0; j < UdpCustomPacketHeader::maxPacketSize; j++)
                 {
                     *dataPtr = latestTextureData[offset + j];
                     dataPtr++;
                 }
-                receivedDataSoFar += UdpCustomPacket::maxPacketSize;
+                receivedDataSoFar += UdpCustomPacketHeader::maxPacketSize;
             }
             // Try to receive the next packet
             serverSeqNum++;
@@ -865,13 +865,13 @@ void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCK
 {
     uint8_t* data = reinterpret_cast<uint8_t*>(sendTexData);
     // Assumes server is sending to client
-    UdpCustomPacket allDataToSend(serverSeqNum, frameData.frameSize,
+    UdpCustomPacketHeader allDataToSend(serverSeqNum, frameData.frameSize,
                                   frameData.frameNumber, 1, frameData.timestamp, data);
-    std::pair<int32_t, std::vector<UdpCustomPacket>> packets = allDataToSend.splitPacket();
+    std::pair<int32_t, std::vector<UdpCustomPacketHeader>> packets = allDataToSend.splitPacket();
     serverSeqNum = packets.first;
     allDataToSend.releaseDataPointer();
 
-    for (UdpCustomPacket& toSend : packets.second)
+    for (UdpCustomPacketHeader& toSend : packets.second)
     { 
         if (!SendUdpCustom(toSend, socketUdp))
         {
@@ -974,7 +974,7 @@ bool NetworkManager::RecvCameraDataUdp(
     bool useLongTimeout)
 {
     // Assumes server is receiving cam data from client
-    UdpCustomPacket toReceive(clientSeqNum);
+    UdpCustomPacketHeader toReceive(clientSeqNum);
     bool hasReceived;
     if (useLongTimeout)
     {
@@ -1032,7 +1032,7 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
     uint8_t* data = reinterpret_cast<uint8_t*>(&cameraData);
     // Assumes client sending to server
-    UdpCustomPacket toSend(clientSeqNum, sizeof(cameraData), data);
+    UdpCustomPacketHeader toSend(clientSeqNum, sizeof(cameraData), data);
     clientSeqNum++;
 
     bool wasDataSent = true;
@@ -1045,10 +1045,10 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
     return wasDataSent;
 }
 
-bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)
+bool NetworkManager::RecvUdpCustom(UdpCustomPacketHeader& recvData, SOCKET& socketUdp, int timeout, bool storeAddress)
 {
     // Check cache to see if the packet has been received already
-    std::unordered_map<int32_t, UdpCustomPacket>::iterator cached = packetCache.find(recvData.sequenceNumber);
+    std::unordered_map<int32_t, UdpCustomPacketHeader>::iterator cached = packetCache.find(recvData.sequenceNumber);
     if (cached != packetCache.end())
     {
         char buffer[57];
@@ -1068,7 +1068,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     // Number of tries to receive the packet header before failing
     int numberOfTriesForHeader = 1;
 
-    int headerSize = UdpCustomPacket::headerSizeBytes;
+    int headerSize = UdpCustomPacketHeader::headerSizeBytes;
     char udpReceiveBuffer[DEFAULT_BUFLEN];
     int dataReceivedSoFar = 0;
 
@@ -1138,7 +1138,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
             doStoreInCache = true;
             packetCache.emplace(
                 seqNum,
-                UdpCustomPacket(seqNum, dataSize, frameNum,
+                UdpCustomPacketHeader(seqNum, dataSize, frameNum,
                                 numFramePkts, timestamp, new uint8_t[dataSize])
             );
         }
@@ -1213,7 +1213,7 @@ bool NetworkManager::RecvUdpCustom(UdpCustomPacket& recvData, SOCKET& socketUdp,
     return !doStoreInCache;
 }
 
-bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUdp)
+bool NetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataToSend, SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataToSend.createUdpPacket();
 
@@ -1224,7 +1224,7 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacket& dataToSend, SOCKET& socketUd
 
     struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&mSi_otherUdp);
     int socketLen = sizeof(mSi_otherUdp);
-    int sendSize = UdpCustomPacket::headerSizeBytes + dataToSend.packetSize;
+    int sendSize = UdpCustomPacketHeader::headerSizeBytes + dataToSend.packetSize;
     int sentSoFar = 0;
 
     while (sentSoFar < sendSize)
