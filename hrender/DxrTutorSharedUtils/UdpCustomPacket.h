@@ -6,81 +6,70 @@
 #include <memory>
 #include <vector>
 
+#define UDP_MAX_DATA_LENGTH 65507 // = 65,535 − 8 (UDP header) − 20 (IP header)
+
 class UdpCustomPacketHeader {
 public:
-    // Header size in bytes
-    // Header contains 5 ints with 4 bytes each
-    const static int headerSizeBytes = 20;
+    // ===================== HEADER CONSTANTS =====================
+    // Total size of header: 3 * 4 bytes + 2 * 2 bytes = 16 bytes
+    // 
+    // Header contains 3 ints with 4 bytes each
+    // and 2 ints with 2 bytes each
+    const static int headerSizeBytes = 16;
     
     // The maximum size of the data encapsulated within this
     // With the header, the maximum size should add up to 65,507 bytes
-    const static int32_t maxPacketSize = 65487;
+    const static int32_t maxPacketSize = UDP_MAX_DATA_LENGTH - headerSizeBytes;
+
 
     // ======================= HEADER FIELDS =======================
-    // Total size of header: 5 * 4 bytes = 20 bytes
-    
     // 1) Sequence number of this packet
     int32_t sequenceNumber = -1;
-    // 2) Packet size in bytes, excluding header size
-    int32_t packetSize = 0;
-    // 3) Frame number which this packet belongs to
+    // 2) Frame number which this packet belongs to
     int32_t frameNumber = -1;
+    // 3) Packet size in bytes, excluding header size
+    uint16_t dataSize = 0;
     // 4) Number of packets that belong to the same frame
-    int32_t numOfFramePackets = 0;
+    uint16_t numOfFramePackets = 0;
     // 5) Timestamp for when the frame should be played
     int32_t timestamp = -1;
 
-    // =========================== DATA ============================
-    // Raw UDP packet, an array of bytes
-    uint8_t* udpData = nullptr;
 
+    // ========================== METHODS ==========================
     // Initialise a packet with just the sequence number
     UdpCustomPacketHeader(int32_t expectedSequenceNumber);
     // Initialise a packet with without frame information
-    UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, uint8_t* data);
+    UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize);
     // Initialise a packet with all the fields
-    UdpCustomPacketHeader(int32_t seqNum, int32_t pktSize, int32_t frmNum,
-                    int32_t numFrmPkts, int32_t tmStmp, uint8_t* data);
+    UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,
+                          uint16_t numFrmPkts, int32_t tmStmp);
     UdpCustomPacketHeader() = delete;
-    UdpCustomPacketHeader(const UdpCustomPacketHeader&) = delete;
-    UdpCustomPacketHeader& operator=(const UdpCustomPacketHeader&) = delete;
-    UdpCustomPacketHeader(UdpCustomPacketHeader&&);
-    UdpCustomPacketHeader& operator=(UdpCustomPacketHeader&&);
-    ~UdpCustomPacketHeader();
 
-    // Create a UDP packet to send
-    std::unique_ptr<char[]> createUdpPacket() const;
+    UdpCustomPacketHeader(const UdpCustomPacketHeader&) = default;
+    UdpCustomPacketHeader& operator=(const UdpCustomPacketHeader&) = default;
+    UdpCustomPacketHeader(UdpCustomPacketHeader&&) = default;
+    UdpCustomPacketHeader& operator=(UdpCustomPacketHeader&&) = default;
+    ~UdpCustomPacketHeader() = default;
 
-    // Splits the packet and returns a pair of
-    // the next sequence number and the packets
+    // Creates a UDP packet that can be sent by adding the
+    // header fields to the data pointer.
     // 
-    // Packets returned are guaranteed to be smaller
-    // or equal to the max packet size
-    std::pair<int32_t, std::vector<UdpCustomPacketHeader>> splitPacket() const;
-
-    // Get the address of the packet data as a char pointer
-    char* getUdpDataPointer() const;
-
-    // Sets the udpData of this UdpCustomPacket
-    void setDataPointer(uint8_t* data);
-
-    // Copies the data from this packet into another array
-    // Note: User must ensure that the array has enough
-    //       allocated space!
-    void copyInto(uint8_t* dataOut) const;
-
-    // Copies the data from this packet into another UdpCustomPacket
-    // and releases the pointer that is held by this packet
-    //
-    // Note: This calls delete[] on the data pointer in the copy
-    void copyIntoAndRelease(UdpCustomPacketHeader& copy);
-
-    // Returns the data pointer and sets the pointer
-    // of this UdpCustomPacket to nullptr
-    // 
-    // Used to ensure that this UdpCustomPacket does not
-    // delete the pointer when it is deleted
-    uint8_t* releaseDataPointer();
+    // data - Pointer to the buffer containing the data to be sent.
+    //        The length in bytes of the buffer pointed to by the
+    //        data parameter is expected to be the same as the 
+    //        packetSize field of this UdpCustomPacketHeader.
+    std::unique_ptr<char[]> createUdpPacket(char* data) const;
 };
+
+namespace UdpCustomPacket
+{
+    // Retrieves the custom packet header from the raw UDP data
+    // 
+    // data - Pointer to the buffer containing the data that was
+    //        received. The length in bytes of the buffer pointed
+    //        to by the data parameter should be greater than or
+    //        equal to the size of the custom packet header.
+    UdpCustomPacketHeader getHeader(char* data);
+}
 
 #endif UDP_CUSTOM_PACKET_H
