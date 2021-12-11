@@ -172,12 +172,28 @@ public:
     int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
     void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
-    // Send and receive data with UDP custom protocol
-    // RecvUdpCustom: Expected sequence number must be specified in recvData
-    bool RecvUdpCustom(UdpCustomPacketHeader& recvData, SOCKET& socketUdp,
+
+    // Receive data with UDP custom protocol
+    // Returns false if an error was encountered
+    //
+    // dataBuffer     - Pointer to the buffer that the received data
+    //                  will be written to, together with its header. 
+    //                  The length in bytes of the buffer should be
+    //                  greater than or equal to the maximum size
+    //                  of a UDP packet (65507 bytes).
+    // outDataHeader  - The reference to the header object which will
+    //                  be populated with the correct information.
+    // outDataPointer - Another pointer to the data buffer, but this
+    //                  will be set to point to the beginning of the
+    //                  actual data without the custom packet header.
+    bool RecvUdpCustom(char* dataBuffer,
+                       UdpCustomPacketHeader& outDataHeader,
+                       char*& outDataPointer,
+                       SOCKET& socketUdp,
                        int timeout = UDP_LISTENING_TIMEOUT_MS,
                        bool storeAddress = false);
-    // SendUdpCustom: Assumes that the packet to send is smaller than
+
+    // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacketHeader::maxPacketSize
     bool SendUdpCustom(UdpCustomPacketHeader& dataToSend, SOCKET& socketUdp);
 
