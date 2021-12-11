@@ -38,6 +38,7 @@ cbuffer RayGenCB
     bool gSkipShadows; // Render all lights without shadow rays
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
+    float gAmbient;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -78,6 +79,7 @@ void VShadowsRayGen()
 
             const uint lightCount = gScene.getLightCount();
             float3 lightIntensityCache;
+
             for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
             {
                 float distToLight;
@@ -98,7 +100,7 @@ void VShadowsRayGen()
             }
             if (length(shadeColor) < 0.00001)
             {
-                shadeColor += difMatlColor.rgb * 0.05 * lightIntensityCache ;
+                shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache ;
             }
 
             // Physically based Lambertian term is albedo/pi

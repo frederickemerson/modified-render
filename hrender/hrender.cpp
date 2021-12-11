@@ -46,20 +46,27 @@ void runDebug();
 // ========= //
 // PINK ROOM //
 // ========= //
-// const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-// std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+std::string defaultSceneName = "pink_room\\pink_room.pyscene";
 
 // ========== //
 // SUN TEMPLE //
 // ========== //
-const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
-std::string defaultSceneName = "SunTemple\\SunTemple.pyscene";
+//const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
+//std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
 
 // ======= //
 // BISTRO //
 // ====== //
-// const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
-// std::string defaultSceneName = "Bistro\\BistroInterior.pyscene";
+//const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
+//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
+//std::string defaultSceneName = "Bistro\\BistroExterior_v4.pyscene";
+
+// ======== //
+// ZERO DAY //
+// ======== //
+//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+//std::string defaultSceneName = "ZeroDay\\MEASURE_ONE\\MEASURE_ONE.fbx";
 
 /**
  * Determines the mode or configuration that the program runs

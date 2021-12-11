@@ -56,4 +56,6 @@ protected:
 
     bool                                    mDecodeMode = false;    ///< Do we perform shading, or just debug the visibility bitmap?
     int32_t                                 mDecodeBit = 0;         ///< If we are debugging visibility bitmap, which light should we see?
+
+    float                                   mAmbient = 0.5f;        ///< Scene-dependent variable to avoid perfectly dark shadows
 };
