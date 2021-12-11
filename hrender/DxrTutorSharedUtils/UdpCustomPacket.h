@@ -11,17 +11,6 @@
 class UdpCustomPacketHeader {
 public:
     // ===================== HEADER CONSTANTS =====================
-    // Total size of header: 3 * 4 bytes + 2 * 2 bytes = 16 bytes
-    // 
-    // Header contains 3 ints with 4 bytes each
-    // and 2 ints with 2 bytes each
-    const static int headerSizeBytes = 16;
-    
-    // The maximum size of the data encapsulated within this
-    // With the header, the maximum size should add up to 65,507 bytes
-    const static int32_t maxPacketSize = UDP_MAX_DATA_LENGTH - headerSizeBytes;
-
-
     // ======================= HEADER FIELDS =======================
     // 1) Sequence number of this packet
     int32_t sequenceNumber = -1;
@@ -43,7 +32,7 @@ public:
     // Initialise a packet with all the fields
     UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,
                           uint16_t numFrmPkts, int32_t tmStmp);
-    UdpCustomPacketHeader() = delete;
+    UdpCustomPacketHeader() = default;
 
     UdpCustomPacketHeader(const UdpCustomPacketHeader&) = default;
     UdpCustomPacketHeader& operator=(const UdpCustomPacketHeader&) = default;
@@ -63,6 +52,16 @@ public:
 
 namespace UdpCustomPacket
 {
+    // Total size of header: 3 * 4 bytes + 2 * 2 bytes = 16 bytes
+    // 
+    // Header contains 3 ints with 4 bytes each
+    // and 2 ints with 2 bytes each
+    const int headerSizeBytes = 16;
+    
+    // The maximum size of the data encapsulated within this
+    // With the header, the maximum size should add up to 65,507 bytes
+    const int32_t maxPacketSize = UDP_MAX_DATA_LENGTH - headerSizeBytes;
+
     // Retrieves the custom packet header from the raw UDP data
     // 
     // data - Pointer to the buffer containing the data that was

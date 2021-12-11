@@ -46,7 +46,7 @@ UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, in
 
 std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
 {
-    int32_t totalSize = UdpCustomPacketHeader::headerSizeBytes + dataSize;
+    int32_t totalSize = UdpCustomPacket::headerSizeBytes + dataSize;
     std::unique_ptr<char[]> udpPacket = std::make_unique<char[]>(totalSize);
 
     // Append header
@@ -65,33 +65,19 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
     return udpPacket;
 }
 
-UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
-{
-    int32_t* headerData = reinterpret_cast<int32_t*>(&data);
-    uint16_t* smallFields = reinterpret_cast<uint16_t*>(&headerData[2]);
-
-    int32_t seqNum = headerData[0];
-    uint16_t dataSize = smallFields[0];
-    int32_t frameNum = headerData[1];
-    uint16_t numFramePkts = smallFields[1];
-    int32_t timestamp = headerData[3];
-
-    return UdpCustomPacketHeader(seqNum, dataSize, frameNum, numFramePkts, timestamp);
-}
-
 // std::pair<int32_t, std::vector<UdpCustomPacketHeader>> UdpCustomPacketHeader::splitPacket() const
 // {
 //     int32_t currentSeqNum = sequenceNumber;
 //     std::vector<UdpCustomPacketHeader> splitPackets{};
 
-//     int numberOfNewPackets = packetSize / UdpCustomPacketHeader::maxPacketSize +
-//                              ((packetSize % UdpCustomPacketHeader::maxPacketSize > 0) ? 1 : 0);
+//     int numberOfNewPackets = packetSize / UdpCustomPacket::maxPacketSize +
+//                              ((packetSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
 //     int newNumOfFramePackets = numOfFramePackets - 1 + numberOfNewPackets;
 
 //     int currentIndex = 0;
 //     for (int32_t amountLeft = packetSize; amountLeft > 0; amountLeft -= maxPacketSize)
 //     {
-//         int32_t size = std::min(amountLeft, UdpCustomPacketHeader::maxPacketSize);
+//         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
 //         uint8_t* data = new uint8_t[size];
 //         for (int i = 0; i < size; i++)
 //         {
@@ -150,3 +136,17 @@ UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
 //     udpData = nullptr;
 //     return ptr;
 // }
+
+UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
+{
+    int32_t* headerData = reinterpret_cast<int32_t*>(&data);
+    uint16_t* smallFields = reinterpret_cast<uint16_t*>(&headerData[2]);
+
+    int32_t seqNum = headerData[0];
+    uint16_t dataSize = smallFields[0];
+    int32_t frameNum = headerData[1];
+    uint16_t numFramePkts = smallFields[1];
+    int32_t timestamp = headerData[3];
+
+    return UdpCustomPacketHeader(seqNum, dataSize, frameNum, numFramePkts, timestamp);
+}
