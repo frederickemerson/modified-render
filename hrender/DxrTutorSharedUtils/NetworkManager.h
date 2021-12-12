@@ -156,13 +156,15 @@ public:
     //                  that we can receive the UDP packet directly
     //                  into the pointer given.
     //
-    // There are 3 possible return values:
+    // There are 4 possible return values:
     // 0              - Current frame is to be discarded due to
     //                  packet loss or reordering.
     // 1              - Current frame is received successfully.
     // 2              - Current frame and next frame is to be
     //                  discarded. The next possible frame that
     //                  can be received will be current + 2.
+    // 3              - Current frame is okay, but next frame
+    //                  has to be discarded.
     int RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
                        int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);

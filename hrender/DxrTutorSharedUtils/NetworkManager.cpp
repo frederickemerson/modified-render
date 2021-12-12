@@ -576,7 +576,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             OutputDebugStringA(frameDataMessage);
             clientFrameNum += 2;
         }
-        else // recvStatus == 1
+        else // recvStatus == 1 || recvStatus == 3
         {
             OutputDebugString(L"\n\n= visTex received over network =========");
             char frameDataMessage[89];
@@ -605,7 +605,18 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             sprintf(printFps, "\n\n= ListenClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
             OutputDebugStringA(printFps);
 
-            clientFrameNum++;
+            if (recvStatus == 3)
+            {
+                
+                char discardMessage[40];
+                sprintf(discardMessage, "\n\n= Discarding frame %d\n", clientFrameNum + 1);
+                OutputDebugStringA(discardMessage);
+                clientFrameNum += 2;
+            }
+            else // recvStatus == 1
+            {
+                clientFrameNum++;
+            }
         }
 
 
@@ -830,6 +841,8 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
     // Initialise numberOfPackets to the expected number without compression
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
         ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
+    // Try receiving an additional packet if we see a new frame
+    int newFrameRecvLimit = 1;
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(outRecvTexData);
@@ -837,6 +850,7 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
 
     int seqNumOfFirstPacket = serverSeqNum;
     int relativeSeqNum = 0;
+    int numOfRecvAttempts = 0;
     while (relativeSeqNum < numberOfPackets)
     {
         // Total offset of the pointer from the start for this packet
@@ -859,6 +873,7 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
             char buffer[73];
             sprintf(buffer, "\n\n= RecvTextureUdp: Failed to receive packet %d =========", serverSeqNum);
             OutputDebugStringA(buffer);
+            continue;
         }
         else
         {
@@ -874,14 +889,34 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
             }
             else if (recvHeader.frameNumber > expectedFrameNum)
             {
-                // If it belongs to a newer frame, the next frame
-                // and the current frame are both ruined as we do
-                // not do any copying.
-                char buffer[113];
-                sprintf(buffer, "\n\n= RecvTextureUdp: "
-                        "Frame %d ruined by packet %d for newer frame %d",
-                        expectedFrameNum, recvHeader.sequenceNumber, recvHeader.frameNumber);
-                return 2;
+                // If we are just missing the last packet, we continue
+                // trying to receive one more packet and hope that it
+                // belongs to the current frame.
+                if (numOfRecvAttempts < newFrameRecvLimit &&
+                    relativeSeqNum == numberOfPackets - 1)
+                {
+                    // If packets belongs to a newer frame, the next frame
+                    // and the current frame are both ruined.
+                    char buffer[95];
+                    sprintf(buffer, "\n\n= RecvTextureUdp: "
+                            "Received a packet %d for newer frame %d",
+                            recvHeader.sequenceNumber, recvHeader.frameNumber);
+                    sprintf(buffer, "\n\n= RecvTextureUdp: "
+                            "Trying again to receive the last packet %d for frame %d",
+                            serverSeqNum, expectedFrameNum);
+                    numOfRecvAttempts++;
+                    continue;
+                }
+                else
+                {
+                    // If packets belongs to a newer frame, the next frame
+                    // and the current frame are both ruined.
+                    char buffer[113];
+                    sprintf(buffer, "\n\n= RecvTextureUdp: "
+                            "Frame %d ruined by packet %d for newer frame %d",
+                            expectedFrameNum, recvHeader.sequenceNumber, recvHeader.frameNumber);
+                    return 2;
+                }
             }
             
             // Remember frame data for the first full packet received
@@ -933,7 +968,17 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
     }
     frameDataOut.frameSize = receivedDataSoFar;
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
-    return 1;
+
+    if (numOfRecvAttempts > 0)
+    {
+        // If we already received the packets of the next frame,
+        // we cannot retrieve them as we do not do any copying.
+        return 3;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
