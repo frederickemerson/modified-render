@@ -14,16 +14,16 @@ int addToCharPtr(const uint8_t* dataBytes, int sizeOfData, std::unique_ptr<char[
 }
 
 // Helper function for adding int32_t to a char array
-int addInt32ToCharPtr(int32_t data, std::unique_ptr<char[]>& array, int offset)
+int addInt32ToCharPtr(const int32_t* data, std::unique_ptr<char[]>& array, int offset)
 {
-    const uint8_t* int32Bytes = reinterpret_cast<const uint8_t*>(&data);
+    const uint8_t* int32Bytes = reinterpret_cast<const uint8_t*>(data);
     return addToCharPtr(int32Bytes, 4, array, offset);
 }
 
 // Same as addInt32ToCharPtr, but for int16_t
-int addInt16ToCharPtr(int16_t data, std::unique_ptr<char[]>& array, int offset)
+int addInt16ToCharPtr(const uint16_t* data, std::unique_ptr<char[]>& array, int offset)
 {
-    const uint8_t* int16Bytes = reinterpret_cast<const uint8_t*>(&data);
+    const uint8_t* int16Bytes = reinterpret_cast<const uint8_t*>(data);
     return addToCharPtr(int16Bytes, 2, array, offset);
 }
 
@@ -47,11 +47,11 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
 
     // Append header
     int offset = 0;
-    offset = addInt32ToCharPtr(sequenceNumber, udpPacket, offset);
-    offset = addInt32ToCharPtr(frameNumber, udpPacket, offset);
-    offset = addInt16ToCharPtr(dataSize, udpPacket, offset);
-    offset = addInt16ToCharPtr(numOfFramePackets, udpPacket, offset);
-    offset = addInt32ToCharPtr(timestamp, udpPacket, offset);
+    offset = addInt32ToCharPtr(&sequenceNumber, udpPacket, offset);
+    offset = addInt32ToCharPtr(&frameNumber, udpPacket, offset);
+    offset = addInt16ToCharPtr(&dataSize, udpPacket, offset);
+    offset = addInt16ToCharPtr(&numOfFramePackets, udpPacket, offset);
+    offset = addInt32ToCharPtr(&timestamp, udpPacket, offset);
 
     // Append data
     for (int i = 0; i < dataSize; i++)
