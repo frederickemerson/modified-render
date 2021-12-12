@@ -154,7 +154,7 @@ public:
     //                  needs to be allocated behind this pointer so
     //                  that we can receive the UDP packet directly
     //                  into the pointer given.
-    void RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
+    bool RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
                         int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
