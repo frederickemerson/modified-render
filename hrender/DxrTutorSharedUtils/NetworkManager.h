@@ -132,13 +132,6 @@ public:
     // Maximum number of data entries
     int maxCamDataCacheSize = 5;
 
-    // A place to store the most updated texture data
-    // Note   : Assumes all frames have the same size 
-    // Note #2: This pointer is not yet freed anywhere,
-    //          it could cause a memory leak
-    // Will be initialised by firstClientRenderUdp
-    char* latestTextureData = nullptr;
-
     // last camera data sent out to server, this helps us render the GBuffer with matching camera data
     // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
     std::atomic<float> cameraUX = 0;
@@ -155,7 +148,13 @@ public:
     void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
     void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     // Use UDP to receive and send texture data
-    void RecvTextureUdp(FrameData& frameDataOut, char* recvTexDataOut, SOCKET& socketUdp,
+    // 
+    // outRecvTexData - The pointer to the location that the texture
+    //                  will be written to. A header's worth of space
+    //                  needs to be allocated behind this pointer so
+    //                  that we can receive the UDP packet directly
+    //                  into the pointer given.
+    void RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
                         int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
@@ -186,16 +185,45 @@ public:
     // outDataPointer - Another pointer to the data buffer, but this
     //                  will be set to point to the beginning of the
     //                  actual data without the custom packet header.
+    // socketUdp      - The socket to use for receiving.
+    // timeout        - The timeout to be used for receiving.
+    // storeAddress   - Set to true to remember the return address.
     bool RecvUdpCustom(char* dataBuffer,
                        UdpCustomPacketHeader& outDataHeader,
                        char*& outDataPointer,
                        SOCKET& socketUdp,
                        int timeout = UDP_LISTENING_TIMEOUT_MS,
                        bool storeAddress = false);
+    
+    // Same as RecvUdpCustom, but discards the packet if the
+    // sequence number does not match the one that was given.
+    //
+    // dataBuffer     - Pointer to the buffer that the received data
+    //                  will be written to, together with its header. 
+    //                  The length in bytes of the buffer should be
+    //                  greater than or equal to the maximum size
+    //                  of a UDP packet (65507 bytes).
+    // outDataHeader  - The reference to the header object which will
+    //                  be populated with the correct information.
+    // outDataPointer - Another pointer to the data buffer, but this
+    //                  will be set to point to the beginning of the
+    //                  actual data without the custom packet header.
+    // socketUdp      - The socket to use for receiving.
+    // expectedSeqNum - The expected sequence number of the packet
+    //                  that will be received. 
+    // timeout        - The timeout to be used for receiving.
+    // storeAddress   - Set to true to remember the return address.
+    bool RecvUdpCustomAndCheck(char* dataBuffer,
+                               UdpCustomPacketHeader& outDataHeader,
+                               char*& outDataPointer,
+                               SOCKET& socketUdp,
+                               int expectedSeqNum,
+                               int timeout = UDP_LISTENING_TIMEOUT_MS,
+                               bool storeAddress = false);
 
     // SendUdpCustom assumes that the packet to send is smaller than
-    // the specified maximum size in UdpCustomPacketHeader::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataToSend, SOCKET& socketUdp);
+    // the specified maximum size in UdpCustomPacket::maxPacketSize
+    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp);
 
     // Server
     // Set up the sockets and connect to a client, and output the client's texture width/height
@@ -219,9 +247,13 @@ public:
     // Client 
     bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
+
     // Client's receiving thread
-    // Set executeForever to true for an infinite loop
-    void ListenClientUdp(bool isFirstClientReceive, bool executeForever);
+    // isFirstReceive - If true, use a longer timeout
+    //                  on the first run of the loop.
+    // executeForever - If true, run infinitely.
+    void ListenClientUdp(bool isFirstReceive, bool executeForever);
+
     // Client's sending thread
     void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
 

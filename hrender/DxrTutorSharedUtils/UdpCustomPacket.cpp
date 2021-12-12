@@ -27,10 +27,6 @@ int addInt16ToCharPtr(int16_t data, std::unique_ptr<char[]>& array, int offset)
     return addToCharPtr(int16Bytes, 2, array, offset);
 }
 
-UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t expectedSequenceNumber):
-    sequenceNumber(expectedSequenceNumber)
-{}
-
 UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize):
     sequenceNumber(seqNum), dataSize(dtSize)
 {}
@@ -64,78 +60,6 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
     }
     return udpPacket;
 }
-
-// std::pair<int32_t, std::vector<UdpCustomPacketHeader>> UdpCustomPacketHeader::splitPacket() const
-// {
-//     int32_t currentSeqNum = sequenceNumber;
-//     std::vector<UdpCustomPacketHeader> splitPackets{};
-
-//     int numberOfNewPackets = packetSize / UdpCustomPacket::maxPacketSize +
-//                              ((packetSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
-//     int newNumOfFramePackets = numOfFramePackets - 1 + numberOfNewPackets;
-
-//     int currentIndex = 0;
-//     for (int32_t amountLeft = packetSize; amountLeft > 0; amountLeft -= maxPacketSize)
-//     {
-//         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
-//         uint8_t* data = new uint8_t[size];
-//         for (int i = 0; i < size; i++)
-//         {
-//             data[i] = udpData[currentIndex];
-//             currentIndex++;
-//         }
-//         splitPackets.emplace_back(currentSeqNum, size, frameNumber,
-//                                   newNumOfFramePackets, timestamp, data);
-//         currentSeqNum++;
-//     }
-
-//     return std::pair<int32_t, std::vector<UdpCustomPacketHeader>>(currentSeqNum, std::move(splitPackets));
-// }
-
-// char* UdpCustomPacketHeader::getUdpDataPointer() const
-// {
-//     return reinterpret_cast<char*>(udpData);
-// }
-
-// void UdpCustomPacketHeader::setDataPointer(uint8_t* data)
-// {
-//     udpData = data;
-// }
-
-// void UdpCustomPacketHeader::copyInto(uint8_t* dataOut) const
-// {
-//     for (int i = 0; i < packetSize; i++)
-//     {
-//         dataOut[i] = udpData[i];
-//     }
-// }
-
-// void UdpCustomPacketHeader::copyIntoAndRelease(UdpCustomPacketHeader& copy)
-// {    
-//     // Free the data pointer originally used in the copy
-//     delete[] copy.udpData;
-
-//     copy.sequenceNumber = this->sequenceNumber;
-//     copy.packetSize = this->packetSize;
-//     copy.frameNumber = this->frameNumber;
-//     copy.numOfFramePackets = this->numOfFramePackets;
-//     copy.timestamp = this->timestamp;
-//     copy.udpData = this->udpData;
-
-//     this->sequenceNumber = -1;
-//     this->packetSize = 0;
-//     this->frameNumber = -1;
-//     this->numOfFramePackets = 0;
-//     this->timestamp = -1;
-//     this->udpData = nullptr;
-// }
-
-// uint8_t* UdpCustomPacketHeader::releaseDataPointer()
-// {
-//     uint8_t* ptr = udpData;
-//     udpData = nullptr;
-//     return ptr;
-// }
 
 UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
 {

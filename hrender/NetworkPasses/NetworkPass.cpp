@@ -272,42 +272,6 @@ void NetworkPass::executeServerUdpSend(RenderContext* pRenderContext)
     }
 }
 
-// void NetworkPass::firstClientSendUdp() {
-//     if (!mFirstRender) {
-//         return;
-//     }
-//    
-//     NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
-//
-//     // Send the texture size to the server
-//     OutputDebugString(L"\n\n= firstClientSendUdp: Sending width/height over network... =========");
-//     int32_t widthAndHeight[2];
-//     widthAndHeight[0] = mpResManager->getWidth();
-//     widthAndHeight[1] = mpResManager->getHeight();
-//     // Sequence number of 0
-//     UdpCustomPacketHeader packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
-//     pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
-//     packet.releaseDataPointer();
-//     // Next sequence number should be 1
-//     pNetworkManager->clientSeqNum = 1;
-//     OutputDebugString(L"\n\n= firstClientSendUdp: width/height sent over network =========");
-//
-//     // Initialise the latest texture cache
-//     int visTexSize = widthAndHeight[0] * widthAndHeight[1] * 4;
-//     pNetworkManager->latestTextureData = new char[visTexSize];
-//
-//     // Populate posTexWidth and Height
-//     NetworkPass::posTexWidth = mpResManager->getWidth();
-//     NetworkPass::posTexHeight = mpResManager->getHeight();
-//     mFirstRender = false;
-//
-//     // Send camera data from client to server
-//     Camera::SharedPtr cam = mpScene->getCamera();
-//     OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
-//     pNetworkManager->SendCameraDataUdp(cam, pNetworkManager->mClientUdpSock);
-//     OutputDebugString(L"\n\n= camData sent over network =========");
-// }
-
 void NetworkPass::executeClientUdpRecv(RenderContext* pRenderContext)
 {
     if (firstClientReceive)
@@ -364,16 +328,15 @@ bool NetworkPass::firstClientRenderUdp(RenderContext* pRenderContext)
     int32_t widthAndHeight[2];
     widthAndHeight[0] = mpResManager->getWidth();
     widthAndHeight[1] = mpResManager->getHeight();
-    // Sequence number of 0
-    UdpCustomPacketHeader packet(0, 8, reinterpret_cast<uint8_t*>(&widthAndHeight));
-    pNetworkManager->SendUdpCustom(packet, pNetworkManager->mClientUdpSock);
-    packet.releaseDataPointer();
+    
+    // Sequence number of 0, size of 8 bytes
+    UdpCustomPacketHeader header(0, 8);
+    char* dataPtr = reinterpret_cast<char*>(&widthAndHeight);
+    pNetworkManager->SendUdpCustom(header, dataPtr, pNetworkManager->mClientUdpSock);
+    
     // Next sequence number should be 1
     pNetworkManager->clientSeqNum = 1;
     OutputDebugString(L"\n\n= firstClientRenderUdp: width/height sent over network =========");
-
-    // Initialise the latest texture cache
-    pNetworkManager->latestTextureData = new char[VIS_TEX_LEN];
 
     // Populate posTexWidth and Height
     NetworkPass::posTexWidth = mpResManager->getWidth();

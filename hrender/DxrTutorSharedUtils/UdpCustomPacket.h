@@ -10,7 +10,6 @@
 
 class UdpCustomPacketHeader {
 public:
-    // ===================== HEADER CONSTANTS =====================
     // ======================= HEADER FIELDS =======================
     // 1) Sequence number of this packet
     int32_t sequenceNumber = -1;
@@ -25,8 +24,6 @@ public:
 
 
     // ========================== METHODS ==========================
-    // Initialise a packet with just the sequence number
-    UdpCustomPacketHeader(int32_t expectedSequenceNumber);
     // Initialise a packet with without frame information
     UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize);
     // Initialise a packet with all the fields
