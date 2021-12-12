@@ -63,7 +63,7 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
 
 UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
 {
-    int32_t* headerData = reinterpret_cast<int32_t*>(&data);
+    int32_t* headerData = reinterpret_cast<int32_t*>(data);
     uint16_t* smallFields = reinterpret_cast<uint16_t*>(&headerData[2]);
 
     int32_t seqNum = headerData[0];
