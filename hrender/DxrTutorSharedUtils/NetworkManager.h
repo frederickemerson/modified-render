@@ -81,7 +81,8 @@ public:
 
     // Used by client
     SOCKET mConnectSocket = INVALID_SOCKET;
-    SOCKET mClientUdpSock = INVALID_SOCKET; 
+    SOCKET mClientUdpSock = INVALID_SOCKET;
+    int32_t clientFrameNum = 0;
 
     // Used by both server and client in UDP communication
     int32_t serverSeqNum = 0;
@@ -154,8 +155,16 @@ public:
     //                  needs to be allocated behind this pointer so
     //                  that we can receive the UDP packet directly
     //                  into the pointer given.
-    bool RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
-                        int timeout = UDP_LISTENING_TIMEOUT_MS);
+    //
+    // There are 3 possible return values:
+    // 0              - Current frame is to be discarded due to
+    //                  packet loss or reordering.
+    // 1              - Current frame is received successfully.
+    // 2              - Current frame and next frame is to be
+    //                  discarded. The next possible frame that
+    //                  can be received will be current + 2.
+    int RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
+                       int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     bool RecvInt(int& recvInt, SOCKET& s);
     bool SendInt(int toSend, SOCKET& s);
