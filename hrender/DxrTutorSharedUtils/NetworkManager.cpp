@@ -278,6 +278,7 @@ void NetworkManager::SendWhenReadyServerUdp(
             {
                 char buffer[70];
                 sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
+                OutputDebugStringA(buffer);
                 
                 // compress from src: toSendData to dst: NetworkPass::visiblityData
                 toSendSize = CompressTextureLZ4(visTexSizeActual, toSendData, compressionBuffer.get());
