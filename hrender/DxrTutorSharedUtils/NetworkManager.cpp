@@ -900,10 +900,12 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
                     char buffer[95];
                     sprintf(buffer, "\n\n= RecvTextureUdp: "
                             "Received a packet %d for newer frame %d",
-                            recvHeader.sequenceNumber, recvHeader.frameNumber);
+                            recvHeader.sequenceNumber, recvHeader.frameNumber);        
+                    OutputDebugStringA(buffer);
                     sprintf(buffer, "\n\n= RecvTextureUdp: "
                             "Trying again to receive the last packet %d for frame %d",
                             serverSeqNum, expectedFrameNum);
+                    OutputDebugStringA(buffer);
                     numOfRecvAttempts++;
                     continue;
                 }
@@ -914,7 +916,8 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
                     char buffer[113];
                     sprintf(buffer, "\n\n= RecvTextureUdp: "
                             "Frame %d ruined by packet %d for newer frame %d",
-                            expectedFrameNum, recvHeader.sequenceNumber, recvHeader.frameNumber);
+                            expectedFrameNum, recvHeader.sequenceNumber, recvHeader.frameNumber);        
+                    OutputDebugStringA(buffer);
                     return 2;
                 }
             }
