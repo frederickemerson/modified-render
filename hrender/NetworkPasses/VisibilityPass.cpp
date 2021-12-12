@@ -83,6 +83,10 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (!mpScene) return;
+
+    // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
+    mpRays = RayLaunch::create(1, 1, kFileRayTrace, kEntryPointRayGen);
+
     if (mpRays) {
         mpRays->setScene(mpScene);
         mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);

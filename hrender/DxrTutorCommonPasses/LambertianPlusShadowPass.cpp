@@ -40,7 +40,6 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("WorldNormal2");
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 

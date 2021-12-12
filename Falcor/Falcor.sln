@@ -98,6 +98,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Visualization2D", "Source\S
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hrender", "..\hrender\hrender.vcxproj", "{3F318569-891B-4D35-952C-9162D29F97F7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rrender", "..\rrender\rrender.vcxproj", "{A601D9D6-5595-4C64-8EA0-EC1B6570A064}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -410,6 +412,14 @@ Global
 		{3F318569-891B-4D35-952C-9162D29F97F7}.Release|x64.Build.0 = Release|x64
 		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.ActiveCfg = Release|x64
 		{3F318569-891B-4D35-952C-9162D29F97F7}.ReleaseD3D12|x64.Build.0 = Release|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.Debug|x64.ActiveCfg = Debug|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.Debug|x64.Build.0 = Debug|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.DebugD3D12|x64.ActiveCfg = Debug|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.DebugD3D12|x64.Build.0 = Debug|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.Release|x64.ActiveCfg = Release|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.Release|x64.Build.0 = Release|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.ReleaseD3D12|x64.ActiveCfg = Release|x64
+		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.ReleaseD3D12|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
