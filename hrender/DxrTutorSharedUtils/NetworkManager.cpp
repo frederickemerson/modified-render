@@ -1154,7 +1154,7 @@ bool NetworkManager::RecvUdpCustom(
 
     int totalPacketSize = outDataHeader.dataSize + headerSize;
     // Receive the rest of the packet, if needed
-    while (dataReceivedSoFar < totalPacketSize);
+    while (dataReceivedSoFar < totalPacketSize)
     {
         int iResult = recvfrom(socketUdp, &(dataBuffer[dataReceivedSoFar]),
                                 DEFAULT_BUFLEN, 0, clientAddrPtr, &addrLen);
