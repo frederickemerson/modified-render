@@ -178,7 +178,7 @@ bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHei
 
     UdpCustomPacketHeader firstPacketHeader;
     char* dataPointer;
-    char* recvBuffer = new char[UDP_MAX_DATA_LENGTH];
+    char* recvBuffer = new char[DEFAULT_BUFLEN];
     // Get the client texture width/height    
     // Expected sequence number is 0
     if (!RecvUdpCustomAndCheck(recvBuffer, firstPacketHeader, dataPointer,
@@ -1010,7 +1010,7 @@ bool NetworkManager::RecvCameraDataUdp(
     UdpCustomPacketHeader recvHeader;
     bool hasReceived;
     char* packetData;
-    char* recvBuffer = new char[UDP_MAX_DATA_LENGTH];
+    char* recvBuffer = new char[DEFAULT_BUFLEN];
     if (useLongTimeout)
     {
         hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp,
