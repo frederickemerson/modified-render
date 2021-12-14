@@ -54,7 +54,7 @@ public:
     static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {}
+    NetworkPass(int texWidth, int texHeight, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -72,7 +72,8 @@ protected:
     Mode                                    mMode;                     ///< Whether this pass runs as client or server
     int32_t                                 mOutputIndex;              ///< An index for our output buffer
     std::string                             mOutputTexName;            ///< Where do we want to store the results?
-
+    int                                     mTexWidth = -1;            ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;           ///< The height of the texture we render, based on the client
 
 };
 

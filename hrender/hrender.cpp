@@ -181,7 +181,7 @@ void runServer()
     pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 Receive camera data from client --- //
-    pipeline->setPass(0, NetworkServerRecvPass::create());
+    pipeline->setPass(0, NetworkServerRecvPass::create(texWidth, texHeight));
 
     // --- Pass 2 creates a GBuffer on server side--- //
     pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
@@ -228,10 +228,10 @@ void runClient()
     ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
     // --- Pass 1 Send camera data to server--- //
-    pipeline->setPass(0, NetworkClientSendPass::create());
+    pipeline->setPass(0, NetworkClientSendPass::create(-1, -1));
 
     // --- Pass 2 receive visibility bitmap from server --- //
-    pipeline->setPass(1, NetworkClientRecvPass::create());
+    pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
 
     // --- Pass 3 transfers CPU information into GPU --- //
     pipeline->setPass(2, MemoryTransferPassClientCPU_GPU::create());

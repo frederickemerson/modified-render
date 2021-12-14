@@ -13,7 +13,8 @@ public:
 
 
 protected:
-	NetworkServerSendPass(int texWidth, int texHeight) :NetworkPass("Network Server Send Pass", "Network Server Send Pass Options") {
+	NetworkServerSendPass(int texWidth, int texHeight) 
+		:NetworkPass(texWidth, texHeight, "Network Server Send Pass", "Network Server Send Pass Options") {
 		mTexWidth = texWidth;
 		mTexHeight = texHeight;
 	}	
