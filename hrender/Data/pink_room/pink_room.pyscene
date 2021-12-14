@@ -1,0 +1,103 @@
+# Load scene
+sceneBuilder.importScene('pink_room.fbx')
+
+# Add lights
+dirLight0 = DirectionalLight('dirLight0')
+dirLight0.intensity = float3(1, 1, 0.9843137860298157)
+dirLight0.direction = float3(0.3642265796661377, -0.5452651977539063, 0.7549999952316284)
+sceneBuilder.addLight(dirLight0)
+
+pointLight1 = PointLight('pointLight1')
+pointLight1.intensity = float3(1, 1, 1)
+pointLight1.position = float3(-4.645481586456299, 1.5427508354187012, -1.488459825515747)
+pointLight1.direction = float3(0, -1, 0)
+pointLight1.openingAngle = 180.0
+pointLight1.penumbraAngle = 0.0
+sceneBuilder.addLight(pointLight1)
+
+pointLight2 = PointLight('pointLight2')
+pointLight2.intensity = float3(1, 1, 1)
+pointLight2.position = float3(-1.016136884689331, 1.4740270376205445, -1.4256235361099244)
+pointLight2.direction = float3(0, -1, 0)
+pointLight2.openingAngle = 180.0
+pointLight2.penumbraAngle = 0.0
+sceneBuilder.addLight(pointLight2)
+
+# Add moving object
+mugMesh = TriangleMesh.createFromFile('../Data/Mug/Krujka-Me.obj', smoothNormals=False)
+mugMtl = Material('Mug')
+mugMtl.loadTexture(MaterialTextureSlot.BaseColor, '../Data/Mug/textures/Krujka-Me.png')
+transform = Transform()
+transform.translation = float3(-1.626, 0.328, -2.139)
+transform.rotationEuler = float3(0.0, 1.5708, 0.0)
+transform.scaling = float3(0.971, 0.971, 0.971)
+mugNodeId = sceneBuilder.addNode('Mug', transform)
+mugMeshId = sceneBuilder.addTriangleMesh(mugMesh, mugMtl)
+sceneBuilder.addMeshInstance(mugNodeId, mugMeshId)
+
+mugAnimation = Animation('mugAnimation', mugNodeId, 14)
+sceneBuilder.addAnimation(mugAnimation)
+
+transformA = transform
+mugAnimation.addKeyframe(0.0, transformA)
+
+transformB = Transform()
+transformB.translation = float3(-1.206, 0.328, -2.139)
+transformB.rotationEuler = float3(0.0, 1.5708, 0.0)
+transformB.scaling = float3(0.971, 0.971, 0.971)
+mugAnimation.addKeyframe(3.5, transformB)
+
+transformC = transformA
+mugAnimation.addKeyframe(7.0, transformC)
+
+transformD = transformB
+mugAnimation.addKeyframe(10.5, transformD)
+
+transformE = transformA
+mugAnimation.addKeyframe(14.0, transformE)
+
+# Add camera
+camera = Camera()
+camera.position = float3(-2.706775665283203, 0.85294109582901, -3.112438678741455)
+camera.target = float3(-2.347264528274536, 0.7383297681808472, -2.1863629817962648)
+camera.up = float3(0.038521841168403628, 0.9933950304985046, 0.1079813688993454)
+camera.focalLength = 21.0
+camera.nearPlane = 0.10000000149011612
+camera.farPlane = 10000.0
+sceneBuilder.addCamera(camera)
+
+# Add camera animation
+animation = sceneBuilder.createAnimation(camera, 'cameraAnimation', 14)
+animation.interpolationMode = Animation.InterpolationMode.Hermite
+
+transform0 = Transform()
+transform0.lookAt(camera.position, camera.target, camera.up)
+animation.addKeyframe(0.0, transform0)
+
+transform1 = Transform()
+transform1.lookAt(float3(-1.4041675329208375, 0.6247841119766235, -2.5271360874176027), float3(-1.2257745265960694, 0.34850960969924929, -1.5827587842941285), float3(0.061039455235004428, 0.9610214829444885, 0.2696072459220886))
+animation.addKeyframe(2.0, transform1)
+
+transform2 = Transform()
+transform2.lookAt(float3(-0.8170599341392517, 0.5378264784812927, -2.2016208171844484), float3(-1.5336501598358155, 0.377095103263855, -1.5228984355926514), float3(-0.1256074607372284, 0.9869037866592407, 0.10109011828899384))
+animation.addKeyframe(4.0, transform2)
+
+transform3 = Transform()
+transform3.lookAt(float3(-0.28838375210762026, 1.8338685035705567, -0.7556755542755127), float3(-0.4233609437942505, 1.5751265287399293, 0.20079386234283448), float3(-0.05899819731712341, 0.9656745791435242, 0.25289833545684817))
+animation.addKeyframe(6.0, transform3)
+
+transform4 = Transform()
+transform4.lookAt(float3(-2.429372549057007, 1.8113508224487305, -0.8239079117774963), float3(-1.9759008884429932, 1.6049808263778687, 0.04314166307449341), float3(0.06920450925827027, 0.9780228137969971, 0.196579247713089))
+animation.addKeyframe(8.0, transform4)
+
+transform5 = Transform()
+transform5.lookAt(float3(-3.4931182861328127, 0.6706330180168152, -1.1435459852218629), float3(-2.8087029457092287, 0.3629470467567444, -0.4825579524040222), float3(0.19741703569889069, 0.950911283493042, 0.23822025954723359))
+animation.addKeyframe(10.0, transform5)
+
+transform6 = Transform()
+transform6.lookAt(float3(-1.554296851158142, 0.6058448553085327, -2.269808053970337), float3(-1.0321381092071534, 0.3536733090877533, -1.4550936222076417), float3(0.14537210762500764, 0.9675965905189514, 0.20631736516952516))
+animation.addKeyframe(12.0, transform6)
+
+transform7 = Transform()
+transform7.lookAt(camera.position, camera.target, camera.up)
+animation.addKeyframe(14.0, transform7)

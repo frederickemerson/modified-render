@@ -42,7 +42,7 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
-    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
+    mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
@@ -58,6 +58,10 @@ void VShadingPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pSc
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (!mpScene) return;
+
+    // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
+    mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
+
     if (mpRays) {
         mpRays->setScene(mpScene);
         mpRays->compileRayProgram();
@@ -78,6 +82,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
+    rayVars["RayGenCB"]["gAmbient"] = mAmbient;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
     rayVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
@@ -95,9 +100,13 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
+
     if (mDecodeMode)
     {
         dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
+    }
+    else {
+        dirty |= (int)pPassWindow->var("Ambient term", mAmbient, 0.0f, 1.0f, 0.01f);
     }
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
