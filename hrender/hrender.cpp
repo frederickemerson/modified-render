@@ -169,9 +169,7 @@ void runServer()
     int texWidth, texHeight;
 
     ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-    
-    NetworkPass::posTexHeight = texHeight;
-    NetworkPass::posTexWidth = texWidth;
+
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 

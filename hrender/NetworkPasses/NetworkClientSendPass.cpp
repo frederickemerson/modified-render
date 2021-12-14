@@ -31,10 +31,6 @@ bool NetworkClientSendPass::firstClientRenderUdp(RenderContext* pRenderContext)
     pNetworkManager->clientSeqNum = 1;
     OutputDebugString(L"\n\n= firstClientRenderUdp: width/height sent over network =========");
 
-    // Populate posTexWidth and Height
-    NetworkClientSendPass::posTexWidth = mpResManager->getWidth();
-    NetworkClientSendPass::posTexHeight = mpResManager->getHeight();
-
     // Start the client sending thread
     auto clientSendWhenReady = [&]()
     {

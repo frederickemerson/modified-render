@@ -39,11 +39,6 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
     virtual ~NetworkPass() = default;
 
-    // Texture data from transfering
-    static std::vector<uint8_t> posData;
-    static int posTexWidth;
-    static int posTexHeight;
-
     // Client - Two buffers for writing and reading at the same time
     static char* visibilityDataForReadingClient;
     static char* visibilityDataForWritingClient;
@@ -54,7 +49,10 @@ public:
     static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(int texWidth, int texHeight, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {}
+    NetworkPass(int texWidth, int texHeight, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+        mTexWidth = texWidth;
+        mTexHeight = texHeight;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;

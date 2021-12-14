@@ -18,11 +18,6 @@
 
 #include "NetworkPass.h"
 
-//std::vector<uint8_t> NetworkPass::normData = std::vector<uint8_t>();
-std::vector<uint8_t> NetworkPass::posData = std::vector<uint8_t>(POS_TEX_LEN, 0);
-int NetworkPass::posTexWidth = 0;
-int NetworkPass::posTexHeight = 0;
-
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 char* NetworkPass::visibilityDataForReadingClient = new char[VIS_TEX_LEN];
 char* NetworkPass::visibilityDataForWritingClient = new char[VIS_TEX_LEN];
