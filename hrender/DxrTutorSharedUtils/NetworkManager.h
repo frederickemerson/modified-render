@@ -31,7 +31,6 @@
 #include <unordered_map>
 #include "./UdpCustomPacket.h"
 #include "./Semaphore.h"
-#include "../Libraries/minilzo.h"
 #include "../NetworkPasses/NetworkUtils.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -112,13 +111,6 @@ public:
     // Protect the server's camera data
     static std::mutex mMutexServerCamData;
 
-    // For TCP communication
-    static bool mCamPosReceivedTcp;
-    static bool mVisTexCompleteTcp;
-    static std::mutex mMutexServerVisTexTcp;
-    static std::condition_variable mCvCamPosReceived;
-    static std::condition_variable mCvVisTexComplete;
-
     // Used for compression
     static bool mCompression;
     static std::vector<char> wrkmem;
@@ -145,9 +137,6 @@ public:
     std::atomic<float> cameraWY = 0;
     std::atomic<float> cameraWZ = 0;
 
-    // Used to send and receive data over the network
-    void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
-    void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
     // Use UDP to receive and send texture data
     // 
     // outRecvTexData - The pointer to the location that the texture
@@ -168,19 +157,13 @@ public:
     int RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
                        int timeout = UDP_LISTENING_TIMEOUT_MS);
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
-    bool RecvInt(int& recvInt, SOCKET& s);
-    bool SendInt(int toSend, SOCKET& s);
-    bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
-    bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::array<float3, 3>& cameraData,
                            std::mutex& mutexForCameraData,
                            SOCKET& socketUdp,
                            bool useLongTimeout);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
-    char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
     int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
-    void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
     int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
 
     // Receive data with UDP custom protocol
@@ -237,10 +220,6 @@ public:
     bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp);
 
     // Server
-    // Set up the sockets and connect to a client, and output the client's texture width/height
-    bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
-    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
-
     // Set up UDP socket and listen for client's texture width/height
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
     // Server's receiving thread
@@ -252,11 +231,9 @@ public:
                                 int texWidth,
                                 int texHeight);
 
-    bool CloseServerConnection();
     bool CloseServerConnectionUdp();
 
     // Client 
-    bool SetUpClient(PCSTR serverName, PCSTR serverPort);
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
 
     // Client's receiving thread
@@ -268,7 +245,6 @@ public:
     // Client's sending thread
     void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
 
-    bool CloseClientConnection();
     bool CloseClientConnectionUdp();
 
 private:
