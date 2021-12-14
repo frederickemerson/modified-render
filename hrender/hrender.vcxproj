@@ -30,7 +30,6 @@
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="hrender.cpp" />
-    <ClCompile Include="Libraries\minilzo.c" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
@@ -55,9 +54,6 @@
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
     <ClInclude Include="hrender.h" />
-    <ClInclude Include="Libraries\lzoconf.h" />
-    <ClInclude Include="Libraries\lzodefs.h" />
-    <ClInclude Include="Libraries\minilzo.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />

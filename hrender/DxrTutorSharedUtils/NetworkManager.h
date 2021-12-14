@@ -31,7 +31,6 @@
 #include <unordered_map>
 #include "./UdpCustomPacket.h"
 #include "./Semaphore.h"
-#include "../Libraries/minilzo.h"
 #include "../NetworkPasses/NetworkUtils.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib

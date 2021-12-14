@@ -9,7 +9,6 @@ bool NetworkManager::mCamPosReceivedTcp = false;
 bool NetworkManager::mVisTexCompleteTcp = false;
 bool NetworkManager::mCompression = true;
 
-std::vector<char> NetworkManager::wrkmem(LZO1X_1_MEM_COMPRESS, 0);
 std::vector<unsigned char> NetworkManager::compData(OUT_LEN(POS_TEX_LEN), 0);
 
 // UDP Client
@@ -648,40 +647,11 @@ bool NetworkManager::CloseClientConnection()
     return true;
 }
 
-/// <summary>
-/// Compress the given texture.
-/// </summary>
-/// <param name="inTexSize">- initial texture size</param>
-/// <param name="inTexData">- texture to be compressed</param>
-/// <param name="compTexSize">- compressed texture size</param>
-/// <returns></returns>
-char* NetworkManager::CompressTexture(int inTexSize, char* inTexData, int& compTexSize)
-{
-    int maxCompLen = OUT_LEN(inTexSize);
-    lzo_uint compLen;
-    lzo1x_1_compress((unsigned char*)inTexData, (lzo_uint)inTexSize, &NetworkManager::compData[0], &compLen, &wrkmem[0]);
-    compTexSize = (int)compLen;
-    return (char*)&NetworkManager::compData[0];
-}
-
 int NetworkManager::CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData)
 {
     // int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
     int compTexSize = LZ4_compress_default(inTexData, compTexData, inTexSize, inTexSize);
     return compTexSize;
-}
-
-/// <summary>
-/// Decompress given data.
-/// </summary>
-/// <param name="outTexSize">- final decompressed texture size</param>
-/// <param name="outTexData">- decompressed data</param>
-/// <param name="compTexSize">- compressed texture size</param>
-/// <param name="compTexData">- compressed texture</param>
-void NetworkManager::DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
-{
-    lzo_uint new_len = outTexSize;
-    lzo1x_decompress((unsigned char*)compTexData, compTexSize, (unsigned char*)outTexData, &new_len, NULL);
 }
 
 int NetworkManager::DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
