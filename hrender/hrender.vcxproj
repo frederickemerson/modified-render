@@ -32,7 +32,11 @@
     <ClCompile Include="hrender.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkClientSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -56,7 +60,11 @@
     <ClInclude Include="hrender.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
+    <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h" />
+    <ClInclude Include="NetworkPasses\NetworkClientSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
+    <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />
+    <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />

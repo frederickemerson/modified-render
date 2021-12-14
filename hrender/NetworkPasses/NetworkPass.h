@@ -30,26 +30,14 @@ class NetworkPass : public :: RenderPass
 public:
     enum class Mode
     {
-        Client = 0,
+        ClientRecv = 0,
         ClientSend = 1,
-        Server = 2,
-        ServerSend = 3,
-        ClientUdp = 4,
-        ClientUdpSend = 5,
-        ServerUdp = 6,
-        ServerUdpSend = 7,
-        ClientUdpSendFirst = 8
+        ServerRecv = 2,
+        ServerSend = 3
     };
     using SharedPtr = std::shared_ptr<NetworkPass>;
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
-
-    static SharedPtr create(Mode mode = Mode::Client, int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new NetworkPass(mode, texWidth, texHeight));
-    }
     virtual ~NetworkPass() = default;
-
-    // //testing new ordering for render graph
-    // void firstClientSendUdp();
 
     // Texture data from transfering
     static std::vector<uint8_t> posData;
@@ -66,34 +54,12 @@ public:
     static std::array<float3, 3> camData;
 
 protected:
-    NetworkPass(Mode mode, int texWidth = -1, int texHeight = -1) : ::RenderPass("Network Pass", "Network Pass Options") {
-        mMode = mode; mTexWidth = texWidth; mTexHeight = texHeight;
-    }
+    NetworkPass(const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {}
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
-    void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
-    // Different execution functions
-    //void executeClientSend(RenderContext* pRenderContext);
-    //void executeClientRecv(RenderContext* pRenderContext);
-    //void executeServerSend(RenderContext* pRenderContext);
-    //void executeServerRecv(RenderContext* pRenderContext);
-    //bool firstClientRender(RenderContext* pRenderContext);
-    //bool firstServerRender(RenderContext* pRenderContext);
-
-    // Execution functions for UDP
-    void executeClientUdpSend(RenderContext* pRenderContext);
-    void executeClientUdpRecv(RenderContext* pRenderContext);
-    void executeServerUdpRecv(RenderContext* pRenderContext);
-    void executeServerUdpSend(RenderContext* pRenderContext);
-    // For first client render on UDP, send the client's window width and height
-    bool firstClientRenderUdp(RenderContext* pRenderContext);
-    bool firstServerRenderUdp(RenderContext* pRenderContext);
-
-    // Get the texture data from the GPU into a RAM array
-    std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);
 
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }
@@ -104,13 +70,9 @@ protected:
     Scene::SharedPtr                        mpScene;                   ///< Our scene file (passed in from app)
     // Various internal parameters
     Mode                                    mMode;                     ///< Whether this pass runs as client or server
-    bool                                    mFirstRender = true;       ///< If this is the first time rendering, need to send scene
     int32_t                                 mOutputIndex;              ///< An index for our output buffer
     std::string                             mOutputTexName;            ///< Where do we want to store the results?
-    int                                     mTexWidth = -1;            ///< The width of the texture we render, based on the client
-    int                                     mTexHeight = -1;           ///< The height of the texture we render, based on the client
 
-    bool                                    firstClientReceive = true; // Use a longer timeout for first client receive
-    bool                                    firstServerSend    = true; // Set off the server network thread on first send
+
 };
 

@@ -37,10 +37,13 @@
 #include "NetworkPasses/VShadingPass.h"
 #include "NetworkPasses/MemoryTransferPassClientCPU_GPU.h"
 #include "NetworkPasses/MemoryTransferPassServerGPU_CPU.h"
-#include "NetworkPasses/NetworkPass.h"
+#include "NetworkPasses/NetworkClientRecvPass.h"
+#include "NetworkPasses/NetworkClientSendPass.h"
+#include "NetworkPasses/NetworkServerRecvPass.h"
+#include "NetworkPasses/NetworkServerSendPass.h"
 
-void runServer(bool useTcp);
-void runClient(bool useTcp);
+void runServer();
+void runClient();
 void runDebug();
 
 // ========= //
@@ -83,12 +86,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== SERVER MODE =========");
-        runServer(!(std::string(lpCmdLine).find(std::string("udp")) != std::string::npos));
+        runServer();
     }
     else if (std::string(lpCmdLine).find(std::string("client")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== CLIENT MODE =========");
-        runClient(!(std::string(lpCmdLine).find(std::string("udp")) != std::string::npos));
+        runClient();
     }
     else
     {
@@ -119,20 +122,26 @@ void runDebug()
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPass(1, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
 
+    // --- Pass 4 transfers GPU information into CPU --- //
+    pipeline->setPass(2, MemoryTransferPassServerGPU_CPU::create());
+
+    // --- Pass 3 transfers CPU information into GPU --- //
+    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create());
+
     // --- Pass 3 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
-    pipeline->setPassOptions(2, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
+    pipeline->setPassOptions(4, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
 
     // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(3, CopyToOutputPass::create());
+    pipeline->setPass(5, CopyToOutputPass::create());
 
     // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1 })
         });
 
@@ -147,11 +156,11 @@ void runDebug()
  * compute its own GBuffer, and perform raytracing on said bufferto produce
  * visibility bitmap. The bitmap is send back to the client afterwards.
  */
-void runServer(bool useTcp)
+void runServer()
 {
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = useTcp ? "NRender Server" : "NRender UDP Server";
+    config.windowDesc.title = "NRender UDP Server";
     config.windowDesc.resizableWindow = true;
 
     // Set up server - configure the sockets and await client connection. We need to await
@@ -172,7 +181,7 @@ void runServer(bool useTcp)
     pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 Receive camera data from client --- //
-    pipeline->setPass(0, NetworkPass::create(useTcp ? NetworkPass::Mode::Server : NetworkPass::Mode::ServerUdp, texWidth, texHeight));
+    pipeline->setPass(0, NetworkServerRecvPass::create());
 
     // --- Pass 2 creates a GBuffer on server side--- //
     pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
@@ -184,7 +193,7 @@ void runServer(bool useTcp)
     pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
 
     // --- Pass 5 Send visibility bitmap back to client --- //
-    pipeline->setPass(4, NetworkPass::create(useTcp ? NetworkPass::Mode::ServerSend : NetworkPass::Mode::ServerUdpSend, texWidth, texHeight));
+    pipeline->setPass(4, NetworkServerSendPass::create(texWidth, texHeight));
 
     // ============================ //
     // Set presets for the pipeline //
@@ -204,11 +213,11 @@ void runServer(bool useTcp)
  * waits for visibility bitmap from the server. Client will make use of the received
  * visibility bitmap to compute the final scene.
  */
-void runClient(bool useTcp)
+void runClient()
 {
     // Define a set of config / window parameters for our program
     SampleConfig config;
-    config.windowDesc.title = useTcp ? "NRender" : "NRender UDP";
+    config.windowDesc.title = "NRender UDP";
     config.windowDesc.resizableWindow = true;
 
     // Create our rendering pipeline
@@ -219,15 +228,10 @@ void runClient(bool useTcp)
     ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
     // --- Pass 1 Send camera data to server--- //
-    /*pipeline->setPassOptions(2, {
-        NetworkPass::create(NetworkPass::Mode::ClientUdpSendFirst)
-    });*/
-
-    // --- Pass 1 Send camera data to server--- //
-    pipeline->setPass(0, NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend));
+    pipeline->setPass(0, NetworkClientSendPass::create());
 
     // --- Pass 2 receive visibility bitmap from server --- //
-    pipeline->setPass(1, NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp));
+    pipeline->setPass(1, NetworkClientRecvPass::create());
 
     // --- Pass 3 transfers CPU information into GPU --- //
     pipeline->setPass(2, MemoryTransferPassClientCPU_GPU::create());

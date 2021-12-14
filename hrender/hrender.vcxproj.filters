@@ -38,12 +38,6 @@
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\VShadingPass.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkPasses\NetworkPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
@@ -53,16 +47,34 @@
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\VShadingPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkClientSendPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
   </ItemGroup>
@@ -105,23 +117,11 @@
     <ClInclude Include="TestPasses\DecodeGBufferPass.h">
       <Filter>TestPasses</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\VisibilityPass.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\VShadingPass.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
       <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
-      <Filter>NetworkPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
       <Filter>SharedUtils</Filter>
@@ -130,6 +130,30 @@
       <Filter>SharedUtils</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkUtils.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\VShadingPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\VisibilityPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkClientSendPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkServerSendPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
