@@ -1,5 +1,5 @@
 /***************************************************************************
- # Copyright (c) 2020, NVIDIA CORPORATION. All rights reserved.
+ # Copyright (c) 2015-21, NVIDIA CORPORATION. All rights reserved.
  #
  # Redistribution and use in source and binary forms, with or without
  # modification, are permitted provided that the following conditions
@@ -234,7 +234,7 @@ namespace Falcor
         */
         void captureToFile(uint32_t mipLevel, uint32_t arraySlice, const std::string& filename, Bitmap::FileFormat format = Bitmap::FileFormat::PngFile, Bitmap::ExportFlags exportFlags = Bitmap::ExportFlags::None);
 
-        std::vector<uint8_t> getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr=nullptr);
+        std::vector<uint8_t> getTextureData(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr = nullptr);
 
         uint8_t* getTextureData2(RenderContext* pRenderContext, uint32_t mipLevel, uint32_t arraySlice, std::vector<uint8_t>* result_ptr);
 
@@ -242,10 +242,11 @@ namespace Falcor
 
         uint8_t* sync(std::vector<uint8_t>* result_ptr);
 
-
         /** Generates mipmaps for a specified texture object.
+            \param[in] pContext Used render context.
+            \param[in] minMaxMips Generate a min/max mipmap pyramid. Each RGBA texel of levels >0 in the resulting MIP pyramid will cointain {Avg, Min, Max, Avg} of the 4 coresponding texels from the immediatly larger MIP level.
         */
-        void generateMips(RenderContext* pContext);
+        void generateMips(RenderContext* pContext, bool minMaxMips = false);
 
         /** In case the texture was loaded from a file, use this to set the file path
         */

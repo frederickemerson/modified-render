@@ -43,6 +43,31 @@ void runServer(bool useTcp);
 void runClient(bool useTcp);
 void runDebug();
 
+// ========= //
+// PINK ROOM //
+// ========= //
+const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+
+// ========== //
+// SUN TEMPLE //
+// ========== //
+//const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
+//std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
+
+// ======= //
+// BISTRO //
+// ====== //
+//const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
+//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
+//std::string defaultSceneName = "Bistro\\BistroExterior_v4.pyscene";
+
+// ======== //
+// ZERO DAY //
+// ======== //
+//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+//std::string defaultSceneName = "ZeroDay\\MEASURE_ONE\\MEASURE_ONE.fbx";
+
 /**
  * Determines the mode or configuration that the program runs
  * based on the command line argument.
@@ -85,12 +110,14 @@ void runDebug()
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 creates a GBuffer --- //
-    pipeline->setPassOptions(0, { JitteredGBufferPass::create() });
+    pipeline->setPass(0, JitteredGBufferPass::create());
 
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
-    pipeline->setPassOptions(1, { VisibilityPass::create("VisibilityBitmap", "WorldPosition") });
+    pipeline->setPass(1, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
 
     // --- Pass 3 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
     pipeline->setPassOptions(2, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
@@ -147,34 +174,23 @@ void runServer(bool useTcp)
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
 
     // --- Pass 1 Receive camera data from client --- //
-    pipeline->setPassOptions(0, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::Server : NetworkPass::Mode::ServerUdp,
-                            texWidth, texHeight)
-    });
+    pipeline->setPass(0, NetworkPass::create(useTcp ? NetworkPass::Mode::Server : NetworkPass::Mode::ServerUdp, texWidth, texHeight));
 
     // --- Pass 2 creates a GBuffer on server side--- //
-    pipeline->setPassOptions(1, {
-        JitteredGBufferPass::create(texWidth, texHeight)
-    });
+    pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
 
     // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
-    pipeline->setPassOptions(2, {
-        // Lambertian BRDF for local lighting, 1 shadow ray per light
-        VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)
-    });
+    pipeline->setPass(2, VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)); // Lambertian BRDF for local lighting, 1 shadow ray per light
 
     // --- Pass 4 transfers GPU information into CPU --- //
-    pipeline->setPassOptions(3, {
-        MemoryTransferPassServerGPU_CPU::create()
-    });
+    pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
 
     // --- Pass 5 Send visibility bitmap back to client --- //
-    pipeline->setPassOptions(4, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::ServerSend : NetworkPass::Mode::ServerUdpSend,
-                            texWidth, texHeight)
-    });
+    pipeline->setPass(4, NetworkPass::create(useTcp ? NetworkPass::Mode::ServerSend : NetworkPass::Mode::ServerUdpSend, texWidth, texHeight));
 
     // ============================ //
     // Set presets for the pipeline //
@@ -203,6 +219,8 @@ void runClient(bool useTcp)
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
+    pipeline->setDefaultSceneName(defaultSceneName);
+    pipeline->updateEnvironmentMap(environmentMap);
     
     if (useTcp)
     {
@@ -219,24 +237,16 @@ void runClient(bool useTcp)
     });*/
 
     // --- Pass 1 Send camera data to server--- //
-    pipeline->setPassOptions(0, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend)
-    });
+    pipeline->setPass(0, NetworkPass::create(useTcp ? NetworkPass::Mode::ClientSend : NetworkPass::Mode::ClientUdpSend));
 
     // --- Pass 2 receive visibility bitmap from server --- //
-    pipeline->setPassOptions(1, {
-        NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp)
-        });
+    pipeline->setPass(1, NetworkPass::create(useTcp ? NetworkPass::Mode::Client : NetworkPass::Mode::ClientUdp));
 
     // --- Pass 3 transfers CPU information into GPU --- //
-    pipeline->setPassOptions(2, {
-        MemoryTransferPassClientCPU_GPU::create()
-    });
+    pipeline->setPass(2, MemoryTransferPassClientCPU_GPU::create());
 
     // --- Pass 4 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPassOptions(3, {
-        VShadingPass::create("V-shading"),
-    });
+    pipeline->setPass(3, VShadingPass::create("V-shading"));
 
     // --- Pass 5 just lets us select which pass to view on screen --- //
     pipeline->setPass(4, CopyToOutputPass::create());
@@ -245,10 +255,7 @@ void runClient(bool useTcp)
     pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // --- Pass 7 creates a GBuffer on client side--- //
-    pipeline->setPassOptions(6, {
-        // Rasterized GBuffer
-        JitteredGBufferPass::create()
-        });
+    pipeline->setPass(6, JitteredGBufferPass::create()); // Rasterized GBuffer
 
     // ============================ //
     // Set presets for the pipeline //

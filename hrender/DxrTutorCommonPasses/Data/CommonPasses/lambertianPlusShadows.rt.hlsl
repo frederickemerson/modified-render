@@ -68,7 +68,7 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 }
 
 [shader("anyhit")]
-void ShadowAnyHit(uniform HitShaderParams hitParams, inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     // Run a Falcor helper to extract the current hit point's geometric data
     VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);

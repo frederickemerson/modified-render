@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
+    <ClCompile Include="rrender.cpp" />
+    <ClCompile Include="Libraries\minilzo.c" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
+    <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
+    <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
+    <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
+    <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
+    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
+    <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
+    <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
+    <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
+    <ClInclude Include="rrender.h" />
+    <ClInclude Include="Libraries\lzoconf.h" />
+    <ClInclude Include="Libraries\lzodefs.h" />
+    <ClInclude Include="Libraries\minilzo.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
+    <ClInclude Include="NetworkPasses\NetworkPass.h" />
+    <ClInclude Include="NetworkPasses\NetworkUtils.h" />
+    <ClInclude Include="NetworkPasses\VisibilityPass.h" />
+    <ClInclude Include="NetworkPasses\VShadingPass.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
+      <Project>{2c535635-e4c5-4098-a928-574f0e7cd5f9}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoCommonUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadows.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadowsUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\packingUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGI.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGIUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
+    <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
+    <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
+    <ShaderSource Include="TestPasses\GBufferComponents.slang" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="rrender.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A601D9D6-5595-4C64-8EA0-EC1B6570A064}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>rrender</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="..\Falcor\Source\Falcor\Falcor.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="..\Falcor\Source\Falcor\Falcor.props" />
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <ShaderSourceSubDir>Shaders\Samples\$(ProjectName)</ShaderSourceSubDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <ShaderSourceSubDir>Shaders\Samples\$(ProjectName)</ShaderSourceSubDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+    </CudaCompile>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+    devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
+    xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
+)</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
+    </Link>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+    </CudaCompile>
+    <PreBuildEvent>
+      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+    devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
+    xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
+)</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

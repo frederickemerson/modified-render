@@ -29,9 +29,9 @@ using namespace std;
 //#include "compression.h"
 
 namespace {
-    // Where is our environment map and scene located?
-    //const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
-    const char* kDefaultScene = "pink_room\\pink_room.fscene";
+    // // Where is our environment map and scene located?
+    // const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
+    // const char* kDefaultScene = "pink_room\\pink_room.pyscene";
 
     // Where is our shaders located?
     const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\visibilityPass.rt.hlsl";
@@ -55,18 +55,18 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mPosIndex = mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
-    // Set default environment map and scene
-    //mpResManager->updateEnvironmentMap(kEnvironmentMap);
-    mpResManager->setDefaultSceneName(kDefaultScene);
+    // // Set default environment map and scene
+    // mpResManager->updateEnvironmentMap(kEnvironmentMap);
+    // mpResManager->setDefaultSceneName(kDefaultScene);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
-    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-    mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
+    mpRays = RayLaunch::create(1, 1, kFileRayTrace, kEntryPointRayGen);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
 
@@ -83,8 +83,14 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (!mpScene) return;
+
+    // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
+    mpRays = RayLaunch::create(1, 1, kFileRayTrace, kEntryPointRayGen);
+
     if (mpRays) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
 }

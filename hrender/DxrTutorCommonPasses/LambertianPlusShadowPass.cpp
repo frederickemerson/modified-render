@@ -40,18 +40,17 @@ bool LambertianPlusShadowPass::initialize(RenderContext* pRenderContext, Resourc
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("WorldNormal2");
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
-    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-    mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
+    mpRays = RayLaunch::create(1, 1, kFileRayTrace, kEntryPointRayGen);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
 
@@ -65,6 +64,8 @@ void LambertianPlusShadowPass::initScene(RenderContext* pRenderContext, Scene::S
     if (!mpScene) return;
     if (mpRays) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
 }
