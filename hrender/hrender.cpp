@@ -131,14 +131,8 @@ void runServer(bool useTcp)
     // the client connection before we allow the server thread to create the textures, because
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
-    if (useTcp)
-    {   
-        ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
-    }
-    else
-    {
-        ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-    }
+
+    ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
     
     NetworkPass::posTexHeight = texHeight;
     NetworkPass::posTexWidth = texWidth;
@@ -204,14 +198,7 @@ void runClient(bool useTcp)
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
     
-    if (useTcp)
-    {
-        ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
-    }
-    else
-    {
-        ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
-    }
+    ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
     // --- Pass 1 Send camera data to server--- //
     /*pipeline->setPassOptions(2, {
