@@ -76,12 +76,12 @@ protected:
     void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
     // Different execution functions
-    void executeClientSend(RenderContext* pRenderContext);
-    void executeClientRecv(RenderContext* pRenderContext);
-    void executeServerSend(RenderContext* pRenderContext);
-    void executeServerRecv(RenderContext* pRenderContext);
-    bool firstClientRender(RenderContext* pRenderContext);
-    bool firstServerRender(RenderContext* pRenderContext);
+    //void executeClientSend(RenderContext* pRenderContext);
+    //void executeClientRecv(RenderContext* pRenderContext);
+    //void executeServerSend(RenderContext* pRenderContext);
+    //void executeServerRecv(RenderContext* pRenderContext);
+    //bool firstClientRender(RenderContext* pRenderContext);
+    //bool firstServerRender(RenderContext* pRenderContext);
 
     // Execution functions for UDP
     void executeClientUdpSend(RenderContext* pRenderContext);
