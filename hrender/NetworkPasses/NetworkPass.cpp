@@ -21,8 +21,6 @@
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
 char* NetworkPass::visibilityDataForReadingClient = new char[VIS_TEX_LEN];
 char* NetworkPass::visibilityDataForWritingClient = new char[VIS_TEX_LEN];
-// for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
-uint8_t* NetworkPass::pVisibilityDataServer = nullptr;
 std::array<float3, 3> NetworkPass::camData;
 
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)

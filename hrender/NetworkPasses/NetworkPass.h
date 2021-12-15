@@ -42,10 +42,7 @@ public:
     // Client - Two buffers for writing and reading at the same time
     static char* visibilityDataForReadingClient;
     static char* visibilityDataForWritingClient;
-    // Server - Just one pointer to a Falcor Buffer that allows for reading safely
-    // This Buffer will be set by MemoryTransferPassClientGPU_CPU
-    // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame
-    static uint8_t* pVisibilityDataServer;
+
     static std::array<float3, 3> camData;
 
 protected:

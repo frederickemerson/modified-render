@@ -148,7 +148,7 @@ void NetworkManager::SendWhenReadyServerUdp(
 
         {
             std::lock_guard lock(mMutexServerVisTexRead);
-            char* toSendData = (char*)NetworkPass::pVisibilityDataServer;
+            char* toSendData = (char*)RenderConfig::mConfig[0].cpuLocation;
 
             // The size of the actual Buffer (pointed to by pVisibilityDataServer)
             // that is given by Falcor is less then VIS_TEX_LEN
