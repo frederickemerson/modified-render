@@ -41,12 +41,6 @@
     <ClCompile Include="NetworkPasses\NetworkPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
@@ -57,12 +51,6 @@
       <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\VShadingPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp">
@@ -77,8 +65,23 @@
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\HrenderConfig.cpp">
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp">
       <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
+      <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -123,12 +126,6 @@
     <ClInclude Include="NetworkPasses\NetworkPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
@@ -139,12 +136,6 @@
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\VisibilityPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h">
@@ -159,8 +150,23 @@
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\HrenderConfig.h">
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h">
       <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Compression.h">
+      <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -196,6 +202,15 @@
     </Filter>
     <Filter Include="Libraries">
       <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils\Compression">
+      <UniqueIdentifier>{19b9e171-2cbb-4398-bf05-ed2c899f5cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Memory Transfer">
+      <UniqueIdentifier>{1778b545-4137-431b-803b-d0b599ba2206}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils\Network">
+      <UniqueIdentifier>{f8b1fd99-3c4e-435e-9d2d-d60c4bcde845}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

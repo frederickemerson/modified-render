@@ -1,4 +1,4 @@
-#include "HrenderConfig.h"
+#include "RenderConfig.h"
 
 
 std::vector<RenderConfig::Config> RenderConfig::mConfig(2);

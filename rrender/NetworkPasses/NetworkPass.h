@@ -57,8 +57,8 @@ public:
     static int posTexHeight;
 
     // Client - Two buffers for writing and reading at the same time
-    static char* visibilityDataForReadingClient;
-    static char* visibilityDataForWritingClient;
+    static char* clientReadBuffer;
+    static char* clientWriteBuffer;
     // Server - Just one pointer to a Falcor Buffer that allows for reading safely
     // This Buffer will be set by MemoryTransferPassClientGPU_CPU
     // for server side GPU-CPU trsf of visibilityBuffer, stores location of data, changes every frame

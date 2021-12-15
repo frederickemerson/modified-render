@@ -42,7 +42,7 @@
 #include "NetworkPasses/NetworkServerRecvPass.h"
 #include "NetworkPasses/NetworkServerSendPass.h"
 
-#include "DxrTutorSharedUtils/HrenderConfig.h"
+#include "DxrTutorSharedUtils/RenderConfig.h"
 
 void runServer();
 void runClient();

@@ -502,7 +502,7 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
         int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, 0, 0 };
         
-        char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
+        char* visWritingBuffer = NetworkPass::clientWriteBuffer;
         char* toRecvData = NetworkManager::mCompression ? compressionBuffer.get() : visWritingBuffer;
 
         if (firstClientReceive)
@@ -554,9 +554,9 @@ void NetworkManager::ListenClientUdp(bool isFirstClientReceive, bool executeFore
 
         // acquire reading buffer mutex to swap buffers
         std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-        char* tempPtr = NetworkPass::visibilityDataForReadingClient;
-        NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
-        NetworkPass::visibilityDataForWritingClient = tempPtr;
+        char* tempPtr = NetworkPass::clientReadBuffer;
+        NetworkPass::clientReadBuffer = NetworkPass::clientWriteBuffer;
+        NetworkPass::clientWriteBuffer = tempPtr;
         // mutex and lock are released at the end of scope
 
         std::chrono::time_point endOfFrame = std::chrono::system_clock::now();

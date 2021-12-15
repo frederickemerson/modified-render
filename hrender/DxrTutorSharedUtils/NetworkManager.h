@@ -32,7 +32,7 @@
 #include "./UdpCustomPacket.h"
 #include "./Semaphore.h"
 #include "../NetworkPasses/NetworkUtils.h"
-#include "../DxrTutorSharedUtils/HrenderConfig.h"
+#include "../DxrTutorSharedUtils/RenderConfig.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")

@@ -40,8 +40,8 @@ public:
     virtual ~NetworkPass() = default;
 
     // Client - Two buffers for writing and reading at the same time
-    static char* visibilityDataForReadingClient;
-    static char* visibilityDataForWritingClient;
+    static char* clientReadBuffer;
+    static char* clientWriteBuffer;
 
     static std::array<float3, 3> camData;
 

@@ -266,7 +266,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
         int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, clientFrameNum, 0 };
         
-        char* visWritingBuffer = NetworkPass::visibilityDataForWritingClient;
+        char* visWritingBuffer = NetworkPass::clientWriteBuffer;
         char* toRecvData = NetworkManager::mCompression
             ? compressionBuffer.get() + UdpCustomPacket::headerSizeBytes
             : visWritingBuffer;
@@ -342,9 +342,9 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-                char* tempPtr = NetworkPass::visibilityDataForReadingClient;
-                NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
-                NetworkPass::visibilityDataForWritingClient = tempPtr;
+                char* tempPtr = NetworkPass::clientReadBuffer;
+                NetworkPass::clientReadBuffer = NetworkPass::clientWriteBuffer;
+                NetworkPass::clientWriteBuffer = tempPtr;
                 // mutex and lock are released at the end of scope
             }
 

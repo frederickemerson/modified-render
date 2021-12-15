@@ -21,7 +21,7 @@
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include "../NetworkPasses/NetworkPass.h"
 
-#include "../DxrTutorSharedUtils/HrenderConfig.h"
+#include "../DxrTutorSharedUtils/RenderConfig.h"
 
 /**
  * Memory transfer on server side, from GPU to CPU.
