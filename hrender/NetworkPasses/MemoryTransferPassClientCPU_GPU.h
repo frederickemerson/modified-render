@@ -21,6 +21,8 @@
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include "../NetworkPasses/NetworkPass.h"
 
+#include "../DxrTutorSharedUtils/HrenderConfig.h"
+
 /**
  * Memory transfer on client side, from CPU to GPU.
  */

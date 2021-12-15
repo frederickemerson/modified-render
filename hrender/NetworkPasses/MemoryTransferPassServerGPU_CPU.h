@@ -21,6 +21,8 @@
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include "../NetworkPasses/NetworkPass.h"
 
+#include "../DxrTutorSharedUtils/HrenderConfig.h"
+
 /**
  * Memory transfer on server side, from GPU to CPU.
  */
@@ -41,9 +43,6 @@ protected:
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
     void renderGui(Gui::Window* pPassWindow) override;
-
-    // Get the texture data from the GPU into a RAM array
-    std::vector<uint8_t> texData(RenderContext* pRenderContext, Texture::SharedPtr tex);
 
     // Override some functions that provide information to the RenderPipeline class
     bool requiresScene() override { return true; }

@@ -54,6 +54,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mPosIndex = mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    RenderConfig::mConfig[0].resourceIndex = mOutputIndex;
 
     // // Set default environment map and scene
     // mpResManager->updateEnvironmentMap(kEnvironmentMap);

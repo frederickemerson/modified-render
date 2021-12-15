@@ -42,6 +42,8 @@
 #include "NetworkPasses/NetworkServerRecvPass.h"
 #include "NetworkPasses/NetworkServerSendPass.h"
 
+#include "DxrTutorSharedUtils/HrenderConfig.h"
+
 void runServer();
 void runClient();
 void runDebug();
@@ -49,8 +51,8 @@ void runDebug();
 // ========= //
 // PINK ROOM //
 // ========= //
-const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+//std::string defaultSceneName = "pink_room\\pink_room.pyscene";
 
 // ========== //
 // SUN TEMPLE //
@@ -61,9 +63,8 @@ std::string defaultSceneName = "pink_room\\pink_room.pyscene";
 // ======= //
 // BISTRO //
 // ====== //
-//const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
-//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
-//std::string defaultSceneName = "Bistro\\BistroExterior_v4.pyscene";
+const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
+std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
 
 // ======== //
 // ZERO DAY //
@@ -106,7 +107,10 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
  */
 void runDebug()
 {
-    // Define a set of config / window parameters for our program
+    // hrender config
+    RenderConfig::setConfiguration( { RenderConfig::HrenderType::VisibilityBitmap } );
+
+    // Define a set of mConfig / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
@@ -115,7 +119,7 @@ void runDebug()
     RenderingPipeline* pipeline = new RenderingPipeline();
     pipeline->setDefaultSceneName(defaultSceneName);
     pipeline->updateEnvironmentMap(environmentMap);
-
+    
     // --- Pass 1 creates a GBuffer --- //
     pipeline->setPass(0, JitteredGBufferPass::create());
 
@@ -158,7 +162,7 @@ void runDebug()
  */
 void runServer()
 {
-    // Define a set of config / window parameters for our program
+    // Define a set of mConfig / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender UDP Server";
     config.windowDesc.resizableWindow = true;
@@ -213,7 +217,7 @@ void runServer()
  */
 void runClient()
 {
-    // Define a set of config / window parameters for our program
+    // Define a set of mConfig / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender UDP";
     config.windowDesc.resizableWindow = true;

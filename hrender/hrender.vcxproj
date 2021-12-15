@@ -20,6 +20,7 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\HrenderConfig.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\HrenderConfig.h" />
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />

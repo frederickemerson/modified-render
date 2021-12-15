@@ -19,6 +19,7 @@
 #pragma once
 #include "../DxrTutorSharedUtils/RenderPass.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
+#include "../DxrTutorSharedUtils/HrenderConfig.h"
 
 /**
  * Perform ray tracing based on GBuffer content to produce
