@@ -81,7 +81,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== WITHOUT COMPRESSION =========");
-        NetworkManager::mCompression = false;
+        // TO EDIT RENDERCONFIG
     }
 
     if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)

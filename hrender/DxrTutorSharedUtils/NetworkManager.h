@@ -34,6 +34,10 @@
 #include "../NetworkPasses/NetworkUtils.h"
 #include "../DxrTutorSharedUtils/RenderConfig.h"
 
+// for artificial delay
+#include <chrono>
+#include <thread>
+
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
@@ -111,11 +115,6 @@ public:
     static std::mutex mMutexServerVisTexRead;  // For reading from Falcor Buffer
     // Protect the server's camera data
     static std::mutex mMutexServerCamData;
-
-    // Used for compression
-    static bool mCompression;
-    static std::vector<char> wrkmem;
-    static std::vector<unsigned char> compData;
 
     // A place to store packets that arrive out-of-order
     // Map of sequence number to the received packet
