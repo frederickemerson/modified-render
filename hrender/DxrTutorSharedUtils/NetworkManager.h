@@ -164,8 +164,6 @@ public:
                            SOCKET& socketUdp,
                            bool useLongTimeout);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
-    int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
-    int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
 
     // Receive data with UDP custom protocol
     // Returns false if an error was encountered

@@ -132,8 +132,6 @@ void NetworkManager::SendWhenReadyServerUdp(
     int numFramesRendered = 0;
     // Keep track of time
     std::chrono::milliseconds timeOfFirstFrame;
-    // for compression
-    std::unique_ptr<char[]> compressionBuffer = std::make_unique<char[]>(VIS_TEX_LEN);
 
     while (true)
     {
@@ -157,24 +155,7 @@ void NetworkManager::SendWhenReadyServerUdp(
             // We send VIS_TEX_LEN but we need to compress with the actual
             // size to prevent reading outside of the Falcor Buffer
             int visTexSizeActual = texWidth * texHeight * 4;
-            int toSendSize = VIS_TEX_LEN;
-            
-            // if compress
-            if (mCompression)
-            {
-                char buffer[70];
-                sprintf(buffer, "\n\n= Compressing Texture: Original size: %d =========", toSendSize);
-                OutputDebugStringA(buffer);
-                
-                // compress from src: toSendData to dst: NetworkPass::visiblityData
-                toSendSize = CompressTextureLZ4(visTexSizeActual, toSendData, compressionBuffer.get());
-                
-                sprintf(buffer, "\n\n= Compressed Texture: Compressed size: %d =========", toSendSize);
-                OutputDebugStringA(buffer);
-
-                // now we send the compressed data instead
-                toSendData = compressionBuffer.get();
-            }
+            int toSendSize = RenderConfig::mConfig[0].compressedSize;
 
             // Send the visBuffer back to the sender
             // Generate timestamp
@@ -243,13 +224,6 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
     bool firstClientReceive = isFirstReceive;
-
-    // To be used for decompression
-    // 
-    // We allocate extra space for the packet's header as it will allow
-    // RecvTextureUdp to write directly to the buffer without copying
-    std::unique_ptr<char[]> compressionBuffer =
-        std::make_unique<char[]>(VIS_TEX_LEN + UdpCustomPacket::headerSizeBytes);
     
     while (true)
     {
@@ -266,10 +240,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
         int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, clientFrameNum, 0 };
         
-        char* visWritingBuffer = NetworkPass::clientWriteBuffer;
-        char* toRecvData = NetworkManager::mCompression
-            ? compressionBuffer.get() + UdpCustomPacket::headerSizeBytes
-            : visWritingBuffer;
+        char* toRecvData = NetworkPass::clientWriteBuffer;
         int recvStatus;
 
         if (firstClientReceive)
@@ -332,12 +303,6 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
                     rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
             OutputDebugStringA(frameDataMessage);
-                    
-            // if compress
-            if (NetworkManager::mCompression)
-            {
-                DecompressTextureLZ4(visTexLen, visWritingBuffer, rcvdFrameData.frameSize, toRecvData);
-            }
 
             // acquire reading buffer mutex to swap buffers
             {
@@ -345,6 +310,8 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
                 char* tempPtr = NetworkPass::clientReadBuffer;
                 NetworkPass::clientReadBuffer = NetworkPass::clientWriteBuffer;
                 NetworkPass::clientWriteBuffer = tempPtr;
+
+                RenderConfig::mConfig[0].cpuLocation = NetworkPass::clientReadBuffer;
                 // mutex and lock are released at the end of scope
             }
 
@@ -413,20 +380,6 @@ bool NetworkManager::CloseClientConnectionUdp()
     closesocket(mClientUdpSock);
     WSACleanup();
     return true;
-}
-
-int NetworkManager::CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData)
-{
-    // int LZ4_compress_default(const char* src, char* dst, int srcSize, int dstCapacity);
-    int compTexSize = LZ4_compress_default(inTexData, compTexData, inTexSize, inTexSize);
-    return compTexSize;
-}
-
-int NetworkManager::DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData)
-{
-    // int LZ4_decompress_safe (const char* src, char* dst, int compressedSize, int dstCapacity);
-    int outputSize = LZ4_decompress_safe(compTexData, outTexData, compTexSize, outTexSize);
-    return outputSize;
 }
 
 int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp, int timeout)

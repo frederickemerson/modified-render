@@ -31,6 +31,10 @@ void CompressionPass::execute(RenderContext* pRenderContext)
 
             // Update location of buffer
             RenderConfig::mConfig[i].cpuLocation = outputBuffer;
+
+            char buffer[140];
+            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
+            OutputDebugStringA(buffer);
         }
     }
 
