@@ -19,6 +19,7 @@
 #include "NetworkPass.h"
 
 //std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
+char* NetworkPass::visibilityDataForReadingClient = new char[VIS_TEX_LEN];
 char* NetworkPass::visibilityDataForWritingClient = new char[VIS_TEX_LEN];
 std::array<float3, 3> NetworkPass::camData;
 

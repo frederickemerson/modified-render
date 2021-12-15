@@ -342,8 +342,8 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-                char* tempPtr = (char*)RenderConfig::mConfig[0].cpuLocation;
-                RenderConfig::mConfig[0].cpuLocation = NetworkPass::visibilityDataForWritingClient;
+                char* tempPtr = NetworkPass::visibilityDataForReadingClient;
+                NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
                 NetworkPass::visibilityDataForWritingClient = tempPtr;
                 // mutex and lock are released at the end of scope
             }

@@ -51,8 +51,8 @@ void runDebug();
 // ========= //
 // PINK ROOM //
 // ========= //
-//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-//std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+std::string defaultSceneName = "pink_room\\pink_room.pyscene";
 
 // ========== //
 // SUN TEMPLE //
@@ -63,8 +63,8 @@ void runDebug();
 // ======= //
 // BISTRO //
 // ====== //
-const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
-std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
+//const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
+//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
 
 // ======== //
 // ZERO DAY //
@@ -162,6 +162,8 @@ void runDebug()
  */
 void runServer()
 {
+    RenderConfig::setConfiguration({ RenderConfig::HrenderType::VisibilityBitmap });
+
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender UDP Server";
@@ -217,6 +219,8 @@ void runServer()
  */
 void runClient()
 {
+    RenderConfig::setConfiguration({ RenderConfig::HrenderType::VisibilityBitmap });
+
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
     config.windowDesc.title = "NRender UDP";

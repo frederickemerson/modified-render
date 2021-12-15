@@ -39,7 +39,8 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
     virtual ~NetworkPass() = default;
 
-    // Client - One buffer for writing into
+    // Client - Two buffers for writing and reading at the same time
+    static char* visibilityDataForReadingClient;
     static char* visibilityDataForWritingClient;
 
     static std::array<float3, 3> camData;
