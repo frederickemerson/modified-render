@@ -312,6 +312,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
                 NetworkPass::clientWriteBuffer = tempPtr;
 
                 RenderConfig::mConfig[0].cpuLocation = NetworkPass::clientReadBuffer;
+                RenderConfig::mConfig[0].compressedSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }
 
