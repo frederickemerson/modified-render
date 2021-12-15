@@ -101,12 +101,12 @@ bool NetworkManager::ListenServerUdp(bool executeForever, bool useLongTimeout)
         // Receive the camera position from the sender
         OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
         // Mutex will be locked in RecvCameraDataUdp
-        const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
+        //const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
         RecvCameraDataUdp(NetworkPass::camData,
                           NetworkManager::mMutexServerCamData,
                           mServerUdpSock,
                           useLongTimeout);
-        std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
+        //std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
         mSpServerCamPosUpdated.signal();
 
@@ -257,9 +257,9 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
         }
         else
         {
-            const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
+            //const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
             recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
-            std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
+            //std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
 
             
             std::chrono::milliseconds currentTime = getComparisonTimestamp();
