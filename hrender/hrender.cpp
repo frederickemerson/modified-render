@@ -41,7 +41,7 @@
 #include "NetworkPasses/NetworkClientSendPass.h"
 #include "NetworkPasses/NetworkServerRecvPass.h"
 #include "NetworkPasses/NetworkServerSendPass.h"
-
+#include "DxrTutorSharedUtils/CompressionPass.h"
 #include "DxrTutorSharedUtils/RenderConfig.h"
 
 void runServer();
@@ -108,7 +108,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::HrenderType::VisibilityBitmap } );
+    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap } );
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -126,26 +126,32 @@ void runDebug()
     // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPass(1, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
 
-    // --- Pass 4 transfers GPU information into CPU --- //
+    // --- Pass 3 transfers GPU information into CPU --- //
     pipeline->setPass(2, MemoryTransferPassServerGPU_CPU::create());
 
-    // --- Pass 3 transfers CPU information into GPU --- //
-    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create());
+    // --- Pass 4 transfers CPU information into GPU --- //
+    pipeline->setPass(3, CompressionPass::create(CompressionPass::Mode::Compression));
 
-    // --- Pass 3 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
-    pipeline->setPassOptions(4, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
+    // --- Pass 5 transfers CPU information into GPU --- //
+    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Decompression));
 
-    // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(5, CopyToOutputPass::create());
+    // --- Pass 6 transfers CPU information into GPU --- //
+    pipeline->setPass(5, MemoryTransferPassClientCPU_GPU::create());
 
-    // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 7 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
+    pipeline->setPassOptions(6, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
+
+    // --- Pass 8 just lets us select which pass to view on screen --- //
+    pipeline->setPass(7, CopyToOutputPass::create());
+
+    // --- Pass 9 temporally accumulates frames for denoising --- //
+    pipeline->setPass(8, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1 })
         });
 
@@ -162,7 +168,7 @@ void runDebug()
  */
 void runServer()
 {
-    RenderConfig::setConfiguration({ RenderConfig::HrenderType::VisibilityBitmap });
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -219,7 +225,7 @@ void runServer()
  */
 void runClient()
 {
-    RenderConfig::setConfiguration({ RenderConfig::HrenderType::VisibilityBitmap });
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;

@@ -7,22 +7,27 @@
 
 class RenderConfig {
 public:
-    enum class HrenderType {
+    enum class BufferType {
         VisibilityBitmap
     };
 
     struct Config {
-        HrenderType type;
+        BufferType type;
         std::string name; // name in ResourceManager
         int resourceIndex; // index in ResourceManager
         void* cpuLocation;
+        int compressedSize;
     };
 
-    static void setConfiguration(std::vector<HrenderType> orderedTypes);
-    static void* loc;
+    static void setConfiguration(std::vector<BufferType> orderedTypes);
+    static std::string print();
+    static int getTotalSize();
+    static int BufferTypeToSize(RenderConfig::BufferType htype);
+
     static std::vector<Config> getConfig();
     static std::vector<Config> mConfig;
-    static std::string print();
+
 protected:
-    static std::string hrenderTypeToString(HrenderType htype);
+    static int totalSize;
+    static std::string BufferTypeToString(BufferType htype);
 };

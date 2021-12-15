@@ -80,7 +80,7 @@
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
       <Filter>SharedUtils\Network</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
+    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
   </ItemGroup>
@@ -165,7 +165,7 @@
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
       <Filter>SharedUtils\Network</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\Compression.h">
+    <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h">
       <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
   </ItemGroup>

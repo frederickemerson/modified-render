@@ -17,16 +17,8 @@
 **********************************************************************************************************************/
 
 #include "VisibilityPass.h"
-#include "lz4.h"
-#include <chrono>
-#include <iostream>
-#include "NetworkPass.h"
 
-using namespace std::chrono;
 using namespace std;
-
-// for nvcomp compression
-//#include "compression.h"
 
 namespace {
     // // Where is our environment map and scene located?

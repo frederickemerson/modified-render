@@ -1,20 +1,24 @@
 #include "RenderConfig.h"
 
+#define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
 
-std::vector<RenderConfig::Config> RenderConfig::mConfig(2);
-void* RenderConfig::loc = 0;
+std::vector<RenderConfig::Config> RenderConfig::mConfig(1);
+int RenderConfig::totalSize = 0;
 
-void RenderConfig::setConfiguration(std::vector<HrenderType> orderedTypes) {
+void RenderConfig::setConfiguration(std::vector<BufferType> orderedTypes) {
     // reset current configuration
     mConfig.clear();
 
     // add each configuration
-    for (const auto& hrenderType : orderedTypes) {
+    for (const auto& bufferType : orderedTypes) {
         // get corresponding string name
-        std::string name = RenderConfig::hrenderTypeToString(hrenderType);
+        std::string bufferName = BufferTypeToString(bufferType);
+        int bufferSize = BufferTypeToSize(bufferType);
 
-        Config config = { hrenderType, name, -1, nullptr };
+        Config config = { bufferType, bufferName, -1, nullptr, bufferSize };
         mConfig.emplace_back(config);
+
+        totalSize += bufferSize;
     }
 }
 
@@ -22,13 +26,20 @@ std::vector<RenderConfig::Config> RenderConfig::getConfig() {
     return RenderConfig::mConfig;
 }
 
-std::string RenderConfig::hrenderTypeToString(RenderConfig::HrenderType htype) {
+std::string RenderConfig::BufferTypeToString(RenderConfig::BufferType htype) {
     switch (htype) {
-
-    case HrenderType::VisibilityBitmap: return "Visibility Bitmap";
-
-    default: return "";
+    case BufferType::VisibilityBitmap: return "Visibility Bitmap";
     }
+
+    return "";
+}
+
+int RenderConfig::BufferTypeToSize(RenderConfig::BufferType htype) {
+    switch (htype) {
+    case BufferType::VisibilityBitmap: return VIS_TEX_LEN;
+    }
+
+    return 0;
 }
 
 std::string RenderConfig::print() {
@@ -41,4 +52,8 @@ std::string RenderConfig::print() {
             + std::to_string((uintptr_t)RenderConfig::mConfig[i].cpuLocation) + "}";
     }
     return out;
+}
+
+int RenderConfig::getTotalSize() {
+    return RenderConfig::totalSize;
 }

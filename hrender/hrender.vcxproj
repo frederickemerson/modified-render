@@ -19,7 +19,7 @@
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
@@ -49,7 +49,7 @@
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
-    <ClInclude Include="DxrTutorSharedUtils\Compression.h" />
+    <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
