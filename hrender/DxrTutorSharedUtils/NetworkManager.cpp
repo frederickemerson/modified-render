@@ -150,7 +150,7 @@ void NetworkManager::SendWhenReadyServerUdp(
             std::lock_guard lock(mMutexServerVisTexRead);
             char* toSendData = (char*)RenderConfig::mConfig[0].cpuLocation;
 
-            // The size of the actual Buffer (pointed to by pVisibilityDataServer)
+            // The size of the actual Buffer
             // that is given by Falcor is less then VIS_TEX_LEN
             // 
             // The actual size is the screen width and height * 4
@@ -342,8 +342,8 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-                char* tempPtr = NetworkPass::visibilityDataForReadingClient;
-                NetworkPass::visibilityDataForReadingClient = NetworkPass::visibilityDataForWritingClient;
+                char* tempPtr = (char*)RenderConfig::mConfig[0].cpuLocation;
+                RenderConfig::mConfig[0].cpuLocation = NetworkPass::visibilityDataForWritingClient;
                 NetworkPass::visibilityDataForWritingClient = tempPtr;
                 // mutex and lock are released at the end of scope
             }
