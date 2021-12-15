@@ -129,10 +129,10 @@ void runDebug()
     // --- Pass 3 transfers GPU information into CPU --- //
     pipeline->setPass(2, MemoryTransferPassServerGPU_CPU::create());
 
-    // --- Pass 4 transfers CPU information into GPU --- //
+    // --- Pass 4 compresses buffers to be sent across Network --- //
     pipeline->setPass(3, CompressionPass::create(CompressionPass::Mode::Compression));
 
-    // --- Pass 5 transfers CPU information into GPU --- //
+    // --- Pass 5 decompresses buffers sent across Network--- //
     pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Decompression));
 
     // --- Pass 6 transfers CPU information into GPU --- //
@@ -202,14 +202,17 @@ void runServer()
     // --- Pass 4 transfers GPU information into CPU --- //
     pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
 
-    // --- Pass 5 Send visibility bitmap back to client --- //
-    pipeline->setPass(4, NetworkServerSendPass::create(texWidth, texHeight));
+    // --- Pass 5 compresses buffers to be sent across Network --- //
+    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression));
+
+    // --- Pass 6 Send visibility bitmap back to client --- //
+    pipeline->setPass(5, NetworkServerSendPass::create(texWidth, texHeight));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
         });
 
     // Start our program
@@ -245,26 +248,29 @@ void runClient()
     // --- Pass 2 receive visibility bitmap from server --- //
     pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
 
+    // --- Pass 3 decompresses buffers sent across Network--- //
+    pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression));
+
     // --- Pass 3 transfers CPU information into GPU --- //
-    pipeline->setPass(2, MemoryTransferPassClientCPU_GPU::create());
+    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create());
 
     // --- Pass 4 makes use of the visibility bitmap to shade the scene --- //
-    pipeline->setPass(3, VShadingPass::create("V-shading"));
+    pipeline->setPass(4, VShadingPass::create("V-shading"));
 
     // --- Pass 5 just lets us select which pass to view on screen --- //
-    pipeline->setPass(4, CopyToOutputPass::create());
+    pipeline->setPass(5, CopyToOutputPass::create());
 
     // --- Pass 6 temporally accumulates frames for denoising --- //
-    pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // --- Pass 7 creates a GBuffer on client side--- //
-    pipeline->setPass(6, JitteredGBufferPass::create()); // Rasterized GBuffer
+    pipeline->setPass(7, JitteredGBufferPass::create()); // Rasterized GBuffer
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 })
     });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
