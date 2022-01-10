@@ -27,6 +27,9 @@ void CompressionPass::execute(RenderContext* pRenderContext)
 
                 // Compress buffer
                 int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
+                if (compressedSize < 0) {
+                    OutputDebugString(L"\nError: Compression failed\n");
+                }
 
                 // Update size of compressed buffer
                 RenderConfig::mConfig[i].compressedSize = compressedSize;
@@ -55,6 +58,9 @@ void CompressionPass::execute(RenderContext* pRenderContext)
 
                 // Decompress buffer
                 int decompressedSize = LZ4_decompress_safe(sourceBuffer, outputBuffer, sourceBufferSize, maxDecompressedSize);
+                if (decompressedSize < 0) {
+                    OutputDebugString(L"\nError: Decompression failed\n");
+                }
 
                 // Update size of decompressed buffer
                 RenderConfig::mConfig[i].compressedSize = decompressedSize;
