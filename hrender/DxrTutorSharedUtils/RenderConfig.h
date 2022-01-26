@@ -15,7 +15,8 @@ public:
         BufferType type;
         std::string name; // name in ResourceManager
         int resourceIndex; // index in ResourceManager
-        void* cpuLocation;
+        void* networkPassOutputLocation;
+        void* compressionPassOutputLocation;
         int compressedSize;
     };
 

@@ -144,7 +144,7 @@ void NetworkManager::SendWhenReadyServerUdp(
 
         {
             std::lock_guard lock(mMutexServerVisTexRead);
-            char* toSendData = (char*)RenderConfig::mConfig[0].cpuLocation;
+            char* toSendData = (char*)RenderConfig::mConfig[0].networkPassOutputLocation;
 
             // The size of the actual Buffer
             // that is given by Falcor is less then VIS_TEX_LEN
@@ -312,7 +312,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
                 NetworkPass::clientReadBuffer = NetworkPass::clientWriteBuffer;
                 NetworkPass::clientWriteBuffer = tempPtr;
 
-                RenderConfig::mConfig[0].cpuLocation = NetworkPass::clientReadBuffer;
+                RenderConfig::mConfig[0].networkPassOutputLocation = NetworkPass::clientReadBuffer;
                 RenderConfig::mConfig[0].compressedSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }

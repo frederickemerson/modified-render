@@ -56,7 +56,7 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
         // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
         uint8_t* newBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
         std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
-        RenderConfig::mConfig[i].cpuLocation = newBuffer;
+        RenderConfig::mConfig[i].networkPassOutputLocation = newBuffer;
     }
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }

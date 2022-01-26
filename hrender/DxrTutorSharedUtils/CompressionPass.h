@@ -2,6 +2,12 @@
 
 #include "lz4.h"
 #include "../DxrTutorSharedUtils/RenderPass.h"
+#include "Interface/nvcuvid.h"
+#include "Interface/cuviddec.h"
+#include "Interface/nvEncodeAPI.h"
+#include "Samples/NvCodec/NvEncoder/NvEncoderD3D11.h"
+#include "Samples/NvCodec/NvDecoder/NvDecoder.h"
+#include "cuda.h"
 
 /**
  * Transfer data from server to client or client to server
@@ -44,4 +50,9 @@ protected:
     void renderGui(Gui::Window* pPassWindow) override;
 
     Mode                                    mMode;                     ///< Whether this pass runs as compression or decompression
+
+    CUdevice* cuDevice = NULL;
+    CUcontext* cuContext = NULL;
+    CUvideodecoder m_hDecoder;
+    //CUvideoencoder m_hEncoder;
 };

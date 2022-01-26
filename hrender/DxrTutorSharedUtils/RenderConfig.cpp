@@ -15,7 +15,7 @@ void RenderConfig::setConfiguration(std::vector<BufferType> orderedTypes) {
         std::string bufferName = BufferTypeToString(bufferType);
         int bufferSize = BufferTypeToSize(bufferType);
 
-        Config config = { bufferType, bufferName, -1, nullptr, bufferSize };
+        Config config = { bufferType, bufferName, -1, nullptr, nullptr, bufferSize };
         mConfig.emplace_back(config);
 
         totalSize += bufferSize;
@@ -49,7 +49,7 @@ std::string RenderConfig::print() {
         out += "\n{" + std::to_string(i) + ": " 
             + RenderConfig::mConfig[i].name + ", "
             + std::to_string(RenderConfig::mConfig[i].resourceIndex) + ", "
-            + std::to_string((uintptr_t)RenderConfig::mConfig[i].cpuLocation) + "}";
+            + std::to_string((uintptr_t)RenderConfig::mConfig[i].networkPassOutputLocation) + "}";
     }
     return out;
 }
