@@ -51,8 +51,8 @@ protected:
 
     Mode                                    mMode;                     ///< Whether this pass runs as compression or decompression
 
-    CUdevice* cuDevice = NULL;
-    CUcontext* cuContext = NULL;
-    CUvideodecoder m_hDecoder;
+    //CUdevice* cuDevice = NULL;
+    //CUcontext* cuContext = NULL;
+    //CUvideodecoder m_hDecoder;
     //CUvideoencoder m_hEncoder;
 };
