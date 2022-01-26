@@ -1,29 +1,29 @@
 #include "CompressionPass.h"
 //#include "cuda_runtime_api.h"
 
-#define CU_CHECK_SUCCESS(x)                                                         \
-    do {                                                                            \
-        CUresult result = x;                                                        \
-        if (result != CUDA_SUCCESS)                                                 \
-        {                                                                           \
-            const char* msg;                                                        \
-            cuGetErrorName(result, &msg);                                           \
-            char errorMessage[80];                                                          \
-            sprintf(errorMessage, "\n\n= CUDA Error: %d failed\n", x); \
-            OutputDebugStringA(errorMessage);\
-            return 0;                                                               \
-        }                                                                           \
-    } while(0)
-
-#define CUDA_CHECK_SUCCESS(x)                                                                            \
-    do {                                                                                                 \
-        cudaError_t result = x;                                                                          \
-        if (result != cudaSuccess)                                                                       \
-        {                                                                                                \
-            logError("CUDA Error: " #x " failed with error " + std::string(cudaGetErrorString(result))); \
-            return 0;                                                                                    \
-        }                                                                                                \
-    } while(0)
+//#define CU_CHECK_SUCCESS(x)                                                         \
+//    do {                                                                            \
+//        CUresult result = x;                                                        \
+//        if (result != CUDA_SUCCESS)                                                 \
+//        {                                                                           \
+//            const char* msg;                                                        \
+//            cuGetErrorName(result, &msg);                                           \
+//            char errorMessage[80];                                                          \
+//            sprintf(errorMessage, "\n\n= CUDA Error: %d failed\n", x); \
+//            OutputDebugStringA(errorMessage);\
+//            return 0;                                                               \
+//        }                                                                           \
+//    } while(0)
+//
+//#define CUDA_CHECK_SUCCESS(x)                                                                            \
+//    do {                                                                                                 \
+//        cudaError_t result = x;                                                                          \
+//        if (result != cudaSuccess)                                                                       \
+//        {                                                                                                \
+//            logError("CUDA Error: " #x " failed with error " + std::string(cudaGetErrorString(result))); \
+//            return 0;                                                                                    \
+//        }                                                                                                \
+//    } while(0)
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {

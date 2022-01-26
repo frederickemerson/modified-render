@@ -32,8 +32,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCompare", "Source\Tool
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rrender", "..\rrender\rrender.vcxproj", "{A601D9D6-5595-4C64-8EA0-EC1B6570A064}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaInterop", "Source\Samples\CudaInterop\CudaInterop.vcxproj", "{08E3FADA-4AAC-442A-9F84-22F95934A914}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -98,14 +96,6 @@ Global
 		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.Release|x64.Build.0 = Release|x64
 		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.ReleaseD3D12|x64.ActiveCfg = Release|x64
 		{A601D9D6-5595-4C64-8EA0-EC1B6570A064}.ReleaseD3D12|x64.Build.0 = Release|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.Debug|x64.ActiveCfg = Debug|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.Debug|x64.Build.0 = Debug|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.DebugD3D12|x64.ActiveCfg = Debug|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.DebugD3D12|x64.Build.0 = Debug|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.Release|x64.ActiveCfg = Release|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.Release|x64.Build.0 = Release|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.ReleaseD3D12|x64.ActiveCfg = Release|x64
-		{08E3FADA-4AAC-442A-9F84-22F95934A914}.ReleaseD3D12|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

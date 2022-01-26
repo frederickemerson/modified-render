@@ -2,12 +2,12 @@
 
 #include "lz4.h"
 #include "../DxrTutorSharedUtils/RenderPass.h"
-#include "Interface/nvcuvid.h"
-#include "Interface/cuviddec.h"
-#include "Interface/nvEncodeAPI.h"
-#include "Samples/NvCodec/NvEncoder/NvEncoderD3D11.h"
-#include "Samples/NvCodec/NvDecoder/NvDecoder.h"
-#include "cuda.h"
+//#include "Interface/nvcuvid.h"
+//#include "Interface/cuviddec.h"
+//#include "Interface/nvEncodeAPI.h"
+//#include "Samples/NvCodec/NvEncoder/NvEncoderD3D11.h"
+//#include "Samples/NvCodec/NvDecoder/NvDecoder.h"
+//#include "cuda.h"
 
 /**
  * Transfer data from server to client or client to server
