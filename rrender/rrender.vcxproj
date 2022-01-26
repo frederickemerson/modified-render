@@ -103,7 +103,7 @@
     <ProjectGuid>{A601D9D6-5595-4C64-8EA0-EC1B6570A064}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>rrender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
