@@ -21,6 +21,7 @@
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp" />
+    <ClCompile Include="NetworkPasses\NetworkClientRecvWaitingPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
@@ -51,6 +53,7 @@
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
+    <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
     <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
@@ -65,6 +68,7 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h" />
+    <ClInclude Include="NetworkPasses\NetworkClientRecvWaitingPass.h" />
     <ClInclude Include="NetworkPasses\NetworkClientSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />
@@ -78,6 +82,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
       <Project>{2c535635-e4c5-4098-a928-574f0e7cd5f9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppDecode\AppDec\AppDec.vcxproj">
+      <Project>{9cfc513b-7cda-341d-bc8b-ec936511b21a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj">
+      <Project>{d28abd7e-c036-37bd-867b-cd36b013e741}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -151,7 +161,9 @@
     <ShaderSourceSubDir>Shaders\Samples\$(ProjectName)</ShaderSourceSubDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.props" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -176,8 +188,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -248,5 +260,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.2.targets" />
+  </ImportGroup>
 </Project>

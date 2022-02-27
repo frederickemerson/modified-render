@@ -17,7 +17,9 @@ public:
         int resourceIndex; // index in ResourceManager
         void* networkPassOutputLocation;
         void* compressionPassOutputLocation;
+        void* compressionPassOutputLocation2;
         int compressedSize;
+        int compressedSize2;
     };
 
     static void setConfiguration(std::vector<BufferType> orderedTypes);

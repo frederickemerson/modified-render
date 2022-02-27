@@ -103,6 +103,8 @@ public:
     // Client's side
     // Synchronise client sending thread with the rendering
     static Semaphore mSpClientCamPosReadyToSend;
+    // signal for new texture received, only for sequential waiting recv network pass
+    static Semaphore mSpClientNewTexRecv;
     // Protect the client visibility textures with mutexes
     static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
 

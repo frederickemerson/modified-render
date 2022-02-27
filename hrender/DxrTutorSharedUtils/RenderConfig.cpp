@@ -15,7 +15,7 @@ void RenderConfig::setConfiguration(std::vector<BufferType> orderedTypes) {
         std::string bufferName = BufferTypeToString(bufferType);
         int bufferSize = BufferTypeToSize(bufferType);
 
-        Config config = { bufferType, bufferName, -1, nullptr, nullptr, bufferSize };
+        Config config = { bufferType, bufferName, -1, nullptr, nullptr, nullptr, bufferSize, 0 };
         mConfig.emplace_back(config);
 
         totalSize += bufferSize;

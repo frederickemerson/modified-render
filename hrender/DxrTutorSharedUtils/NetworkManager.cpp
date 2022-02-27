@@ -7,6 +7,7 @@
 
 // UDP Client
 Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
+Semaphore NetworkManager::mSpClientNewTexRecv(false);
 std::mutex NetworkManager::mMutexClientVisTexRead;
 
 // UDP Server
@@ -316,6 +317,9 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
                 RenderConfig::mConfig[0].compressedSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }
+
+            // signal new texture received, only for sequential waiting network recv pass
+            mSpClientNewTexRecv.signal();
 
             std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
             std::chrono::duration<double> diff = endOfFrame - startOfFrame;
