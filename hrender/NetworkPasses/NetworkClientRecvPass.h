@@ -14,16 +14,12 @@ public:
 protected:
 	NetworkClientRecvPass(int texWidth, int texHeight) 
 		: NetworkPass(texWidth, texHeight, "Network Client Recv Pass", "Network Client Recv Pass Options") {
-		cam = mpScene->getCamera();
 	}
 
 	void execute(RenderContext* pRenderContext) override;
 	void renderGui(Gui::Window* pPassWindow) override;
 	void checkMotionVector();
 	void checkNetworkPing();
-
-	//camera
-	Camera::SharedPtr cam;
 
 	bool sequential = false;
 	int remainInSequential = 0;

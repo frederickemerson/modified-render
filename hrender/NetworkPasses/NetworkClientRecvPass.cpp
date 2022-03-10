@@ -51,6 +51,7 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
 }
 
 inline void NetworkClientRecvPass::checkMotionVector() {
+    Camera::SharedPtr cam = mpScene->getCamera();
     const CameraData& cameraData = cam->getData();
 
     float dif = 0;
