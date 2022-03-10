@@ -1,5 +1,5 @@
 #include "NetworkClientRecvPass.h"
-
+#include <cmath>
 
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
@@ -38,7 +38,18 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     auto cam = mpScene->getCamera();
     const CameraData& cameraData = cam->getData();
 
+    float dif = 0;
     // store cameraU, V, W specifically for GBuffer rendering later
+    dif += std::abs(cameraData.cameraU.x - cameraUX);
+    dif += std::abs(cameraData.cameraU.y - cameraUY);
+    dif += std::abs(cameraData.cameraU.z - cameraUZ);
+    dif += std::abs(cameraData.cameraV.x - cameraVX);
+    dif += std::abs(cameraData.cameraV.y - cameraVY);
+    dif += std::abs(cameraData.cameraV.z - cameraVZ);
+    dif += std::abs(cameraData.cameraW.x - cameraWX);
+    dif += std::abs(cameraData.cameraW.y - cameraWY);
+    dif += std::abs(cameraData.cameraW.z - cameraWZ);
+
     cameraUX = cameraData.cameraU.x;
     cameraUY = cameraData.cameraU.y;
     cameraUZ = cameraData.cameraU.z;
@@ -49,15 +60,7 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     cameraWY = cameraData.cameraW.y;
     cameraWZ = cameraData.cameraW.z;
 
-    pPassWindow->text((std::string("U.x: ") + std::to_string(cameraData.cameraU.x)).c_str());
-    pPassWindow->text((std::string("U.y: ") + std::to_string(cameraData.cameraU.y)).c_str());
-    pPassWindow->text((std::string("U.z: ") + std::to_string(cameraData.cameraU.z)).c_str());
-    pPassWindow->text((std::string("V.x: ") + std::to_string(cameraData.cameraV.x)).c_str());
-    pPassWindow->text((std::string("V.y: ") + std::to_string(cameraData.cameraV.y)).c_str());
-    pPassWindow->text((std::string("V.z: ") + std::to_string(cameraData.cameraV.z)).c_str());    
-    pPassWindow->text((std::string("W.x: ") + std::to_string(cameraData.cameraW.x)).c_str());
-    pPassWindow->text((std::string("W.y: ") + std::to_string(cameraData.cameraW.y)).c_str());
-    pPassWindow->text((std::string("W.z: ") + std::to_string(cameraData.cameraW.z)).c_str());
+    pPassWindow->text((std::string("total camera movement: ") + std::to_string(dif)).c_str());
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
