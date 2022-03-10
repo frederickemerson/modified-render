@@ -168,15 +168,6 @@ RenderingPipeline* CreatePipeline(RenderConfiguration renderConfiguration) {
         }
     }
 
-    // ============================ //
-    // Set presets for the pipeline //
-    // ============================ //
-    pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1 })
-        });
-
     return pipeline;
 }
 
@@ -223,6 +214,15 @@ void runDebug()
 
     RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
 
+    // ============================ //
+// Set presets for the pipeline //
+// ============================ //
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1 })
+        });
+
     // Start our program
     RenderingPipeline::run(pipeline, config);
 }
@@ -255,27 +255,43 @@ void runServer()
 
     // Create our rendering pipeline
 
-    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
-    pipeline->setDefaultSceneName(defaultSceneNames[0]);
-    pipeline->updateEnvironmentMap(environmentMaps[0]);
+    //RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
+    //pipeline->setDefaultSceneName(defaultSceneNames[0]);
+    //pipeline->updateEnvironmentMap(environmentMaps[0]);
 
-    // --- RenderConfigPass 1 Receive camera data from client --- //
-    pipeline->setPass(0, NetworkServerRecvPass::create(texWidth, texHeight));
+    //// --- RenderConfigPass 1 Receive camera data from client --- //
+    //pipeline->setPass(0, NetworkServerRecvPass::create(texWidth, texHeight));
 
-    // --- RenderConfigPass 2 creates a GBuffer on server side--- //
-    pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
+    //// --- RenderConfigPass 2 creates a GBuffer on server side--- //
+    //pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
 
-    // --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
-    pipeline->setPass(2, VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)); // Lambertian BRDF for local lighting, 1 shadow ray per light
+    //// --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
+    //pipeline->setPass(2, VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)); // Lambertian BRDF for local lighting, 1 shadow ray per light
 
-    // --- RenderConfigPass 4 transfers GPU information into CPU --- //
-    pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
+    //// --- RenderConfigPass 4 transfers GPU information into CPU --- //
+    //pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
 
-    // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
-    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression, nullptr, nullptr));
+    //// --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
+    //pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression, nullptr, nullptr));
 
-    // --- RenderConfigPass 6 Send visibility bitmap back to client --- //
-    pipeline->setPass(5, NetworkServerSendPass::create(texWidth, texHeight));
+    //// --- RenderConfigPass 6 Send visibility bitmap back to client --- //
+    //pipeline->setPass(5, NetworkServerSendPass::create(texWidth, texHeight));
+
+    RenderConfiguration renderConfiguration = {
+    1920, 1080, // texWidth and texHeight
+    0, // sceneIndex
+    6,
+    { // Array of RenderConfigPass
+            NetworkServerRecvPass, 
+            JitteredGBufferPass,
+            VisibilityPass,
+            MemoryTransferPassGPU_CPU,
+            CompressionPass,
+            NetworkServerSendPass
+     }
+    };
+
+    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
 
     // ============================ //
     // Set presets for the pipeline //
@@ -304,36 +320,54 @@ void runClient()
     config.windowDesc.title = "NRender UDP";
     config.windowDesc.resizableWindow = true;
 
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
-    pipeline->setDefaultSceneName(defaultSceneNames[0]);
-    pipeline->updateEnvironmentMap(environmentMaps[0]);
+    //// Create our rendering pipeline
+    //RenderingPipeline* pipeline = new RenderingPipeline();
+    //pipeline->setDefaultSceneName(defaultSceneNames[0]);
+    //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
     ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
-    // --- RenderConfigPass 1 Send camera data to server--- //
-    pipeline->setPass(0, NetworkClientSendPass::create(-1, -1));
+    //// --- RenderConfigPass 1 Send camera data to server--- //
+    //pipeline->setPass(0, NetworkClientSendPass::create(-1, -1));
 
-    // --- RenderConfigPass 2 receive visibility bitmap from server --- //
-    pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
+    //// --- RenderConfigPass 2 receive visibility bitmap from server --- //
+    //pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
 
-    // --- RenderConfigPass 3 decompresses buffers sent across Network--- //
-    pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression, nullptr, nullptr));
+    //// --- RenderConfigPass 3 decompresses buffers sent across Network--- //
+    //pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression, nullptr, nullptr));
 
-    // --- RenderConfigPass 3 transfers CPU information into GPU --- //
-    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create(nullptr));
+    //// --- RenderConfigPass 3 transfers CPU information into GPU --- //
+    //pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create(nullptr));
 
-    // --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
-    pipeline->setPass(4, VShadingPass::create("V-shading"));
+    //// --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
+    //pipeline->setPass(4, VShadingPass::create("V-shading"));
 
-    // --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
-    pipeline->setPass(5, CopyToOutputPass::create());
+    //// --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
+    //pipeline->setPass(5, CopyToOutputPass::create());
 
-    // --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
-    pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    //// --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
+    //pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
-    // --- RenderConfigPass 7 creates a GBuffer on client side--- //
-    pipeline->setPass(7, JitteredGBufferPass::create()); // Rasterized GBuffer
+    //// --- RenderConfigPass 7 creates a GBuffer on client side--- //
+    //pipeline->setPass(7, JitteredGBufferPass::create()); // Rasterized GBuffer
+
+    RenderConfiguration renderConfiguration = {
+        1920, 1080, // texWidth and texHeight
+        0, // sceneIndex
+        8,
+        { // Array of RenderConfigPass
+                NetworkClientSendPass,
+                NetworkClientRecvPass,
+                DecompressionPass,
+                MemoryTransferPassCPU_GPU,
+                VShadingPass,
+                CopyToOutputPass,
+                SimpleAccumulationPass,
+                JitteredGBufferPass
+         }
+    };
+
+    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
 
     // ============================ //
     // Set presets for the pipeline //
