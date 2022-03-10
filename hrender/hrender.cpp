@@ -108,10 +108,10 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 
     for (int i = 0; i < renderConfiguration.numPasses; i++) {
         if (renderConfiguration.passOrder[i] == JitteredGBufferPass) {
-            pipeline->setPass(i, JitteredGBufferPass::create());
+            pipeline->setPass(i, JitteredGBufferPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
         } 
         else if (renderConfiguration.passOrder[i] == VisibilityPass) {
-            pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
+            pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == MemoryTransferPassGPU_CPU) {
             auto pass = MemoryTransferPassServerGPU_CPU::create();
@@ -133,13 +133,13 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             inputBufferArgument = std::bind(&CompressionPass::getOutputBuffer, pass.get());
         }
         else if (renderConfiguration.passOrder[i] == NetworkClientRecvPass) {
-            pipeline->setPass(i, NetworkClientRecvPass::create(-1, -1));
+            pipeline->setPass(i, NetworkClientRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
             inputBufferArgument = std::bind(&NetworkManager::getOutputBuffer, ResourceManager::mNetworkManager.get());
             inputBufferSizeArgument = std::bind(&NetworkManager::getOutputBufferSize, ResourceManager::mNetworkManager.get());
         }
 
         else if (renderConfiguration.passOrder[i] == NetworkClientSendPass) {
-            pipeline->setPass(i, NetworkClientSendPass::create(-1, -1));
+            pipeline->setPass(i, NetworkClientSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == NetworkServerRecvPass) {
             pipeline->setPass(i, NetworkServerRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
@@ -180,9 +180,6 @@ void runDebug()
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
 
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
-
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
@@ -210,6 +207,9 @@ void runDebug()
             RenderConfigPass::SimpleAccumulationPass
          }
     };
+
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(renderConfiguration.texWidth, renderConfiguration.texHeight));
 
     CreatePipeline(renderConfiguration, pipeline);
 
@@ -248,12 +248,12 @@ void runServer()
     int texWidth, texHeight;
 
     ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-
+   
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 
     // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
 
     //RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
@@ -321,7 +321,7 @@ void runClient()
     config.windowDesc.resizableWindow = true;
 
     // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(1920, 1080));
 
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
