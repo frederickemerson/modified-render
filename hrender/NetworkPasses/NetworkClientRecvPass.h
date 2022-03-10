@@ -16,7 +16,21 @@ protected:
 		: NetworkPass(texWidth, texHeight, "Network Client Recv Pass", "Network Client Recv Pass Options") {}
 
 	void execute(RenderContext* pRenderContext) override;
-	
-protected:
+	void renderGui(Gui::Window* pPassWindow) override;
+	void checkMotionVector();
+	void checkNetworkPing();
+
+	bool sequential = false;
 	bool                                    firstClientReceive = true; // Use a longer timeout for first client receive
+
+	// camera data
+	float cameraUX = 0;
+	float cameraUY = 0;
+	float cameraUZ = 0;
+	float cameraVX = 0;
+	float cameraVY = 0;
+	float cameraVZ = 0;
+	float cameraWX = 0;
+	float cameraWY = 0;
+	float cameraWZ = 0;
 };
