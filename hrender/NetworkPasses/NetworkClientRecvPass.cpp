@@ -20,22 +20,37 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     }
     else if (sequential) {
         NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+        remainInSequential--;
+        if (remainInSequential <= 0) { checkMotionVector(); }
         pNetworkManager->mSpClientNewTexRecv.wait();
     }
-    // decide if we are switching to or out of sequential
-    checkMotionVector();
-    checkNetworkPing();
+    else {
+        // decide if we are switching into sequential
+        checkMotionVector();
+        checkNetworkPing();
+    }
 }
 
 void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
 {
     // Window is marked dirty if any of the configuration is changed.
-    int dirty = 0;
+    //int dirty = 0;
 
     // Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
-    pPassWindow->text("Sequential:   " + sequential ? "Yes" : "No");
+    if (sequential) {
+        pPassWindow->text("Sequential: Yes");
+    }
+    else {
+        pPassWindow->text("Sequential: No");
+    }
 
-    auto cam = mpScene->getCamera();
+    //pPassWindow->text((std::string("total camera movement: ") + std::to_string(dif)).c_str());
+
+    // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
+    //if (dirty) setRefreshFlag();
+}
+
+inline void NetworkClientRecvPass::checkMotionVector() {
     const CameraData& cameraData = cam->getData();
 
     float dif = 0;
@@ -60,14 +75,16 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     cameraWY = cameraData.cameraW.y;
     cameraWZ = cameraData.cameraW.z;
 
-    pPassWindow->text((std::string("total camera movement: ") + std::to_string(dif)).c_str());
-
-    // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
-    if (dirty) setRefreshFlag();
-}
-
-inline void NetworkClientRecvPass::checkMotionVector() {
-    
+    if (dif > 1000) {
+        sequential = true;
+        remainInSequential = 20;
+    }
+    else if (sequential && dif > 300) {
+        remainInSequential = 20;
+    }
+    else if (sequential && dif < 50) {
+        sequential = false;
+    }
 }
 
 inline void NetworkClientRecvPass::checkNetworkPing() {
