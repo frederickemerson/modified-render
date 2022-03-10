@@ -94,9 +94,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     return 0;
 }
 
-RenderingPipeline* CreatePipeline(RenderConfiguration renderConfiguration) {
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
+void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* pipeline) {
     pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
     pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
 
@@ -167,8 +165,6 @@ RenderingPipeline* CreatePipeline(RenderConfiguration renderConfiguration) {
             inputBufferSizeArgument = std::bind(&SimulateDelayPass::getOutputBufferSize, pass.get());
         }
     }
-
-    return pipeline;
 }
 
 /**
@@ -183,6 +179,9 @@ void runDebug()
     SampleConfig config;
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
+
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
@@ -212,7 +211,7 @@ void runDebug()
          }
     };
 
-    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
+    CreatePipeline(renderConfiguration, pipeline);
 
     // ============================ //
 // Set presets for the pipeline //
@@ -254,6 +253,7 @@ void runServer()
     config.windowDesc.width = texWidth;
 
     // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
 
     //RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
@@ -291,7 +291,7 @@ void runServer()
      }
     };
 
-    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
+    CreatePipeline(renderConfiguration, pipeline);
 
     // ============================ //
     // Set presets for the pipeline //
@@ -320,36 +320,22 @@ void runClient()
     config.windowDesc.title = "NRender UDP";
     config.windowDesc.resizableWindow = true;
 
-    //// Create our rendering pipeline
-    //RenderingPipeline* pipeline = new RenderingPipeline();
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
+
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
     ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
-    //// --- RenderConfigPass 1 Send camera data to server--- //
-    //pipeline->setPass(0, NetworkClientSendPass::create(-1, -1));
-
-    //// --- RenderConfigPass 2 receive visibility bitmap from server --- //
-    //pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
-
-    //// --- RenderConfigPass 3 decompresses buffers sent across Network--- //
-    //pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression, nullptr, nullptr));
-
-    //// --- RenderConfigPass 3 transfers CPU information into GPU --- //
-    //pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create(nullptr));
-
-    //// --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
-    //pipeline->setPass(4, VShadingPass::create("V-shading"));
-
-    //// --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
-    //pipeline->setPass(5, CopyToOutputPass::create());
-
-    //// --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
-    //pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
-
-    //// --- RenderConfigPass 7 creates a GBuffer on client side--- //
-    //pipeline->setPass(7, JitteredGBufferPass::create()); // Rasterized GBuffer
+    // --- RenderConfigPass 1 Send camera data to server--- //
+    // --- RenderConfigPass 2 receive visibility bitmap from server --- //
+    // --- RenderConfigPass 3 decompresses buffers sent across Network--- //
+    // --- RenderConfigPass 3 transfers CPU information into GPU --- //
+    // --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
+    // --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
+    // --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
+    // --- RenderConfigPass 7 creates a GBuffer on client side--- //
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
@@ -367,7 +353,7 @@ void runClient()
          }
     };
 
-    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
+    CreatePipeline(renderConfiguration, pipeline);
 
     // ============================ //
     // Set presets for the pipeline //
