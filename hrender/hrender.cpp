@@ -35,6 +35,7 @@
 #include "DxrTutorSharedUtils/NetworkManager.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
+#include "NetworkPasses/SimulateDelayPass.h"
 #include "NetworkPasses/MemoryTransferPassClientCPU_GPU.h"
 #include "NetworkPasses/MemoryTransferPassServerGPU_CPU.h"
 #include "NetworkPasses/NetworkClientRecvPass.h"
@@ -48,29 +49,20 @@ void runServer();
 void runClient();
 void runDebug();
 
-// ========= //
-// PINK ROOM //
-// ========= //
-const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+// Available scenes and corresponding environment maps
+std::string defaultSceneNames[] = {
+    "pink_room\\pink_room.pyscene", // PINK ROOM //
+    "SunTemple\\SunTemple_v3.pyscene", // SUN TEMPLE //
+    "Bistro\\BistroInterior_v4.pyscene", // BISTRO //
+    "ZeroDay\\MEASURE_ONE\\MEASURE_ONE.fbx" // ZERO DAY //
+};
 
-// ========== //
-// SUN TEMPLE //
-// ========== //
-//const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
-//std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
-
-// ======= //
-// BISTRO //
-// ====== //
-//const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
-//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
-
-// ======== //
-// ZERO DAY //
-// ======== //
-//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-//std::string defaultSceneName = "ZeroDay\\MEASURE_ONE\\MEASURE_ONE.fbx";
+const char* environmentMaps[] = {
+    "MonValley_G_DirtRoad_3k.hdr", // PINK ROOM //
+    "SunTemple\\SunTemple_Skybox.hdr", // SUN TEMPLE //
+    "Bistro\\san_giuseppe_bridge_4k.hdr", // BISTRO //
+    "MonValley_G_DirtRoad_3k.hdr" // ZERO DAY //
+};
 
 /**
  * Determines the mode or configuration that the program runs
@@ -102,6 +94,92 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     return 0;
 }
 
+RenderingPipeline* CreatePipeline(RenderConfiguration renderConfiguration) {
+    // Create our rendering pipeline
+    RenderingPipeline* pipeline = new RenderingPipeline();
+    pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
+    pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
+
+    if (renderConfiguration.numPasses <= 0 || 
+        renderConfiguration.numPasses > RenderConfig::RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED) {
+        OutputDebugString(L"Error: incorrect num passes parameter in render configuration");
+    }
+
+    std::function<char*()> inputBufferArgument;
+    std::function<int ()> inputBufferSizeArgument;
+
+    for (int i = 0; i < renderConfiguration.numPasses; i++) {
+        if (renderConfiguration.passOrder[i] == JitteredGBufferPass) {
+            pipeline->setPass(i, JitteredGBufferPass::create());
+        } 
+        else if (renderConfiguration.passOrder[i] == VisibilityPass) {
+            pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
+        }
+        else if (renderConfiguration.passOrder[i] == MemoryTransferPassGPU_CPU) {
+            auto pass = MemoryTransferPassServerGPU_CPU::create();
+            pipeline->setPass(i, pass);
+            inputBufferArgument = std::bind(&MemoryTransferPassServerGPU_CPU::getOutputBuffer, pass.get());
+        }
+        else if (renderConfiguration.passOrder[i] == MemoryTransferPassCPU_GPU) {
+            pipeline->setPass(i, MemoryTransferPassClientCPU_GPU::create(inputBufferArgument));
+        }
+        else if (renderConfiguration.passOrder[i] == CompressionPass) {
+            auto pass = CompressionPass::create(CompressionPass::Mode::Compression, inputBufferArgument, inputBufferSizeArgument);
+            pipeline->setPass(i, pass);
+            inputBufferArgument = std::bind(&CompressionPass::getOutputBuffer, pass.get());
+            inputBufferSizeArgument = std::bind(&CompressionPass::getOutputBufferSize, pass.get());
+        }
+        else if (renderConfiguration.passOrder[i] == DecompressionPass) {
+            auto pass = CompressionPass::create(CompressionPass::Mode::Decompression, inputBufferArgument, inputBufferSizeArgument);
+            pipeline->setPass(i, pass);
+            inputBufferArgument = std::bind(&CompressionPass::getOutputBuffer, pass.get());
+        }
+        else if (renderConfiguration.passOrder[i] == NetworkClientRecvPass) {
+            pipeline->setPass(i, NetworkClientRecvPass::create(-1, -1));
+            inputBufferArgument = std::bind(&NetworkManager::getOutputBuffer, ResourceManager::mNetworkManager.get());
+            inputBufferSizeArgument = std::bind(&NetworkManager::getOutputBufferSize, ResourceManager::mNetworkManager.get());
+        }
+
+        else if (renderConfiguration.passOrder[i] == NetworkClientSendPass) {
+            pipeline->setPass(i, NetworkClientSendPass::create(-1, -1));
+        }
+        else if (renderConfiguration.passOrder[i] == NetworkServerRecvPass) {
+            pipeline->setPass(i, NetworkServerRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
+        else if (renderConfiguration.passOrder[i] == NetworkServerSendPass) {
+            pipeline->setPass(i, NetworkServerSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
+            ResourceManager::mNetworkManager->mGetInputBuffer = inputBufferArgument;
+            ResourceManager::mNetworkManager->mGetInputBufferSize = inputBufferSizeArgument;
+        }
+        else if (renderConfiguration.passOrder[i] == VShadingPass) {
+            pipeline->setPassOptions(i, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
+        }
+        else if (renderConfiguration.passOrder[i] == CopyToOutputPass) {
+            pipeline->setPass(i, CopyToOutputPass::create());
+        }
+        else if (renderConfiguration.passOrder[i] == SimpleAccumulationPass) {
+            pipeline->setPass(i, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+        }
+        else if (renderConfiguration.passOrder[i] == SimulateDelayPass) {
+            auto pass = SimulateDelayPass::create(inputBufferArgument, inputBufferSizeArgument);
+            pipeline->setPass(i, pass);
+            inputBufferArgument = std::bind(&SimulateDelayPass::getOutputBuffer, pass.get());
+            inputBufferSizeArgument = std::bind(&SimulateDelayPass::getOutputBufferSize, pass.get());
+        }
+    }
+
+    // ============================ //
+    // Set presets for the pipeline //
+    // ============================ //
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1 })
+        });
+
+    return pipeline;
+}
+
 /**
  * Runs the program as a stand alone program (no server, no client).
  */
@@ -115,46 +193,35 @@ void runDebug()
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
 
-    // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline();
-    pipeline->setDefaultSceneName(defaultSceneName);
-    pipeline->updateEnvironmentMap(environmentMap);
-    
-    // --- Pass 1 creates a GBuffer --- //
-    pipeline->setPass(0, JitteredGBufferPass::create());
+    RenderConfiguration renderConfiguration = {
+        1920, 1080, // texWidth and texHeight
+        0, // sceneIndex
+        10,
+        { // Array of RenderConfigPass
+            // --- RenderConfigPass 1 creates a GBuffer --- //
+            RenderConfigPass::JitteredGBufferPass,
+            // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
+            RenderConfigPass::VisibilityPass,
+            // --- RenderConfigPass 3 transfers GPU information into CPU --- //
+            RenderConfigPass::MemoryTransferPassGPU_CPU,
+            // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
+            RenderConfigPass::CompressionPass,
+            // --- RenderConfigPass 5 simulates delay across network --- //
+            RenderConfigPass::SimulateDelayPass,
+            // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
+            RenderConfigPass::DecompressionPass,
+            // --- RenderConfigPass 7 transfers CPU information into GPU --- //
+            RenderConfigPass::MemoryTransferPassCPU_GPU,
+            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            RenderConfigPass::VShadingPass,
+            // --- RenderConfigPass 9 just lets us select which pass to view on screen --- //
+            RenderConfigPass::CopyToOutputPass,
+            // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
+            RenderConfigPass::SimpleAccumulationPass
+         }
+    };
 
-    // --- Pass 2 makes use of the GBuffer determining visibility under different lights --- //
-    pipeline->setPass(1, VisibilityPass::create("VisibilityBitmap", "WorldPosition"));
-
-    // --- Pass 3 transfers GPU information into CPU --- //
-    pipeline->setPass(2, MemoryTransferPassServerGPU_CPU::create());
-
-    // --- Pass 4 compresses buffers to be sent across Network --- //
-    pipeline->setPass(3, CompressionPass::create(CompressionPass::Mode::Compression));
-
-    // --- Pass 5 decompresses buffers sent across Network--- //
-    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Decompression));
-
-    // --- Pass 6 transfers CPU information into GPU --- //
-    pipeline->setPass(5, MemoryTransferPassClientCPU_GPU::create());
-
-    // --- Pass 7 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
-    pipeline->setPassOptions(6, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
-
-    // --- Pass 8 just lets us select which pass to view on screen --- //
-    pipeline->setPass(7, CopyToOutputPass::create());
-
-    // --- Pass 9 temporally accumulates frames for denoising --- //
-    pipeline->setPass(8, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
-
-    // ============================ //
-    // Set presets for the pipeline //
-    // ============================ //
-    pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 1, 1, 1 })
-    });
+    RenderingPipeline* pipeline = CreatePipeline(renderConfiguration);
 
     // Start our program
     RenderingPipeline::run(pipeline, config);
@@ -187,26 +254,27 @@ void runServer()
     config.windowDesc.width = texWidth;
 
     // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
-    pipeline->setDefaultSceneName(defaultSceneName);
-    pipeline->updateEnvironmentMap(environmentMap);
 
-    // --- Pass 1 Receive camera data from client --- //
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
+    pipeline->setDefaultSceneName(defaultSceneNames[0]);
+    pipeline->updateEnvironmentMap(environmentMaps[0]);
+
+    // --- RenderConfigPass 1 Receive camera data from client --- //
     pipeline->setPass(0, NetworkServerRecvPass::create(texWidth, texHeight));
 
-    // --- Pass 2 creates a GBuffer on server side--- //
+    // --- RenderConfigPass 2 creates a GBuffer on server side--- //
     pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
 
-    // --- Pass 3 makes use of the GBuffer determining visibility under different lights --- //
+    // --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
     pipeline->setPass(2, VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)); // Lambertian BRDF for local lighting, 1 shadow ray per light
 
-    // --- Pass 4 transfers GPU information into CPU --- //
+    // --- RenderConfigPass 4 transfers GPU information into CPU --- //
     pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
 
-    // --- Pass 5 compresses buffers to be sent across Network --- //
-    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression));
+    // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
+    pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression, nullptr, nullptr));
 
-    // --- Pass 6 Send visibility bitmap back to client --- //
+    // --- RenderConfigPass 6 Send visibility bitmap back to client --- //
     pipeline->setPass(5, NetworkServerSendPass::create(texWidth, texHeight));
 
     // ============================ //
@@ -225,7 +293,7 @@ void runServer()
  *
  * Client is responsible to send camera data to the server and
  * waits for visibility bitmap from the server. Client will make use of the received
- * visibility bitmap to compute the final scene.
+ * visibility bitmap to compute the final sceneIndex.
  */
 void runClient()
 {
@@ -238,33 +306,33 @@ void runClient()
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline();
-    pipeline->setDefaultSceneName(defaultSceneName);
-    pipeline->updateEnvironmentMap(environmentMap);
+    pipeline->setDefaultSceneName(defaultSceneNames[0]);
+    pipeline->updateEnvironmentMap(environmentMaps[0]);
     
     ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
-    // --- Pass 1 Send camera data to server--- //
+    // --- RenderConfigPass 1 Send camera data to server--- //
     pipeline->setPass(0, NetworkClientSendPass::create(-1, -1));
 
-    // --- Pass 2 receive visibility bitmap from server --- //
+    // --- RenderConfigPass 2 receive visibility bitmap from server --- //
     pipeline->setPass(1, NetworkClientRecvPass::create(-1, -1));
 
-    // --- Pass 3 decompresses buffers sent across Network--- //
-    pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression));
+    // --- RenderConfigPass 3 decompresses buffers sent across Network--- //
+    pipeline->setPass(2, CompressionPass::create(CompressionPass::Mode::Decompression, nullptr, nullptr));
 
-    // --- Pass 3 transfers CPU information into GPU --- //
-    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create());
+    // --- RenderConfigPass 3 transfers CPU information into GPU --- //
+    pipeline->setPass(3, MemoryTransferPassClientCPU_GPU::create(nullptr));
 
-    // --- Pass 4 makes use of the visibility bitmap to shade the scene --- //
+    // --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
     pipeline->setPass(4, VShadingPass::create("V-shading"));
 
-    // --- Pass 5 just lets us select which pass to view on screen --- //
+    // --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
     pipeline->setPass(5, CopyToOutputPass::create());
 
-    // --- Pass 6 temporally accumulates frames for denoising --- //
+    // --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
     pipeline->setPass(6, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
-    // --- Pass 7 creates a GBuffer on client side--- //
+    // --- RenderConfigPass 7 creates a GBuffer on client side--- //
     pipeline->setPass(7, JitteredGBufferPass::create()); // Rasterized GBuffer
 
     // ============================ //
@@ -279,3 +347,4 @@ void runClient()
     // Start our program
     RenderingPipeline::run(pipeline, config);
 }
+

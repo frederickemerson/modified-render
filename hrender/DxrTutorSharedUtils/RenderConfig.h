@@ -7,6 +7,8 @@
 
 class RenderConfig {
 public:
+    static const int RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED = 14;
+
     enum class BufferType {
         VisibilityBitmap
     };
@@ -15,9 +17,6 @@ public:
         BufferType type;
         std::string name; // name in ResourceManager
         int resourceIndex; // index in ResourceManager
-        void* networkPassOutputLocation;
-        void* compressionPassOutputLocation;
-        void* compressionPassOutputLocation2;
         int compressedSize;
         int compressedSize2;
     };
@@ -33,4 +32,31 @@ public:
 protected:
     static int totalSize;
     static std::string BufferTypeToString(BufferType htype);
+};
+
+enum RenderConfigPass : uint8_t {
+    JitteredGBufferPass,
+    VisibilityPass,
+    MemoryTransferPassGPU_CPU,
+    MemoryTransferPassCPU_GPU,
+    CompressionPass,
+    DecompressionPass,
+    NetworkClientRecvPass,
+    NetworkClientSendPass,
+    NetworkServerRecvPass,
+    NetworkServerSendPass,
+    VShadingPass,
+    CopyToOutputPass,
+    SimpleAccumulationPass,
+    SimulateDelayPass
+};
+
+
+// total size: 16 bytes
+struct RenderConfiguration {
+    int texWidth;
+    int texHeight;
+    uint8_t sceneIndex;
+    uint8_t numPasses; // 1 byte
+    RenderConfigPass passOrder[14]; // 1 * 14 bytes
 };

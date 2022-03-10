@@ -139,6 +139,14 @@ public:
     std::atomic<float> cameraWY = 0;
     std::atomic<float> cameraWZ = 0;
 
+    // Function for getting input buffers
+    std::function<char* ()> mGetInputBuffer;
+    std::function<int ()> mGetInputBufferSize;
+    int mOutputBufferSize;
+    char* mOutputBuffer; // for getOutputBuffer, usually, this points to NetworkPass::clientReadBuffer 
+    char* getOutputBuffer() { return mOutputBuffer; }
+    int getOutputBufferSize() { return mOutputBufferSize; }
+
     // Use UDP to receive and send texture data
     // 
     // outRecvTexData - The pointer to the location that the texture

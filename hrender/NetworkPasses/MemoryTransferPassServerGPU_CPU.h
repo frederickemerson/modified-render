@@ -35,6 +35,9 @@ public:
     static SharedPtr create() { return SharedPtr(new MemoryTransferPassServerGPU_CPU()); }
     virtual ~MemoryTransferPassServerGPU_CPU() = default;
 
+    // get output buffer on CPU memory after memory transfer
+    char* getOutputBuffer() { return (char*)outputBuffer; }
+
 protected:
     MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
 
@@ -53,4 +56,6 @@ protected:
     // index of textures we will be accessing
     int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
 
+    // output on CPU memory and function to get it
+    uint8_t* outputBuffer;
 };

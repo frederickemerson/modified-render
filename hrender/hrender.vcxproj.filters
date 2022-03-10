@@ -89,6 +89,9 @@
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -179,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h">
       <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\SimulateDelayPass.h">
+      <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

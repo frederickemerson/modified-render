@@ -51,7 +51,7 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
         pRenderContext->flush(true);
 
         std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
-        visTex->apiInitPub(RenderConfig::mConfig[i].compressionPassOutputLocation, true);
+        visTex->apiInitPub(mGetInputBuffer(), true);
     }
 }
 

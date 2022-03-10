@@ -211,22 +211,37 @@ public:
     using SharedConstPtr = std::shared_ptr<const CompressionPass>;
     virtual ~CompressionPass() = default;
 
+    // Function for getting input buffers
+    std::function<char* ()> mGetInputBuffer;
+    std::function<int ()> mGetInputBufferSize;
+
     // Buffer for storing output of compression/decompression
+    int outputBufferSize;
     char* outputBuffer;
     char* outputBufferNVENC;
 
-    static SharedPtr create(Mode mode) {
+    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int ()> getInputBufferSize) {
         if (mode == Mode::Compression) {
-            return SharedPtr(new CompressionPass(mode, "Compression Pass", "Compression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui"));
         }
         else {
-            return SharedPtr(new CompressionPass(mode, "Decompression Pass", "Decompression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, getInputBufferSize, "Decompression Pass", "Decompression Pass Gui"));
         }
     }
+    char* getOutputBuffer() { return outputBuffer; }
+    int getOutputBufferSize() { return outputBufferSize; }
 
 protected:
-    CompressionPass(Mode mode, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+    CompressionPass(Mode mode, std::function<char*()> getInputBuffer, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
         mMode = mode;
+        mGetInputBuffer = getInputBuffer;
+    }
+
+    CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize,
+        const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+        mMode = mode;
+        mGetInputBuffer = getInputBuffer;
+        mGetInputBufferSize = getInputBufferSize;
     }
 
     // Implementation of RenderPass interface
@@ -266,5 +281,5 @@ protected:
     int nWidth = 1920;
     int nHeight = 1080;
     int nSize = nWidth * nHeight * 4;
-    char msg[80];
+    char msg[100];
 };

@@ -32,11 +32,15 @@ public:
     using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassClientCPU_GPU>;
 
-    static SharedPtr create() { return SharedPtr(new MemoryTransferPassClientCPU_GPU()); }
+    static SharedPtr create(std::function<char* ()> getInputBuffer) { 
+        return SharedPtr(new MemoryTransferPassClientCPU_GPU(getInputBuffer)); 
+    }
     virtual ~MemoryTransferPassClientCPU_GPU() = default;
 
 protected:
-    MemoryTransferPassClientCPU_GPU() : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") { }
+    MemoryTransferPassClientCPU_GPU(std::function<char* ()> getInputBuffer) : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") {
+        mGetInputBuffer = getInputBuffer;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -55,4 +59,7 @@ protected:
 
     // index of textures we will be accessing
     int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+
+    // Function for getting input buffers
+    std::function<char* ()> mGetInputBuffer;
 };

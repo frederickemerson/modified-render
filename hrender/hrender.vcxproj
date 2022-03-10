@@ -42,6 +42,7 @@
     <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
+    <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
@@ -74,6 +75,7 @@
     <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
+    <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="resource.h" />
@@ -180,7 +182,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

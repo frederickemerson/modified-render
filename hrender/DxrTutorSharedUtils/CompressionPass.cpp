@@ -168,9 +168,9 @@ public:
     uint8_t* pBuf; 
     int nBuf;
     
-    MyDataProvider(uint8_t* pBuf, int nBuf) {
-        pBuf = pBuf;
-        nBuf = nBuf;
+    MyDataProvider(uint8_t* pbuf, int nbuf) {
+        pBuf = pbuf;
+        nBuf = nbuf;
     }
     int GetData(uint8_t* pBuf, int nBuf) {
         
@@ -180,17 +180,18 @@ public:
 void CompressionPass::DecodeMediaFile()
 {
     if (demuxer == nullptr) {
-        demuxer = new FFmpegDemuxer((char*)RenderConfig::mConfig[0].compressionPassOutputLocation2);
+        demuxer = new FFmpegDemuxer(mGetInputBuffer());
     }
     std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
     demuxer->Demux(&pVideo, &nVideoBytes);
     sprintf(msg, "\nDecodeMediaFile: original size: %d, demux size: %d\n", RenderConfig::mConfig[0].compressedSize2, nVideoBytes);
     OutputDebugStringA(msg);
-    nFrameReturned = dec->Decode(pVideo, nVideoBytes);
+    nFrameReturned = dec->Decode((uint8_t*)mGetInputBuffer(), RenderConfig::mConfig[0].compressedSize2 * 2);
     if (!nFrame && nFrameReturned)
         LOG(INFO) << dec->GetVideoInfo();
 
-    for (int i = 0; i < nFrameReturned; i++) {
+    //for (int i = 0; i < nFrameReturned; i++) {
+    if (nFrameReturned) {
         pFrame = dec->GetFrame();
         // dump YUV to disk
         if (dec->GetWidth() == dec->GetDecodeWidth())
@@ -206,7 +207,8 @@ void CompressionPass::DecodeMediaFile()
             nFrame, aszDecodeOutFormat[dec->GetOutputFormat()].c_str());
         OutputDebugStringA(msg);
     }
-    nFrame += nFrameReturned;
+    nFrame += 1; //nFrameReturned;
+    //RenderConfig::mConfig[0].compressionPassOutputLocation = outputBufferNVENC;
 }
 
 void CompressionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
@@ -219,8 +221,9 @@ void CompressionPass::execute(RenderContext* pRenderContext)
     if (LZ4) {
         executeLZ4(pRenderContext);
     }
-    executeNVENC(pRenderContext);
+    //executeNVENC(pRenderContext);
 }
+
 
 void CompressionPass::executeNVENC(RenderContext* pRenderContext)
 {
@@ -236,9 +239,8 @@ void CompressionPass::executeNVENC(RenderContext* pRenderContext)
         NV_ENC_FENCE_POINT_D3D12* pInpFencePOint = enc->GetInpFencePoint();
 
         //hard coded i=0 at the moment
-        char* sourceBuffer = (char*)RenderConfig::mConfig[0].networkPassOutputLocation;
         int sourceBufferSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[0].type);
-        pUploadInput->ReadInputFrame(sourceBuffer, encoderInputFrame, pInpFencePOint);
+        pUploadInput->ReadInputFrame(mGetInputBuffer(), encoderInputFrame, pInpFencePOint);
 
         enc->EncodeFrame(vPacket);
 
@@ -247,12 +249,13 @@ void CompressionPass::executeNVENC(RenderContext* pRenderContext)
         for (std::vector<uint8_t>& packet : vPacket)
         {
             compressedSize += packet.size();
-            memcpy(&outputBufferNVENC[RenderConfig::mConfig[0].compressedSize2 + compressedSize], packet.data(), packet.size());
+            uint8_t* data = packet.data();
+            memcpy(&outputBufferNVENC[compressedSize], packet.data(), packet.size());
             //fpOut.write(reinterpret_cast<char*>(packet.data()), packet.size());
         }
         sprintf(msg, "\nSize of NVENC compressed output: %zu\n", compressedSize);
-        RenderConfig::mConfig[0].compressionPassOutputLocation2 = outputBufferNVENC;
-        RenderConfig::mConfig[0].compressedSize2 += (int)compressedSize;
+        //RenderConfig::mConfig[0].compressionPassOutputLocation2 = outputBufferNVENC;
+        RenderConfig::mConfig[0].compressedSize2 = (int)compressedSize;
         OutputDebugStringA(msg);
     }
     else if (mMode == Mode::Decompression) {
@@ -270,7 +273,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
 
                 // Parameters for Compression
-                const char* const sourceBuffer = reinterpret_cast<const char* const>(RenderConfig::mConfig[i].networkPassOutputLocation);
+                const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
 
                 // Compress buffer
@@ -280,10 +283,10 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 }
 
                 // Update size of compressed buffer
-                RenderConfig::mConfig[i].compressedSize = compressedSize;
+                outputBufferSize = compressedSize;
 
                 // Update location of buffer
-                RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
+                //RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
 
                 char buffer[140];
                 sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
@@ -300,8 +303,8 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
             {
                 std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
                 // Parameters for Decompression
-                const char* const sourceBuffer = reinterpret_cast<const char* const>(RenderConfig::mConfig[i].compressionPassOutputLocation);
-                int sourceBufferSize = RenderConfig::mConfig[i].compressedSize;
+                const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
+                int sourceBufferSize = mGetInputBufferSize();
                 int maxDecompressedSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
 
                 if (sourceBufferSize == maxDecompressedSize) {
@@ -320,10 +323,10 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 OutputDebugStringA(buffer);
 
                 // Update size of decompressed buffer
-                RenderConfig::mConfig[i].compressedSize = decompressedSize;
+                outputBufferSize = decompressedSize;
 
                 // Update location of buffer
-                RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
+                //RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
             }
         }
     }
