@@ -36,7 +36,6 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp" />
-    <ClCompile Include="NetworkPasses\NetworkClientRecvWaitingPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
@@ -69,7 +68,6 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h" />
-    <ClInclude Include="NetworkPasses\NetworkClientRecvWaitingPass.h" />
     <ClInclude Include="NetworkPasses\NetworkClientSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />

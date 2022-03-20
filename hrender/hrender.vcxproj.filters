@@ -83,9 +83,6 @@
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\NetworkClientRecvWaitingPass.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
@@ -176,9 +173,6 @@
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h">
       <Filter>SharedUtils\Compression</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\NetworkClientRecvWaitingPass.h">
-      <Filter>NetworkPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h">
       <Filter>SharedUtils\Compression</Filter>
