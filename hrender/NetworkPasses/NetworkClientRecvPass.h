@@ -11,6 +11,10 @@ public:
 	}
 	const NetworkPass::Mode mode = Mode::ClientRecv;
 
+	// Client - Two buffers for writing and reading at the same time
+	static char* clientReadBuffer;
+	static char* clientWriteBuffer;
+
 protected:
 	NetworkClientRecvPass(int texWidth, int texHeight) 
 		: NetworkPass(texWidth, texHeight, "Network Client Recv Pass", "Network Client Recv Pass Options") {

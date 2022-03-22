@@ -74,9 +74,6 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
       <Filter>CommonPasses\Memory Transfer</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
-      <Filter>SharedUtils\Network</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
       <Filter>SharedUtils\Network</Filter>
     </ClCompile>
@@ -88,6 +85,12 @@
     </ClCompile>
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp">
       <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp">
+      <Filter>SharedUtils\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,9 +168,6 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
       <Filter>CommonPasses\Memory Transfer</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
-      <Filter>SharedUtils\Network</Filter>
-    </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
       <Filter>SharedUtils\Network</Filter>
     </ClInclude>
@@ -179,6 +179,15 @@
     </ClInclude>
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h">
       <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ServerNetworkManager.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ClientNetworkManager.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\FrameData.h">
+      <Filter>SharedUtils\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

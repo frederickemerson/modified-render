@@ -1,197 +1,17 @@
-#include "ResourceManager.h"
-#include "../NetworkPasses/NetworkPass.h"
-#include "../NetworkPasses/NetworkUtils.h"
-#include "NetworkManager.h"
+#include "../NetworkPasses/NetworkServerRecvPass.h"
+#include "../NetworkPasses/NetworkClientRecvPass.h"
 
-#include "lz4.h"
+#include "ClientNetworkManager.h"
+
 
 // UDP Client
-Semaphore NetworkManager::mSpClientCamPosReadyToSend(false);
-Semaphore NetworkManager::mSpClientNewTexRecv(false);
-std::mutex NetworkManager::mMutexClientVisTexRead;
+Semaphore ClientNetworkManager::mSpClientCamPosReadyToSend(false);
+Semaphore ClientNetworkManager::mSpClientNewTexRecv(false);
+std::mutex ClientNetworkManager::mMutexClientVisTexRead;
 
-// UDP Server
-Semaphore NetworkManager::mSpServerVisTexComplete(false);
-Semaphore NetworkManager::mSpServerCamPosUpdated(false);
-std::mutex NetworkManager::mMutexServerVisTexRead;
-std::mutex NetworkManager::mMutexServerCamData;
-
-bool NetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight)
+bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 {
-    WSADATA wsa;
-
-    //Initialise winsock
-    OutputDebugString(L"\n\n= Pre-Falcor Init - NetworkManager::SetUpServerUdp - Initialising Winsock... =========");
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-    {
-        char buffer[70];
-        sprintf(buffer, "\n\n= Pre-Falcor Init - WSAStartup failed with error: %d", WSAGetLastError());
-        OutputDebugStringA(buffer);
-        exit(EXIT_FAILURE);
-    }
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Initialised. =========");
-
-    //Create a socket
-    if ((mServerUdpSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == INVALID_SOCKET)
-    {
-        char buffer[65];
-        sprintf(buffer, "\n\n= Pre-Falcor Init - Could not create socket: %d", WSAGetLastError());
-        OutputDebugStringA(buffer);
-    }
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Socket created. =========\n");
-
-    //Prepare the sockaddr_in structure
-    mServer.sin_family = AF_INET;
-    mServer.sin_addr.s_addr = INADDR_ANY;
-    mServer.sin_port = htons((u_short)std::strtoul(port, NULL, 0));
-    memset(&(mServer.sin_zero), 0, 8);
-
-    //Bind
-    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
-    {
-        char buffer[69];
-        sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
-        OutputDebugStringA(buffer);
-        exit(EXIT_FAILURE);
-    }
-    OutputDebugString(L"\n\n= Pre-Falcor Init - UDP SOCKET SETUP COMPLETE =========");
-
-    // Listening for client socket
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Trying to listen for client width/height... =========");
-
-    UdpCustomPacketHeader firstPacketHeader;
-    char* dataPointer;
-    char* recvBuffer = new char[DEFAULT_BUFLEN];
-    // Get the client texture width/height    
-    // Expected sequence number is 0
-    if (!RecvUdpCustomAndCheck(recvBuffer, firstPacketHeader, dataPointer,
-                               mServerUdpSock, 0, UDP_FIRST_TIMEOUT_MS, true))
-    {
-        OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED to receive UDP packet from client =========");
-        return false;
-    }
-    // Next client sequence number should be 1
-    clientSeqNum = 1;
-    
-    // Packet should consist of two ints
-    if (firstPacketHeader.dataSize != 8)
-    {
-        OutputDebugString(L"\n\n= Pre-Falcor Init - FAILED: UDP packet from client has wrong size =========");
-        return false;
-    }
-
-    int* widthAndHeight = reinterpret_cast<int*>(dataPointer);
-    outTexWidth = widthAndHeight[0];
-    outTexHeight = widthAndHeight[1];
-    delete[] recvBuffer;
-
-    OutputDebugString(L"\n\n= Pre-Falcor Init - Texture width/height received =========");
-    char printWidthHeight[52];
-    sprintf(printWidthHeight, "\nWidth: %d\nHeight: %d", outTexWidth, outTexHeight);
-    OutputDebugStringA(printWidthHeight);
-
-    return true;
-}
-
-bool NetworkManager::ListenServerUdp(bool executeForever, bool useLongTimeout)
-{
-    // Receive until the peer shuts down the connection
-    do
-    {
-        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
-        // Receive the camera position from the sender
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting camData receiving over network... =========");
-        // Mutex will be locked in RecvCameraDataUdp
-        //const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
-        RecvCameraDataUdp(NetworkPass::camData,
-                          NetworkManager::mMutexServerCamData,
-                          mServerUdpSock,
-                          useLongTimeout);
-        //std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
-        OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
-        mSpServerCamPosUpdated.signal();
-
-        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
-        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
-        char printFps[102];
-        sprintf(printFps, "\n\n= ListenServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
-        OutputDebugStringA(printFps);
-    }
-    while (executeForever);
-
-    return true;
-}
-
-void NetworkManager::SendWhenReadyServerUdp(
-    RenderContext* pRenderContext,
-    std::shared_ptr<ResourceManager> pResManager,
-    int texWidth,
-    int texHeight)
-{
-    int numFramesRendered = 0;
-    // Keep track of time
-    std::chrono::milliseconds timeOfFirstFrame;
-
-    while (true)
-    {
-        std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
-        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
-        OutputDebugString(string_2_wstring(frameMsg).c_str());
-
-        // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
-        OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
-        mSpServerVisTexComplete.wait();
-        OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
-
-        {
-            std::lock_guard lock(mMutexServerVisTexRead);
-            char* toSendData = mGetInputBuffer();
-
-            // The size of the actual Buffer
-            // that is given by Falcor is less then VIS_TEX_LEN
-            // 
-            // The actual size is the screen width and height * 4
-            // We send VIS_TEX_LEN but we need to compress with the actual
-            // size to prevent reading outside of the Falcor Buffer
-            int visTexSizeActual = texWidth * texHeight * 4;
-            int toSendSize = mGetInputBufferSize();
-
-            // Send the visBuffer back to the sender
-            // Generate timestamp
-            std::chrono::milliseconds currentTime = getCurrentTime();
-            int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-            SendTextureUdp({ toSendSize, numFramesRendered, timestamp },
-                           toSendData,
-                           mServerUdpSock);
-        }
-
-        OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
-        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
-        OutputDebugString(string_2_wstring(endMsg).c_str());
-        
-        if (numFramesRendered == 1)
-        {
-            timeOfFirstFrame = getCurrentTime();
-        }
-
-        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
-        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
-        char printFps[109];
-        sprintf(printFps, "\n\n= SendWhenReadyServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
-        OutputDebugStringA(printFps);
-    }
-}
-
-bool NetworkManager::CloseServerConnectionUdp()
-{
-    closesocket(mServerUdpSock);
-    WSACleanup();
-    return true;
-}
-
-bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
-{
-    int slen = sizeof(mSi_otherUdp);
+    int slen = sizeof(serverAddress);
     WSADATA wsa;
 
     //Initialise winsock
@@ -211,16 +31,16 @@ bool NetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     }
 
     //setup address structure
-    memset((char*)&mSi_otherUdp, 0, sizeof(mSi_otherUdp));
-    mSi_otherUdp.sin_family = AF_INET;
-    mSi_otherUdp.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
-    inet_pton(AF_INET, serverName, &mSi_otherUdp.sin_addr.S_un.S_addr);
+    memset((char*)&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
+    inet_pton(AF_INET, serverName, &serverAddress.sin_addr.S_un.S_addr);
     
     //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
     return true;
 }
 
-void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
+void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
     bool firstClientReceive = isFirstReceive;
     
@@ -239,7 +59,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
         int visTexLen = VIS_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, clientFrameNum, 0 };
         
-        char* toRecvData = NetworkPass::clientWriteBuffer;
+        char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
         int recvStatus;
 
         if (firstClientReceive)
@@ -308,12 +128,12 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 
             // acquire reading buffer mutex to swap buffers
             {
-                std::lock_guard readingLock(NetworkManager::mMutexClientVisTexRead);
-                char* tempPtr = NetworkPass::clientReadBuffer;
-                NetworkPass::clientReadBuffer = NetworkPass::clientWriteBuffer;
-                NetworkPass::clientWriteBuffer = tempPtr;
+                std::lock_guard readingLock(ClientNetworkManager::mMutexClientVisTexRead);
+                char* tempPtr = NetworkClientRecvPass::clientReadBuffer;
+                NetworkClientRecvPass::clientReadBuffer = NetworkClientRecvPass::clientWriteBuffer;
+                NetworkClientRecvPass::clientWriteBuffer = tempPtr;
 
-                mOutputBuffer = NetworkPass::clientReadBuffer;
+                mOutputBuffer = NetworkClientRecvPass::clientReadBuffer;
                 mOutputBufferSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }
@@ -349,7 +169,7 @@ void NetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
     }
 }
 
-void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
+void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
 {
     while (true)
     {
@@ -381,14 +201,14 @@ void NetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
     }   
 }
 
-bool NetworkManager::CloseClientConnectionUdp()
+bool ClientNetworkManager::CloseClientConnectionUdp()
 {
     closesocket(mClientUdpSock);
     WSACleanup();
     return true;
 }
 
-int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp, int timeout)
+int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp, int timeout)
 {
     int recvTexSize = frameDataOut.frameSize;
     int expectedFrameNum = frameDataOut.frameNumber;
@@ -538,107 +358,7 @@ int NetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData
     }
 }
 
-void NetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
-{
-    // Variable splitSize controls the size of the split packets
-    int32_t splitSize = UdpCustomPacket::maxPacketSize;
-    int16_t numOfFramePackets = frameData.frameSize / splitSize +
-                                ((frameData.frameSize % splitSize > 0) ? 1 : 0);
-    
-    // Split the frame data and send
-    int currentOffset = 0;
-    for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
-    {
-        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);                                  
-        UdpCustomPacketHeader texHeader(serverSeqNum, size, frameData.frameNumber,
-                                        numOfFramePackets, frameData.timestamp);
-
-        if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], socketUdp))
-        {
-            char buffer[70];
-            sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
-                    texHeader.sequenceNumber);
-            OutputDebugStringA(buffer);
-            return;
-        }
-
-        serverSeqNum++;
-        currentOffset += size;
-    }
-
-    OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
-}
-
-bool NetworkManager::RecvCameraDataUdp(
-    std::array<float3, 3>& cameraData,
-    std::mutex& mutexForCameraData,
-    SOCKET& socketUdp,
-    bool useLongTimeout)
-{
-    // Assumes server is receiving cam data from client
-    UdpCustomPacketHeader recvHeader;
-    bool hasReceived;
-    char* packetData;
-    char* recvBuffer = new char[DEFAULT_BUFLEN];
-    if (useLongTimeout)
-    {
-        hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp,
-                                    UDP_FIRST_TIMEOUT_MS);
-    }
-    else
-    {
-        hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp);
-    }
-
-    if (!hasReceived)
-    {
-        delete[] recvBuffer;
-        char bufferSn[75];
-        sprintf(bufferSn, "\n\n= RecvCameraDataUdp: Failed to receive %d =========", clientSeqNum);
-        OutputDebugStringA(bufferSn);
-        if (cameraDataCache.empty())
-        {   
-            OutputDebugString(L"\n= Camera data cache empty =========");
-            // Fail, nothing in cache
-            return false;
-        }
-        else
-        {
-            OutputDebugString(L"\n= Using old camera data value =========");
-            // Take from the cache
-            cameraData = cameraDataCache.back();
-            clientSeqNum++;
-            return true;
-        }
-    }
-    else
-    {
-        // Increment sequence number for next communication
-        clientSeqNum++;
-        {
-            assert(recvHeader.dataSize == sizeof(cameraData));
-            uint8_t* dataOut = reinterpret_cast<uint8_t*>(&cameraData);
-            
-            // Copy the data to the pointer
-            std::lock_guard<std::mutex> lock(mutexForCameraData);
-            for (int i = 0; i < recvHeader.dataSize; i++)
-            {
-                dataOut[i] = packetData[i];
-            }
-        }
-        delete[] recvBuffer;
-
-        // Populate the cache
-        cameraDataCache.push_back(cameraData);
-        if (cameraDataCache.size() > maxCamDataCacheSize)
-        {
-            cameraDataCache.pop_front();
-        }
-        return true;
-    }
-}
-
-bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
+bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
     char* data = reinterpret_cast<char*>(&cameraData);
@@ -655,13 +375,12 @@ bool NetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketU
     return wasDataSent;
 }
 
-bool NetworkManager::RecvUdpCustom(
+bool ClientNetworkManager::RecvUdpCustom(
     char* dataBuffer,
     UdpCustomPacketHeader& outDataHeader,
     char*& outDataPointer,
     SOCKET& socketUdp,
-    int timeout,
-    bool storeAddress)
+    int timeout)
 {
     int headerSize = UdpCustomPacket::headerSizeBytes;
     int dataReceivedSoFar = 0;
@@ -711,16 +430,6 @@ bool NetworkManager::RecvUdpCustom(
     // Update data pointer
     outDataPointer = dataBuffer + headerSize;
 
-    // Try to store a reply address
-    if (storeAddress)
-    {
-        // Set up the address for replying
-        memset(reinterpret_cast<char*>(&mSi_otherUdp), 0, sizeof(mSi_otherUdp));
-        mSi_otherUdp.sin_family = clientAddr.sin_family;
-        mSi_otherUdp.sin_port = clientAddr.sin_port;
-        mSi_otherUdp.sin_addr.S_un.S_addr = clientAddr.sin_addr.S_un.S_addr;
-    }
-
     int totalPacketSize = outDataHeader.dataSize + headerSize;
     // Receive the rest of the packet, if needed
     while (dataReceivedSoFar < totalPacketSize)
@@ -762,37 +471,7 @@ bool NetworkManager::RecvUdpCustom(
     return true;
 }
 
-bool NetworkManager::RecvUdpCustomAndCheck(
-    char* dataBuffer,
-    UdpCustomPacketHeader& outDataHeader,
-    char*& outDataPointer,
-    SOCKET& socketUdp,
-    int expectedSeqNum,
-    int timeout,
-    bool storeAddress)
-{
-    if (!RecvUdpCustom(dataBuffer, outDataHeader, outDataPointer, socketUdp, timeout, storeAddress))
-    {
-        return false;
-    }
-
-    // Check the sequence number
-    int recvSeqNum = outDataHeader.sequenceNumber;
-    if (recvSeqNum != expectedSeqNum)
-    {
-        char buffer[88];
-        sprintf(buffer, "\nSequence number does not match, expected %d, received %d",
-                        expectedSeqNum, recvSeqNum);
-        OutputDebugStringA(buffer);
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
-bool NetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp)
+bool ClientNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataHeader.createUdpPacket(dataToSend);
 
@@ -801,8 +480,8 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* data
     sprintf(msgBuffer0, "\n\n= SendUdpCustom: Sending packet %d... =========", dataHeader.sequenceNumber);
     OutputDebugStringA(msgBuffer0);
 
-    struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&mSi_otherUdp);
-    int socketLen = sizeof(mSi_otherUdp);
+    struct sockaddr* toSocket = reinterpret_cast<sockaddr*>(&serverAddress);
+    int socketLen = sizeof(serverAddress);
     int sendSize = UdpCustomPacket::headerSizeBytes + dataHeader.dataSize;
     int sentSoFar = 0;
 
@@ -832,7 +511,7 @@ bool NetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* data
     return true;
 }
 
-std::chrono::milliseconds NetworkManager::getComparisonTimestamp()
+std::chrono::milliseconds ClientNetworkManager::getComparisonTimestamp()
 {
     return getCurrentTime() - startTime;
 }

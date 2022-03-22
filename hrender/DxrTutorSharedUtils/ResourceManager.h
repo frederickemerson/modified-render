@@ -18,7 +18,8 @@
 
 #pragma once
 #include "Falcor.h"
-#include "NetworkManager.h"
+#include "../NetworkPasses/ClientNetworkManager.h"
+#include "../NetworkPasses/ServerNetworkManager.h"
 #include <vector>
 #include <map>
 
@@ -30,7 +31,8 @@ public:
     using SharedPtr = std::shared_ptr<ResourceManager>;
     using SharedConstPtr = std::shared_ptr<const ResourceManager>;
     
-    static const NetworkManager::SharedPtr mNetworkManager;
+    static const ClientNetworkManager::SharedPtr mClientNetworkManager;
+    static const ServerNetworkManager::SharedPtr mServerNetworkManager;
 
     static const std::string kOutputChannel; 
     static const std::string kEnvironmentMap;

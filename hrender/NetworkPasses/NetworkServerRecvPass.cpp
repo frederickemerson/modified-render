@@ -1,5 +1,7 @@
 #include "NetworkServerRecvPass.h"
 
+std::vector<std::array<float3, 3>> NetworkServerRecvPass::clientCamData;
+std::vector<std::mutex> NetworkServerRecvPass::mutexForCamData;
 
 void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
 {
@@ -7,16 +9,20 @@ void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
     mFirstRender&& firstServerRenderUdp(pRenderContext);
 
     // Wait if the network thread has not received yt
-    NetworkManager::mSpServerCamPosUpdated.wait();
+    ServerNetworkManager::mSpServerCamPosUpdated.wait();
 
     // Load camera data to scene
     Camera::SharedPtr cam = mpScene->getCamera();
+    int clientIndex = getClientToRender();
     {
-        std::lock_guard lock(NetworkManager::mMutexServerCamData);
-        cam->setPosition(NetworkPass::camData[0]);
-        cam->setUpVector(NetworkPass::camData[1]);
-        cam->setTarget(NetworkPass::camData[2]);
+        std::lock_guard lock(mutexForCamData[clientIndex]);
+        auto camData = NetworkServerRecvPass::clientCamData[clientIndex];
+        cam->setPosition(camData[0]);
+        cam->setUpVector(camData[1]);
+        cam->setTarget(camData[2]);
     }
+    // add this client to NetworkManager's send client queue
+    ResourceManager::mServerNetworkManager->sendClientQueue.push(clientIndex);
 
     // Update the scene. Ideally, this should be baked into RenderingPipeline.cpp and executed
     // before the pass even starts and after the network thread receives the data.
@@ -37,18 +43,27 @@ bool NetworkServerRecvPass::firstServerRenderUdp(RenderContext* pRenderContext)
     mFirstRender = false;
 
     // Wait for first cam data to be received (run in sequence)
-    ResourceManager::mNetworkManager->ListenServerUdp(false, true);
+    ResourceManager::mServerNetworkManager->ListenServerUdp(false, true);
     auto serverListen = [&]() {
         // First packet in parallel will take some time to arrive as well
         int numOfTimes = 1;
         for (int i = 0; i < numOfTimes; i++)
         {
-            ResourceManager::mNetworkManager->ListenServerUdp(false, true);
+            ResourceManager::mServerNetworkManager->ListenServerUdp(false, true);
         }
         // Afterwards, loop infinitely
-        ResourceManager::mNetworkManager->ListenServerUdp(true, false);
+        ResourceManager::mServerNetworkManager->ListenServerUdp(true, false);
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= firstServerRenderUdp - Network thread dispatched =========");
     return true;
+}
+
+int NetworkServerRecvPass::getClientToRender()
+{
+    size_t numOfActiveClients = ResourceManager::mServerNetworkManager->mClientAddresses.size() - 1;
+    clientIndexToRender = (clientIndexToRender + 1) % numOfActiveClients;
+    // TODO, WE SHOULD GO NEXT IF THE CAM POS HASTN ARRIVED
+    ServerNetworkManager::mClientCamPosUpdated[clientIndexToRender].wait();
+    return clientIndexToRender;
 }

@@ -182,7 +182,7 @@ void CompressionPass::DecodeMediaFile()
     if (demuxer == nullptr) {
         demuxer = new FFmpegDemuxer(mGetInputBuffer());
     }
-    std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
+    std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
     demuxer->Demux(&pVideo, &nVideoBytes);
     sprintf(msg, "\nDecodeMediaFile: original size: %d, demux size: %d\n", RenderConfig::mConfig[0].compressedSize2, nVideoBytes);
     OutputDebugStringA(msg);
@@ -228,7 +228,7 @@ void CompressionPass::execute(RenderContext* pRenderContext)
 void CompressionPass::executeNVENC(RenderContext* pRenderContext)
 {
     if (mMode == Mode::Compression) {
-        std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
+        std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 
         std::vector<std::vector<uint8_t>> vPacket;
 
@@ -270,7 +270,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         // Loop over all textures, compress each one
         for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
             {
-                std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
+                std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 
                 // Parameters for Compression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
@@ -301,7 +301,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         // Loop over all buffers, decompress each one
         for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
             {
-                std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
+                std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
                 // Parameters for Decompression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = mGetInputBufferSize();

@@ -18,11 +18,6 @@
 
 #include "NetworkPass.h"
 
-//std::vector<uint8_t> NetworkPass::gBufData = std::vector<uint8_t>();
-char* NetworkPass::clientReadBuffer = new char[VIS_TEX_LEN];
-char* NetworkPass::clientWriteBuffer = new char[VIS_TEX_LEN];
-std::array<float3, 3> NetworkPass::camData;
-
 bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     // Stash a copy of our resource manager so we can get rendering resources

@@ -39,12 +39,6 @@ public:
     using SharedConstPtr = std::shared_ptr<const NetworkPass>;
     virtual ~NetworkPass() = default;
 
-    // Client - Two buffers for writing and reading at the same time
-    static char* clientReadBuffer;
-    static char* clientWriteBuffer;
-
-    static std::array<float3, 3> camData;
-
 protected:
     NetworkPass(int texWidth, int texHeight, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
         mTexWidth = texWidth;

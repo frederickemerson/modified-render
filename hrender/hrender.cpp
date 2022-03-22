@@ -32,7 +32,6 @@
 #include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
-#include "DxrTutorSharedUtils/NetworkManager.h"
 #include "NetworkPasses/VisibilityPass.h"
 #include "NetworkPasses/VShadingPass.h"
 #include "NetworkPasses/SimulateDelayPass.h"
@@ -73,7 +72,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     if (std::string(lpCmdLine).find(std::string("no-compression")) != std::string::npos)
     {
         OutputDebugString(L"\n\n======== WITHOUT COMPRESSION =========");
-        // TO EDIT RENDERCONFIG
     }
 
     if (std::string(lpCmdLine).find(std::string("server")) != std::string::npos)
@@ -134,10 +132,9 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
         }
         else if (renderConfiguration.passOrder[i] == NetworkClientRecvPass) {
             pipeline->setPass(i, NetworkClientRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
-            inputBufferArgument = std::bind(&NetworkManager::getOutputBuffer, ResourceManager::mNetworkManager.get());
-            inputBufferSizeArgument = std::bind(&NetworkManager::getOutputBufferSize, ResourceManager::mNetworkManager.get());
+            inputBufferArgument = std::bind(&ClientNetworkManager::getOutputBuffer, ResourceManager::mClientNetworkManager.get());
+            inputBufferSizeArgument = std::bind(&ClientNetworkManager::getOutputBufferSize, ResourceManager::mClientNetworkManager.get());
         }
-
         else if (renderConfiguration.passOrder[i] == NetworkClientSendPass) {
             pipeline->setPass(i, NetworkClientSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
@@ -146,8 +143,8 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
         }
         else if (renderConfiguration.passOrder[i] == NetworkServerSendPass) {
             pipeline->setPass(i, NetworkServerSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
-            ResourceManager::mNetworkManager->mGetInputBuffer = inputBufferArgument;
-            ResourceManager::mNetworkManager->mGetInputBufferSize = inputBufferSizeArgument;
+            ResourceManager::mServerNetworkManager->mGetInputBuffer = inputBufferArgument;
+            ResourceManager::mServerNetworkManager->mGetInputBufferSize = inputBufferSizeArgument;
         }
         else if (renderConfiguration.passOrder[i] == VShadingPass) {
             pipeline->setPassOptions(i, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
@@ -247,35 +244,13 @@ void runServer()
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
 
-    ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
+    ResourceManager::mServerNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
    
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
-
-    //RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
-    //pipeline->setDefaultSceneName(defaultSceneNames[0]);
-    //pipeline->updateEnvironmentMap(environmentMaps[0]);
-
-    //// --- RenderConfigPass 1 Receive camera data from client --- //
-    //pipeline->setPass(0, NetworkServerRecvPass::create(texWidth, texHeight));
-
-    //// --- RenderConfigPass 2 creates a GBuffer on server side--- //
-    //pipeline->setPass(1, JitteredGBufferPass::create(texWidth, texHeight));
-
-    //// --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
-    //pipeline->setPass(2, VisibilityPass::create("VisibilityBitmap", "WorldPosition", texWidth, texHeight)); // Lambertian BRDF for local lighting, 1 shadow ray per light
-
-    //// --- RenderConfigPass 4 transfers GPU information into CPU --- //
-    //pipeline->setPass(3, MemoryTransferPassServerGPU_CPU::create());
-
-    //// --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
-    //pipeline->setPass(4, CompressionPass::create(CompressionPass::Mode::Compression, nullptr, nullptr));
-
-    //// --- RenderConfigPass 6 Send visibility bitmap back to client --- //
-    //pipeline->setPass(5, NetworkServerSendPass::create(texWidth, texHeight));
 
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
@@ -326,7 +301,7 @@ void runClient()
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
-    ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
 
     // --- RenderConfigPass 1 Send camera data to server--- //
     // --- RenderConfigPass 2 receive visibility bitmap from server --- //

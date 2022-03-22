@@ -3,13 +3,13 @@
 
 void NetworkServerSendPass::execute(RenderContext* pRenderContext)
 {
-    NetworkManager::mSpServerVisTexComplete.signal();
+    ServerNetworkManager::mSpServerVisTexComplete.signal();
     if (firstServerSend)
     {
         // Start the server sending thread
         auto serverSend = [&]()
         {
-            ResourceManager::mNetworkManager->
+            ResourceManager::mServerNetworkManager->
                 SendWhenReadyServerUdp(pRenderContext, mpResManager, mTexWidth, mTexHeight);
         };
         Threading::dispatchTask(serverSend);

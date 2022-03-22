@@ -1,11 +1,14 @@
 #include "NetworkClientRecvPass.h"
 #include <cmath>
 
+char* NetworkClientRecvPass::clientReadBuffer = new char[VIS_TEX_LEN];
+char* NetworkClientRecvPass::clientWriteBuffer = new char[VIS_TEX_LEN];
+
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
     if (firstClientReceive)
     {
-        NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+        ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
 
         // First client listen to be run in sequence
         pNetworkManager->ListenClientUdp(true, false);
@@ -19,7 +22,7 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         firstClientReceive = false;
     }
     else if (sequential) {
-        NetworkManager::SharedPtr pNetworkManager = mpResManager->mNetworkManager;
+        ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
         if (remainInSequential <= 0) { checkMotionVector(); }
         pNetworkManager->mSpClientNewTexRecv.wait();

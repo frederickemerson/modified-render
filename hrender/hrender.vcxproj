@@ -23,7 +23,6 @@
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
@@ -33,6 +32,7 @@
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp" />
@@ -41,6 +41,7 @@
     <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
+    <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -55,7 +56,6 @@
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
-    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
@@ -65,6 +65,8 @@
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="NetworkPasses\ClientNetworkManager.h" />
+    <ClInclude Include="NetworkPasses\FrameData.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h" />
@@ -73,6 +75,7 @@
     <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
+    <ClInclude Include="NetworkPasses\ServerNetworkManager.h" />
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
