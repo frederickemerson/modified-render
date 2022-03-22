@@ -92,6 +92,9 @@
     <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp">
       <Filter>SharedUtils\Network</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\PredictionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -188,6 +191,15 @@
     </ClInclude>
     <ClInclude Include="NetworkPasses\FrameData.h">
       <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\PredictionPass.h">
+      <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -320,6 +332,15 @@
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\CopyBuffer.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>

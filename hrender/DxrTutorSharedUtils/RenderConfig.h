@@ -48,7 +48,8 @@ enum RenderConfigPass : uint8_t {
     VShadingPass,
     CopyToOutputPass,
     SimpleAccumulationPass,
-    SimulateDelayPass
+    SimulateDelayPass,
+    PredictionPass
 };
 
 

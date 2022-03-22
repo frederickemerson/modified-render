@@ -41,6 +41,7 @@
     <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
+    <ClCompile Include="NetworkPasses\PredictionPass.cpp" />
     <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
@@ -52,6 +53,8 @@
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h" />
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp" />
     <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
@@ -75,6 +78,7 @@
     <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h" />
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
+    <ClInclude Include="NetworkPasses\PredictionPass.h" />
     <ClInclude Include="NetworkPasses\ServerNetworkManager.h" />
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
@@ -115,6 +119,9 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\CopyBuffer.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />

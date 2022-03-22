@@ -69,11 +69,16 @@ public:
 
     // Used by client
     SOCKET mClientUdpSock = INVALID_SOCKET;
-    int32_t clientFrameNum = 0;
+    std::atomic_int32_t clientFrameNum = 0;
+    
+    // The difference between the frame number of the last visibility
+    // buffer received, and the frame number of the current image
+    // that is going to be rendered to the screen on the client
+    std::atomic_int numFramesBehind = 0;
 
     // Used by both server and client in UDP communication
     int32_t serverSeqNum;
-    int32_t clientSeqNum;
+    std::atomic_int32_t clientSeqNum;
 
     using SharedPtr = std::shared_ptr<ClientNetworkManager>;
     using SharedConstPtr = std::shared_ptr<const ClientNetworkManager>;

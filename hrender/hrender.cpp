@@ -43,6 +43,7 @@
 #include "NetworkPasses/NetworkServerSendPass.h"
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "DxrTutorSharedUtils/RenderConfig.h"
+#include "NetworkPasses/PredictionPass.h"
 
 void runServer();
 void runClient();
@@ -161,6 +162,10 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             inputBufferArgument = std::bind(&SimulateDelayPass::getOutputBuffer, pass.get());
             inputBufferSizeArgument = std::bind(&SimulateDelayPass::getOutputBufferSize, pass.get());
         }
+        else if (renderConfiguration.passOrder[i] == PredictionPass) {
+            auto pass = PredictionPass::create();
+            pipeline->setPass(i, pass);
+        }
     }
 }
 
@@ -183,25 +188,26 @@ void runDebug()
         10,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
-            RenderConfigPass::JitteredGBufferPass,
+            JitteredGBufferPass,
             // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
-            RenderConfigPass::VisibilityPass,
+            VisibilityPass,
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
-            RenderConfigPass::MemoryTransferPassGPU_CPU,
+            MemoryTransferPassGPU_CPU,
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-            RenderConfigPass::CompressionPass,
+            CompressionPass,
             // --- RenderConfigPass 5 simulates delay across network --- //
-            RenderConfigPass::SimulateDelayPass,
+            SimulateDelayPass,
             // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
-            RenderConfigPass::DecompressionPass,
+            DecompressionPass,
             // --- RenderConfigPass 7 transfers CPU information into GPU --- //
-            RenderConfigPass::MemoryTransferPassCPU_GPU,
+            MemoryTransferPassCPU_GPU,
             // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
-            RenderConfigPass::VShadingPass,
+            PredictionPass,
+            VShadingPass,
             // --- RenderConfigPass 9 just lets us select which pass to view on screen --- //
-            RenderConfigPass::CopyToOutputPass,
+            CopyToOutputPass,
             // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
-            RenderConfigPass::SimpleAccumulationPass
+            SimpleAccumulationPass
          }
     };
 
@@ -321,6 +327,7 @@ void runClient()
                 NetworkClientRecvPass,
                 DecompressionPass,
                 MemoryTransferPassCPU_GPU,
+                PredictionPass,
                 VShadingPass,
                 CopyToOutputPass,
                 SimpleAccumulationPass,

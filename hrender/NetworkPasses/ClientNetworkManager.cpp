@@ -43,7 +43,8 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
     bool firstClientReceive = isFirstReceive;
-    
+    int32_t expectedFrameNum = 0;
+
     while (true)
     {
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
@@ -57,7 +58,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
         int visTexLen = VIS_TEX_LEN;
-        FrameData rcvdFrameData = { visTexLen, clientFrameNum, 0 };
+        FrameData rcvdFrameData = { visTexLen, expectedFrameNum, 0 };
         
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
         int recvStatus;
@@ -78,11 +79,8 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         }
         else
         {
-            //const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
             recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
-            //std::this_thread::sleep_until(delayStartTime + std::chrono::milliseconds(25));            // Artificial Delay
 
-            
             std::chrono::milliseconds currentTime = getComparisonTimestamp();
             std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
             if (timeDifference > std::chrono::milliseconds::zero())
@@ -108,15 +106,15 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             sprintf(frameDataMessage, "\n\n= Discarding frame %d (size: %d, time: %d)\n",
                     rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
             OutputDebugStringA(frameDataMessage);
-            clientFrameNum++;
+            expectedFrameNum++;
         }
         else if (recvStatus == 2)
         {
             char frameDataMessage[129];
             sprintf(frameDataMessage, "\n\n= Discarding frame %d (size: %d, time: %d) and frame %d\n",
-                    clientFrameNum, rcvdFrameData.frameSize, rcvdFrameData.timestamp, clientFrameNum + 1);
+                expectedFrameNum, rcvdFrameData.frameSize, rcvdFrameData.timestamp, expectedFrameNum + 1);
             OutputDebugStringA(frameDataMessage);
-            clientFrameNum += 2;
+            expectedFrameNum += 2;
         }
         else // recvStatus == 1 || recvStatus == 3
         {
@@ -151,13 +149,13 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             {
                 
                 char discardMessage[40];
-                sprintf(discardMessage, "\n\n= Discarding frame %d\n", clientFrameNum + 1);
+                sprintf(discardMessage, "\n\n= Discarding frame %d\n", expectedFrameNum + 1);
                 OutputDebugStringA(discardMessage);
-                clientFrameNum += 2;
+                expectedFrameNum += 2;
             }
             else // recvStatus == 1
             {
-                clientFrameNum++;
+                expectedFrameNum++;
             }
         }
 
@@ -192,11 +190,17 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
         SendCameraDataUdp(cam, mClientUdpSock);
         OutputDebugString(L"\n\n= camData sent over network =========");
-
+        
+        // Increment client frame number
+        clientSeqNum++;
+        int32_t currentClientFrameNum = clientFrameNum;
+        
+        // Print debug information about time taken
         std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
         std::chrono::duration<double> diff = endOfFrame - startOfFrame;
-        char printFps[109];
-        sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
+        char printFps[127];
+        sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame %d took %.10f s, estimated FPS: %.2f =========",
+            currentClientFrameNum, diff.count(), getFps(diff));
         OutputDebugStringA(printFps);
     }   
 }
@@ -276,9 +280,10 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
                             "Received a packet %d for newer frame %d",
                             recvHeader.sequenceNumber, recvHeader.frameNumber);        
                     OutputDebugStringA(buffer);
+                    int frameNumber = expectedFrameNum;
                     sprintf(buffer, "\n\n= RecvTextureUdp: "
                             "Trying again to receive the last packet %d for frame %d",
-                            serverSeqNum, expectedFrameNum);
+                            serverSeqNum, frameNumber);
                     OutputDebugStringA(buffer);
                     numOfRecvAttempts++;
                     continue;
@@ -364,7 +369,6 @@ bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& s
     char* data = reinterpret_cast<char*>(&cameraData);
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData));
-    clientSeqNum++;
 
     bool wasDataSent = true;
     if (!SendUdpCustom(headerToSend, data, socketUdp))

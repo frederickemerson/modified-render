@@ -24,6 +24,9 @@ namespace {
 
     // What are the entry points in that shader for various ray tracing shaders?
     const char* kEntryPointRayGen = "VShadowsRayGen";
+
+    // The visibility bitmap to use for the V-Shading Pass
+    const std::string kVisBuffer = "OffsetVisibilityBitmap";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -37,7 +40,7 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("VisibilityBitmap");
+    mpResManager->requestTextureResource("kVisBuffer");
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
@@ -85,7 +88,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
-    rayVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
+    rayVars["gVisibility"] = mpResManager->getTexture("kVisBuffer");
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 
