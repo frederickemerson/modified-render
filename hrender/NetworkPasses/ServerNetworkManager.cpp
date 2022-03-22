@@ -159,6 +159,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
 {
     int clientIndexToSend = sendClientQueue.front();
     sendClientQueue.pop();
+    clientFrameNum[clientIndexToSend]++;
 
     // Variable splitSize controls the size of the split packets
     int32_t splitSize = UdpCustomPacket::maxPacketSize;
@@ -169,8 +170,8 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     int currentOffset = 0;
     for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
-        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);                                  
-        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndexToSend], size, ++clientFrameNum[clientIndexToSend],
+        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
+        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndexToSend], size, clientFrameNum[clientIndexToSend],
                                         numOfFramePackets, frameData.timestamp);
 
         if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndexToSend, socketUdp))
