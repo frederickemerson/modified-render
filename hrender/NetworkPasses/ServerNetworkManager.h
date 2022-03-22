@@ -81,6 +81,7 @@ public:
     // Used by both server and client in UDP communication
     std::vector<int32_t> serverSeqNum;
     std::vector<int32_t> clientSeqNum;
+    std::vector<int32_t> clientFrameNum;
 
     using SharedPtr = std::shared_ptr<ServerNetworkManager>;
     using SharedConstPtr = std::shared_ptr<const ServerNetworkManager>;

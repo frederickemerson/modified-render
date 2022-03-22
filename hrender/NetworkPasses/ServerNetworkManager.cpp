@@ -94,8 +94,8 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
     int texWidth,
     int texHeight)
 {
-    int numFramesRendered = 0;
     // Keep track of time
+    int numFramesRendered = 0;
     std::chrono::milliseconds timeOfFirstFrame;
 
     while (true)
@@ -126,7 +126,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-            SendTextureUdp({ toSendSize, numFramesRendered, timestamp },
+            SendTextureUdp({ toSendSize, -1, timestamp },
                            toSendData,
                            mServerUdpSock);
         }
@@ -170,7 +170,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);                                  
-        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndexToSend], size, frameData.frameNumber,
+        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndexToSend], size, ++clientFrameNum[clientIndexToSend],
                                         numOfFramePackets, frameData.timestamp);
 
         if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndexToSend, socketUdp))
@@ -332,6 +332,7 @@ bool ServerNetworkManager::RecvUdpCustom(
         mClientAddresses.push_back(clientAddr);
         clientSeqNum.push_back(1); // this particular clients seq num
         serverSeqNum.push_back(1); // server seq num for this particular client
+        clientFrameNum.push_back(0); // this clients frame number
 
         // add to the maps of client address to index
         mapClientAddressToIndex.insert(std::pair{ clientAddr.sin_addr.S_un.S_addr, (int)(mClientAddresses.size() - 1)});
