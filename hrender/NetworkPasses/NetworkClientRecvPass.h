@@ -25,6 +25,7 @@ protected:
 	void checkMotionVector();
 	void checkNetworkPing();
 
+	bool bSwitching = true;
 	bool sequential = false;
 	int remainInSequential = 0;
 	bool                                    firstClientReceive = true; // Use a longer timeout for first client receive

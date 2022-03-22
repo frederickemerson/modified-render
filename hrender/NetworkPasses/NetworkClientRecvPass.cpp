@@ -21,7 +21,11 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         Threading::dispatchTask(serverSend);
         firstClientReceive = false;
     }
-    else if (sequential) {
+    if (!bSwitching) {
+        return;
+    }
+
+    if (sequential) {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
         if (remainInSequential <= 0) { checkMotionVector(); }
@@ -37,7 +41,10 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
 {
     // Window is marked dirty if any of the configuration is changed.
-    //int dirty = 0;
+    int dirty = 0;
+
+    // Determine whether we are going prediction
+    dirty |= (int)pPassWindow->checkbox(bSwitching ? "Automatic Switching" : "Not Switching", bSwitching);
 
     // Print the name of the buffer we're accumulating from and into.  Add a blank line below that for clarity
     if (sequential) {
@@ -50,7 +57,7 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     //pPassWindow->text((std::string("total camera movement: ") + std::to_string(dif)).c_str());
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
-    //if (dirty) setRefreshFlag();
+    if (dirty) setRefreshFlag();
 }
 
 inline void NetworkClientRecvPass::checkMotionVector() {
