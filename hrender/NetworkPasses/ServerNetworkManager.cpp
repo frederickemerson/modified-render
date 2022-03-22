@@ -200,7 +200,7 @@ bool ServerNetworkManager::RecvCameraDataUdp(
     bool hasReceived;
     char* packetData;
     char* recvBuffer = new char[DEFAULT_BUFLEN];
-    int clientIndex;
+    int clientIndex = 0;
     if (useLongTimeout)
     {
         hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp,

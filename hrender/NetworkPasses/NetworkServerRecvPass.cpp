@@ -62,7 +62,7 @@ bool NetworkServerRecvPass::firstServerRenderUdp(RenderContext* pRenderContext)
 
 int NetworkServerRecvPass::getClientToRender()
 {
-    size_t numOfActiveClients = ResourceManager::mServerNetworkManager->mClientAddresses.size() - 1;
+    size_t numOfActiveClients = ResourceManager::mServerNetworkManager->mClientAddresses.size();
     clientIndexToRender = (clientIndexToRender + 1) % numOfActiveClients;
     // TODO, WE SHOULD GO NEXT IF THE CAM POS HASTN ARRIVED
     ServerNetworkManager::mClientCamPosUpdated[clientIndexToRender].wait();
