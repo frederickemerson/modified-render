@@ -1,7 +1,8 @@
 #include "NetworkServerRecvPass.h"
 
 std::vector<std::array<float3, 3>> NetworkServerRecvPass::clientCamData;
-std::vector<std::mutex> NetworkServerRecvPass::mutexForCamData;
+std::array<std::mutex, MAX_NUM_CLIENT> NetworkServerRecvPass::mutexForCamData = { std::mutex(),
+        std::mutex() , std::mutex() , std::mutex() };
 
 void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
 {

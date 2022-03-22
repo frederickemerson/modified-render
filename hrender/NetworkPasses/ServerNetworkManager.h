@@ -91,7 +91,7 @@ public:
     // Synchronise server sending thread with the rendering
     static Semaphore mSpServerVisTexComplete;
     // Check whether the camera position is updated before rendering
-    static std::array<Semaphore, 4> mClientCamPosUpdated;
+    static std::array<Semaphore, MAX_NUM_CLIENT> mClientCamPosUpdated;
     // for all camera changes
     static Semaphore mSpServerCamPosUpdated;
     // Protect the server visibility textures
@@ -121,7 +121,7 @@ public:
     void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
-        std::vector<std::mutex>& mutexCameraData,
+        std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
                            SOCKET& socketUdp,
                            bool useLongTimeout);
 

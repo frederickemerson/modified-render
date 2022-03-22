@@ -12,7 +12,7 @@ public:
 	const NetworkPass::Mode mode = Mode::ServerRecv;
 
 	static std::vector<std::array<float3, 3>> clientCamData;
-	static std::vector<std::mutex> mutexForCamData;
+	static std::array<std::mutex, MAX_NUM_CLIENT> mutexForCamData;
 
 protected:
 	NetworkServerRecvPass(int texWidth, int texHeight) 

@@ -4,7 +4,7 @@
 #include "ServerNetworkManager.h"
 
 // UDP Server
-std::array<Semaphore, 4> ServerNetworkManager::mClientCamPosUpdated = {Semaphore(false), 
+std::array<Semaphore, MAX_NUM_CLIENT> ServerNetworkManager::mClientCamPosUpdated = {Semaphore(false),
         Semaphore(false) , Semaphore(false) , Semaphore(false) }; // max num clients = 4
 Semaphore ServerNetworkManager::mSpServerVisTexComplete(false);
 Semaphore ServerNetworkManager::mSpServerCamPosUpdated(false);
@@ -191,7 +191,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
 
 bool ServerNetworkManager::RecvCameraDataUdp(
     std::vector<std::array<float3, 3>>& cameraData,
-    std::vector<std::mutex>& mutexCameraData,
+    std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
     SOCKET& socketUdp,
     bool useLongTimeout)
 {
