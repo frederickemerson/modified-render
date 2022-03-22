@@ -234,6 +234,11 @@ bool ServerNetworkManager::RecvCameraDataUdp(
     }
     else
     {
+        // if new client, initialise cam data 
+        if (clientIndex == -1) {
+            clientIndex = (int)mClientAddresses.size() - 1; // actual new client index is the last one added
+            cameraData.push_back({ { {0, 0, 0}, {0, 0, 0}, {0, 0, 0} } });
+        }
         // Increment sequence number for next communication
         clientSeqNum[clientIndex]++;
         {
@@ -318,9 +323,11 @@ bool ServerNetworkManager::RecvUdpCustom(
     // Update data pointer
     outDataPointer = dataBuffer + headerSize;
 
+
     // NEW CLIENT
     if (!mapClientAddressToIndex.count(clientAddr.sin_addr.S_un.S_addr))
     {
+        fromClientIndex = -1; // new client
         // add to list of client addresses
         mClientAddresses.push_back(clientAddr);
         clientSeqNum.push_back(1); // this particular clients seq num
@@ -329,7 +336,9 @@ bool ServerNetworkManager::RecvUdpCustom(
         // add to the maps of client address to index
         mapClientAddressToIndex.insert(std::pair{ clientAddr.sin_addr.S_un.S_addr, (int)(mClientAddresses.size() - 1)});
     }
-    fromClientIndex = mapClientAddressToIndex[clientAddr.sin_addr.S_un.S_addr];
+    else {
+        fromClientIndex = mapClientAddressToIndex[clientAddr.sin_addr.S_un.S_addr];
+    }
 
     int totalPacketSize = outDataHeader.dataSize + headerSize;
     // Receive the rest of the packet, if needed
