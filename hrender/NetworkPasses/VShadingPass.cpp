@@ -40,7 +40,7 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource("kVisBuffer");
+    mpResManager->requestTextureResource(kVisBuffer);
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
@@ -88,7 +88,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
-    rayVars["gVisibility"] = mpResManager->getTexture("kVisBuffer");
+    rayVars["gVisibility"] = mpResManager->getTexture(kVisBuffer);
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 
