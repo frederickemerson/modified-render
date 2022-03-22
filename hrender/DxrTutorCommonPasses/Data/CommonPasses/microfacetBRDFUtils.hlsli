@@ -16,6 +16,7 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 #pragma once
+#include "Utils/Math/MathConstants.slangh"
 
 float3 getReflectionVec(float3 H, float3 inVec)
 {

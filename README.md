@@ -31,10 +31,10 @@ Optional:
 - NVAPI (see below)
 
 ## NVAPI installation
-After cloning the repository, head over to https://developer.nvidia.com/nvapi and download the latest version of NVAPI (this build is tested against version R440).
-Extract the content of the zip file into `Source/Externals/.packman/` and rename `R440-developer` to `nvapi`.
+After cloning the repository, head over to https://developer.nvidia.com/nvapi and download the latest version of NVAPI (this build is tested against version R470).
+Create the folder `.packman` in `Source/Externals/`. Extract the contents of the zip file into the folder and rename `R470-developer` to `nvapi`.
 
-Finally, set `_ENABLE_NVAPI` to `true` in `Source/Falcor/Core/FalcorConfig.h`
+Finally, set `_ENABLE_NVAPI` to `1` in `Source/Falcor/Core/FalcorConfig.h`
 
 ## Usage
 Clone the repository or download it as a zip file. The solution file that contains the project is in the `./Falcor` folder, `./Falcor/Falcor.sln`. 

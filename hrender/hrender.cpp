@@ -29,7 +29,6 @@
 #include "DxrTutorCommonPasses/CopyToOutputPass.h"
 #include "TestPasses/DecodeGBufferPass.h"
 #include "DxrTutorCommonPasses/JitteredGBufferPass.h"
-#include "DxrTutorCommonPasses/LambertianPlusShadowPass.h"
 #include "DxrTutorCommonPasses/SimpleAccumulationPass.h"
 #include "DxrTutorSharedUtils/RenderingPipeline.h"
 #include "DxrTutorSharedUtils/NetworkManager.h"
@@ -38,6 +37,8 @@
 #include "NetworkPasses/MemoryTransferPassClientCPU_GPU.h"
 #include "NetworkPasses/MemoryTransferPassServerGPU_CPU.h"
 #include "NetworkPasses/NetworkPass.h"
+#include "NetworkPasses/GGXReflectionPass.h"
+#include "NetworkPasses/ScreenSpaceReflectionPass.h"
 
 void runServer(bool useTcp);
 void runClient(bool useTcp);
@@ -122,18 +123,42 @@ void runDebug()
     // --- Pass 3 makes use of the visibility bitmap to shade the scene. We also provide the ability to preview the GBuffer alternatively. --- //
     pipeline->setPassOptions(2, { VShadingPass::create("V-shading"), DecodeGBufferPass::create("DecodedGBuffer") });
 
-    // --- Pass 4 just lets us select which pass to view on screen --- //
-    pipeline->setPass(3, CopyToOutputPass::create());
+    // ======= //
+    // SHADOWS //
+    // ======= //
+    //// --- Pass 4 just lets us select which pass to view on screen --- //
+    //pipeline->setPass(3, CopyToOutputPass::create());
 
-    // --- Pass 5 temporally accumulates frames for denoising --- //
-    pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    //// --- Pass 5 temporally accumulates frames for denoising --- //
+    //pipeline->setPass(4, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+
+    //// ============================ //
+    //// Set presets for the pipeline //
+    //// ============================ //
+    //pipeline->setPresets({
+    //    RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 }),
+    //    RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1 })
+    //});
+
+    // =========== //
+    // REFLECTIONS //
+    // =========== //
+    // --- Pass 4 computes screen space reflections for the scene --- //
+    //pipeline->setPass(3, GGXReflectionPass::create("GGXReflection"));
+    pipeline->setPass(3, ScreenSpaceReflectionPass::create());
+
+    // --- Pass 5 just lets us select which pass to view on screen --- //
+    pipeline->setPass(4, CopyToOutputPass::create());
+
+    // --- Pass 6 temporally accumulates frames for denoising --- //
+    pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1, 1 })
         });
 
     // Start our program
@@ -159,14 +184,14 @@ void runServer(bool useTcp)
     // we want to initialize our server textures the same size as the client
     int texWidth, texHeight;
     if (useTcp)
-    {   
+    {
         ResourceManager::mNetworkManager->SetUpServer(DEFAULT_PORT, texWidth, texHeight);
     }
     else
     {
         ResourceManager::mNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
     }
-    
+
     NetworkPass::posTexHeight = texHeight;
     NetworkPass::posTexWidth = texWidth;
     config.windowDesc.height = texHeight;
@@ -221,7 +246,7 @@ void runClient(bool useTcp)
     RenderingPipeline* pipeline = new RenderingPipeline();
     pipeline->setDefaultSceneName(defaultSceneName);
     pipeline->updateEnvironmentMap(environmentMap);
-    
+
     if (useTcp)
     {
         ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);
@@ -262,7 +287,7 @@ void runClient(bool useTcp)
     // ============================ //
     pipeline->setPresets({
         RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1 })
-    });
+        });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
 

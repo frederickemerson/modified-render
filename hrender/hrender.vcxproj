@@ -25,15 +25,17 @@
     <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
-    <ClCompile Include="hrender.cpp" />
-    <ClCompile Include="Libraries\minilzo.c" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\GGXReflectionPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
+    <ClCompile Include="Libraries\minilzo.c" />
+    <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
@@ -50,18 +52,20 @@
     <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
-    <ClInclude Include="hrender.h" />
-    <ClInclude Include="Libraries\lzoconf.h" />
-    <ClInclude Include="Libraries\lzodefs.h" />
-    <ClInclude Include="Libraries\minilzo.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
+    <ClInclude Include="NetworkPasses\GGXReflectionPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
+    <ClInclude Include="Libraries\lzoconf.h" />
+    <ClInclude Include="Libraries\lzodefs.h" />
+    <ClInclude Include="Libraries\minilzo.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="hrender.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
@@ -91,8 +95,10 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\GGXReflectionPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>
