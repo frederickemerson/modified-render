@@ -321,7 +321,7 @@ void runClient()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        8,
+        9,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
                 NetworkClientRecvPass,
