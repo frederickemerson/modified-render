@@ -542,7 +542,11 @@ inline void ClientNetworkManager::updateTimeForFrame(int frameReceived,
     std::chrono::time_point<std::chrono::system_clock> endOfFrame)
 {
     auto seqTime = timeAtCameraSent.front();
-    //assert(frameReceived == seqTime.first);
+    
+    while (frameReceived > seqTime.first) {
+        timeAtCameraSent.pop();
+        seqTime = timeAtCameraSent.front();
+    };
 
     char msgBuffer1[61];
     sprintf(msgBuffer1, "\n\n= frame received %d, seq time first : %d =========", frameReceived, seqTime.first);
