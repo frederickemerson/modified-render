@@ -385,7 +385,9 @@ bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& s
     char* data = reinterpret_cast<char*>(&cameraData);
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData));
-
+    
+    clientSeqNum++;
+    
     bool wasDataSent = true;
     if (!SendUdpCustom(headerToSend, data, socketUdp))
     {
