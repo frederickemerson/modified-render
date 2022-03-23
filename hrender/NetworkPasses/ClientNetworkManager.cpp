@@ -198,7 +198,7 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         OutputDebugString(L"\n\n= camData sent over network =========");
         
         // Increment client frame number
-        clientSeqNum++;
+        clientFrameNum++;
         int32_t currentClientFrameNum = clientFrameNum;
         
         // store this time as camera sent
@@ -540,7 +540,11 @@ inline void ClientNetworkManager::updateTimeForFrame(int frameReceived,
     std::chrono::time_point<std::chrono::system_clock> endOfFrame)
 {
     auto seqTime = timeAtCameraSent.front();
-    assert(frameReceived == seqTime.first);
+    //assert(frameReceived == seqTime.first);
+
+    char msgBuffer1[61];
+    sprintf(msgBuffer1, "\n\n= frame received %d, seq time first : %d =========", frameReceived, seqTime.first);
+    OutputDebugStringA(msgBuffer1);
 
     timeForOneSequentialFrame = endOfFrame - seqTime.second;
     timeAtCameraSent.pop();
