@@ -29,7 +29,7 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
         if (remainInSequential <= 0) { checkMotionVector(); }
-        pNetworkManager->mSpClientSeqTexRecv.wait();
+        //pNetworkManager->mSpClientSeqTexRecv.wait();
     }
     else {
         // decide if we are switching into sequential

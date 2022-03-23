@@ -161,10 +161,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             }
         }
 
-        if (clientFrameNum == rcvdFrameData.frameNumber) {
-            // signal sequential new texture received, only for sequential waiting network recv 
-            mSpClientSeqTexRecv.signal();
-        }
+        //if (clientFrameNum == rcvdFrameData.frameNumber) {
+        //    // signal sequential new texture received, only for sequential waiting network recv 
+        //    mSpClientSeqTexRecv.signal();
+        //}
 
         if (!executeForever)
         {
