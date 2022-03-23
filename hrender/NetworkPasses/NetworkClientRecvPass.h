@@ -40,4 +40,11 @@ protected:
 	float cameraWX = 0;
 	float cameraWY = 0;
 	float cameraWZ = 0;
+
+	// threshold values
+	int lowThreshold = 1000;
+	int midThreshold = 300;
+	int highThreshold = 50;
+
+	float totalCameraChange;
 };

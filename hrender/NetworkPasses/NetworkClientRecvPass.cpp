@@ -53,9 +53,12 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     else {
         pPassWindow->text("Sequential: No");
     }
+    pPassWindow->text("Total camera change: " + std::to_string(totalCameraChange));
+    dirty |= (int)pPassWindow->var("Low Threshold", lowThreshold, 0, 20000, 1);
+    dirty |= (int)pPassWindow->var("Mid Threshold", midThreshold, 0, 20000, 1);
+    dirty |= (int)pPassWindow->var("High Threshold", highThreshold, 0, 20000, 1);
 
-    //pPassWindow->text((std::string("total camera movement: ") + std::to_string(dif)).c_str());
-
+   
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
 }
@@ -76,6 +79,8 @@ inline void NetworkClientRecvPass::checkMotionVector() {
     dif += std::abs(cameraData.cameraW.y - cameraWY);
     dif += std::abs(cameraData.cameraW.z - cameraWZ);
 
+    totalCameraChange = dif;
+
     cameraUX = cameraData.cameraU.x;
     cameraUY = cameraData.cameraU.y;
     cameraUZ = cameraData.cameraU.z;
@@ -86,14 +91,14 @@ inline void NetworkClientRecvPass::checkMotionVector() {
     cameraWY = cameraData.cameraW.y;
     cameraWZ = cameraData.cameraW.z;
 
-    if (dif > 1000) {
+    if (dif > highThreshold) {
         sequential = true;
         remainInSequential = 20;
     }
-    else if (sequential && dif > 300) {
+    else if (sequential && dif > midThreshold) {
         remainInSequential = 20;
     }
-    else if (sequential && dif < 50) {
+    else if (sequential && dif < lowThreshold) {
         sequential = false;
     }
 }
