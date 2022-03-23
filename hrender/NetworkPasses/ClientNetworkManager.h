@@ -35,10 +35,8 @@
 #include "../DxrTutorSharedUtils/ResourceManager.h"
 #include "../DxrTutorSharedUtils/RenderConfig.h"
 #include "FrameData.h"
-
-// for artificial delay
 #include <chrono>
-#include <thread>
+#include "assert.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -181,6 +179,8 @@ public:
 
     bool CloseClientConnectionUdp();
 
+    double getTimeForOneSequentialFrame();
+
 private:
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
@@ -188,6 +188,9 @@ private:
     // A helper function to get the time from startTime
     std::chrono::milliseconds getComparisonTimestamp();
 
-    // keeps track of how long a frame takes
-    std::chrono::duration<double> diff;
+    // keeps track of time taken for camera sent to texture received for a given frame
+    std::chrono::duration<double> timeForOneSequentialFrame;
+    std::queue<std::pair<int, std::chrono::time_point<std::chrono::system_clock>>> timeAtCameraSent;
+
+    void updateTimeForFrame(int frameReceived, std::chrono::time_point<std::chrono::system_clock> endOfFrame);
 };

@@ -96,7 +96,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
                         static_cast<int>(timeDifference.count()));
                 OutputDebugStringA(fasterMessage);
-                // std::this_thread::sleep_for(-timeDifference);
             }
         }
 
@@ -144,6 +143,9 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             char printFps[102];
             sprintf(printFps, "\n\n= ListenClientUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
             OutputDebugStringA(printFps);
+
+            // measuring time from camera sent to texture received for a given frame
+            updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
 
             if (recvStatus == 3)
             {
@@ -199,6 +201,10 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         clientSeqNum++;
         int32_t currentClientFrameNum = clientFrameNum;
         
+        // store this time as camera sent
+        auto storeTime = std::make_pair(currentClientFrameNum, std::chrono::system_clock::now());
+        timeAtCameraSent.emplace(storeTime);
+
         //// Print debug information about time taken
         //std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
         //std::chrono::duration<double> diff = endOfFrame - startOfFrame;
@@ -214,6 +220,12 @@ bool ClientNetworkManager::CloseClientConnectionUdp()
     closesocket(mClientUdpSock);
     WSACleanup();
     return true;
+}
+
+double ClientNetworkManager::getTimeForOneSequentialFrame()
+{
+    double res = timeForOneSequentialFrame.count() * 1000;
+    return res;
 }
 
 int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp, int timeout)
@@ -522,4 +534,14 @@ bool ClientNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char
 std::chrono::milliseconds ClientNetworkManager::getComparisonTimestamp()
 {
     return getCurrentTime() - startTime;
+}
+
+inline void ClientNetworkManager::updateTimeForFrame(int frameReceived,
+    std::chrono::time_point<std::chrono::system_clock> endOfFrame)
+{
+    auto seqTime = timeAtCameraSent.front();
+    assert(frameReceived == seqTime.first);
+
+    timeForOneSequentialFrame = endOfFrame - seqTime.second;
+    timeAtCameraSent.pop();
 }

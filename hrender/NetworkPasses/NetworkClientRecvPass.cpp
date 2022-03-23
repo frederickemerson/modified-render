@@ -54,7 +54,8 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
         pPassWindow->text("Sequential: No");
     }
     pPassWindow->text("Total camera change: " + std::to_string(totalCameraChange));
-    //pPassWindow->text("Time for one frame: " + std::to_string(ClientNetworkManager->diff));
+    pPassWindow->text("Time for one frame: " + std::to_string(mpResManager->
+        mClientNetworkManager->getTimeForOneSequentialFrame()));
 
     dirty |= (int)pPassWindow->var("Low Threshold", lowThreshold, 0, 20000, 1);
     dirty |= (int)pPassWindow->var("Mid Threshold", midThreshold, 0, 20000, 1);
