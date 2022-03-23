@@ -58,16 +58,17 @@ protected:
     int32_t                                 mWorldPosIndex;                 ///< An index for the world position
     int32_t                                 mZBufferIndex;                  ///< An index for the Z buffer
     bool                                    mUsePrediction = true;          ///< A flag to toggle prediction
-    float                                   mOffsetFactor = 0.1f;           ///< The motion vector will be
+    float                                   mOffsetFactor = 1.0f;           ///< The motion vector will be
                                                                             ///< multiplied by this value
     bool                                    mFirstGuiRender = true;         ///< A flag to set default GUI size
     int                                     mTexWidth = -1;                 ///< The width of the texture we render,
                                                                             ///  based on the client and macroblock size
+    int                                     percvDelay = 0;
+    int                                     actualDelay = 10;
     int                                     mTexHeight = -1;                ///< The height of the texture we render,
                                                                             ///  based on the client and macroblock size
     CircularBuffer<CameraData>              camDataBuffer;                  ///< A buffer for camera data to be used
                                                                             ///  in prediction
-    int framesDifference = 0;
 };
 
 #endif PREDICTION_PASS_H

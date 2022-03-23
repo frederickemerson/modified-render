@@ -1,4 +1,5 @@
 #include "PredictionPass.h"
+#include <cstdio>
 
 namespace {
     // Where are our shaders located?
@@ -142,7 +143,15 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     }
 
     // Retrieve frames difference from NetworkManager
-    framesDifference = ResourceManager::mClientNetworkManager->numFramesBehind;
+    int framesDiff = ResourceManager::mNetworkManager->numFramesBehind;
+
+    percvDelay = framesDiff;
+    char buffer[100];
+    sprintf(buffer, "\nPerceived numFramesBehind is %d\n", framesDiff);
+    OutputDebugStringA(buffer);
+
+    int framesDifference = actualDelay;
+
     // Skip the pass if the difference in frames is greater
     // than the threshhold, or if it is larger than the
     // number of elements in the camera data circular buffer
@@ -236,6 +245,10 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
     dirty |= (int)pPassWindow->slider("Offset factor", mOffsetFactor, 0.0f, 0.1f);
 
     pPassWindow->text("Number of frames behind: " + std::to_string(framesDifference));
+
+    dirty |= (int)pPassWindow->var("Perceived lag in frames", percvDelay, 0, 1000, 0.01f);
+
+    dirty |= (int)pPassWindow->var("Actual lag in frames", actualDelay, 0, 1000, 0.01f);
 
     // If UI parameters change, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
