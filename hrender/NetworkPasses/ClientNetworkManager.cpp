@@ -124,6 +124,9 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                     rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
             OutputDebugStringA(frameDataMessage);
 
+            // find the difference in frame number for prediction
+            numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
+
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(ClientNetworkManager::mMutexClientVisTexRead);
