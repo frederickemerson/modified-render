@@ -67,6 +67,7 @@ protected:
                                                                             ///  based on the client and macroblock size
     CircularBuffer<CameraData>              camDataBuffer;                  ///< A buffer for camera data to be used
                                                                             ///  in prediction
+    int framesDifference = 0;
 };
 
 #endif PREDICTION_PASS_H

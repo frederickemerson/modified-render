@@ -91,7 +91,7 @@ public:
     // Synchronise client sending thread with the rendering
     static Semaphore mSpClientCamPosReadyToSend;
     // signal for new texture received, only for sequential waiting recv network pass
-    static Semaphore mSpClientNewTexRecv;
+    static Semaphore mSpClientSeqTexRecv;
     // Protect the client visibility textures with mutexes
     static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
 
@@ -187,4 +187,7 @@ private:
 
     // A helper function to get the time from startTime
     std::chrono::milliseconds getComparisonTimestamp();
+
+    // keeps track of how long a frame takes
+    std::chrono::duration<double> diff;
 };

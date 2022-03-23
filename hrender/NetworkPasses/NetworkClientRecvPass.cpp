@@ -29,7 +29,7 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
         if (remainInSequential <= 0) { checkMotionVector(); }
-        pNetworkManager->mSpClientNewTexRecv.wait();
+        pNetworkManager->mSpClientSeqTexRecv.wait();
     }
     else {
         // decide if we are switching into sequential
@@ -54,6 +54,8 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
         pPassWindow->text("Sequential: No");
     }
     pPassWindow->text("Total camera change: " + std::to_string(totalCameraChange));
+    //pPassWindow->text("Time for one frame: " + std::to_string(ClientNetworkManager->diff));
+
     dirty |= (int)pPassWindow->var("Low Threshold", lowThreshold, 0, 20000, 1);
     dirty |= (int)pPassWindow->var("Mid Threshold", midThreshold, 0, 20000, 1);
     dirty |= (int)pPassWindow->var("High Threshold", highThreshold, 0, 20000, 1);

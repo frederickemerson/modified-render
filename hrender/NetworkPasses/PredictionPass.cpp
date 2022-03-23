@@ -142,7 +142,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     }
 
     // Retrieve frames difference from NetworkManager
-    int framesDifference = ResourceManager::mClientNetworkManager->numFramesBehind;
+    framesDifference = ResourceManager::mClientNetworkManager->numFramesBehind;
     // Skip the pass if the difference in frames is greater
     // than the threshhold, or if it is larger than the
     // number of elements in the camera data circular buffer
@@ -234,6 +234,8 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
     // Determine the extent of the offset
     // 0.0f is the minimum value of the offset and 2.0f is the maximum value
     dirty |= (int)pPassWindow->slider("Offset factor", mOffsetFactor, 0.0f, 0.1f);
+
+    pPassWindow->text("Number of frames behind: " + std::to_string(framesDifference));
 
     // If UI parameters change, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();

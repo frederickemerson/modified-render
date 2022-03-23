@@ -6,7 +6,7 @@
 
 // UDP Client
 Semaphore ClientNetworkManager::mSpClientCamPosReadyToSend(false);
-Semaphore ClientNetworkManager::mSpClientNewTexRecv(false);
+Semaphore ClientNetworkManager::mSpClientSeqTexRecv(false);
 std::mutex ClientNetworkManager::mMutexClientVisTexRead;
 
 bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
@@ -139,9 +139,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 // mutex and lock are released at the end of scope
             }
 
-            // signal new texture received, only for sequential waiting network recv pass
-            mSpClientNewTexRecv.signal();
-
             std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
             std::chrono::duration<double> diff = endOfFrame - startOfFrame;
             char printFps[102];
@@ -162,6 +159,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             }
         }
 
+        if (clientFrameNum == rcvdFrameData.frameNumber) {
+            // signal sequential new texture received, only for sequential waiting network recv 
+            mSpClientSeqTexRecv.signal();
+        }
 
         if (!executeForever)
         {
@@ -198,13 +199,13 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         clientSeqNum++;
         int32_t currentClientFrameNum = clientFrameNum;
         
-        // Print debug information about time taken
-        std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
-        std::chrono::duration<double> diff = endOfFrame - startOfFrame;
-        char printFps[127];
-        sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame %d took %.10f s, estimated FPS: %.2f =========",
-            currentClientFrameNum, diff.count(), getFps(diff));
-        OutputDebugStringA(printFps);
+        //// Print debug information about time taken
+        //std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
+        //std::chrono::duration<double> diff = endOfFrame - startOfFrame;
+        //char printFps[127];
+        //sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame %d took %.10f s, estimated FPS: %.2f =========",
+        //    currentClientFrameNum, diff.count(), getFps(diff));
+        //OutputDebugStringA(printFps);
     }   
 }
 
