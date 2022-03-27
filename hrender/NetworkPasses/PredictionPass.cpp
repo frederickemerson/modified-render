@@ -150,12 +150,12 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     // Retrieve frames difference from NetworkManager
     int framesDiff = ResourceManager::mNetworkManager->numFramesBehind;
 
-    percvDelay = framesDiff;
+    mPercvDelay = framesDiff;
     char buffer[100];
     sprintf(buffer, "\nPerceived numFramesBehind is %d\n", framesDiff);
     OutputDebugStringA(buffer);
 
-    int framesDifference = actualDelay;
+    int framesDifference = mActualDelay;
 
     // Skip the pass if the difference in frames is greater
     // than the threshhold, or if it is larger than the
@@ -223,7 +223,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     offsetShaderVars[sVarCBufferOffset][sVarTexHeight] = mpResManager->getHeight();
     offsetShaderVars[sVarCBufferOffset][sVarTexWidth] = mpResManager->getWidth();
     offsetShaderVars[sVarCBufferOffset][sVarOffsetFactor] = mOffsetFactor;
-    offsetShaderVars[sVarCBufferOffset][sVarUnknownFrag] = unknownFragmentsMode;
+    offsetShaderVars[sVarCBufferOffset][sVarUnknownFrag] = mUnknownFragmentsMode;
     offsetShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
     // Pass motion vectors texture to OffsetBuffer shader
     offsetShaderVars[sVarMotionVecTex] = mpResManager->getTexture(mMotionVecIndex);
@@ -252,21 +252,21 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
 
     pPassWindow->text("Number of frames behind: " + std::to_string(framesDifference));
 
-    dirty |= (int)pPassWindow->var("Perceived lag in frames", percvDelay, 0, 1000, 0.01f);
+    dirty |= (int)pPassWindow->var("Perceived lag in frames", mPercvDelay, 0, 1000, 0.01f);
 
-    dirty |= (int)pPassWindow->var("Actual lag in frames", actualDelay, 0, 1000, 0.01f);
+    dirty |= (int)pPassWindow->var("Actual lag in frames", mActualDelay, 0, 1000, 0.01f);
 
     pPassWindow->text("Unknown fragments mode");
     std::string unknownFragModeDisplay = "Fill with original buffer";
-    if (unknownFragmentsMode == 1)
+    if (mUnknownFragmentsMode == 1)
     {
         unknownFragModeDisplay = "Fill with shadow";
     }
-    else if (unknownFragmentsMode == 2)
+    else if (mUnknownFragmentsMode == 2)
     {
         unknownFragModeDisplay = "Fill with illumination";
     }
-    dirty |= (int)pPassWindow->var(unknownFragModeDisplay.c_str(), unknownFragmentsMode, 0, 2, 1);
+    dirty |= (int)pPassWindow->var(unknownFragModeDisplay.c_str(), mUnknownFragmentsMode, 0, 2, 1);
 
     // If UI parameters change, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
