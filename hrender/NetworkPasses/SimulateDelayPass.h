@@ -47,6 +47,9 @@ protected:
 	void execute(RenderContext* pRenderContext) override;
 	void renderGui(Gui::Window* pPassWindow) override;
 
+private:
+	int mNumFramesDelay = 0;
+};
 
 protected:
 	std::function<char* ()> mGetInputBuffer;

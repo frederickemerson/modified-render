@@ -155,7 +155,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     sprintf(buffer, "\nPerceived numFramesBehind is %d\n", framesDiff);
     OutputDebugStringA(buffer);
 
-    int framesDifference = mActualDelay;
+    int framesDifference = mUsePercvDelay ? mPercvDelay : mActualDelay;
 
     // Skip the pass if the difference in frames is greater
     // than the threshhold, or if it is larger than the
@@ -254,7 +254,11 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
 
     dirty |= (int)pPassWindow->var("Perceived lag in frames", mPercvDelay, 0, 1000, 0.01f);
 
-    dirty |= (int)pPassWindow->var("Actual lag in frames", mActualDelay, 0, 1000, 0.01f);
+    dirty |= (int)pPassWindow->checkbox(mUsePercvDelay ? "Using perceived delay" : "Not using perceived delay", mUsePercvDelay);
+    if (!mUsePercvDelay)
+    {
+        dirty |= (int)pPassWindow->var("Delay to use for prediction", mActualDelay, 0, 1000, 0.01f);
+    }
 
     pPassWindow->text("Unknown fragments mode");
     std::string unknownFragModeDisplay = "Fill with original buffer";

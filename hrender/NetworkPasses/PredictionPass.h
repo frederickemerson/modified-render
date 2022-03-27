@@ -63,6 +63,8 @@ protected:
     bool                                    mFirstGuiRender = true;         ///< A flag to set default GUI size
     int                                     mTexWidth = -1;                 ///< The width of the texture we render,
                                                                             ///  based on the client and macroblock size
+    bool                                    mUsePercvDelay = true;          ///< A flag to toggle use of the delay that
+                                                                            ///  is calculated by NetworkManager
     int                                     mPercvDelay = 0;
     int                                     mActualDelay = 10;
     int                                     mUnknownFragmentsMode = 2;
