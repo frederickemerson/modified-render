@@ -86,6 +86,7 @@ PsOut main(float2 texC : TEXCOORD, float4 screenSpacePos : SV_Position)
         else
         {
             // Calculate old screen space position
+            // y is flipped because top-left corner of screen is (0, 0)
             float2 oldScreenSpacePos = float2((oldNdcSpacePos.x + 1) * 0.5 * gTexWidth,
                                               (-oldNdcSpacePos.y + 1) * 0.5 * gTexHeight);
 
