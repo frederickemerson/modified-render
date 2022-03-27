@@ -19,6 +19,9 @@ struct PsOut
     float4 motionVec : SV_Target0;
 };
 
+// NaN constant
+const static float NaN = 0.0f / 0.0f;
+
 PsOut main(float2 texC : TEXCOORD, float4 screenSpacePos : SV_Position)
 {
     // // Get pixel position in screen coordinates
@@ -72,13 +75,13 @@ PsOut main(float2 texC : TEXCOORD, float4 screenSpacePos : SV_Position)
         float4 oldNdcSpacePos = oldClipSpacePos / oldClipSpacePos.w;
 
         // If screen space is out-of-bounds, we ignore it and
-        // set the motion vector to (0, 0) to reuse the
+        // set the motion vector to (NaN, NaN) to reuse the
         // same visibility data for the current fragment
         if (oldNdcSpacePos.x < -1 || oldNdcSpacePos.x > 1 ||
             oldNdcSpacePos.y < -1 || oldNdcSpacePos.y > 1 ||
             oldNdcSpacePos.z < -1 || oldNdcSpacePos.z > 1)
         {
-            motionVecBufOut.motionVec.xy = float2(0, 0);
+            motionVecBufOut.motionVec.xy = float2(NaN, NaN);
         }
         else
         {

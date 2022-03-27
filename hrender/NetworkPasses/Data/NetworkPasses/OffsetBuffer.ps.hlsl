@@ -5,6 +5,7 @@ cbuffer OffsetCb
     int gTexHeight;
     int gTexWidth;
     float gOffsetFactor;
+    int gUnknownFragMode;
 }
 
 // Input textures that needs to be set by the C++ code
@@ -25,8 +26,32 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
     // Screen space position as a 2D vector
     float2 screenCoords = currScreenSpacePos.xy;
 
-    // Retrieve motion vector and multiply by offsetFactor
-    float2 motionVec = gMotionVectors[screenCoords].xy * gOffsetFactor;
+    // Retrieve raw motion vector
+    float2 rawMotionVec = gMotionVectors[screenCoords].xy;
+
+    // Check for unknown fragment marked by NaN
+    if (isnan(rawMotionVec.x) && isnan(rawMotionVec.y))
+    {
+        if (gUnknownFragMode == 0)
+        {
+            // Copy mode
+            motionVecBufOut.visOffset = gVisBufferOrig[screenCoords];
+        }
+        else if (gUnknownFragMode == 1)
+        {
+            // Fill with shadow mode
+            motionVecBufOut.visOffset = 0x00000000;
+        }
+        else // (gUnknownFragMode == 2)
+        {
+            // Fill with light mode
+            motionVecBufOut.visOffset = 0xFFFFFFFF;
+        }
+        return motionVecBufOut;
+    }
+
+    // Multiply by offsetFactor
+    float2 motionVec = rawMotionVec * gOffsetFactor;
 
     // Offset the screen space coordinates by the motion vector
     float2 offsetCoords = screenCoords - motionVec;

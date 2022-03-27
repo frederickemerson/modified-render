@@ -65,6 +65,7 @@ protected:
                                                                             ///  based on the client and macroblock size
     int                                     percvDelay = 0;
     int                                     actualDelay = 10;
+    int                                     unknownFragmentsMode = 2;
     int                                     mTexHeight = -1;                ///< The height of the texture we render,
                                                                             ///  based on the client and macroblock size
     CircularBuffer<CameraData>              camDataBuffer;                  ///< A buffer for camera data to be used
