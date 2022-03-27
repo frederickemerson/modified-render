@@ -257,7 +257,7 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
     dirty |= (int)pPassWindow->var("Actual lag in frames", actualDelay, 0, 1000, 0.01f);
 
     pPassWindow->text("Unknown fragments mode");
-    std::string unknownFragModeDisplay = "Fill with old buffer";
+    std::string unknownFragModeDisplay = "Fill with original buffer";
     if (unknownFragmentsMode == 1)
     {
         unknownFragModeDisplay = "Fill with shadow";
