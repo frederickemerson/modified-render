@@ -124,7 +124,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             OutputDebugStringA(frameDataMessage);
 
             // find the difference in frame number for prediction
-            numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
+            // 
+            // subtract 1 from clientFrameNum, as the sending thread
+            // would have incremented it after it sent camera data
+            numFramesBehind = clientFrameNum - 1 - rcvdFrameData.frameNumber;
 
             // acquire reading buffer mutex to swap buffers
             {
@@ -384,7 +387,7 @@ bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& s
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
     char* data = reinterpret_cast<char*>(&cameraData);
     // Assumes client sending to server
-    UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData));
+    UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
     clientSeqNum++;
     

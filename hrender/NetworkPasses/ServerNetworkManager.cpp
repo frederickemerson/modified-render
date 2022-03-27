@@ -101,7 +101,8 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
     while (true)
     {
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
-        std::string frameMsg = std::string("\n\n================================ Frame ") + std::to_string(++numFramesRendered) + std::string(" ================================");
+        std::string frameMsg = std::string("\n\n================================ FRAME ") +
+            std::to_string(clientFrameNum) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
@@ -126,13 +127,21 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-            SendTextureUdp({ toSendSize, -1, timestamp },
+            // Send clientFrameNum
+            SendTextureUdp({ toSendSize, clientFrameNum, timestamp },
                            toSendData,
                            mServerUdpSock);
         }
+        
+        // increase local count of frames rendered by server
+        numFramesRendered++;
 
+        // output end message
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
-        std::string endMsg = std::string("\n\n================================ Frame ") + std::to_string(numFramesRendered) + std::string(" COMPLETE ================================");
+        std::string endMsg = std::string("\n\n================================ Frame ") +
+            std::to_string(clientFrameNum) + std::string(" COMPLETE, ") +
+            std::to_string(numFramesRendered) +
+            (" total frames rendered by server ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
         
         if (numFramesRendered == 1)
@@ -242,6 +251,10 @@ bool ServerNetworkManager::RecvCameraDataUdp(
         }
         // Increment sequence number for next communication
         clientSeqNum[clientIndex]++;
+
+        // Get frame number from the packet
+        clientFrameNum = recvHeader.frameNumber;
+
         {
             assert(recvHeader.dataSize == sizeof(cameraData[clientIndex]));
             uint8_t* dataOut = reinterpret_cast<uint8_t*>(&cameraData[clientIndex]);

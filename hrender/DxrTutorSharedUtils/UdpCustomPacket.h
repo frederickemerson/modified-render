@@ -25,7 +25,7 @@ public:
 
     // ========================== METHODS ==========================
     // Initialise a packet with without frame information
-    UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize);
+    UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum = -1);
     // Initialise a packet with all the fields
     UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,
                           uint16_t numFrmPkts, int32_t tmStmp);
