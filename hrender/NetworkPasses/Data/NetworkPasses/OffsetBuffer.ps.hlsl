@@ -8,13 +8,13 @@ cbuffer OffsetCb
 }
 
 // Input textures that needs to be set by the C++ code
-Texture2D<float4> gVisBufferOrig;
+Texture2D<uint> gVisBufferOrig;
 Texture2D<float4> gMotionVectors;
 
 // Output texture with offset visibility buffer
 struct PsOut
 {
-    float4 visOffset : SV_Target0;
+	uint visOffset : SV_Target0;
 };
 
 PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
@@ -39,7 +39,7 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
     }
 
     // Read original visibility buffer using the offset coordinates
-    float4 offsetVisibilityInfo = gVisBufferOrig[offsetCoords];
+    uint offsetVisibilityInfo = gVisBufferOrig[offsetCoords];
 
     // Return the offset visibility buffer
     motionVecBufOut.visOffset = offsetVisibilityInfo;
