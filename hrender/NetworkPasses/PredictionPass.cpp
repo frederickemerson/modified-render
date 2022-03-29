@@ -250,9 +250,7 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
     // 0.0f is the minimum value of the offset and 2.0f is the maximum value
     dirty |= (int)pPassWindow->slider("Offset factor", mOffsetFactor, 0.0f, 0.1f);
 
-    pPassWindow->text("Number of frames behind: " + std::to_string(framesDifference));
-
-    dirty |= (int)pPassWindow->var("Perceived lag in frames", mPercvDelay, 0, 1000, 0.01f);
+    pPassWindow->text("Perceived number of frames behind: " + std::to_string(mPercvDelay));
 
     dirty |= (int)pPassWindow->checkbox(mUsePercvDelay ? "Using perceived delay" : "Not using perceived delay", mUsePercvDelay);
     if (!mUsePercvDelay)
