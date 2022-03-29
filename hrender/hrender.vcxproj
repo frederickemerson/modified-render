@@ -19,9 +19,11 @@
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Regression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
@@ -55,9 +57,11 @@
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp" />
+    <ClInclude Include="DxrTutorSharedUtils\Compression.h" />
     <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h" />
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
+    <ClInclude Include="DxrTutorSharedUtils\Regression.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />

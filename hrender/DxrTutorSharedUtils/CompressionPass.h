@@ -215,11 +215,6 @@ public:
     std::function<char* ()> mGetInputBuffer;
     std::function<int ()> mGetInputBufferSize;
 
-    // Buffer for storing output of compression/decompression
-    int outputBufferSize;
-    char* outputBuffer;
-    char* outputBufferNVENC;
-
     static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int ()> getInputBufferSize) {
         if (mode == Mode::Compression) {
             return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui"));
@@ -243,6 +238,12 @@ protected:
         mGetInputBuffer = getInputBuffer;
         mGetInputBufferSize = getInputBufferSize;
     }
+
+    // Buffer for storing output of compression/decompression
+    int outputBufferSize;
+    char* intermediateBuffer;
+    char* outputBuffer;
+    char* outputBufferNVENC;
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;

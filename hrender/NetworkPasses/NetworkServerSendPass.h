@@ -11,6 +11,7 @@ public:
 	}
 	const NetworkPass::Mode mode = Mode::ServerSend;
 
+	static char* intermediateBuffer;
 
 protected:
 	NetworkServerSendPass(int texWidth, int texHeight) 

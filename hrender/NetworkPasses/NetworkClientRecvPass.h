@@ -14,6 +14,7 @@ public:
 	// Client - Two buffers for writing and reading at the same time
 	static char* clientReadBuffer;
 	static char* clientWriteBuffer;
+	static char* intermediateBuffer; // for storing before compression/decompression
 
 protected:
 	NetworkClientRecvPass(int texWidth, int texHeight) 

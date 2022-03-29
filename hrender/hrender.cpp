@@ -116,6 +116,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             auto pass = MemoryTransferPassServerGPU_CPU::create();
             pipeline->setPass(i, pass);
             inputBufferArgument = std::bind(&MemoryTransferPassServerGPU_CPU::getOutputBuffer, pass.get());
+            inputBufferSizeArgument = std::bind(&MemoryTransferPassServerGPU_CPU::getOutputBufferSize, pass.get());
         }
         else if (renderConfiguration.passOrder[i] == MemoryTransferPassCPU_GPU) {
             pipeline->setPass(i, MemoryTransferPassClientCPU_GPU::create(inputBufferArgument));
@@ -261,13 +262,13 @@ void runServer()
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
     0, // sceneIndex
-    6,
+    5,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
             JitteredGBufferPass,
             VisibilityPass,
             MemoryTransferPassGPU_CPU,
-            CompressionPass,
+            //CompressionPass,
             NetworkServerSendPass
      }
     };
@@ -278,7 +279,7 @@ void runServer()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
         });
 
     // Start our program
@@ -307,7 +308,12 @@ void runClient()
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
+    // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    // 004 SERVER
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
+    // 005 SERVER
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.26", DEFAULT_PORT_UDP);
 
     // --- RenderConfigPass 1 Send camera data to server--- //
     // --- RenderConfigPass 2 receive visibility bitmap from server --- //
@@ -321,11 +327,11 @@ void runClient()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        9,
+        8,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
                 NetworkClientRecvPass,
-                DecompressionPass,
+                //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
                 PredictionPass,
                 VShadingPass,
@@ -341,7 +347,7 @@ void runClient()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 })
     });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");

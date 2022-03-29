@@ -37,6 +37,7 @@
 #include "FrameData.h"
 #include <chrono>
 #include "assert.h"
+#include "../DxrTutorSharedUtils/Compression.h"
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -182,6 +183,8 @@ public:
     double getTimeForOneSequentialFrame();
 
 private:
+    bool compression = true;
+
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
 

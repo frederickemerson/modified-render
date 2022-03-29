@@ -1,4 +1,3 @@
-#include "../NetworkPasses/NetworkServerRecvPass.h"
 #include "../NetworkPasses/NetworkClientRecvPass.h"
 
 #include "ClientNetworkManager.h"
@@ -129,6 +128,17 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             // would have incremented it after it sent camera data
             numFramesBehind = clientFrameNum - 1 - rcvdFrameData.frameNumber;
 
+            if (compression) {
+                int decompressedSize = Compression::executeLZ4Decompress(NetworkClientRecvPass::clientWriteBuffer, 
+                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, VIS_TEX_LEN);
+                char* tempPtr = NetworkClientRecvPass::intermediateBuffer;
+                NetworkClientRecvPass::intermediateBuffer = NetworkClientRecvPass::clientWriteBuffer;
+                NetworkClientRecvPass::clientWriteBuffer = tempPtr;
+            }
+            else {
+                mOutputBufferSize = rcvdFrameData.frameSize;
+            }
+
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(ClientNetworkManager::mMutexClientVisTexRead);
@@ -137,7 +147,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 NetworkClientRecvPass::clientWriteBuffer = tempPtr;
 
                 mOutputBuffer = NetworkClientRecvPass::clientReadBuffer;
-                mOutputBufferSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }
 
@@ -164,10 +173,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             }
         }
 
-        //if (clientFrameNum == rcvdFrameData.frameNumber) {
-        //    // signal sequential new texture received, only for sequential waiting network recv 
-        //    mSpClientSeqTexRecv.signal();
-        //}
+        if (clientFrameNum == rcvdFrameData.frameNumber) {
+            // signal sequential new texture received, only for sequential waiting network recv 
+            mSpClientSeqTexRecv.signal();
+        }
 
         if (!executeForever)
         {

@@ -20,8 +20,8 @@
 #include "../DxrTutorSharedUtils/RenderPass.h"
 #include "../DxrTutorSharedUtils/RayLaunch.h"
 #include "../NetworkPasses/NetworkPass.h"
-
 #include "../DxrTutorSharedUtils/RenderConfig.h"
+#include "../DxrTutorSharedUtils/Regression.h"
 
 /**
  * Memory transfer on client side, from CPU to GPU.

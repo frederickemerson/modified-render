@@ -1,5 +1,5 @@
 #include "../NetworkPasses/NetworkServerRecvPass.h"
-#include "../NetworkPasses/NetworkClientRecvPass.h"
+#include "../NetworkPasses/NetworkServerSendPass.h"
 
 #include "ServerNetworkManager.h"
 
@@ -116,7 +116,6 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
         {
             std::lock_guard lock(mMutexServerVisTexRead);
             char* toSendData = mGetInputBuffer();
-
             // The size of the actual Buffer
             // that is given by Falcor is less then VIS_TEX_LEN
             // 
@@ -125,6 +124,13 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // size to prevent reading outside of the Falcor Buffer
             int visTexSizeActual = texWidth * texHeight * 4;
             int toSendSize = mGetInputBufferSize();
+
+            if (compression) {
+                int compressedSize = Compression::executeLZ4Compress(mGetInputBuffer(), 
+                    NetworkServerSendPass::intermediateBuffer, mGetInputBufferSize());
+                toSendData = NetworkServerSendPass::intermediateBuffer;
+                toSendSize = compressedSize;
+            }
 
             // Send the visBuffer back to the sender
             // Generate timestamp

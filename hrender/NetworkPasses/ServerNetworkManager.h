@@ -109,11 +109,7 @@ public:
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;
-    std::function<int ()> mGetInputBufferSize;
-    int mOutputBufferSize;
-    char* mOutputBuffer; // for getOutputBuffer, usually, this points to NetworkPass::clientReadBuffer 
-    char* getOutputBuffer() { return mOutputBuffer; }
-    int getOutputBufferSize() { return mOutputBufferSize; }
+    std::function<int ()> mGetInputBufferSize; 
 
     // client queue to send
     std::queue<int> sendClientQueue;
@@ -191,4 +187,7 @@ public:
                                 int texHeight);
 
     bool CloseServerConnectionUdp();
+
+private:
+        bool compression = true;
 };

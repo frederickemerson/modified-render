@@ -3,6 +3,7 @@
 
 char* NetworkClientRecvPass::clientReadBuffer = new char[VIS_TEX_LEN];
 char* NetworkClientRecvPass::clientWriteBuffer = new char[VIS_TEX_LEN];
+char* NetworkClientRecvPass::intermediateBuffer = new char[VIS_TEX_LEN];
 
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
@@ -107,5 +108,51 @@ inline void NetworkClientRecvPass::checkMotionVector() {
 }
 
 inline void NetworkClientRecvPass::checkNetworkPing() {
+
+}
+
+
+float cameraWeightUX;
+float cameraWeightUY;
+float cameraWeightUZ;
+float cameraWeightVX;
+float cameraWeightVY;
+float cameraWeightVZ;
+float cameraWeightWX;
+float cameraWeightWY;
+float cameraWeightWZ;
+
+float networkWeight;
+float constant;
+
+void initialiseWeights() {
+    // we want initial weights to be such that weight * value = around the same value
+    float cameraWeightUX = 1;
+    float cameraWeightUY = 1;
+    float cameraWeightUZ = 1;
+    float cameraWeightVX = 1;
+    float cameraWeightVY = 1;
+    float cameraWeightVZ = 1;
+    float cameraWeightWX = 1;
+    float cameraWeightWY = 1;
+    float cameraWeightWZ = 1;
+
+    float networkWeight = 1;
+    float constant = 1;
+}
+
+int predictLoss() {
+    // camera data weights
+    
+    return 0;
+}
+
+
+
+void fit() {
+    int predictedLoss = predictLoss();
+    //int actualLoss = calculateLoss();
+    
+
 
 }
