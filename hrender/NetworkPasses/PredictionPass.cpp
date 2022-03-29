@@ -148,7 +148,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     }
 
     // Retrieve frames difference from NetworkManager
-    int framesDiff = ResourceManager::mNetworkManager->numFramesBehind;
+    int framesDiff = ResourceManager::mClientNetworkManager->numFramesBehind;
 
     mPercvDelay = framesDiff;
     char buffer[100];
