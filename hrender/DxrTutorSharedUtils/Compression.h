@@ -2,7 +2,6 @@
 
 #include "lz4.h"
 #include <memory>
-#include "debugapi.h"
 
 class Compression {
 
