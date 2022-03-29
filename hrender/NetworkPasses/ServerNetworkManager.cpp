@@ -100,9 +100,12 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
     while (true)
     {
+        int clientIndexToSend = sendClientQueue.front();
+        sendClientQueue.pop();
+
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         std::string frameMsg = std::string("\n\n================================ FRAME ") +
-            std::to_string(clientFrameNum) + std::string(" ================================");
+            std::to_string(clientFrameNum[clientIndexToSend]) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
@@ -128,8 +131,9 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
             // Send clientFrameNum
-            SendTextureUdp({ toSendSize, clientFrameNum, timestamp },
+            SendTextureUdp({ toSendSize, clientFrameNum[clientIndexToSend], timestamp },
                            toSendData,
+                           clientIndexToSend,
                            mServerUdpSock);
         }
         
@@ -139,8 +143,8 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
         // output end message
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
         std::string endMsg = std::string("\n\n================================ Frame ") +
-            std::to_string(clientFrameNum) + std::string(" COMPLETE, ") +
-            std::to_string(numFramesRendered) +
+            std::to_string(clientFrameNum[clientIndexToSend]) + std::string(" COMPLETE for client #") +
+            std::to_string(clientIndexToSend) + std::string(", ") + std::to_string(numFramesRendered) +
             (" total frames rendered by server ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
         
@@ -164,11 +168,8 @@ bool ServerNetworkManager::CloseServerConnectionUdp()
     return true;
 }
 
-void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp)
+void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp)
 {
-    int clientIndexToSend = sendClientQueue.front();
-    sendClientQueue.pop();
-    clientFrameNum[clientIndexToSend]++;
 
     // Variable splitSize controls the size of the split packets
     int32_t splitSize = UdpCustomPacket::maxPacketSize;
@@ -180,10 +181,10 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
-        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndexToSend], size, clientFrameNum[clientIndexToSend],
+        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
                                         numOfFramePackets, frameData.timestamp);
 
-        if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndexToSend, socketUdp))
+        if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
         {
             char buffer[70];
             sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
@@ -192,7 +193,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
             return;
         }
 
-        serverSeqNum[clientIndexToSend]++;
+        serverSeqNum[clientIndex]++;
         currentOffset += size;
     }
 

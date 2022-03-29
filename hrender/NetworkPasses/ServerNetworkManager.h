@@ -119,10 +119,10 @@ public:
     std::queue<int> sendClientQueue;
     std::map<ULONG, int> mapClientAddressToIndex;
 
-    void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
+    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
-        std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
+                           std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
                            SOCKET& socketUdp,
                            bool useLongTimeout);
 
