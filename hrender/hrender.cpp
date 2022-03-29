@@ -116,6 +116,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             auto pass = MemoryTransferPassServerGPU_CPU::create();
             pipeline->setPass(i, pass);
             inputBufferArgument = std::bind(&MemoryTransferPassServerGPU_CPU::getOutputBuffer, pass.get());
+            inputBufferSizeArgument = std::bind(&MemoryTransferPassServerGPU_CPU::getOutputBufferSize, pass.get());
         }
         else if (renderConfiguration.passOrder[i] == MemoryTransferPassCPU_GPU) {
             pipeline->setPass(i, MemoryTransferPassClientCPU_GPU::create(inputBufferArgument));
@@ -307,7 +308,12 @@ void runClient()
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
+    // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    // 004 SERVER
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
+    // 005 SERVER
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.26", DEFAULT_PORT_UDP);
 
     // --- RenderConfigPass 1 Send camera data to server--- //
     // --- RenderConfigPass 2 receive visibility bitmap from server --- //
