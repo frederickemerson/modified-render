@@ -127,7 +127,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
             if (compression) {
                 int decompressedSize = Compression::executeLZ4Decompress(NetworkClientRecvPass::clientWriteBuffer, 
-                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, 1920 * 1080 * 4);
+                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, VIS_TEX_LEN);
                 char* tempPtr = NetworkClientRecvPass::intermediateBuffer;
                 NetworkClientRecvPass::intermediateBuffer = NetworkClientRecvPass::clientWriteBuffer;
                 NetworkClientRecvPass::clientWriteBuffer = tempPtr;

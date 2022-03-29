@@ -37,7 +37,7 @@ public:
 
     // get output buffer on CPU memory after memory transfer
     char* getOutputBuffer() { return (char*)outputBuffer; }
-    int getOutputBufferSize() { return 1920 * 1080 * 4; }
+    int getOutputBufferSize() { return VIS_TEX_LEN; }
 
 protected:
     MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
