@@ -29,10 +29,12 @@
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
     <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\GGXReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
     <ClCompile Include="Libraries\minilzo.c" />
     <ClCompile Include="hrender.cpp" />
@@ -56,10 +58,12 @@
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
     <ClInclude Include="NetworkPasses\GGXReflectionPass.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
     <ClInclude Include="Libraries\lzoconf.h" />
     <ClInclude Include="Libraries\lzodefs.h" />
@@ -94,11 +98,13 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\GGXReflectionPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>

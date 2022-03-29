@@ -44,10 +44,10 @@ struct PS_OUTPUT
 
 float3 SSRRayMarch(float3 origin, float3 direction)
 {
-	int iteration = 20;
+	int iteration = 200;
 	for (int i = 0; i < iteration; i++) {
 		// Test point goes along the direction
-		origin += direction * 0.2;
+		origin += direction * 3;
 
 		// World position to screen position
 		float4 posS = mul(float4(origin, 1.0), gViewProjMat);
@@ -57,8 +57,14 @@ float3 SSRRayMarch(float3 origin, float3 direction)
 			return float3(0.0f);
 		}
 		float depth = gZBuffer[posS.xy];
-		if (depth < posS.z || i == iteration - 1) {
-			return gVshading[origin.xy].rgb;
+		if (depth <= posS.z ) {
+			float4 difMatlColor;
+			float4 specMatlColor;
+			float4 pixelEmissive;
+			float4 matlOthers;
+			unpackTextureData(asuint(gTexData[origin.xy]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
+			return  specMatlColor.g * gVshading[origin.xy].rgb;
+			//return specMatlColor.rgb;
 		}
 	}
 
@@ -68,7 +74,6 @@ float3 SSRRayMarch(float3 origin, float3 direction)
 PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 {
 	PS_OUTPUT SSRBufOut;
-
 	uint2 pixelPos = (uint2)pos.xy;
 
 	// Load g-buffer data
@@ -88,9 +93,10 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// If we don't hit any geometry, our difuse material contains our background color.
 	float3 shadeColor = isGeometryValid ? float3(0.0f) : difMatlColor.rgb;
 	// If geometry invalid or we skip SSR, this pixel is discard for raytracing.
-	uint maskFlag = (isGeometryValid && !gSkipSSR) ? 1 : 0;
+	SSRBufOut.RayMask = (!isGeometryValid || gSkipSSR) ? 1 : 0;
 	// We use this temp color to check SSR hit or miss
 	float3 maskColor = VColor.rgb + pixelEmissive.rgb;
+	float3 SSRColor = float3(0);
 
 	if (isGeometryValid)
 	{
@@ -108,23 +114,31 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 				float3 R = normalize(reflect(V, worldNorm.xyz));
 
 				// Do SSR
-				float3 SSRColor = gSkipSSR ? float3(0, 0, 0) : SSRRayMarch(worldPos.xyz, R);
+				float3 ssrColor = gSkipSSR ? float3(0, 0, 0) : SSRRayMarch(worldPos.xyz, R);
 
-				shadeColor += SSRColor;
+				if (SSRColor.r != 0.0f && SSRColor.g != 0.0f && SSRColor.b != 0.0f) SSRBufOut.RayMask = 1;
+				//shadeColor = maskColor + 0.5f * SSRColor;
+				SSRColor += ssrColor;
 
-				if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
-				else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;
-				else if (shadeColor.b >= 1.0f)shadeColor.b = 1.0f;
+				
 			}
 		}
 
 	}
 
 	// If shaderColor has been changed, means SSR worked for this pixel, no need to do raytracing.
-	if (shadeColor.r != maskColor.r || shadeColor.g != maskColor.g || shadeColor.b != maskColor.b) SSRBufOut.RayMask = 0;
-	else SSRBufOut.RayMask = 1;
+	//if (shadeColor.r != maskColor.r || shadeColor.g != maskColor.g || shadeColor.b != maskColor.b) SSRBufOut.RayMask = 1;
+	//else SSRBufOut.RayMask = 0;
+	//if(shadeColor.r < 0.5f) SSRBufOut.RayMask = 0;
+	//else SSRBufOut.RayMask = 1;
 
 	// SSRColor blend vshading color, emissive color and SSR color.
+	if (SSRBufOut.RayMask == 1) shadeColor = maskColor + specMatlColor.g * SSRColor;
+
+	if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
+	else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;
+	else if (shadeColor.b >= 1.0f)shadeColor.b = 1.0f;
+
 	SSRBufOut.SSRColor = float4(shadeColor, 1.0f);
 
 	return SSRBufOut;

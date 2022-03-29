@@ -74,6 +74,10 @@
       <Filter>Libraries</Filter>
     </ClCompile>
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h">
@@ -156,6 +160,10 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="hrender.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -264,6 +272,10 @@
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

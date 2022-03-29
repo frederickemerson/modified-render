@@ -39,6 +39,8 @@
 #include "NetworkPasses/NetworkPass.h"
 #include "NetworkPasses/GGXReflectionPass.h"
 #include "NetworkPasses/ScreenSpaceReflectionPass.h"
+#include "NetworkPasses/ServerRayTracingReflectionPass.h"
+#include "NetworkPasses/ReflectionCompositePass.h"
 
 void runServer(bool useTcp);
 void runClient(bool useTcp);
@@ -47,14 +49,14 @@ void runDebug();
 // ========= //
 // PINK ROOM //
 // ========= //
-const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
-std::string defaultSceneName = "pink_room\\pink_room.pyscene";
+//const char* environmentMap = "MonValley_G_DirtRoad_3k.hdr";
+//std::string defaultSceneName = "pink_room\\pink_room.pyscene";
 
 // ========== //
 // SUN TEMPLE //
 // ========== //
-//const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
-//std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
+const char* environmentMap = "SunTemple\\SunTemple_Skybox.hdr";
+std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
 
 // ======= //
 // BISTRO //
@@ -147,18 +149,25 @@ void runDebug()
     //pipeline->setPass(3, GGXReflectionPass::create("GGXReflection"));
     pipeline->setPass(3, ScreenSpaceReflectionPass::create());
 
-    // --- Pass 5 just lets us select which pass to view on screen --- //
-    pipeline->setPass(4, CopyToOutputPass::create());
+    // --- Pass 5 computes raytracing for the scene --- //
+    pipeline->setPass(4, ServerRayTracingReflectionPass::create("SRTReflection"));
+    //pipeline->setPass(4, ScreenSpaceReflectionPass::create());
 
-    // --- Pass 6 temporally accumulates frames for denoising --- //
-    pipeline->setPass(5, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
+    // --- Pass 6 compose the SSR color and raytracing reflections --- //
+    pipeline->setPass(5, ReflectionCompositePass::create());
+
+    // --- Pass 6 just lets us select which pass to view on screen --- //
+    pipeline->setPass(6, CopyToOutputPass::create());
+
+    // --- Pass 7 temporally accumulates frames for denoising --- //
+    pipeline->setPass(7, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
 
     // ============================ //
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 2, 1, 1, 1, 1, 1 })
         });
 
     // Start our program

@@ -16,14 +16,14 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-#include "ScreenSpaceReflectionPass.h"
+#include "ReflectionCompositePass.h"
 
 namespace {
     // Where is our shaders located?
-    const char* kSSRShader = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\screenSpaceReflectionPass.ps.hlsl";
+    const char* kRCShader = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\ReflectionCompositePass.ps.hlsl";
 };
 
-bool ScreenSpaceReflectionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
+bool ReflectionCompositePass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
@@ -32,56 +32,49 @@ bool ScreenSpaceReflectionPass::initialize(RenderContext* pRenderContext, Resour
     setGuiSize(int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mpResManager->requestTextureResource("Z-Buffer", ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags);
-    mpResManager->requestTextureResource("RayMask", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    mpResManager->requestTextureResource("SSRColor", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    //mpResManager->requestTextureResource("SSRColor", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    //mpResManager->requestTextureResource("SRTReflection", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("RCColor", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
-        
 
     // Create our graphics state and shaders
     mpGfxState = GraphicsState::create();
-    mpSSRShader = FullscreenLaunch::create(kSSRShader);
+    mpRCShader = FullscreenLaunch::create(kRCShader);
 
     return true;
 }
 
-void ScreenSpaceReflectionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
+void ReflectionCompositePass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     if (pScene) mpScene = pScene;
 
-    mpSSRFbo = mpResManager->createManagedFbo({ "RayMask", "SSRColor" }, "Z-Buffer");
+    mpRCFbo = mpResManager->createManagedFbo({"RCColor" }, "Z-Buffer");
 }
 
-void ScreenSpaceReflectionPass::execute(RenderContext* pRenderContext)
+void ReflectionCompositePass::execute(RenderContext* pRenderContext)
 {
-    pRenderContext->clearFbo(mpSSRFbo.get(), float4(0.0f), 1.0f, 0);
+    pRenderContext->clearFbo(mpRCFbo.get(), float4(0.0f), 1, 0);
 
     Camera::SharedPtr cam = mpScene->getCamera();
 
     // Set our SSR shader variables
-    auto SSRVars = mpSSRShader->getVars();
-    SSRVars["SSRCB"]["gSkipSSR"] = mSkipSSR;
-    SSRVars["SSRCB"]["gViewProjMat"] = (float4x4)cam->getViewProjMatrix();
-    SSRVars["SSRCB"]["gLightCount"] = mpScene->getLightCount();
-    SSRVars["SSRCB"]["gCamPos"] = cam->getPosition();
-    SSRVars["gVshading"] = mpResManager->getTexture("V-shading");
-    SSRVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
-    SSRVars["gPos"] = mpResManager->getTexture("WorldPosition");
-    SSRVars["gNorm"] = mpResManager->getTexture("WorldNormal");
-    SSRVars["gTexData"] = mpResManager->getTexture("__TextureData");
-    SSRVars["gZBuffer"] = mpResManager->getTexture("Z-Buffer");
+    auto RCVars = mpRCShader->getVars();
+    RCVars["RCCB"]["gSkipRC"] = mSkipRC;
+    RCVars["RCCB"]["gCamPos"] = cam->getPosition();
+    RCVars["gSSRColor"] = mpResManager->getTexture("SSRColor");
+    RCVars["gSRTColor"] = mpResManager->getTexture("SRTReflection");
 
-    mpGfxState->setFbo(mpSSRFbo);
-    mpSSRShader->execute(pRenderContext, mpSSRFbo);
+    mpGfxState->setFbo(mpRCFbo);
+    mpRCShader->execute(pRenderContext, mpRCFbo);
 }
 
-void ScreenSpaceReflectionPass::renderGui(Gui::Window* pPassWindow)
+void ReflectionCompositePass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
 
     // Window is marked dirty if any of the configuration is changed.
-    dirty |= (int)pPassWindow->checkbox("Skip SSR computation", mSkipSSR, false);
+    dirty |= (int)pPassWindow->checkbox("Skip RC computation", mSkipRC, false);
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
