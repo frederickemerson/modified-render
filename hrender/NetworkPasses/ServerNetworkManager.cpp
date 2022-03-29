@@ -260,7 +260,7 @@ bool ServerNetworkManager::RecvCameraDataUdp(
         clientSeqNum[clientIndex]++;
 
         // Get frame number from the packet
-        clientFrameNum = recvHeader.frameNumber;
+        clientFrameNum[clientIndex] = recvHeader.frameNumber;
 
         {
             assert(recvHeader.dataSize == sizeof(cameraData[clientIndex]));
