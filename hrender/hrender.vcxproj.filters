@@ -95,6 +95,12 @@
     <ClCompile Include="NetworkPasses\PredictionPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Regression.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -200,6 +206,12 @@
     </ClInclude>
     <ClInclude Include="NetworkPasses\PredictionPass.h">
       <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Regression.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Compression.h">
+      <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

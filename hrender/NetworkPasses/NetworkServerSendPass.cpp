@@ -1,5 +1,6 @@
 #include "NetworkServerSendPass.h"
 
+char* NetworkServerSendPass::intermediateBuffer = new char[VIS_TEX_LEN];
 
 void NetworkServerSendPass::execute(RenderContext* pRenderContext)
 {

@@ -1,4 +1,3 @@
-#include "../NetworkPasses/NetworkServerRecvPass.h"
 #include "../NetworkPasses/NetworkClientRecvPass.h"
 
 #include "ClientNetworkManager.h"
@@ -126,6 +125,18 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             // find the difference in frame number for prediction
             numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
 
+            if (compression) {
+                int decompressedSize = Compression::executeLZ4Decompress(NetworkClientRecvPass::clientWriteBuffer, 
+                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, 1920 * 1080);
+                char* tempPtr = NetworkClientRecvPass::intermediateBuffer;
+                NetworkClientRecvPass::intermediateBuffer = NetworkClientRecvPass::clientWriteBuffer;
+                NetworkClientRecvPass::clientWriteBuffer = tempPtr;
+                mOutputBufferSize = decompressedSize;
+            }
+            else {
+                mOutputBufferSize = rcvdFrameData.frameSize;
+            }
+
             // acquire reading buffer mutex to swap buffers
             {
                 std::lock_guard readingLock(ClientNetworkManager::mMutexClientVisTexRead);
@@ -134,7 +145,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 NetworkClientRecvPass::clientWriteBuffer = tempPtr;
 
                 mOutputBuffer = NetworkClientRecvPass::clientReadBuffer;
-                mOutputBufferSize = rcvdFrameData.frameSize;
                 // mutex and lock are released at the end of scope
             }
 
@@ -161,10 +171,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             }
         }
 
-        //if (clientFrameNum == rcvdFrameData.frameNumber) {
-        //    // signal sequential new texture received, only for sequential waiting network recv 
-        //    mSpClientSeqTexRecv.signal();
-        //}
+        if (clientFrameNum == rcvdFrameData.frameNumber) {
+            // signal sequential new texture received, only for sequential waiting network recv 
+            mSpClientSeqTexRecv.signal();
+        }
 
         if (!executeForever)
         {

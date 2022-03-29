@@ -32,7 +32,7 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     int sizeToAllocateOutputBuffer = RenderConfig::getTotalSize();
     outputBuffer = new char[RenderConfig::getTotalSize()];
     outputBufferNVENC = new char[RenderConfig::getTotalSize()];
-
+    
     if (mMode == Mode::Decompression) {
         initialiseDecoder();
     }
@@ -208,7 +208,6 @@ void CompressionPass::DecodeMediaFile()
         OutputDebugStringA(msg);
     }
     nFrame += 1; //nFrameReturned;
-    //RenderConfig::mConfig[0].compressionPassOutputLocation = outputBufferNVENC;
 }
 
 void CompressionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
@@ -223,7 +222,6 @@ void CompressionPass::execute(RenderContext* pRenderContext)
     }
     //executeNVENC(pRenderContext);
 }
-
 
 void CompressionPass::executeNVENC(RenderContext* pRenderContext)
 {
@@ -313,7 +311,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 }
 
                 // Decompress buffer
-                int decompressedSize = LZ4_decompress_safe(sourceBuffer, outputBuffer, sourceBufferSize, maxDecompressedSize);
+                int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
                 if (decompressedSize <= 0) {
                     OutputDebugString(L"\nError: Decompression failed\n");
                 }
@@ -324,9 +322,6 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Update size of decompressed buffer
                 outputBufferSize = decompressedSize;
-
-                // Update location of buffer
-                //RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
             }
         }
     }
