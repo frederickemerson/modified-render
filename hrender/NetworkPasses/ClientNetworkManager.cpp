@@ -128,6 +128,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             // would have incremented it after it sent camera data
             numFramesBehind = clientFrameNum - 1 - rcvdFrameData.frameNumber;
 
+            if (numFramesBehind == 0) {
+                mSpClientSeqTexRecv.signal();
+            }
+
             if (compression) {
                 int decompressedSize = Compression::executeLZ4Decompress(NetworkClientRecvPass::clientWriteBuffer, 
                     NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, VIS_TEX_LEN);
@@ -171,11 +175,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             {
                 expectedFrameNum++;
             }
-        }
-
-        if (clientFrameNum == rcvdFrameData.frameNumber) {
-            // signal sequential new texture received, only for sequential waiting network recv 
-            mSpClientSeqTexRecv.signal();
         }
 
         if (!executeForever)

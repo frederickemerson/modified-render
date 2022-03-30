@@ -46,34 +46,34 @@ void Regression::calculate(float cameraData[9], float networkPing) {
 
 void Regression::storeEntry(int loss, float cameraData[9], float networkPing)
 {
-    std::ofstream myfile(fileName);
-    if (myfile.is_open())
-    {
-        myfile << loss << " ";
-        for (int i = 0; i < 9; i++) {
-            myfile << cameraData[i] << " ";
-        }
-        myfile << networkPing << "\n";
-        myfile.close();
-    }
+    //std::ofstream myfile(fileName);
+    //if (myfile.is_open())
+    //{
+    //    myfile << loss << " ";
+    //    for (int i = 0; i < 9; i++) {
+    //        myfile << cameraData[i] << " ";
+    //    }
+    //    myfile << networkPing << "\n";
+    //    myfile.close();
+    //}
 }
 
 void Regression::addCamera(float UX, float UY, float UZ, float VX, float VY, float VZ, float WX, float WY, float WZ)
 {
-    Regression::CameraCoordinates dif = {
-        std::abs(UX - camData.UX),
-        std::abs(UY - camData.UY),
-        std::abs(UZ - camData.UZ),
-        std::abs(VX - camData.VX),
-        std::abs(VY - camData.VY),
-        std::abs(VZ - camData.VZ),
-        std::abs(WX - camData.WX),
-        std::abs(WY - camData.WY),
-        std::abs(WZ - camData.WZ) };
+    //Regression::CameraCoordinates dif = {
+    //    std::abs(UX - camData.UX),
+    //    std::abs(UY - camData.UY),
+    //    std::abs(UZ - camData.UZ),
+    //    std::abs(VX - camData.VX),
+    //    std::abs(VY - camData.VY),
+    //    std::abs(VZ - camData.VZ),
+    //    std::abs(WX - camData.WX),
+    //    std::abs(WY - camData.WY),
+    //    std::abs(WZ - camData.WZ) };
 
-    queueCameraChangeData.push(dif);
+    //queueCameraChangeData.push(dif);
 
-    camData = { UX, UY, UZ, VX, VY, VZ, WX, WY, WZ };
+    //camData = { UX, UY, UZ, VX, VY, VZ, WX, WY, WZ };
 }
 
 void Regression::addNetworkPing(int frameIndex, float networkPing)
@@ -82,5 +82,5 @@ void Regression::addNetworkPing(int frameIndex, float networkPing)
 
 void Regression::addNonSeqFrame(int* nonSequentialFrame)
 {
-    queueNonSeqFrame.push(nonSequentialFrame);
+    //queueNonSeqFrame.push(nonSequentialFrame);
 }
