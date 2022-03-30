@@ -38,7 +38,6 @@
 #include <chrono>
 #include "assert.h"
 #include "../DxrTutorSharedUtils/Compression.h"
-#include <semaphore>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -77,7 +76,7 @@ public:
     std::atomic_int numFramesBehind = 0;
 
     // Used by both server and client in UDP communication
-    int32_t serverSeqNum;   
+    int32_t serverSeqNum;
     std::atomic_int32_t clientSeqNum;
 
     using SharedPtr = std::shared_ptr<ClientNetworkManager>;
@@ -91,7 +90,7 @@ public:
     // Synchronise client sending thread with the rendering
     static Semaphore mSpClientCamPosReadyToSend;
     // signal for new texture received, only for sequential waiting recv network pass
-    static std::binary_semaphore mSpClientSeqTexRecv;
+    static Semaphore mSpClientSeqTexRecv;
     // Protect the client visibility textures with mutexes
     static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
 

@@ -6,7 +6,6 @@
 // UDP Client
 Semaphore ClientNetworkManager::mSpClientCamPosReadyToSend(false);
 Semaphore ClientNetworkManager::mSpClientSeqTexRecv(false);
-std::binary_semaphore ClientNetworkManager::mSpClientSeqTexRecv(0);
 std::mutex ClientNetworkManager::mMutexClientVisTexRead;
 
 bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
@@ -130,7 +129,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             numFramesBehind = clientFrameNum - 1 - rcvdFrameData.frameNumber;
 
             if (numFramesBehind == 0) {
-                mSpClientSeqTexRecv.release();
+                mSpClientSeqTexRecv.signal();
             }
 
             if (compression) {
