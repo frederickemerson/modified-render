@@ -100,8 +100,12 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
     while (true)
     {
-        int clientIndexToSend = sendClientQueue.front();
-        sendClientQueue.pop();
+        int clientIndexToSend = 0;
+
+        if (sendClientQueue.size() > 0) {
+            clientIndexToSend = sendClientQueue.front();
+            sendClientQueue.pop();
+        }
 
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         std::string frameMsg = std::string("\n\n================================ FRAME ") +
