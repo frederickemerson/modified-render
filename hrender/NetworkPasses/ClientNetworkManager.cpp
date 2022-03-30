@@ -34,6 +34,15 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
     inet_pton(AF_INET, serverName, &serverAddress.sin_addr.S_un.S_addr);
+
+    //bind
+    if (bind(mClientUdpSock, (struct sockaddr*) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
+    {
+        char buffer[69];
+        sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
+        exit(EXIT_FAILURE);
+    }
     
     //mSi_otherUdp.sin_addr.S_un.S_addr = inet_addr(serverName);
     return true;
