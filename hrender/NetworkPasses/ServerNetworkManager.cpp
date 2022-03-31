@@ -61,7 +61,7 @@ bool ServerNetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& out
     return true;
 }
 
-bool ServerNetworkManager::ListenServerUdp(bool executeForever, bool useLongTimeout)
+bool ServerNetworkManager::ListenServerUdp()
 {
     // Receive until the peer shuts down the connection
     do
@@ -73,8 +73,7 @@ bool ServerNetworkManager::ListenServerUdp(bool executeForever, bool useLongTime
         //const auto delayStartTime = std::chrono::system_clock::now();            // Artificial Delay
         RecvCameraDataUdp(NetworkServerRecvPass::clientCamData,
             NetworkServerRecvPass::mutexForCamData,
-                          mServerUdpSock,
-                          useLongTimeout);
+                          mServerUdpSock);
         OutputDebugString(L"\n\n= NetworkThread - camData received over network =========");
 
         std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
@@ -83,7 +82,7 @@ bool ServerNetworkManager::ListenServerUdp(bool executeForever, bool useLongTime
         sprintf(printFps, "\n\n= ListenServerUdp - Frame took %.10f s, estimated FPS: %.2f =========", diff.count(), getFps(diff));
         OutputDebugStringA(printFps);
     }
-    while (executeForever);
+    while (true);
 
     return true;
 }
@@ -100,22 +99,24 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
     while (true)
     {
-        int clientIndexToSend = 0;
-
-        if (sendClientQueue.size() > 0) {
-            clientIndexToSend = sendClientQueue.front();
-            sendClientQueue.pop();
-        }
-
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
-        std::string frameMsg = std::string("\n\n================================ FRAME ") +
-            std::to_string(NetworkServerRecvPass::frameNumRendered.front()) + std::string(" ================================");
-        OutputDebugString(string_2_wstring(frameMsg).c_str());
-
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
         OutputDebugString(L"\n\n= NetworkThread - Awaiting visTex to finish rendering... =========");
         mSpServerVisTexComplete.wait();
         OutputDebugString(L"\n\n= NetworkThread - VisTex finished rendering. Awaiting visTex sending over network... =========");
+
+        //-------------client index --------------
+        int clientIndex = 0;
+        clientIndex = sendClientQueue.front();
+        sendClientQueue.pop();
+
+        //----------client frame num-------------
+        int frameNum = NetworkServerRecvPass::frameNumRendered.front();
+        NetworkServerRecvPass::frameNumRendered.pop();
+
+        std::string frameMsg = std::string("\n\n====== FRAME ") + std::to_string(frameNum)
+            + std::string(" OF CLIENT ") + std::to_string(clientIndex) + std::string("==========");
+        OutputDebugString(string_2_wstring(frameMsg).c_str());
 
         {
             std::lock_guard lock(mMutexServerVisTexRead);
@@ -140,12 +141,9 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-            // Send clientFrameNum
-            int frameNum = NetworkServerRecvPass::frameNumRendered.front();
-            NetworkServerRecvPass::frameNumRendered.pop();
             SendTextureUdp({ toSendSize, frameNum, timestamp },
                            toSendData,
-                           clientIndexToSend,
+                           clientIndex,
                            mServerUdpSock);
         }
         
@@ -155,8 +153,8 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
         // output end message
         OutputDebugString(L"\n\n= NetworkThread - visTex sent over network =========");
         std::string endMsg = std::string("\n\n================================ Frame ") +
-            std::to_string(clientFrameNum[clientIndexToSend]) + std::string(" COMPLETE for client #") +
-            std::to_string(clientIndexToSend) + std::string(", ") + std::to_string(numFramesRendered) +
+            std::to_string(frameNum) + std::string(" COMPLETE for client #") +
+            std::to_string(clientIndex) + std::string(", ") + std::to_string(numFramesRendered) +
             (" total frames rendered by server ================================");
         OutputDebugString(string_2_wstring(endMsg).c_str());
         
@@ -215,24 +213,16 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
 bool ServerNetworkManager::RecvCameraDataUdp(
     std::vector<std::array<float3, 3>>& cameraData,
     std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
-    SOCKET& socketUdp,
-    bool useLongTimeout)
+    SOCKET& socketUdp)
 {
     // Assumes server is receiving cam data from client
     UdpCustomPacketHeader recvHeader;
     bool hasReceived;
     char* packetData;
     char* recvBuffer = new char[DEFAULT_BUFLEN];
-    int clientIndex = 0;
-    if (useLongTimeout)
-    {
-        hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp,
-            clientIndex, UDP_FIRST_TIMEOUT_MS);
-    }
-    else
-    {
-        hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp, clientIndex);
-    }
+    int clientIndex = 0; // recv udp custom will set this value
+
+    hasReceived = RecvUdpCustom(recvBuffer, recvHeader, packetData, socketUdp, clientIndex);
 
     if (!hasReceived)
     {

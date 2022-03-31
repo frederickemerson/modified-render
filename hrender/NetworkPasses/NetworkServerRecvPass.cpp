@@ -41,21 +41,8 @@ void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
 
 bool NetworkServerRecvPass::firstServerRenderUdp(RenderContext* pRenderContext)
 {
-    // TODO: By right, we should receive scene as well
-
-    mFirstRender = false;
-
-    // Wait for first cam data to be received (run in sequence)
-    ResourceManager::mServerNetworkManager->ListenServerUdp(false, true);
     auto serverListen = [&]() {
-        // First packet in parallel will take some time to arrive as well
-        int numOfTimes = 1;
-        for (int i = 0; i < numOfTimes; i++)
-        {
-            ResourceManager::mServerNetworkManager->ListenServerUdp(false, true);
-        }
-        // Afterwards, loop infinitely
-        ResourceManager::mServerNetworkManager->ListenServerUdp(true, false);
+        ResourceManager::mServerNetworkManager->ListenServerUdp();
     };
     Threading::dispatchTask(serverListen);
     OutputDebugString(L"\n\n= firstServerRenderUdp - Network thread dispatched =========");

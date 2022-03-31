@@ -119,8 +119,7 @@ public:
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
                            std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
-                           SOCKET& socketUdp,
-                           bool useLongTimeout);
+                           SOCKET& socketUdp);
 
     // Receive data with UDP custom protocol
     // Returns false if an error was encountered
@@ -143,7 +142,7 @@ public:
                        char*& outDataPointer,
                        SOCKET& socketUdp,
                         int& fromClientIndex,
-                       int timeout = UDP_LISTENING_TIMEOUT_MS);
+                       int timeout = 100000000);
     
     // Same as RecvUdpCustom, but discards the packet if the
     // sequence number does not match the one that was given.
@@ -168,7 +167,7 @@ public:
                                char*& outDataPointer,
                                SOCKET& socketUdp,
                                int expectedSeqNum,
-                               int timeout = UDP_LISTENING_TIMEOUT_MS);
+                               int timeout = 100000000);
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
@@ -179,7 +178,7 @@ public:
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
     // Server's receiving thread
     // Listen to UDP packets with custom protocol
-    bool ListenServerUdp(bool executeForever, bool useLongTimeout);
+    bool ListenServerUdp();
     // Server's sending thread
     void SendWhenReadyServerUdp(RenderContext* pRenderContext,
                                 std::shared_ptr<ResourceManager> pResManager,
