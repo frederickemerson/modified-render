@@ -467,7 +467,7 @@ std::chrono::milliseconds ClientNetworkManager::getComparisonTimestamp()
     return getCurrentTime() - startTime;
 }
 
-inline void ClientNetworkManager::updateTimeForFrame(int frameReceived,
+void ClientNetworkManager::updateTimeForFrame(int frameReceived,
     std::chrono::time_point<std::chrono::system_clock> endOfFrame)
 {
     auto seqTime = timeAtCameraSent.front();
