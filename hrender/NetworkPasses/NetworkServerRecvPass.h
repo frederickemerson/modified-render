@@ -13,6 +13,7 @@ public:
 
 	static std::vector<std::array<float3, 3>> clientCamData;
 	static std::array<std::mutex, MAX_NUM_CLIENT> mutexForCamData;
+	static std::queue<int> frameNumRendered;
 
 protected:
 	NetworkServerRecvPass(int texWidth, int texHeight) 

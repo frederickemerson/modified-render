@@ -3,6 +3,7 @@
 std::vector<std::array<float3, 3>> NetworkServerRecvPass::clientCamData;
 std::array<std::mutex, MAX_NUM_CLIENT> NetworkServerRecvPass::mutexForCamData = { std::mutex(),
         std::mutex() , std::mutex() , std::mutex() };
+std::queue<int> NetworkServerRecvPass::frameNumRendered;
 
 void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
 {
@@ -17,6 +18,7 @@ void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
     int clientIndex = getClientToRender();
     {
         std::lock_guard lock(mutexForCamData[clientIndex]);
+        frameNumRendered.push(ResourceManager::mServerNetworkManager->clientFrameNum[clientIndex]);
         auto camData = NetworkServerRecvPass::clientCamData[clientIndex];
         cam->setPosition(camData[0]);
         cam->setUpVector(camData[1]);

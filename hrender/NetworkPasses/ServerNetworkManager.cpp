@@ -109,7 +109,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
         std::string frameMsg = std::string("\n\n================================ FRAME ") +
-            std::to_string(clientFrameNum[clientIndexToSend]) + std::string(" ================================");
+            std::to_string(NetworkServerRecvPass::frameNumRendered.front()) + std::string(" ================================");
         OutputDebugString(string_2_wstring(frameMsg).c_str());
 
         // Allow rendering using the camPos to begin, and wait for visTex to complete rendering
@@ -141,7 +141,9 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
             // Send clientFrameNum
-            SendTextureUdp({ toSendSize, clientFrameNum[clientIndexToSend], timestamp },
+            int frameNum = NetworkServerRecvPass::frameNumRendered.front();
+            NetworkServerRecvPass::frameNumRendered.pop();
+            SendTextureUdp({ toSendSize, frameNum, timestamp },
                            toSendData,
                            clientIndexToSend,
                            mServerUdpSock);
