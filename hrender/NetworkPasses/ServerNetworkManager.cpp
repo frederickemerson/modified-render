@@ -41,13 +41,13 @@ bool ServerNetworkManager::SetUpServerUdp(PCSTR port, int& outTexWidth, int& out
     memset(&(mServer.sin_zero), 0, 8);
 
     //Bind
-    //if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
-    //{
-    //    char buffer[69];
-    //    sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
-    //    OutputDebugStringA(buffer);
-    //    exit(EXIT_FAILURE);
-    //}
+    if (bind(mServerUdpSock, (struct sockaddr*) & mServer, sizeof(mServer)) == SOCKET_ERROR)
+    {
+        char buffer[69];
+        sprintf(buffer, "\n\n= Pre-Falcor Init - Bind failed with error code: %d", WSAGetLastError());
+        OutputDebugStringA(buffer);
+        exit(EXIT_FAILURE);
+    }
     OutputDebugString(L"\n\n= Pre-Falcor Init - UDP SOCKET SETUP COMPLETE =========");
 
     // for now, we only accept and hardcode the width and height
