@@ -72,7 +72,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         }
 
         recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
-
+        latestFrameRecv = rcvdFrameData.frameNumber;
         std::chrono::milliseconds currentTime = getComparisonTimestamp();
         std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
         if (timeDifference > std::chrono::milliseconds::zero())
