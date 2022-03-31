@@ -135,6 +135,8 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
                     NetworkServerSendPass::intermediateBuffer, mGetInputBufferSize());
                 toSendData = NetworkServerSendPass::intermediateBuffer;
                 toSendSize = compressedSize;
+                std::string frameMsg = std::string("\n\nCompressed texture to size: ") + std::to_string(compressedSize);
+                OutputDebugString(string_2_wstring(frameMsg).c_str());
             }
 
             // Send the visBuffer back to the sender
