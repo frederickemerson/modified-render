@@ -50,18 +50,11 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 
 void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
-    bool firstClientReceive = isFirstReceive;
     int32_t expectedFrameNum = 0;
 
     while (true)
     {
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
-        // dont render the first time because visibilityBuffer doesnt exist yet
-        // (new ordering sends camera Data after receive visibilityBuffer)
-        /*if (mFirstRender) {
-            mFirstRender = false;
-            return;
-        }*/
 
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
@@ -71,19 +64,12 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
         int recvStatus;
 
-        if (firstClientReceive)
-        {        
-            // Need to take a while to wait for the server,
-            // so we use a longer time out for the first time
-            recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock,
-                                        UDP_FIRST_TIMEOUT_MS);
-            // Store the time when the first frame was received
-            // (server sends timestamps relative to the time when the first frame was fully rendered)
-            if (startTime == std::chrono::milliseconds::zero())
-            {
-                startTime = getCurrentTime();
-            }
-            firstClientReceive = false;
+        recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
+        // Store the time when the first frame was received
+        // (server sends timestamps relative to the time when the first frame was fully rendered)
+        if (startTime == std::chrono::milliseconds::zero())
+        {
+            startTime = getCurrentTime();
         }
         else
         {
@@ -224,14 +210,6 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         // store this time as camera sent
         auto storeTime = std::make_pair(currentClientFrameNum, std::chrono::system_clock::now());
         timeAtCameraSent.emplace(storeTime);
-
-        //// Print debug information about time taken
-        //std::chrono::time_point endOfFrame = std::chrono::system_clock::now();
-        //std::chrono::duration<double> diff = endOfFrame - startOfFrame;
-        //char printFps[127];
-        //sprintf(printFps, "\n\n= SendWhenReadyClientUdp - Frame %d took %.10f s, estimated FPS: %.2f =========",
-        //    currentClientFrameNum, diff.count(), getFps(diff));
-        //OutputDebugStringA(printFps);
     }   
 }
 

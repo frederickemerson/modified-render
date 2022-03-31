@@ -137,7 +137,7 @@ public:
     // 3              - Current frame is okay, but next frame
     //                  has to be discarded.
     int RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
-                       int timeout = UDP_LISTENING_TIMEOUT_MS);
+                       int timeout = 100000000);
     bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
 
     // Receive data with UDP custom protocol
