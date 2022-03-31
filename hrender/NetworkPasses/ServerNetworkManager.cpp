@@ -88,8 +88,6 @@ bool ServerNetworkManager::ListenServerUdp()
 }
 
 void ServerNetworkManager::SendWhenReadyServerUdp(
-    RenderContext* pRenderContext,
-    std::shared_ptr<ResourceManager> pResManager,
     int texWidth,
     int texHeight)
 {
