@@ -252,8 +252,7 @@ void runServer()
     int texWidth, texHeight;
 
     ResourceManager::mServerNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-    // Start the server sending thread
-
+   
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 
@@ -263,14 +262,14 @@ void runServer()
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
     0, // sceneIndex
-    4,
+    5,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
             JitteredGBufferPass,
             VisibilityPass,
             MemoryTransferPassGPU_CPU,
             //CompressionPass,
-            //NetworkServerSendPass
+            NetworkServerSendPass
      }
     };
 
@@ -280,16 +279,8 @@ void runServer()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
         });
-    
-    // start server send thread, can remove if want separate passes (network server send pass, will slow down)
-    auto serverSend = [&]()
-    {
-        ResourceManager::mServerNetworkManager->
-            SendWhenReadyServerUdp(renderConfiguration.texWidth, renderConfiguration.texHeight);
-    };
-    Threading::dispatchTask(serverSend);
 
     // Start our program
     RenderingPipeline::run(pipeline, config);
@@ -360,13 +351,6 @@ void runClient()
     });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
-
-    // Start the client receiving thread
-    auto serverSend = [&]()
-    {
-        ResourceManager::mClientNetworkManager->ListenClientUdp(true, true);
-    };
-    Threading::dispatchTask(serverSend);
 
     // Start our program
     RenderingPipeline::run(pipeline, config);

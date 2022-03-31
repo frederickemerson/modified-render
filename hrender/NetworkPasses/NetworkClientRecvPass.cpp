@@ -7,6 +7,19 @@ char* NetworkClientRecvPass::intermediateBuffer = new char[VIS_TEX_LEN];
 
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
+    if (firstClientReceive)
+    {
+        ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
+
+        // Start the client receiving thread
+        auto serverSend = [pNetworkManager]()
+        {
+            pNetworkManager->ListenClientUdp(true, true);
+        };
+        Threading::dispatchTask(serverSend);
+        firstClientReceive = false;
+    }
+
     if (sequential) {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
@@ -51,7 +64,7 @@ inline void NetworkClientRecvPass::checkSequential() {
     Camera::SharedPtr cam = mpScene->getCamera();
     const CameraData& cameraData = cam->getData();
 
-    float dif = 0;
+    float dif = networkWeight * ResourceManager::mClientNetworkManager->getTimeForOneSequentialFrame();
     // store cameraU, V, W specifically for GBuffer rendering later
     dif += cameraWeightUX * std::abs(cameraData.cameraU.x - cameraUX);
     dif += cameraWeightUY * std::abs(cameraData.cameraU.y - cameraUY);
@@ -64,7 +77,6 @@ inline void NetworkClientRecvPass::checkSequential() {
     dif += cameraWeightWZ * std::abs(cameraData.cameraW.z - cameraWZ);
 
     totalCameraChange = dif;
-    dif += networkWeight * ResourceManager::mClientNetworkManager->getTimeForOneSequentialFrame();
 
     cameraUX = cameraData.cameraU.x;
     cameraUY = cameraData.cameraU.y;

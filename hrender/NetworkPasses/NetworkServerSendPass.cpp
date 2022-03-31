@@ -11,7 +11,7 @@ void NetworkServerSendPass::execute(RenderContext* pRenderContext)
         auto serverSend = [&]()
         {
             ResourceManager::mServerNetworkManager->
-                SendWhenReadyServerUdp(mTexWidth, mTexHeight);
+                SendWhenReadyServerUdp(pRenderContext, mpResManager, mTexWidth, mTexHeight);
         };
         Threading::dispatchTask(serverSend);
         firstServerSend = false;

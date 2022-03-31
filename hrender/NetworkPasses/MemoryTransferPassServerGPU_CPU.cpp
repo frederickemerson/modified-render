@@ -57,9 +57,6 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
         outputBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
         std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
     }
-    // signal server manager directly, can remove if using network server send pass
-    ServerNetworkManager::mSpServerVisTexComplete.signal();
-    //
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 

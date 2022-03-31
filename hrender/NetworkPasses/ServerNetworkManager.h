@@ -180,7 +180,10 @@ public:
     // Listen to UDP packets with custom protocol
     bool ListenServerUdp();
     // Server's sending thread
-    void SendWhenReadyServerUdp(int texWidth, int texHeight);
+    void SendWhenReadyServerUdp(RenderContext* pRenderContext,
+                                std::shared_ptr<ResourceManager> pResManager,
+                                int texWidth,
+                                int texHeight);
 
     bool CloseServerConnectionUdp();
 
