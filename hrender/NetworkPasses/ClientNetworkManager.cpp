@@ -192,9 +192,9 @@ bool ClientNetworkManager::CloseClientConnectionUdp()
     return true;
 }
 
-double ClientNetworkManager::getTimeForOneSequentialFrame()
+float ClientNetworkManager::getTimeForOneSequentialFrame()
 {
-    double res = timeForOneSequentialFrame.count() * 1000;
+    float res = (float)timeForOneSequentialFrame.count() * 1000;
     return res;
 }
 

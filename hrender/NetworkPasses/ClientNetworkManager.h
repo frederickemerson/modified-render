@@ -180,7 +180,7 @@ public:
 
     bool CloseClientConnectionUdp();
 
-    double getTimeForOneSequentialFrame();
+    float getTimeForOneSequentialFrame();
 
 private:
     bool compression = true;

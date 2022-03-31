@@ -26,13 +26,12 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     if (sequential) {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
-        if (remainInSequential <= 0) { checkMotionVector(); }
+        if (remainInSequential <= 0) { checkSequential(); }
         pNetworkManager->mSpClientSeqTexRecv.wait();
     }
     else {
         // decide if we are switching into sequential
-        checkMotionVector();
-        checkNetworkPing();
+        checkSequential();
     }
 }
 
@@ -64,21 +63,21 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-inline void NetworkClientRecvPass::checkMotionVector() {
+inline void NetworkClientRecvPass::checkSequential() {
     Camera::SharedPtr cam = mpScene->getCamera();
     const CameraData& cameraData = cam->getData();
 
-    float dif = 0;
+    float dif = networkWeight * ResourceManager::mClientNetworkManager->getTimeForOneSequentialFrame();
     // store cameraU, V, W specifically for GBuffer rendering later
-    dif += std::abs(cameraData.cameraU.x - cameraUX);
-    dif += std::abs(cameraData.cameraU.y - cameraUY);
-    dif += std::abs(cameraData.cameraU.z - cameraUZ);
-    dif += std::abs(cameraData.cameraV.x - cameraVX);
-    dif += std::abs(cameraData.cameraV.y - cameraVY);
-    dif += std::abs(cameraData.cameraV.z - cameraVZ);
-    dif += std::abs(cameraData.cameraW.x - cameraWX);
-    dif += std::abs(cameraData.cameraW.y - cameraWY);
-    dif += std::abs(cameraData.cameraW.z - cameraWZ);
+    dif += cameraWeightUX * std::abs(cameraData.cameraU.x - cameraUX);
+    dif += cameraWeightUY * std::abs(cameraData.cameraU.y - cameraUY);
+    dif += cameraWeightUZ * std::abs(cameraData.cameraU.z - cameraUZ);
+    dif += cameraWeightVX * std::abs(cameraData.cameraV.x - cameraVX);
+    dif += cameraWeightVY * std::abs(cameraData.cameraV.y - cameraVY);
+    dif += cameraWeightVZ * std::abs(cameraData.cameraV.z - cameraVZ);
+    dif += cameraWeightWX * std::abs(cameraData.cameraW.x - cameraWX);
+    dif += cameraWeightWY * std::abs(cameraData.cameraW.y - cameraWY);
+    dif += cameraWeightWZ * std::abs(cameraData.cameraW.z - cameraWZ);
 
     totalCameraChange = dif;
 
@@ -102,54 +101,4 @@ inline void NetworkClientRecvPass::checkMotionVector() {
     else if (sequential && dif < lowThreshold) {
         sequential = false;
     }
-}
-
-inline void NetworkClientRecvPass::checkNetworkPing() {
-
-}
-
-
-float cameraWeightUX;
-float cameraWeightUY;
-float cameraWeightUZ;
-float cameraWeightVX;
-float cameraWeightVY;
-float cameraWeightVZ;
-float cameraWeightWX;
-float cameraWeightWY;
-float cameraWeightWZ;
-
-float networkWeight;
-float constant;
-
-void initialiseWeights() {
-    // we want initial weights to be such that weight * value = around the same value
-    float cameraWeightUX = 1;
-    float cameraWeightUY = 1;
-    float cameraWeightUZ = 1;
-    float cameraWeightVX = 1;
-    float cameraWeightVY = 1;
-    float cameraWeightVZ = 1;
-    float cameraWeightWX = 1;
-    float cameraWeightWY = 1;
-    float cameraWeightWZ = 1;
-
-    float networkWeight = 1;
-    float constant = 1;
-}
-
-int predictLoss() {
-    // camera data weights
-    
-    return 0;
-}
-
-
-
-void fit() {
-    int predictedLoss = predictLoss();
-    //int actualLoss = calculateLoss();
-    
-
-
 }

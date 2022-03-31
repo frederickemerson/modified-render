@@ -23,8 +23,7 @@ protected:
 
 	void execute(RenderContext* pRenderContext) override;
 	void renderGui(Gui::Window* pPassWindow) override;
-	void checkMotionVector();
-	void checkNetworkPing();
+	void checkSequential();
 
 	bool bSwitching = true;
 	bool sequential = false;
@@ -41,6 +40,18 @@ protected:
 	float cameraWX = 0;
 	float cameraWY = 0;
 	float cameraWZ = 0;
+
+	// camera weights
+	float cameraWeightUX = 1;
+	float cameraWeightUY = 1;
+	float cameraWeightUZ = 1;
+	float cameraWeightVX = 1;
+	float cameraWeightVY = 1;
+	float cameraWeightVZ = 1;
+	float cameraWeightWX = 1;
+	float cameraWeightWY = 1;
+	float cameraWeightWZ = 1;
+	float networkWeight = 1;
 
 	// threshold values
 	int lowThreshold = 50;
