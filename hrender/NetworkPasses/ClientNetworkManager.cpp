@@ -295,12 +295,11 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
             {
                 recvPacketStart[j] = oldHeaderBytes[j];
             }
-
-            // Increment for the next packet
-            relativeSeqNum++;
-            serverSeqNum++;
-            receivedDataSoFar += recvHeader.dataSize;
         }
+        // Increment for the next packet
+        relativeSeqNum++;
+        serverSeqNum++;
+        receivedDataSoFar += recvHeader.dataSize;
     }
     frameDataOut.frameSize = receivedDataSoFar;
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
