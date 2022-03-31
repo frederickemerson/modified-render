@@ -11,9 +11,6 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
 
-        // First client listen to be run in sequence
-        pNetworkManager->ListenClientUdp(true, false);
-
         // Start the client receiving thread
         auto serverSend = [pNetworkManager]()
         {
