@@ -141,7 +141,9 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             OutputDebugStringA(printFps);
 
             // measuring time from camera sent to texture received for a given frame
-            updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
+            if (clientFrameNum % pollNetworkPingFrequency == 0) {
+                updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
+            }
         }
 
         if (!executeForever)
@@ -179,9 +181,11 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         OutputDebugString(L"\n\n= camData sent over network =========");
         
         // store this time as camera sent
-        int32_t currentClientFrameNum = clientFrameNum;
-        auto storeTime = std::make_pair(currentClientFrameNum, std::chrono::system_clock::now());
-        timeAtCameraSent.emplace(storeTime);
+        if (clientFrameNum % pollNetworkPingFrequency == 0) {
+            int32_t currentClientFrameNum = clientFrameNum;
+            auto storeTime = std::make_pair(currentClientFrameNum, std::chrono::system_clock::now());
+            timeAtCameraSent.emplace(storeTime);
+        }
     }   
 }
 
@@ -482,10 +486,6 @@ void ClientNetworkManager::updateTimeForFrame(int frameReceived,
         }
         seqTime = timeAtCameraSent.front();
     };
-
-    char msgBuffer1[61];
-    sprintf(msgBuffer1, "\n\n= frame received %d, seq time first : %d =========", frameReceived, seqTime.first);
-    OutputDebugStringA(msgBuffer1);
 
     timeForOneSequentialFrame = endOfFrame - seqTime.second;
     timeAtCameraSent.pop();

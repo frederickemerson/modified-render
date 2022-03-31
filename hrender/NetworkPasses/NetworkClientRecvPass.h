@@ -54,9 +54,10 @@ protected:
 	float networkWeight = 1;
 
 	// threshold values
-	int lowThreshold = 50;
-	int midThreshold = 300;
+	int lowThreshold = 80;
+	int midThreshold = 400;
 	int highThreshold = 1000;
+	const int timeToRemainInSequential = 20; // frames
 
 	float totalCameraChange;
 };

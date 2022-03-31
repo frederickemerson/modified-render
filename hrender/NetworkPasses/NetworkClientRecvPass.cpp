@@ -19,17 +19,14 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         Threading::dispatchTask(serverSend);
         firstClientReceive = false;
     }
-    if (!bSwitching) {
-        return;
-    }
 
     if (sequential) {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
-        if (remainInSequential <= 0) { checkSequential(); }
+        if (remainInSequential <= 0 && bSwitching) { checkSequential(); }
         pNetworkManager->mSpClientSeqTexRecv.wait();
     }
-    else {
+    else if (bSwitching) {
         // decide if we are switching into sequential
         checkSequential();
     }
@@ -93,10 +90,10 @@ inline void NetworkClientRecvPass::checkSequential() {
 
     if (dif > highThreshold) {
         sequential = true;
-        remainInSequential = 20;
+        remainInSequential = timeToRemainInSequential;
     }
     else if (sequential && dif > midThreshold) {
-        remainInSequential = 20;
+        remainInSequential = timeToRemainInSequential;
     }
     else if (sequential && dif < lowThreshold) {
         sequential = false;

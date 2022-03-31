@@ -192,6 +192,7 @@ private:
     std::chrono::milliseconds getComparisonTimestamp();
 
     // keeps track of time taken for camera sent to texture received for a given frame
+    const int pollNetworkPingFrequency = 64; // check network ping every X num of frames
     std::chrono::duration<double> timeForOneSequentialFrame;
     std::queue<std::pair<int, std::chrono::time_point<std::chrono::system_clock>>> timeAtCameraSent;
 
