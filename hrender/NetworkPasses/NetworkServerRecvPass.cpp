@@ -41,6 +41,7 @@ void NetworkServerRecvPass::execute(RenderContext* pRenderContext)
 
 bool NetworkServerRecvPass::firstServerRenderUdp(RenderContext* pRenderContext)
 {
+    mFirstRender = false;
     auto serverListen = [&]() {
         ResourceManager::mServerNetworkManager->ListenServerUdp();
     };
