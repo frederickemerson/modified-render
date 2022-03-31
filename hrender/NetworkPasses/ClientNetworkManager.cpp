@@ -301,6 +301,7 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
         serverSeqNum++;
         receivedDataSoFar += recvHeader.dataSize;
     }
+    frameDataOut.frameNumber = latestFrameRecv;
     frameDataOut.frameSize = receivedDataSoFar;
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
 
