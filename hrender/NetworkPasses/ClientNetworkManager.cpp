@@ -50,7 +50,7 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 
 void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
-    int32_t expectedFrameNum = 0;
+    int32_t latestFrameRecv = 0;
 
     while (true)
     {
@@ -59,57 +59,45 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
         int visTexLen = VIS_TEX_LEN;
-        FrameData rcvdFrameData = { visTexLen, expectedFrameNum, 0 };
+        FrameData rcvdFrameData = { visTexLen, latestFrameRecv, 0 };
         
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
         int recvStatus;
 
-        recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
         // Store the time when the first frame was received
         // (server sends timestamps relative to the time when the first frame was fully rendered)
         if (startTime == std::chrono::milliseconds::zero())
         {
             startTime = getCurrentTime();
         }
+
+        recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
+
+        std::chrono::milliseconds currentTime = getComparisonTimestamp();
+        std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
+        if (timeDifference > std::chrono::milliseconds::zero())
+        {
+            char slowerMessage[77];
+            sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
+                    static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(slowerMessage);
+        }
         else
         {
-            recvStatus = RecvTextureUdp(rcvdFrameData, toRecvData, mClientUdpSock);
-
-            std::chrono::milliseconds currentTime = getComparisonTimestamp();
-            std::chrono::milliseconds timeDifference = currentTime - std::chrono::milliseconds(rcvdFrameData.timestamp);
-            if (timeDifference > std::chrono::milliseconds::zero())
-            {
-                char slowerMessage[77];
-                sprintf(slowerMessage, "\n=Client received texture %d ms slower than expected=========",
-                        static_cast<int>(timeDifference.count()));
-                OutputDebugStringA(slowerMessage);
-            }
-            else
-            {
-                char fasterMessage[77];
-                sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
-                        static_cast<int>(timeDifference.count()));
-                OutputDebugStringA(fasterMessage);
-            }
+            char fasterMessage[77];
+            sprintf(fasterMessage, "\n=Client received texture %d ms faster than expected=========",
+                    static_cast<int>(timeDifference.count()));
+            OutputDebugStringA(fasterMessage);
         }
-
+        
         if (recvStatus == 0)
         {
             char frameDataMessage[90];
             sprintf(frameDataMessage, "\n\n= Discarding frame %d (size: %d, time: %d)\n",
                     rcvdFrameData.frameNumber, rcvdFrameData.frameSize, rcvdFrameData.timestamp);
             OutputDebugStringA(frameDataMessage);
-            expectedFrameNum++;
         }
-        else if (recvStatus == 2)
-        {
-            char frameDataMessage[129];
-            sprintf(frameDataMessage, "\n\n= Discarding frame %d (size: %d, time: %d) and frame %d\n",
-                expectedFrameNum, rcvdFrameData.frameSize, rcvdFrameData.timestamp, expectedFrameNum + 1);
-            OutputDebugStringA(frameDataMessage);
-            expectedFrameNum += 2;
-        }
-        else // recvStatus == 1 || recvStatus == 3
+        else // recvStatus == 1
         {
             OutputDebugString(L"\n\n= visTex received over network =========");
             char frameDataMessage[89];
@@ -118,10 +106,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             OutputDebugStringA(frameDataMessage);
 
             // find the difference in frame number for prediction
-            // 
-            // subtract 1 from clientFrameNum, as the sending thread
-            // would have incremented it after it sent camera data
-            numFramesBehind = clientFrameNum - 1 - rcvdFrameData.frameNumber;
+            numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
 
             if (numFramesBehind == 0) {
                 mSpClientSeqTexRecv.signal();
@@ -157,19 +142,6 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
             // measuring time from camera sent to texture received for a given frame
             updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
-
-            if (recvStatus == 3)
-            {
-                
-                char discardMessage[40];
-                sprintf(discardMessage, "\n\n= Discarding frame %d\n", expectedFrameNum + 1);
-                OutputDebugStringA(discardMessage);
-                expectedFrameNum += 2;
-            }
-            else // recvStatus == 1
-            {
-                expectedFrameNum++;
-            }
         }
 
         if (!executeForever)
@@ -199,15 +171,15 @@ void ClientNetworkManager::SendWhenReadyClientUdp(Scene::SharedPtr mpScene)
         cameraWY = cameraData.cameraW.y;
         cameraWZ = cameraData.cameraW.z;
 
+        // Increment client frame number
+        clientFrameNum++;
+        
         OutputDebugString(L"\n\n= Awaiting camData sending over network... =========");
         SendCameraDataUdp(cam, mClientUdpSock);
         OutputDebugString(L"\n\n= camData sent over network =========");
         
-        // Increment client frame number
-        clientFrameNum++;
-        int32_t currentClientFrameNum = clientFrameNum;
-        
         // store this time as camera sent
+        int32_t currentClientFrameNum = clientFrameNum;
         auto storeTime = std::make_pair(currentClientFrameNum, std::chrono::system_clock::now());
         timeAtCameraSent.emplace(storeTime);
     }   
@@ -229,18 +201,15 @@ double ClientNetworkManager::getTimeForOneSequentialFrame()
 int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp, int timeout)
 {
     int recvTexSize = frameDataOut.frameSize;
-    int expectedFrameNum = frameDataOut.frameNumber;
+    int latestFrameRecv = frameDataOut.frameNumber;
     // Initialise numberOfPackets to the expected number without compression
     int numberOfPackets = recvTexSize / UdpCustomPacket::maxPacketSize +
         ((recvTexSize % UdpCustomPacket::maxPacketSize > 0) ? 1 : 0);
-    // Try receiving an additional packet if we see a new frame
-    int newFrameRecvLimit = 1;
 
     int receivedDataSoFar = 0;
     uint8_t* dataPtr = reinterpret_cast<uint8_t*>(outRecvTexData);
     char oldHeaderBytes[UdpCustomPacket::headerSizeBytes];
 
-    int seqNumOfFirstPacket = serverSeqNum;
     int relativeSeqNum = 0;
     int numOfRecvAttempts = 0;
     while (relativeSeqNum < numberOfPackets)
@@ -260,6 +229,7 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
 
         UdpCustomPacketHeader recvHeader;
         char* dataPointer;
+        // CASE 0: RECV FAILS
         if (!RecvUdpCustom(recvPacketStart, recvHeader, dataPointer, socketUdp, timeout))
         {
             char buffer[73];
@@ -267,93 +237,63 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
             OutputDebugStringA(buffer);
             continue;
         }
-        else
-        {
-            // Skip past packets that belong to an older frame
-            if (recvHeader.frameNumber < expectedFrameNum)
+        // CASE 1: FIRST PACKET
+        if (relativeSeqNum == 0) {
+            // CASE 1.1: OLD FRAME
+            // skip past packets that belong to an older frame
+            if (recvHeader.frameNumber <= latestFrameRecv)
             {
                 char buffer[93];
                 sprintf(buffer, "\n\n= RecvTextureUdp: "
-                        "Skipping past packet %d for older frame %d",
-                        recvHeader.sequenceNumber, recvHeader.frameNumber);
+                    "Skipping past packet %d for older frame %d",
+                    recvHeader.sequenceNumber, recvHeader.frameNumber);
                 OutputDebugStringA(buffer);
                 continue;
             }
-            else if (recvHeader.frameNumber > expectedFrameNum)
-            {
-                // If we are just missing the last packet, we continue
-                // trying to receive one more packet and hope that it
-                // belongs to the current frame.
-                if (numOfRecvAttempts < newFrameRecvLimit &&
-                    relativeSeqNum == numberOfPackets - 1)
-                {
-                    // If packets belongs to a newer frame, the next frame
-                    // and the current frame are both ruined.
-                    char buffer[95];
-                    sprintf(buffer, "\n\n= RecvTextureUdp: "
-                            "Received a packet %d for newer frame %d",
-                            recvHeader.sequenceNumber, recvHeader.frameNumber);        
-                    OutputDebugStringA(buffer);
-                    int frameNumber = expectedFrameNum;
-                    sprintf(buffer, "\n\n= RecvTextureUdp: "
-                            "Trying again to receive the last packet %d for frame %d",
-                            serverSeqNum, frameNumber);
-                    OutputDebugStringA(buffer);
-                    numOfRecvAttempts++;
-                    continue;
-                }
-                else
-                {
-                    // If packets belongs to a newer frame, the next frame
-                    // and the current frame are both ruined.
-                    char buffer[113];
-                    sprintf(buffer, "\n\n= RecvTextureUdp: "
-                            "Frame %d ruined by packet %d for newer frame %d",
-                            expectedFrameNum, recvHeader.sequenceNumber, recvHeader.frameNumber);        
-                    OutputDebugStringA(buffer);
-                    return 2;
-                }
-            }
-            
+            // CASE 1.2: NEW FRAME
             // Remember frame data for the first full packet received
-            if (relativeSeqNum == 0)
-            {
-                numberOfPackets = recvHeader.numOfFramePackets;
-                frameDataOut.timestamp = recvHeader.timestamp;
-                serverSeqNum = recvHeader.sequenceNumber;
-                seqNumOfFirstPacket = serverSeqNum;
-            }
-            else if (recvHeader.sequenceNumber != serverSeqNum)
-            {
-                char buffer[107];
+            numberOfPackets = recvHeader.numOfFramePackets;
+            frameDataOut.timestamp = recvHeader.timestamp;
+            serverSeqNum = recvHeader.sequenceNumber;
+            latestFrameRecv = recvHeader.frameNumber;
+        }
+        // CASE 2: NOT FIRST PACKET
+        else {
+            // CASE 2.1: RECEIVED OLDER PACKET
+            if (recvHeader.sequenceNumber < serverSeqNum) {
+                char buffer[93];
                 sprintf(buffer, "\n\n= RecvTextureUdp: "
-                        "Sequence number does not match, expected %d, received %d",
-                        serverSeqNum, recvHeader.sequenceNumber);
+                    "Skipping past packet %d for older frame %d",
+                    recvHeader.sequenceNumber, recvHeader.frameNumber);
                 OutputDebugStringA(buffer);
-                
-                // Skip ahead if possible
-                int difference = recvHeader.sequenceNumber - serverSeqNum;
-                if (difference > 0)
-                {
-                    char bufferSet[74];
-                    sprintf(bufferSet, "\n\n= RecvTextureUdp: "
-                            "Setting expected sequence number to %d",
-                            recvHeader.sequenceNumber);
-                    OutputDebugStringA(bufferSet);
-                    serverSeqNum = recvHeader.sequenceNumber;
-                }
 
-                // Reject the entire frame and return
-                return 0;
-            }
-
-            // Replace the original bytes at the header position, now that we have the header data            
-            if (relativeSeqNum > 0)
-            {
+                // copy back
                 for (int j = 0; j < UdpCustomPacket::headerSizeBytes; j++)
                 {
                     recvPacketStart[j] = oldHeaderBytes[j];
                 }
+                continue;
+            }
+            // CASE 2.2: RECEIVED FUTURE PACKET
+            // reset latest frame received, return 0 (error)
+            else if (recvHeader.sequenceNumber > serverSeqNum)
+            {
+                char buffer[180];
+                sprintf(buffer, "\n\n= RecvTextureUdp: "
+                    "Sequence number does not match, expected %d, received %d\n"
+                    "Setting expected latest frame num to %d",
+                    serverSeqNum, recvHeader.sequenceNumber, recvHeader.frameNumber);
+                OutputDebugStringA(buffer);
+
+                frameDataOut.frameNumber = recvHeader.frameNumber;
+                // Reject the entire frame and return
+                return 0;
+            }
+            // CASE 2.3 SUCCESS, CORRECT PACKET RECV
+            // Replace the original bytes at the header position, now that we have the header data            
+            for (int j = 0; j < UdpCustomPacket::headerSizeBytes; j++)
+            {
+                recvPacketStart[j] = oldHeaderBytes[j];
             }
 
             // Increment for the next packet
@@ -365,16 +305,7 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
     frameDataOut.frameSize = receivedDataSoFar;
     OutputDebugString(L"\n\n= RecvTextureUdp: Received texture =========");
 
-    if (numOfRecvAttempts > 0)
-    {
-        // If we already received the packets of the next frame,
-        // we cannot retrieve them as we do not do any copying.
-        return 3;
-    }
-    else
-    {
-        return 1;
-    }
+    return 1;
 }
 
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
