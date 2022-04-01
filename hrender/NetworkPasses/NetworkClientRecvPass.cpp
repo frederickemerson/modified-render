@@ -23,12 +23,13 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     if (sequential) {
         ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
-        if (remainInSequential <= 0 && bSwitching) { checkSequential(); }
+        if (remainInSequential <= 0 && bSwitching) { checkSequential(true); } 
+        else { checkSequential(false); }
         pNetworkManager->mSpClientSeqTexRecv.wait();
     }
-    else if (bSwitching) {
+    else {
         // decide if we are switching into sequential
-        checkSequential();
+        checkSequential(bSwitching);
     }
 }
 
@@ -60,7 +61,7 @@ void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-inline void NetworkClientRecvPass::checkSequential() {
+inline void NetworkClientRecvPass::checkSequential(bool bSwitching) {
     Camera::SharedPtr cam = mpScene->getCamera();
     const CameraData& cameraData = cam->getData();
 
@@ -89,6 +90,9 @@ inline void NetworkClientRecvPass::checkSequential() {
     cameraWY = cameraData.cameraW.y;
     cameraWZ = cameraData.cameraW.z;
 
+    if (!bSwitching) {
+        return;
+    }
     if (dif > highThreshold) {
         sequential = true;
         remainInSequential = timeToRemainInSequential;
