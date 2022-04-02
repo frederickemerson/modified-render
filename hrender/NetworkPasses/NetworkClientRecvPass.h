@@ -25,7 +25,7 @@ protected:
 	void renderGui(Gui::Window* pPassWindow) override;
 	void checkSequential(bool bSwitching);
 
-	bool bSwitching = true;
+	bool bSwitching = false;
 	bool sequential = false;
 	int remainInSequential = 0;
 	bool                                    firstClientReceive = true; // Use a longer timeout for first client receive
