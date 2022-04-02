@@ -39,14 +39,17 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     //
     // But if packets are dropped, this value has to increase here
     // for a more accurate prediction in PredictionPass
-    if (pNetworkManager->numFramesChanged)
     {
-        // Set to false for the next check
-        pNetworkManager->numFramesChanged = false;
-    }
-    else
-    {
-        pNetworkManager->numFramesBehind++;
+        std::lock_guard lock(ClientNetworkManager::mMutexClientNumFramesBehind);
+        if (pNetworkManager->numFramesChanged)
+        {
+            // Set to false for the next check
+            pNetworkManager->numFramesChanged = false;
+        }
+        else
+        {
+            pNetworkManager->numFramesBehind++;
+        }
     }
 }
 

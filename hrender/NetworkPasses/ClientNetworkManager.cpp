@@ -8,6 +8,8 @@ Semaphore ClientNetworkManager::mSpClientCamPosReadyToSend(false);
 Semaphore ClientNetworkManager::mSpClientSeqTexRecv(false);
 std::mutex ClientNetworkManager::mMutexClientVisTexRead;
 
+std::mutex NetworkManager::mMutexClientNumFramesBehind;
+
 bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 {
     int slen = sizeof(serverAddress);
@@ -106,8 +108,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             OutputDebugStringA(frameDataMessage);
 
             // find the difference in frame number for prediction
-            numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
-            numFramesChanged = true;
+            int currentNumFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
 
             if (numFramesBehind == 0) {
                 mSpClientSeqTexRecv.signal();
@@ -132,6 +133,14 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 NetworkClientRecvPass::clientWriteBuffer = tempPtr;
 
                 mOutputBuffer = NetworkClientRecvPass::clientReadBuffer;
+
+                // update value of server's number of frames behind for PredictionPass
+                {
+                    std::lock_guard lock(mMutexClientNumFramesBehind);
+                    numFramesBehind = currentNumFramesBehind;
+                    numFramesChanged = true;
+                }
+                
                 // mutex and lock are released at the end of scope
             }
 

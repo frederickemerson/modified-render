@@ -75,6 +75,8 @@ public:
     // that is going to be rendered to the screen on the client
     std::atomic_int numFramesBehind = 0;
     std::atomic_bool numFramesChanged = false;
+    // Mutex for updating number of frames behind
+    static std::mutex mMutexClientNumFramesBehind;
 
     // Used by both server and client in UDP communication
     int32_t serverSeqNum;
