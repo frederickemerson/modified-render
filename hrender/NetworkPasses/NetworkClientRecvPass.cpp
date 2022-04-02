@@ -31,6 +31,23 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
         // decide if we are switching into sequential
         checkSequential(bSwitching);
     }
+
+    // Increment numFramesBehind for each frame
+    // 
+    // Normally, this value will be overwritten with the correct value in
+    // NetworkManager::ListenClientUdp when a new frame from the server is received
+    //
+    // But if packets are dropped, this value has to increase here
+    // for a more accurate prediction in PredictionPass
+    if (pNetworkManager->numFramesChanged)
+    {
+        // Set to false for the next check
+        pNetworkManager->numFramesChanged = false;
+    }
+    else
+    {
+        pNetworkManager->numFramesBehind++;
+    }
 }
 
 void NetworkClientRecvPass::renderGui(Gui::Window* pPassWindow)

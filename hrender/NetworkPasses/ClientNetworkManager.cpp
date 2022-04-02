@@ -107,6 +107,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
             // find the difference in frame number for prediction
             numFramesBehind = clientFrameNum - rcvdFrameData.frameNumber;
+            numFramesChanged = true;
 
             if (numFramesBehind == 0) {
                 mSpClientSeqTexRecv.signal();
