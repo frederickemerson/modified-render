@@ -8,11 +8,11 @@ namespace {
     const char* kCopyBufferFragShader = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\CopyBuffer.ps.hlsl";
 
     // Size of camera data buffer
-    const int camDataBufferSize = 150;
+    const int camDataBufferSize = 50;
     // Minimum difference in number of frames before prediction occurs
     // i.e. Prediction does not occur when difference < threshhold
     //      Prediction occurs when difference >= threshhold
-    const int predictionThreshhold = 0;
+    const int predictionThreshhold = 3;
 
     // ============================= TEXTURES needed from ResourceManager ============================
 
