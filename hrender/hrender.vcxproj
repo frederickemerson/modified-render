@@ -251,18 +251,18 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
