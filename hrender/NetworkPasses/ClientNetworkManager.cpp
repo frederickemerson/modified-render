@@ -8,7 +8,7 @@ Semaphore ClientNetworkManager::mSpClientCamPosReadyToSend(false);
 Semaphore ClientNetworkManager::mSpClientSeqTexRecv(false);
 std::mutex ClientNetworkManager::mMutexClientVisTexRead;
 
-std::mutex NetworkManager::mMutexClientNumFramesBehind;
+std::mutex ClientNetworkManager::mMutexClientNumFramesBehind;
 
 bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 {

@@ -7,10 +7,9 @@ char* NetworkClientRecvPass::intermediateBuffer = new char[VIS_TEX_LEN];
 
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
+    ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
     if (firstClientReceive)
     {
-        ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
-
         // Start the client receiving thread
         auto serverSend = [pNetworkManager]()
         {
@@ -21,7 +20,6 @@ void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
     }
 
     if (sequential) {
-        ClientNetworkManager::SharedPtr pNetworkManager = mpResManager->mClientNetworkManager;
         remainInSequential--;
         if (remainInSequential <= 0 && bSwitching) { checkSequential(true); } 
         else { checkSequential(false); }
