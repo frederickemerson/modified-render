@@ -265,7 +265,7 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
                 continue;
             }
             // CASE 1.2: NEW FRAME
-            if (recvHeader.isFirstFramePacket)
+            if (!recvHeader.isFirstFramePacket)
             {
                 // Reject entire frame if not the first packet
                 char bufferNotFirst[108];

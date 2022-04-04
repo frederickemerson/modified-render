@@ -64,7 +64,7 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
     offset = addInt32ToCharPtr(&sequenceNumber, udpPacket, offset);
     offset = addInt32ToCharPtr(&frameNumber, udpPacket, offset);
     offset = addInt16ToCharPtr(&dataSize, udpPacket, offset);
-    offset = addInt16ToCharPtr(&numOfFramePackets, udpPacket, offset);
+    offset = addInt16ToCharPtr(&combinedFrmPktsField, udpPacket, offset);
     offset = addInt32ToCharPtr(&timestamp, udpPacket, offset);
 
     // Append data
