@@ -265,11 +265,24 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
                 continue;
             }
             // CASE 1.2: NEW FRAME
-            // Remember frame data for the first full packet received
-            numberOfPackets = recvHeader.numOfFramePackets;
-            frameDataOut.timestamp = recvHeader.timestamp;
-            serverSeqNum = recvHeader.sequenceNumber;
-            latestFrameRecv = recvHeader.frameNumber;
+            if (recvHeader.isFirstFramePacket)
+            {
+                // Reject entire frame if not the first packet
+                char bufferNotFirst[108];
+                sprintf(bufferNotFirst, "\n\n= RecvTextureUdp: "
+                        "Lost first packet of frame %d, received packet %d instead",
+                        recvHeader.frameNumber, recvHeader.sequenceNumber);      
+                OutputDebugStringA(bufferNotFirst);
+                return 0;
+            }
+            else
+            {
+                // Remember frame data for the first full packet received
+                numberOfPackets = recvHeader.numOfFramePackets;
+                frameDataOut.timestamp = recvHeader.timestamp;
+                serverSeqNum = recvHeader.sequenceNumber;
+                latestFrameRecv = recvHeader.frameNumber;
+            }
         }
         // CASE 2: NOT FIRST PACKET
         else {

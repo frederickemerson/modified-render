@@ -190,11 +190,13 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     
     // Split the frame data and send
     int currentOffset = 0;
+    bool isFirst = true;
     for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
         UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
-                                        numOfFramePackets, frameData.timestamp);
+                                        numOfFramePackets, frameData.timestamp, isFirst);
+        bool isFirst = false;
 
         if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
         {
