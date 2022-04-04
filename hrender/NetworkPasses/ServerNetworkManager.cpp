@@ -196,7 +196,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
         int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
         UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
                                         numOfFramePackets, frameData.timestamp, isFirst);
-        bool isFirst = false;
+        isFirst = false;
 
         if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
         {
