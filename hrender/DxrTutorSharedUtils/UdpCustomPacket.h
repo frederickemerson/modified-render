@@ -21,14 +21,15 @@ public:
     uint16_t numOfFramePackets = 0;
     // 5) Timestamp for when the frame should be played
     int32_t timestamp = -1;
-
+    // Flag for first frame packet
+    bool isFirstFramePacket = false;
 
     // ========================== METHODS ==========================
     // Initialise a packet with without frame information
     UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum = -1);
     // Initialise a packet with all the fields
     UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,
-                          uint16_t numFrmPkts, int32_t tmStmp);
+                          uint16_t numFrmPkts, int32_t tmStmp, bool isFirst = false);
     UdpCustomPacketHeader() = default;
 
     UdpCustomPacketHeader(const UdpCustomPacketHeader&) = default;
