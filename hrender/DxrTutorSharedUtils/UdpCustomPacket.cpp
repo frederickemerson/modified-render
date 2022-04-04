@@ -47,7 +47,7 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
     std::unique_ptr<char[]> udpPacket = std::make_unique<char[]>(totalSize);
 
     // Add first frame packet bit to numOfFramePackets
-    int16_t combinedFrmPktsField = numOfFramePackets;
+    uint16_t combinedFrmPktsField = numOfFramePackets;
     if (isFirstFramePacket)
     {
         // Set first bit to 1
