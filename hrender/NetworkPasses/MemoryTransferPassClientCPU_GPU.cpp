@@ -45,16 +45,13 @@ void MemoryTransferPassClientCPU_GPU::initScene(RenderContext* pRenderContext, S
 void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
     // Load visibility texture from GPU to CPU
-    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");  // original call using string
-    /*if (mVisibilityIndex == -1) {                                             // getting visibility index was moved to initialize()
-        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-    }*/
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
 
     pRenderContext->flush(true);
 
-    std::lock_guard lock(NetworkManager::mMutexClientVisTexRead);
-    visTex->apiInitPub(NetworkPass::visibilityDataForReadingClient, true);
+    std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
+    visTex->apiInitPub(mGetInputBuffer(), true);
+    Regression::addNonSeqFrame((int*)mGetInputBuffer());
 }
 
 void MemoryTransferPassClientCPU_GPU::renderGui(Gui::Window* pPassWindow)

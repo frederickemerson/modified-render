@@ -29,10 +29,16 @@
 #include <atomic>
 #include <deque>
 #include <unordered_map>
-#include "./UdpCustomPacket.h"
-#include "./Semaphore.h"
-#include "../Libraries/minilzo.h"
+#include "../DxrTutorSharedUtils/UdpCustomPacket.h"
+#include "../DxrTutorSharedUtils/Semaphore.h"
 #include "../NetworkPasses/NetworkUtils.h"
+#include "../DxrTutorSharedUtils/ResourceManager.h"
+#include "../DxrTutorSharedUtils/RenderConfig.h"
+#include "FrameData.h"
+
+// for artificial delay
+#include <chrono>
+#include <thread>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -58,71 +64,39 @@
 
 #define OUT_LEN(in_len) (in_len + in_len / 16 + 64 + 3)
 
+#define MAX_NUM_CLIENT 4
+
 using namespace Falcor;
 
 class ResourceManager;
 
-// Stores the metadata for a specific frame
-typedef struct FrameData
-{
-    int frameSize;      // Total size of the frame in bytes
-    int frameNumber;    // Number associated to the current frame
-    int timestamp;      // Time offset from the start in milliseconds
-} FrameData;
-
-class NetworkManager : public std::enable_shared_from_this<NetworkManager> {
+class ServerNetworkManager : public std::enable_shared_from_this<ServerNetworkManager> {
 
 public:
     // Used by Server
-    SOCKET mListenSocket = INVALID_SOCKET;
-    SOCKET mClientSocket = INVALID_SOCKET;
     SOCKET mServerUdpSock = INVALID_SOCKET;
-    struct sockaddr_in mServer, mSsi_other;
-
-    // Used by client
-    SOCKET mConnectSocket = INVALID_SOCKET;
-    SOCKET mClientUdpSock = INVALID_SOCKET;
-    int32_t clientFrameNum = 0;
+    struct sockaddr_in mServer;
+    std::vector<sockaddr_in> mClientAddresses;
 
     // Used by both server and client in UDP communication
-    int32_t serverSeqNum = 0;
-    int32_t clientSeqNum = 0;
-    struct sockaddr_in mSi_otherUdp;
+    std::vector<int32_t> serverSeqNum;
+    std::vector<int32_t> clientSeqNum;
+    std::vector<int32_t> clientFrameNum;
 
-    using SharedPtr = std::shared_ptr<NetworkManager>;
-    using SharedConstPtr = std::shared_ptr<const NetworkManager>;
+    using SharedPtr = std::shared_ptr<ServerNetworkManager>;
+    using SharedConstPtr = std::shared_ptr<const ServerNetworkManager>;
 
-    static SharedPtr create() { return SharedPtr(new NetworkManager()); }
+    static SharedPtr create() { return SharedPtr(new ServerNetworkManager()); }
 
     // Used for thread synchronizing
-    // 
-    // Client's side
-    // Synchronise client sending thread with the rendering
-    static Semaphore mSpClientCamPosReadyToSend;
-    // Protect the client visibility textures with mutexes
-    static std::mutex mMutexClientVisTexRead;  // To lock the reading buffer
-
-    // Server's side
     // Synchronise server sending thread with the rendering
     static Semaphore mSpServerVisTexComplete;
     // Check whether the camera position is updated before rendering
+    static std::array<Semaphore, MAX_NUM_CLIENT> mClientCamPosUpdated;
+    // for all camera changes
     static Semaphore mSpServerCamPosUpdated;
     // Protect the server visibility textures
     static std::mutex mMutexServerVisTexRead;  // For reading from Falcor Buffer
-    // Protect the server's camera data
-    static std::mutex mMutexServerCamData;
-
-    // For TCP communication
-    static bool mCamPosReceivedTcp;
-    static bool mVisTexCompleteTcp;
-    static std::mutex mMutexServerVisTexTcp;
-    static std::condition_variable mCvCamPosReceived;
-    static std::condition_variable mCvVisTexComplete;
-
-    // Used for compression
-    static bool mCompression;
-    static std::vector<char> wrkmem;
-    static std::vector<unsigned char> compData;
 
     // A place to store packets that arrive out-of-order
     // Map of sequence number to the received packet
@@ -133,55 +107,19 @@ public:
     // Maximum number of data entries
     int maxCamDataCacheSize = 5;
 
-    // last camera data sent out to server, this helps us render the GBuffer with matching camera data
-    // for now we are just manually getting these 3 camera data points specifically for GBuffer needs
-    std::atomic<float> cameraUX = 0;
-    std::atomic<float> cameraUY = 0;
-    std::atomic<float> cameraUZ = 0;
-    std::atomic<float> cameraVX = 0;
-    std::atomic<float> cameraVY = 0;
-    std::atomic<float> cameraVZ = 0;
-    std::atomic<float> cameraWX = 0;
-    std::atomic<float> cameraWY = 0;
-    std::atomic<float> cameraWZ = 0;
+    // Function for getting input buffers
+    std::function<char* ()> mGetInputBuffer;
+    std::function<int ()> mGetInputBufferSize; 
 
-    // Used to send and receive data over the network
-    void RecvTexture(int recvTexSize, char* recvTexData, SOCKET& socket);
-    void SendTexture(int visTexSize, char* sendTexData, SOCKET& socket);
-    // Use UDP to receive and send texture data
-    // 
-    // outRecvTexData - The pointer to the location that the texture
-    //                  will be written to. A header's worth of space
-    //                  needs to be allocated behind this pointer so
-    //                  that we can receive the UDP packet directly
-    //                  into the pointer given.
-    //
-    // There are 4 possible return values:
-    // 0              - Current frame is to be discarded due to
-    //                  packet loss or reordering.
-    // 1              - Current frame is received successfully.
-    // 2              - Current frame and next frame is to be
-    //                  discarded. The next possible frame that
-    //                  can be received will be current + 2.
-    // 3              - Current frame is okay, but next frame
-    //                  has to be discarded.
-    int RecvTextureUdp(FrameData& frameDataOut, char* outRecvTexData, SOCKET& socketUdp,
-                       int timeout = UDP_LISTENING_TIMEOUT_MS);
-    void SendTextureUdp(FrameData frameData, char* sendTexData, SOCKET& socketUdp);
-    bool RecvInt(int& recvInt, SOCKET& s);
-    bool SendInt(int toSend, SOCKET& s);
-    bool RecvCameraData(std::array<float3, 3>& cameraData, SOCKET& s);
-    bool SendCameraData(Camera::SharedPtr cam, SOCKET& s);
+    // client queue to send
+    std::queue<int> sendClientQueue;
+    std::map<ULONG, int> mapClientAddressToIndex;
+
+    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp);
     // Use UDP to receive and send camera data
-    bool RecvCameraDataUdp(std::array<float3, 3>& cameraData,
-                           std::mutex& mutexForCameraData,
-                           SOCKET& socketUdp,
-                           bool useLongTimeout);
-    bool SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp);
-    char* CompressTexture(int inTexSize, char* inTexData, int& compTexSize);
-    int CompressTextureLZ4(int inTexSize, char* inTexData, char* compTexData);
-    void DecompressTexture(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
-    int DecompressTextureLZ4(int outTexSize, char* outTexData, int compTexSize, char* compTexData);
+    bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
+                           std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
+                           SOCKET& socketUdp);
 
     // Receive data with UDP custom protocol
     // Returns false if an error was encountered
@@ -203,8 +141,8 @@ public:
                        UdpCustomPacketHeader& outDataHeader,
                        char*& outDataPointer,
                        SOCKET& socketUdp,
-                       int timeout = UDP_LISTENING_TIMEOUT_MS,
-                       bool storeAddress = false);
+                        int& fromClientIndex,
+                       int timeout = 100000000);
     
     // Same as RecvUdpCustom, but discards the packet if the
     // sequence number does not match the one that was given.
@@ -229,52 +167,26 @@ public:
                                char*& outDataPointer,
                                SOCKET& socketUdp,
                                int expectedSeqNum,
-                               int timeout = UDP_LISTENING_TIMEOUT_MS,
-                               bool storeAddress = false);
+                               int timeout = 100000000);
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp);
+    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, SOCKET& socketUdp);
 
     // Server
-    // Set up the sockets and connect to a client, and output the client's texture width/height
-    bool SetUpServer(PCSTR port, int& outTexWidth, int& outTexHeight);
-    bool ListenServer(RenderContext* pRenderContext, std::shared_ptr<ResourceManager> pResManager, int texWidth, int texHeight);
-
     // Set up UDP socket and listen for client's texture width/height
     bool SetUpServerUdp(PCSTR port, int& outTexWidth, int& outTexHeight);
     // Server's receiving thread
     // Listen to UDP packets with custom protocol
-    bool ListenServerUdp(bool executeForever, bool useLongTimeout);
+    bool ListenServerUdp();
     // Server's sending thread
     void SendWhenReadyServerUdp(RenderContext* pRenderContext,
                                 std::shared_ptr<ResourceManager> pResManager,
                                 int texWidth,
                                 int texHeight);
 
-    bool CloseServerConnection();
     bool CloseServerConnectionUdp();
 
-    // Client 
-    bool SetUpClient(PCSTR serverName, PCSTR serverPort);
-    bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
-
-    // Client's receiving thread
-    // isFirstReceive - If true, use a longer timeout
-    //                  on the first run of the loop.
-    // executeForever - If true, run infinitely.
-    void ListenClientUdp(bool isFirstReceive, bool executeForever);
-
-    // Client's sending thread
-    void SendWhenReadyClientUdp(Scene::SharedPtr mpScene);
-
-    bool CloseClientConnection();
-    bool CloseClientConnectionUdp();
-
 private:
-    // The time when the client first receives a rendered frame from the server
-    std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
-
-    // A helper function to get the time from startTime
-    std::chrono::milliseconds getComparisonTimestamp();
+        bool compression = true;
 };

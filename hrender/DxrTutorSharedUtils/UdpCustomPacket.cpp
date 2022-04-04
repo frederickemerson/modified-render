@@ -27,8 +27,8 @@ int addInt16ToCharPtr(const uint16_t* data, std::unique_ptr<char[]>& array, int 
     return addToCharPtr(int16Bytes, 2, array, offset);
 }
 
-UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize):
-    sequenceNumber(seqNum), dataSize(dtSize)
+UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum):
+    sequenceNumber(seqNum), dataSize(dtSize), frameNumber(frmNum)
 {}
 
 UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,

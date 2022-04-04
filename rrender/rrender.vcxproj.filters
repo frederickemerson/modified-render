@@ -70,7 +70,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hrender.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h">
       <Filter>SharedUtils</Filter>
     </ClInclude>
@@ -144,6 +143,7 @@
     <ClInclude Include="NetworkPasses\NetworkUtils.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
+    <ClInclude Include="rrender.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -270,6 +270,6 @@
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="hrender.rc" />
+    <ResourceCompile Include="rrender.rc" />
   </ItemGroup>
 </Project>

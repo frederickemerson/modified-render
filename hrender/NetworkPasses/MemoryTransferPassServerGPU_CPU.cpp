@@ -44,22 +44,19 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
-    // Load visibility texture from GPU to CPU
-    //Texture::SharedPtr visTex = mpResManager->getTexture("VisibilityBitmap");  // original call using string
-    /*if (mVisibilityIndex == -1) {                                             // getting visibility index was moved to initialize()
-        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-    }*/
-    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
+        // Load visibility texture from GPU to CPU
+        Texture::SharedPtr visTex = mpResManager->getTexture(RenderConfig::mConfig[i].resourceIndex);
 
-    // OLD METHOD: use if bugs start appearing
-    //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+        // OLD METHOD: use if bugs start appearing
+        //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
-    // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
-    // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
-    // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
-    uint8_t* newBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    std::lock_guard lock(NetworkManager::mMutexServerVisTexRead);
-    NetworkPass::pVisibilityDataServer = newBuffer;
+        // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
+        // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
+        // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
+        outputBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+        std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
+    }
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 
@@ -69,9 +66,4 @@ void MemoryTransferPassServerGPU_CPU::renderGui(Gui::Window* pPassWindow)
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
-}
-
-std::vector<uint8_t> MemoryTransferPassServerGPU_CPU::texData(RenderContext* pRenderContext, Texture::SharedPtr tex)
-{
-    return tex->getTextureData(pRenderContext, 0, 0);
 }
