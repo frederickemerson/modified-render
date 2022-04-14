@@ -62,7 +62,6 @@ std::string defaultSceneName = "SunTemple\\SunTemple_v3.pyscene";
 // BISTRO //
 // ====== //
 //const char* environmentMap = "Bistro\\san_giuseppe_bridge_4k.hdr";
-//std::string defaultSceneName = "Bistro\\BistroInterior_v4.pyscene";
 //std::string defaultSceneName = "Bistro\\BistroExterior_v4.pyscene";
 
 // ======== //

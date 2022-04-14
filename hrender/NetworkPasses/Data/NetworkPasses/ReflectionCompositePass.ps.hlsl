@@ -42,6 +42,11 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	float3 shadeColor = SSRColor.rgb + 0.5f*SRTColor.rgb;
 
 
+	if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
+	else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;
+	else if (shadeColor.b >= 1.0f)shadeColor.b = 1.0f;
+
+
 	RCBufOut.RCColor = float4(shadeColor, 1.0f);
 
 	return RCBufOut;

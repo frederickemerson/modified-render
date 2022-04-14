@@ -109,7 +109,7 @@ void GGXClosestHit(inout GGXPayload rayData, BuiltInTriangleIntersectionAttribut
     }
     if (shadowMult < lightCount) rayData.color = float3(0.7f) * shadeData.specular.rgb;
     else rayData.color = float3(0.0f);*/
-    rayData.color = float3(0.7f) * shadeData.specular.rgb;
+    rayData.color = shadeData.specular.rgb;
 }
 
 
@@ -123,7 +123,7 @@ void GGXRayGen()
     // Load g-buffer data
     float4 worldPos = gPos[launchIndex];
     float4 worldNorm = gNorm[launchIndex];
-    float4 VColor = gVshading[launchIndex];
+    //float4 VColor = gVshading[launchIndex];
     float  visibility = gVisibility[launchIndex];
     uint raymask = gRaymask[launchIndex];
     // Get the texture data that is stored in a compact format
@@ -147,7 +147,7 @@ void GGXRayGen()
     
     if (isGeometryValid && !raymask)
     {
-        shadeColor = VColor.rgb + pixelEmissive.rgb;
+        //shadeColor = VColor.rgb + pixelEmissive.rgb;
 
         const uint lightCount = gScene.getLightCount();
         for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)

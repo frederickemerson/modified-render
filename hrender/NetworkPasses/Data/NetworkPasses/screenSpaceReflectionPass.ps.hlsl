@@ -45,6 +45,8 @@ struct PS_OUTPUT
 float3 SSRRayMarch(float3 origin, float3 direction)
 {
 	int iteration = 200;
+	float threshold = 0.025;
+	float3 temp = origin;
 	for (int i = 0; i < iteration; i++) {
 		// Test point goes along the direction
 		origin += direction * 3;
@@ -57,14 +59,14 @@ float3 SSRRayMarch(float3 origin, float3 direction)
 			return float3(0.0f);
 		}
 		float depth = gZBuffer[posS.xy];
-		if (depth <= posS.z ) {
+		if (depth < posS.z ) {
 			float4 difMatlColor;
 			float4 specMatlColor;
 			float4 pixelEmissive;
 			float4 matlOthers;
 			unpackTextureData(asuint(gTexData[origin.xy]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
-			return  specMatlColor.g * gVshading[origin.xy].rgb;
-			//return specMatlColor.rgb;
+			//return  2 * gVshading[origin.xy].rgb;
+			return 3 * specMatlColor.rgb;
 		}
 	}
 
@@ -97,6 +99,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// We use this temp color to check SSR hit or miss
 	float3 maskColor = VColor.rgb + pixelEmissive.rgb;
 	float3 SSRColor = float3(0);
+	float roughness = specMatlColor.a * specMatlColor.a;
 
 	if (isGeometryValid)
 	{
