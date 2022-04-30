@@ -1,28 +1,38 @@
 # Hardware Ray-Tracing Assisted Hybrid Rendering Pipeline for Games
-This project creates a distributed rendering algorithm using two devices across the network that combines rasterization and raytracing techniques. This is done to enable the better visual quality that raytracing brings compared to traditional rasterization techniques, to devices that cannot support hardware accelerated raytracing, by offloading the raytracing steps of the real-time rendering algorithm to a server. For now, our implementation has a direct-lighting shading algorithm that makes use of distributed rendering and raytracing. Currently, our implementation supports static scenes that allows user input to move the camera. The current implementation’s visual quality has need of improvement, requiring the addition of the suggested shading algorithm augmentations (in the FYP report) before it is ready for production, and the framerate is low at 7-8 fps, and requires the addition of H.264 compression and possibly changing from TCP to UDP to overcome the current network bottleneck. In the [Final report](Final_Report.pdf), we discuss the areas of improvement and future work. 
+This project implements a distributed and a hybrid rendering pipeline. The server performs ray tracing to produce visibility data, and this data is sent to the client to produce the final image with rasterisation (deferred shading). The idea is to render higher-quality images on a thin client that cannot support hardware-accelerated ray tracing, while not compromising on interactive frame rates needed for video gaming.
 
-Before working on the code base, please read through the following sections in the README (that you are currently reading), followed by the [Final report](Final_Report.pdf) which will give a high level idea of the project. It is then recommended to look at [Chris Wyman's DXR tutorial](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html) to get an understanding of the code base and the rendering pipeline in general, before finally going through the [Developer Guide](docs/DeveloperGuide.md) for a more in-depth walkthrough on navigating pipeline we have implemented.
+For now, our implementation has a direct-lighting shading algorithm that makes use of distributed rendering and ray tracing. For more details about the rendering part of the pipeline, you may refer to section 3 of [Louiz's FYP report](Final_Report.pdf).
+
+As for the networking part of the pipeline, we have a client-server architecture that communicates with UDP, and we perform prediction of the received data on the client to make up for network latency. You may refer to section 3 of [Alden's FYP report](FYP_Final_Report_Alden_v2.pdf) for more details.
+
+Currently, our implementation supports static scenes that allows user input to move the camera, but it does not support moving objects. The visual quality needs improvement, requiring the addition of more visual effects before it is ready for production.  The pipeline runs at a frame rate of more than 100 fps with LZ4 compression. However, there is potential to achieve greater compression by encoding the differences between subsequent frames (i.e. temporal compression), as the data tends to be quite similar. One possible method is with H.264/AVC video compression which makes use of I-frames and P-frames. Refer to section 5.2 and 5.3 of [Alden's FYP report](FYP_Final_Report_Alden_v2.pdf) for a dicussion about the areas of improvement and possible future work.
+
+You may look at [Chris Wyman's DXR tutorial](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html) to get an understanding of the basic structure and the classes of the code base, because multiple abstractions of Falcor that we have used in the pipeline were originally derived from the tutorial. The [Developer Guide](docs/DeveloperGuide.md) gives a more in-depth walkthrough of the pipeline. Lastly, for a thorough explanation of the implementation details, you may refer to the FYP reports.
 
 ## Important Files/Folders
 - [Falcor](Falcor) 
-  - Stores the Falcor 4.3 files from [NVIDIA's github page](https://github.com/NVIDIAGameWorks/Falcor), with modifications. 
-  - Before modifying this with the latest version of Falcor, please check the [Developer Guide](docs/DeveloperGuide.md) on changes that need to be made to maintain compatibility
-  - The project is accessed through the Falcor.sln file in this directory
+  - Stores the Falcor 4.4 files from [NVIDIA's github page](https://github.com/NVIDIAGameWorks/Falcor), with modifications. 
+  - Before modifying this with the latest version of Falcor, please check the [Developer Guide](docs/DeveloperGuide.md) on changes that need to be made to maintain compatibility.
+  - The project is accessed through the Falcor.sln file in this directory.
 - [hrender](hrender)
-  - Stores our custom passes, as well as framework and passes from the [DXR tutorials](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html) which have been modified for our purposes
-- [Final report](Final_Report.pdf) and [slides](Final_Presentation_Slides_and_Script.pptx)
-  - Explains the high level architecture of our rendering pipeline
+  - Stores our custom passes, as well as framework and passes from the [DXR tutorials](http://cwyman.org/code/dxrTutors/dxr_tutors.md.html) which have been modified for our purposes.
+- [Louiz's FYP report](Final_Report.pdf) and [FYP presentation slides](Final_Presentation_Slides_and_Script.pptx)
+  - Explains the first iteration of the rendering pipeline. Note that the networking part of the pipeline is different in the current version, however the parts of the pipeline that deal with graphics rendering are mostly unchanged.
+- [Alden's FYP report](FYP_Final_Report_Alden_v2.pdf)
+  - Explains the second iteration of the rendering pipeline, with network improvements to use UDP, increased frame rates, and prediction of received data at the client.
 - [Developer Guide](docs/DeveloperGuide.md)
-  - Talks about the codebase modifications in more detail, 
+  - Talks about the codebase modifications in more detail.
 - [Future work recommendations](Future_Work_Recommendations.md)
-  - Talks about features that are recommended for development
+  - Talks about features that are recommended for development.
 
 ## Prerequisites
-(Taken from [Falcor/README.md](Falcor/README.md))
+For Falcor (Taken from [Falcor/README.md](Falcor/README.md))
 - Windows 10 version 2004 (May 2020 Update) or newer
 - Visual Studio 2019
 - [Windows 10 SDK (10.0.19041.0) for Windows 10, version 2004](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/)
 - A GPU which supports DirectX Raytracing, such as the NVIDIA Titan V or GeForce RTX (make sure you have the latest driver)
+Other prerequisites
+- NVIDIA Video Codec SDK
 
 Optional:
 - Windows 10 Graphics Tools. To run DirectX 12 applications with the debug layer enabled, you must install this. There are two ways to install it:
@@ -52,7 +62,7 @@ Right click the solution name in the solution explorer and build the solution.
 ![Build solution](docs/images/build_solution.png)
 
 ### Running on a single machine
-To run it on a single machine for debugging, ensure go to the project properties, and under Debugging > Command Arguments, put the arguments "no-compression" and "debug".
+To run it on a single machine for debugging, go to the project properties, and under Debugging > Command Arguments, ensure that no arguments are provided.
 
 ![Properties](docs/images/properties.png)
 ![Debug properties](docs/images/no-compression_debug.png)
@@ -60,23 +70,23 @@ To run it on a single machine for debugging, ensure go to the project properties
 Then simply run the program.
 
 ### Running the distributed algorithm on two machines
-To run the distributed pipeline, have the program set up on two separate machines. On one machine, the command arguments should be `no-compression server`, and the other should be `no-compression client` (you may exlude "no-compression", which will enable LZO compresion, which may worsen performance). For now, we have not implemented running both the server and client on a single device.
+To run the distributed pipeline, have the program set up on two separate machines. On one machine, the command arguments should be `server`, and the other should be `client`. If no arguments are specified, the entire pipeline will run on a single machine.
 
-To enable use of communication over UDP, add `udp` to to command arguments. For example, the server
-should be `no-compression udp server`, and the other should be `no-compression udp client`.
-
-On the client PC, `hrender.cpp` must specify the server's IP address for TCP communication under the line
-`ResourceManager::mNetworkManager->SetUpClient("192.168.1.111", DEFAULT_PORT);`, or for UDP, under the line
+On the client PC, `hrender.cpp` must specify the server's IP address under the line
 `ResourceManager::mNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);`
-You may change the value of `DEFAULT_PORT` or `DEFAULT_PORT_UDP` for the program to communicate on a different port.
+You may change the value of `DEFAULT_PORT_UDP` (you must set it in **both** `NetworkPasses/ServerNetworkManager.h` and `NetworkPasses/ClientNetworkManager.h`) for the program to communicate on a different port. 
 
 The server's IP address can be acquired using command prompt and `ipconfig`.
 
-The server should start running first, then the client. A debug message will be shown 
-in the server when it is waiting for the client, if you run the program with the
-help of Visual Studio:
+The server should start running first before the client. Once the server has
+initialised successfully, a debug message will be shown in the server, showing
+that it is waiting for the client:
 `= Pre-Falcor Init - Trying to listen for client width/height... =========`
 
 An example of what the server and client will see is available on the [demonstration video](Demonstration_Video.mkv).
 
-Currently, we do not have a way to dynamically load a new scene, so to use a different scene, under any occurrences in the code of `setDefaultSceneName`, ensure that the arguments to the function are set to the scene you would like to use. For now, this is in `JitteredGBufferPass.cpp` and `VisibilityPass.cpp` - set the `kDefaultScene` values in these files to point to the path of the scene you would like to use.
+Currently, we do not have a way to dynamically load a new scene, so to use a different scene, change `sceneIndex` in the struct `RenderConfiguration renderConfiguration` that is found in `hrender.cpp`.
+
+### Frequently encountered errors
+- The server fails to start with `Pre-Falcor Init - Bind failed with error code: 10048`.
+  - Change the value of `DEFAULT_PORT_UDP` in **both** `NetworkPasses/ServerNetworkManager.h` and `NetworkPasses/ClientNetworkManager.h`. The default is 1505, but you may try values like 1504 or 1506. Make sure that your firewall allows UDP communication across the specified port numbers. 
