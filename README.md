@@ -22,7 +22,7 @@ You may look at [Chris Wyman's DXR tutorial](http://cwyman.org/code/dxrTutors/dx
   - Explains the second iteration of the rendering pipeline, with network improvements to use UDP, increased frame rates, and prediction of received data at the client.
 - [Developer Guide](docs/DeveloperGuide.md)
   - Talks about the codebase modifications in more detail.
-- [Future work recommendations](Future_Work_Recommendations.md)
+- [Future Work Recommendations](Future_Work_Recommendations.md)
   - Talks about features that are recommended for development.
 
 ## Prerequisites
