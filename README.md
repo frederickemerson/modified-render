@@ -20,6 +20,7 @@ You may look at [Chris Wyman's DXR tutorial](http://cwyman.org/code/dxrTutors/dx
   - Explains the first iteration of the rendering pipeline. Note that the networking part of the pipeline is different in the current version, however the parts of the pipeline that deal with graphics rendering are mostly unchanged.
 - [Alden's FYP report](FYP_Final_Report_Alden_v2.pdf)
   - Explains the second iteration of the rendering pipeline, with network improvements to use UDP, increased frame rates, and prediction of received data at the client.
+- [Nicholas's FYP report](FYP_Final_Report_Nicholas.pdf)
 - [Developer Guide](docs/DeveloperGuide.md)
   - Talks about the codebase modifications in more detail.
 - [Future Work Recommendations](Future_Work_Recommendations.md)
@@ -31,8 +32,11 @@ For Falcor (Taken from [Falcor/README.md](Falcor/README.md))
 - Visual Studio 2019
 - [Windows 10 SDK (10.0.19041.0) for Windows 10, version 2004](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/)
 - A GPU which supports DirectX Raytracing, such as the NVIDIA Titan V or GeForce RTX (make sure you have the latest driver)
+
 Other prerequisites
+- Cuda Toolkit 11.6
 - NVIDIA Video Codec SDK
+- Scene Data
 
 Optional:
 - Windows 10 Graphics Tools. To run DirectX 12 applications with the debug layer enabled, you must install this. There are two ways to install it:
@@ -41,10 +45,36 @@ Optional:
 - NVAPI (see below)
 
 ## NVAPI installation
+This step is optional (as NVAPI is optional). If not enabled, set `_ENABLE_NVAPI` to `false` in `Source/Falcor/Core/FalcorConfig.h`
 After cloning the repository, head over to https://developer.nvidia.com/nvapi and download the latest version of NVAPI (this build is tested against version R440).
 Extract the content of the zip file into `Source/Externals/.packman/` and rename `R440-developer` to `nvapi`.
 
 Finally, set `_ENABLE_NVAPI` to `true` in `Source/Falcor/Core/FalcorConfig.h`
+
+## CUDA Toolkit
+Get cuda toolkit here: https://developer.nvidia.com/cuda-toolkit
+Project is currently using version 11.6, so make sure to get that version.
+Note: some errors may occur if path is not set correctly on visual studio 
+
+## NVIDIA Video SDK Installation
+Download  NVIDIA VIDEO SDK  (https://developer.nvidia.com/nvidia-video-codec-sdk)
+Rename to  ‘Video_Codec_SDK_11010’  and place in same folder as hrender 
+Follow Instructions in Read_Me.pdf  to build Samples (above step must be done before building)
+
+Initially, projects AppEncD3D12 and AppDec in Falcor Solution should be unavailable.
+After building, reload these two projects with dependencies
+Set both projects to build as static library under Project Properties
+Ensure that hrender references those two projects
+
+Note: Directory of video codec sdk should look something like this
+
+Lastly, when building Falcor solution, if you run into a compile error saying that ComPtr is ambiguous in NvEncoder.cpp (or other file), fix by changing all ComPtr in NvEncoder.cpp to Microsoft::WRL::ComPtr. There should be about 4 of these occurrences.
+
+
+## Scene Data
+Ensure you have all scene data in Falcor\Bin\x64\Debug or Falcor\Bin\x64\Release, depending on build configuration. These files are large and so not on github. Can copy from lab machines or get from another project member.
+
+Without scene data, there will be an error "cant find krujka.me". Particularly this may occur when switching build configurations (DebugD3D12, ReleaseD3D12)
 
 ## Usage
 Clone the repository or download it as a zip file. The solution file that contains the project is in the `./Falcor` folder, `./Falcor/Falcor.sln`. 
@@ -90,3 +120,5 @@ Currently, we do not have a way to dynamically load a new scene, so to use a dif
 ### Frequently encountered errors
 - The server fails to start with `Pre-Falcor Init - Bind failed with error code: 10048`.
   - Change the value of `DEFAULT_PORT_UDP` in **both** `NetworkPasses/ServerNetworkManager.h` and `NetworkPasses/ClientNetworkManager.h`. The default is 1505, but you may try values like 1504 or 1506. Make sure that your firewall allows UDP communication across the specified port numbers. 
+ - When setting up NVIDIA Video SDK in build folder in Samples (ie. Samples/build). If you run into an error saying “cant find CMakeLists.txt”, it means you either 1) got the directory set up wrong, or 2) you moved the directories after building (cant do that)
+
