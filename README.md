@@ -53,20 +53,30 @@ Finally, set `_ENABLE_NVAPI` to `true` in `Source/Falcor/Core/FalcorConfig.h`
 
 ## CUDA Toolkit
 Get cuda toolkit here: https://developer.nvidia.com/cuda-toolkit
+
 Project is currently using version 11.6, so make sure to get that version.
+
 Note: some errors may occur if path is not set correctly on visual studio 
 
 ## NVIDIA Video SDK Installation
 Download  NVIDIA VIDEO SDK  (https://developer.nvidia.com/nvidia-video-codec-sdk)
+
 Rename to  ‘Video_Codec_SDK_11010’  and place in same folder as hrender 
+
 Follow Instructions in Read_Me.pdf  to build Samples (above step must be done before building)
 
+
 Initially, projects AppEncD3D12 and AppDec in Falcor Solution should be unavailable.
+
 After building, reload these two projects with dependencies
+
 Set both projects to build as static library under Project Properties
+
 Ensure that hrender references those two projects
 
+
 Note: Directory of video codec sdk should look something like this
+
 
 Lastly, when building Falcor solution, if you run into a compile error saying that ComPtr is ambiguous in NvEncoder.cpp (or other file), fix by changing all ComPtr in NvEncoder.cpp to Microsoft::WRL::ComPtr. There should be about 4 of these occurrences.
 
