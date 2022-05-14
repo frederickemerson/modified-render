@@ -64,18 +64,25 @@ Note: some errors may occur if path is not set correctly on visual studio
 ## NVIDIA Video SDK Installation
 - Download  NVIDIA VIDEO SDK  (https://developer.nvidia.com/nvidia-video-codec-sdk)
 - Rename to  ‘Video_Codec_SDK_11010’  and place in same folder as hrender
+
 ![image](https://user-images.githubusercontent.com/59093518/168444085-64bacca1-b7ea-4ff9-9968-c687446952c6.png)
+
 - Follow Instructions in Read_Me.pdf  to build Samples (above step must be done before building)
+
 ![image](https://user-images.githubusercontent.com/59093518/168444102-c1413d31-73a4-4a45-919d-4d9095ce5c3c.png)
 
 Initially, projects AppEncD3D12 and AppDec in Falcor Solution should be unavailable.
 - After building, reload these two projects with dependencies
 - Set both projects to build as static library under Project Properties
+
 ![image](https://user-images.githubusercontent.com/59093518/168444108-84f4e853-77b1-4f56-9470-0b5f91cf7f45.png)
+
 - Ensure that hrender references those two projects
+
 ![image](https://user-images.githubusercontent.com/59093518/168444109-adb251d7-d893-462d-80db-f2feac740363.png)
 
 Note: Directory of video codec sdk should look something like this
+
 ![image](https://user-images.githubusercontent.com/59093518/168444110-16119de3-fe68-49ab-a5a8-d6671c294421.png)
 
 - Lastly, when building Falcor solution, if you run into a compile error saying that ComPtr is ambiguous in NvEncoder.cpp (or other file), fix by changing all ComPtr in NvEncoder.cpp to Microsoft::WRL::ComPtr. There should be about 4 of these occurrences.
