@@ -65,7 +65,6 @@ void ScreenSpaceReflectionPass::execute(RenderContext* pRenderContext)
     SSRVars["SSRCB"]["gViewProjMat"] = (float4x4)cam->getViewProjMatrix();
     SSRVars["SSRCB"]["gLightCount"] = mpScene->getLightCount();
     SSRVars["SSRCB"]["gCamPos"] = cam->getPosition();
-    SSRVars["gVshading"] = mpResManager->getTexture("V-shading");
     SSRVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
     SSRVars["gPos"] = mpResManager->getTexture("WorldPosition");
     SSRVars["gNorm"] = mpResManager->getTexture("WorldNormal");

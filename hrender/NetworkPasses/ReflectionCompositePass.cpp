@@ -62,6 +62,7 @@ void ReflectionCompositePass::execute(RenderContext* pRenderContext)
     auto RCVars = mpRCShader->getVars();
     RCVars["RCCB"]["gSkipRC"] = mSkipRC;
     RCVars["RCCB"]["gCamPos"] = cam->getPosition();
+    RCVars["gVshading"] = mpResManager->getTexture("V-shading");
     RCVars["gSSRColor"] = mpResManager->getTexture("SSRColor");
     RCVars["gSRTColor"] = mpResManager->getTexture("SRTReflection");
 

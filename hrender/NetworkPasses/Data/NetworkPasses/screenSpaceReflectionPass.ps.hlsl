@@ -24,7 +24,6 @@ import Experimental.Scene.Lights.LightHelpers; // Light structures for our curre
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
-Texture2D<float4> gVshading;
 Texture2D<uint>   gVisibility;
 Texture2D<float>  gZBuffer;
 
@@ -81,7 +80,6 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// Load g-buffer data
 	float4 worldPos = gPos[pixelPos];
 	float4 worldNorm = gNorm[pixelPos];
-	float4 VColor = gVshading[pixelPos];
 	float  visibility = gVisibility[pixelPos];
 	// Get the texture data that is stored in a compact format
 	float4 difMatlColor;
@@ -97,7 +95,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// If geometry invalid or we skip SSR, this pixel is discard for raytracing.
 	SSRBufOut.RayMask = (!isGeometryValid || gSkipSSR) ? 1 : 0;
 	// We use this temp color to check SSR hit or miss
-	float3 maskColor = VColor.rgb + pixelEmissive.rgb;
+	float3 maskColor =  pixelEmissive.rgb;
 	float3 SSRColor = float3(0);
 	float roughness = specMatlColor.a * specMatlColor.a;
 
@@ -105,7 +103,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	{
 
 		// Set V-shading color and emissive color.
-		shadeColor = VColor.rgb + pixelEmissive.rgb;
+		shadeColor =  pixelEmissive.rgb;
 
 		for (int lightIndex = 0; lightIndex < gLightCount; lightIndex++)
 		{
