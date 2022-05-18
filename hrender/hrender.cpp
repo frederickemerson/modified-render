@@ -288,6 +288,22 @@ void runServer()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
 
+    RenderConfiguration renderConfiguration = {
+    1920, 1080, // texWidth and texHeight
+    0, // sceneIndex
+    5,
+    { // Array of RenderConfigPass
+            NetworkServerRecvPass, 
+            JitteredGBufferPass,
+            VisibilityPass,
+            ScreenSpaceReflectionPass,
+            ServerRayTracingReflectionPass,
+            // --- TODO: create a new buffer to send back the texture "SRTReflection" --- //
+            MemoryTransferPassGPU_CPU,
+            //CompressionPass,
+            NetworkServerSendPass
+     }
+    };
     RenderConfiguration renderConfiguration = getServerRenderConfig(renderMode, renderType, sceneIdx);
 
     CreatePipeline(renderConfiguration, pipeline);
@@ -336,6 +352,25 @@ void runClient()
     
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
 
+    RenderConfiguration renderConfiguration = {
+        1920, 1080, // texWidth and texHeight
+        0, // sceneIndex
+        8,
+        { // Array of RenderConfigPass
+                NetworkClientSendPass,
+                // --- TODO: receive and load the the texture "SRTReflection" --- //
+                NetworkClientRecvPass,
+                //DecompressionPass,
+                MemoryTransferPassCPU_GPU,
+                PredictionPass,
+                VShadingPass,
+                ScreenSpaceReflectionPass,
+                ReflectionCompositePass,
+                CopyToOutputPass,
+                SimpleAccumulationPass,
+                JitteredGBufferPass
+         }
+    };
     RenderConfiguration renderConfiguration = getClientRenderConfig(renderMode, renderType, sceneIdx);
 
     CreatePipeline(renderConfiguration, pipeline);
