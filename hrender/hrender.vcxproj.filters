@@ -331,7 +331,7 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
@@ -340,7 +340,7 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">

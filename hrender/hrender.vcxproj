@@ -127,7 +127,7 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
