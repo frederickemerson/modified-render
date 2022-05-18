@@ -101,6 +101,10 @@
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\GGXReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -213,6 +217,10 @@
     <ClInclude Include="DxrTutorSharedUtils\Compression.h">
       <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
+    <ClInclude Include="NetworkPasses\GGXReflectionPass.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -358,5 +366,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="hrender.aps" />
   </ItemGroup>
 </Project>
