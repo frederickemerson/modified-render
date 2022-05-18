@@ -284,6 +284,9 @@ void runServer()
             NetworkServerRecvPass, 
             JitteredGBufferPass,
             VisibilityPass,
+            ScreenSpaceReflectionPass,
+            ServerRayTracingReflectionPass,
+            // --- TODO: create a new buffer to send back the texture "SRTReflection" --- //
             MemoryTransferPassGPU_CPU,
             //CompressionPass,
             NetworkServerSendPass
@@ -296,7 +299,7 @@ void runServer()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1, 1 })
         });
 
     // Start our program
@@ -347,11 +350,14 @@ void runClient()
         8,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
+                // --- TODO: receive and load the the texture "SRTReflection" --- //
                 NetworkClientRecvPass,
                 //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
                 PredictionPass,
                 VShadingPass,
+                ScreenSpaceReflectionPass,
+                ReflectionCompositePass,
                 CopyToOutputPass,
                 SimpleAccumulationPass,
                 JitteredGBufferPass
@@ -364,7 +370,7 @@ void runClient()
     // Set presets for the pipeline //
     // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
     });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
