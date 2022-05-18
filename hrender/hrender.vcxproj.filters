@@ -1,7 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
@@ -10,77 +35,100 @@
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\NetworkManager.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp">
-      <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
-      <Filter>NetworkPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
-      <Filter>NetworkPasses</Filter>
+    <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
+      <Filter>TestPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\NetworkPass.cpp">
       <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp">
+      <Filter>SharedUtils</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp">
-      <Filter>NetworkPasses</Filter>
+      <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="NetworkPasses\VShadingPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp">
+    <ClCompile Include="NetworkPasses\NetworkClientSendPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\GGXReflectionPass.cpp">
+    <ClCompile Include="NetworkPasses\NetworkServerRecvPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
-      <Filter>TestPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="Libraries\minilzo.c">
-      <Filter>Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="hrender.cpp" />
-    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp">
+    <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp">
       <Filter>NetworkPasses</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp">
+      <Filter>SharedUtils\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\PredictionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Regression.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hrender.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderPass.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h">
@@ -89,81 +137,82 @@
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\FullscreenLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\NetworkManager.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\Semaphore.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\RayLaunch.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\RenderingPipeline.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\RenderPass.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h">
-      <Filter>SharedUtils</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
-      <Filter>NetworkPasses</Filter>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="TestPasses\DecodeGBufferPass.h">
+      <Filter>TestPasses</Filter>
     </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Semaphore.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
     <ClInclude Include="NetworkPasses\NetworkUtils.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\VisibilityPass.h">
-      <Filter>NetworkPasses</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkPasses\VShadingPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\VisibilityPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h">
+    <ClInclude Include="NetworkPasses\NetworkClientSendPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\GGXReflectionPass.h">
+    <ClInclude Include="NetworkPasses\NetworkServerRecvPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="TestPasses\DecodeGBufferPass.h">
-      <Filter>TestPasses</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\lzoconf.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\lzodefs.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="Libraries\minilzo.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="hrender.h" />
-    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h">
+    <ClInclude Include="NetworkPasses\NetworkServerSendPass.h">
       <Filter>NetworkPasses</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h">
+      <Filter>CommonPasses\Memory Transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\CompressionPass.h">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\SimulateDelayPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ServerNetworkManager.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ClientNetworkManager.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\FrameData.h">
+      <Filter>SharedUtils\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\PredictionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Regression.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\Compression.h">
+      <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -190,6 +239,24 @@
     <Filter Include="Libraries">
       <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NetworkPasses">
+      <UniqueIdentifier>{b9a14148-3d9f-48ac-87b5-68b25218a304}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetworkPasses\Shaders">
+      <UniqueIdentifier>{4a32609a-0aa9-4b18-ba4d-c1caa118fda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{e06f6996-c3cd-4106-b26f-3e19fd9489c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils\Compression">
+      <UniqueIdentifier>{19b9e171-2cbb-4398-bf05-ed2c899f5cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Memory Transfer">
+      <UniqueIdentifier>{1778b545-4137-431b-803b-d0b599ba2206}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedUtils\Network">
+      <UniqueIdentifier>{f8b1fd99-3c4e-435e-9d2d-d60c4bcde845}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl">
@@ -201,22 +268,10 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl">
-      <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl">
-      <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl">
-      <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli">
-      <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadows.rt.hlsl">
@@ -225,10 +280,10 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadowsUtils.hlsli">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli">
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\packingUtils.hlsli">
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli">
       <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\simpleDiffuseGI.rt.hlsl">
@@ -249,20 +304,23 @@
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl">
       <Filter>TestPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
-      <Filter>NetworkPasses\Shaders</Filter>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli">
-      <Filter>NetworkPasses\Shaders</Filter>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
-      <Filter>NetworkPasses\Shaders</Filter>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\GGXReflectionPass.rt.hlsl">
-      <Filter>NetworkPasses\Shaders</Filter>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\microfacetBRDFUtils.hlsli">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl">
-      <Filter>NetworkPasses\Shaders</Filter>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl">
+      <Filter>CommonPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\packingUtils.hlsli">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl">
       <Filter>TestPasses\Shaders</Filter>
@@ -270,12 +328,33 @@
     <ShaderSource Include="TestPasses\GBufferComponents.slang">
       <Filter>TestPasses</Filter>
     </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBuffer.rt.hlsl" />
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lightProbeGBufferUtils.hlsli" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl">
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\CopyBuffer.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

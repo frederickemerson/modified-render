@@ -2,6 +2,10 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/hrender/Data/Mug
-/hrender/Data/Mug
-/hrender/Data/Mug
+/hrender/Data
+/rrender/rrender.vcxproj.user
+<<<<<<< HEAD
+/Video_Codec_SDK_11010
+=======
+/Video_Codec_SDK_110101
+>>>>>>> c4da4fa (for test on monday)

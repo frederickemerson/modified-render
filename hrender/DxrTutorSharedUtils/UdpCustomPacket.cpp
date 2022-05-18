@@ -27,17 +27,18 @@ int addInt16ToCharPtr(const uint16_t* data, std::unique_ptr<char[]>& array, int 
     return addToCharPtr(int16Bytes, 2, array, offset);
 }
 
-UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize):
-    sequenceNumber(seqNum), dataSize(dtSize)
+UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum):
+    sequenceNumber(seqNum), dataSize(dtSize), frameNumber(frmNum)
 {}
 
 UdpCustomPacketHeader::UdpCustomPacketHeader(int32_t seqNum, uint16_t dtSize, int32_t frmNum,
-                                             uint16_t numFrmPkts, int32_t tmStmp):
+                                             uint16_t numFrmPkts, int32_t tmStmp, bool isFirst):
     sequenceNumber(seqNum),
     dataSize(dtSize),
     frameNumber(frmNum),
     numOfFramePackets(numFrmPkts),
-    timestamp(tmStmp)
+    timestamp(tmStmp),
+    isFirstFramePacket(isFirst)
 {}
 
 std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
@@ -45,12 +46,25 @@ std::unique_ptr<char[]> UdpCustomPacketHeader::createUdpPacket(char* data) const
     int32_t totalSize = UdpCustomPacket::headerSizeBytes + dataSize;
     std::unique_ptr<char[]> udpPacket = std::make_unique<char[]>(totalSize);
 
+    // Add first frame packet bit to numOfFramePackets
+    uint16_t combinedFrmPktsField = numOfFramePackets;
+    if (isFirstFramePacket)
+    {
+        // Set first bit to 1
+        combinedFrmPktsField = combinedFrmPktsField | 0x8000;
+    }
+    else
+    {
+        // Set first bit to 0
+        combinedFrmPktsField = combinedFrmPktsField & 0x7FFF;
+    }
+
     // Append header
     int offset = 0;
     offset = addInt32ToCharPtr(&sequenceNumber, udpPacket, offset);
     offset = addInt32ToCharPtr(&frameNumber, udpPacket, offset);
     offset = addInt16ToCharPtr(&dataSize, udpPacket, offset);
-    offset = addInt16ToCharPtr(&numOfFramePackets, udpPacket, offset);
+    offset = addInt16ToCharPtr(&combinedFrmPktsField, udpPacket, offset);
     offset = addInt32ToCharPtr(&timestamp, udpPacket, offset);
 
     // Append data
@@ -69,8 +83,9 @@ UdpCustomPacketHeader UdpCustomPacket::getHeader(char* data)
     int32_t seqNum = headerData[0];
     uint16_t dataSize = smallFields[0];
     int32_t frameNum = headerData[1];
-    uint16_t numFramePkts = smallFields[1];
+    uint16_t numFramePkts = smallFields[1] & 0x7FFF; // Discard the first bit
     int32_t timestamp = headerData[3];
+    bool isFirstFrmPkt = smallFields[1] >> 15 == 1;  // Check the first bit
 
-    return UdpCustomPacketHeader(seqNum, dataSize, frameNum, numFramePkts, timestamp);
+    return UdpCustomPacketHeader(seqNum, dataSize, frameNum, numFramePkts, timestamp, isFirstFrmPkt);
 }

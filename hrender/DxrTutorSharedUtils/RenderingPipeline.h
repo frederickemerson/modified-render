@@ -20,7 +20,6 @@
 #include "Falcor.h"
 #include "RenderPass.h"
 #include "ResourceManager.h"
-#include "NetworkManager.h"
 
 class RenderingPipeline : public IRenderer
 {
@@ -84,8 +83,6 @@ public:
     virtual bool onMouseEvent(const MouseEvent& mouseEvent) override;
     virtual void onGuiRender(Gui* pGui) override;
     virtual void onDroppedFile(const std::string& filename) override {}
-
-    NetworkManager::SharedPtr getNetworkManager() { return mpNetworkManager; }
 
     void setDefaultSceneName(const std::string& defaultSceneName) { mDefaultSceneName = defaultSceneName; }
     void updateEnvironmentMap(const std::string& environmentMap) { mEnvironmentMap = environmentMap; }
@@ -176,7 +173,6 @@ private:
     bool mEnableAllPassGui = false;                         ///< When true, all guis should be enabled.
     bool mResetWindowPositions = false;                     ///< When true, all window positions will be reset
     ResourceManager::SharedPtr mpResourceManager;
-    NetworkManager::SharedPtr mpNetworkManager;
     int32_t mOutputBufferIndex = 0;
     Scene::SharedPtr mpScene = nullptr;                     ///< Stash a copy of our scene
     GraphicsState::SharedPtr mpDefaultGfxState;
