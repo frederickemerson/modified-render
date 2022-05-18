@@ -23,7 +23,7 @@ import Experimental.Scene.Lights.LightHelpers; // Light structures for our curre
 
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"              // Functions used to unpack the GBuffer's gTexData
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
-#include "visibilityPassUtils.hlsli"
+#include "networkUtils.hlsli"
 
 // Payload for our primary rays.  We really don't use this for this g-buffer pass
 struct ShadowRayPayload
