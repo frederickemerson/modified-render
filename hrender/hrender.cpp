@@ -279,7 +279,7 @@ void runServer()
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
     0, // sceneIndex
-    5,
+    7,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
             JitteredGBufferPass,
@@ -347,7 +347,7 @@ void runClient()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        8,
+        10,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
                 // --- TODO: receive and load the the texture "SRTReflection" --- //
