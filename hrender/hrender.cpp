@@ -278,7 +278,7 @@ void runServer()
 
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
-    0, // sceneIndex
+    1, // sceneIndex
     7,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
