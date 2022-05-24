@@ -98,7 +98,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 }
 
 void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* pipeline) {
-    pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex+1]);
+    pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
     pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
 
     if (renderConfiguration.numPasses <= 0 || 
@@ -198,8 +198,8 @@ void runDebug()
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
-        14,
+        1, // sceneIndex
+        13,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -210,7 +210,7 @@ void runDebug()
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
             CompressionPass,
             // --- RenderConfigPass 5 simulates delay across network --- //
-            SimulateDelayPass,
+            //SimulateDelayPass,
             // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
             DecompressionPass,
             // --- RenderConfigPass 7 transfers CPU information into GPU --- //
@@ -238,7 +238,7 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
         });

@@ -60,7 +60,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-        int visTexLen = VIS_TEX_LEN;
+        int visTexLen = VIS_TEX_LEN + REF_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, latestFrameRecv, 0 };
         
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
@@ -116,7 +116,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
             if (compression) {
                 int decompressedSize = Compression::executeLZ4Decompress(NetworkClientRecvPass::clientWriteBuffer, 
-                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, VIS_TEX_LEN);
+                    NetworkClientRecvPass::intermediateBuffer, rcvdFrameData.frameSize, VIS_TEX_LEN + REF_TEX_LEN);
                 char* tempPtr = NetworkClientRecvPass::intermediateBuffer;
                 NetworkClientRecvPass::intermediateBuffer = NetworkClientRecvPass::clientWriteBuffer;
                 NetworkClientRecvPass::clientWriteBuffer = tempPtr;

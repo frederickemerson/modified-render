@@ -127,7 +127,6 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // The actual size is the screen width and height * 4
             // We send VIS_TEX_LEN but we need to compress with the actual
             // size to prevent reading outside of the Falcor Buffer
-            int visTexSizeActual = texWidth * texHeight * 4;
             int toSendSize = mGetInputBufferSize();
 
             if (compression) {
