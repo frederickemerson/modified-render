@@ -388,11 +388,25 @@ void runClient()
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
+    // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
+    // 004 SERVER
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
+    // 005 SERVER
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.26", DEFAULT_PORT_UDP);
+
+    // --- RenderConfigPass 1 Send camera data to server--- //
+    // --- RenderConfigPass 2 receive visibility bitmap from server --- //
+    // --- RenderConfigPass 3 decompresses buffers sent across Network--- //
+    // --- RenderConfigPass 3 transfers CPU information into GPU --- //
+    // --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex --- //
+    // --- RenderConfigPass 5 just lets us select which pass to view on screen --- //
+    // --- RenderConfigPass 6 temporally accumulates frames for denoising --- //
+    // --- RenderConfigPass 7 creates a GBuffer on client side--- //
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
+        1, // sceneIndex
         10,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
