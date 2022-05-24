@@ -33,6 +33,7 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
         mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+        mSRTReflectionsIndex = mpResManager->requestTextureResource("SRTReflection");
         //mGIIndex = mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
     }
     else {
@@ -68,12 +69,18 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     //Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
+    Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
+
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
     //giTex->apiInitPub(mGetInputBuffer(), true);
     visTex->apiInitPub(mGetInputBuffer(), true);
-    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+
+    char* pReflectionTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+    srtReflectionTex->apiInitPub(pReflectionTex, true);
+
+    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN + REF_TEX_LEN]);
     AOTex->apiInitPub(pAOTex, true);
 
     Regression::addNonSeqFrame((int*)mGetInputBuffer());

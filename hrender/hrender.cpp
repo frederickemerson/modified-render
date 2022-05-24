@@ -231,6 +231,39 @@ void runDebug()
     SampleConfig config;
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
+
+    RenderConfiguration renderConfiguration = {
+        1920, 1080, // texWidth and texHeight
+        1, // sceneIndex
+        13,
+        { // Array of RenderConfigPass
+            // --- RenderConfigPass 1 creates a GBuffer --- //
+            JitteredGBufferPass,
+            // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
+            VisibilityPass,
+            // --- RenderConfigPass 3 transfers GPU information into CPU --- //
+            MemoryTransferPassGPU_CPU,
+            // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
+            CompressionPass,
+            // --- RenderConfigPass 5 simulates delay across network --- //
+            //SimulateDelayPass,
+            // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
+            DecompressionPass,
+            // --- RenderConfigPass 7 transfers CPU information into GPU --- //
+            MemoryTransferPassCPU_GPU,
+            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            PredictionPass,
+            VShadingPass,
+            // --- RenderConfigPass 9 calculates reflections in a hybrid method. --- //
+            ScreenSpaceReflectionPass,
+            ServerRayTracingReflectionPass,
+            ReflectionCompositePass,
+            // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
+            CopyToOutputPass,
+            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
+            SimpleAccumulationPass
+         }
+    };
     
     RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
 
@@ -242,6 +275,11 @@ void runDebug()
     // ============================ //
 // Set presets for the pipeline //
 // ============================ //
+    pipeline->setPresets({
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
+        });
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
             RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),

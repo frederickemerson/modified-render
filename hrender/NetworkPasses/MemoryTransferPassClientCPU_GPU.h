@@ -63,6 +63,7 @@ protected:
     int32_t mAOIndex = -1;                                          ///< index of ambient occlusion texture, to be obtained in initialization
     int32_t mGIIndex = -1;                                          ///< index of global illumination texture, to be obtained in initialization
     int32_t mVShadingIndex = -1;                                    ///< index of v-shading, to be obtained in initialization only for remote
+    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;

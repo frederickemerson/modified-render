@@ -37,7 +37,7 @@ public:
 
     // get output buffer on CPU memory after memory transfer
     char* getOutputBuffer() { return (char*)outputBuffer; }
-    int getOutputBufferSize() { return mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN : VIS_TEX_LEN; } // Remote uses same size as VIS_TEX_LEN
+    int getOutputBufferSize() { return mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN + REF_TEX_LEN : VIS_TEX_LEN; } // Remote uses same size as VIS_TEX_LEN
 
 protected:
     MemoryTransferPassServerGPU_CPU(bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") {
@@ -63,6 +63,7 @@ protected:
     int32_t mGIIndex = -1;                                          ///< index of global illumination texture, to be obtained in initialization
 
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
+    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
 
     // initialise output buffer
     uint8_t* outputBuffer;
