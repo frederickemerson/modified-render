@@ -49,7 +49,10 @@ enum RenderConfigPass : uint8_t {
     CopyToOutputPass,
     SimpleAccumulationPass,
     SimulateDelayPass,
-    PredictionPass
+    PredictionPass,
+    ScreenSpaceReflectionPass,
+    ServerRayTracingReflectionPass,
+    ReflectionCompositePass
 };
 
 
@@ -59,5 +62,5 @@ struct RenderConfiguration {
     int texHeight;
     uint8_t sceneIndex;
     uint8_t numPasses; // 1 byte
-    RenderConfigPass passOrder[14]; // 1 * 14 bytes
+    RenderConfigPass passOrder[17]; // 1 * 17 bytes
 };

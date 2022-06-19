@@ -35,6 +35,7 @@
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
     <ClCompile Include="hrender.cpp" />
     <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp" />
+    <ClCompile Include="NetworkPasses\GGXReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
     <ClCompile Include="NetworkPasses\NetworkClientRecvPass.cpp" />
@@ -44,7 +45,10 @@
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
     <ClCompile Include="NetworkPasses\PredictionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -74,6 +78,7 @@
     <ClInclude Include="hrender.h" />
     <ClInclude Include="NetworkPasses\ClientNetworkManager.h" />
     <ClInclude Include="NetworkPasses\FrameData.h" />
+    <ClInclude Include="NetworkPasses\GGXReflectionPass.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.h" />
     <ClInclude Include="NetworkPasses\NetworkClientRecvPass.h" />
@@ -83,7 +88,10 @@
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
     <ClInclude Include="NetworkPasses\PredictionPass.h" />
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
     <ClInclude Include="NetworkPasses\ServerNetworkManager.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
@@ -127,13 +135,17 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPassUtils.hlsli" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="hrender.aps" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F318569-891B-4D35-952C-9162D29F97F7}</ProjectGuid>
