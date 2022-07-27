@@ -212,6 +212,9 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             std::string outBuf = isHybridRendering ? "V-shading" : "RemoteIllum";
             pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", outBuf, isHybridRendering));
         }
+        else if (renderConfiguration.passOrder[i] == ServerRayTracingReflectionPass) {
+            pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
         else if (renderConfiguration.passOrder[i] == DistrSVGFPass) {
             // TODO: Implement and change below.
             pipeline->setPass(i, DistrSVGFPass::create("VisibilityBitmap", "AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
@@ -225,7 +228,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap } );
+    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection } );
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
