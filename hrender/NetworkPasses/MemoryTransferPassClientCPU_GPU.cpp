@@ -31,7 +31,7 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
 
     // store index of texture(s) we will be transferring to
     mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-    mSRTReflectionsIndex = mpResManager->requestTextureResource("SRTReflection");
+    mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
 
     return true;
 }

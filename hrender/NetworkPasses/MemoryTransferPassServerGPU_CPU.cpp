@@ -31,7 +31,7 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
 
     // store index of texture(s) we will be transferring from
     mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-    mSRTReflectionsIndex = mpResManager->requestTextureResource("SRTReflection");
+    mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
 
     // initialise output buffer
     outputBuffer = new uint8_t[VIS_TEX_LEN + REF_TEX_LEN];
