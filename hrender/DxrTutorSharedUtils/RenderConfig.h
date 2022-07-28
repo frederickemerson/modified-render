@@ -10,7 +10,8 @@ public:
     static const int RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED = 14;
 
     enum class BufferType {
-        VisibilityBitmap
+        VisibilityBitmap,
+        SRTReflection
     };
 
     struct Config {

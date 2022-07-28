@@ -31,6 +31,7 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     // For server buffers, we are creating them here, so we specify their width/height accordingly
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SRTReflection", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("AmbientOcclusion", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("ServerGlobalIllum", ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 

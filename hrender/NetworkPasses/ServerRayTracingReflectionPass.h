@@ -29,11 +29,12 @@ public:
     using SharedPtr = std::shared_ptr<ServerRayTracingReflectionPass>;
     using SharedConstPtr = std::shared_ptr<const ServerRayTracingReflectionPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new ServerRayTracingReflectionPass(outBuf)); }
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, int texWidth = -1, int texHeight = -1) { return SharedPtr(new ServerRayTracingReflectionPass(outBuf, texWidth, texHeight)); }
     virtual ~ServerRayTracingReflectionPass() = default;
 
 protected:
-    ServerRayTracingReflectionPass(const std::string& outBuf) : ::RenderPass("SRT Reflection Pass", "Ray Tracing Reflection Options") { mOutputTexName = outBuf; }
+    ServerRayTracingReflectionPass(const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("SRT Reflection Pass", "Ray Tracing Reflection Options") { mOutputTexName = outBuf; mTexWidth = texWidth; mTexHeight = texHeight;
+     }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -53,4 +54,6 @@ protected:
     // Various internal parameters
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
+    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 };
