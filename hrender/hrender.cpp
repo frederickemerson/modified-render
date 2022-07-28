@@ -175,7 +175,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, ScreenSpaceReflectionPass::create());
         }
         else if (renderConfiguration.passOrder[i] == ServerRayTracingReflectionPass) {
-            pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection"));
+            pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ReflectionCompositePass) {
             pipeline->setPass(i, ReflectionCompositePass::create());
@@ -189,7 +189,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap } );
+    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection } );
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
