@@ -44,10 +44,6 @@
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "DxrTutorSharedUtils/RenderConfig.h"
 #include "NetworkPasses/PredictionPass.h"
-#include "NetworkPasses/ScreenSpaceReflectionPass.h"
-#include "NetworkPasses/ServerRayTracingReflectionPass.h"
-#include "NetworkPasses/ReflectionCompositePass.h"
-
 
 void runServer();
 void runClient();
@@ -98,7 +94,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 }
 
 void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* pipeline) {
-    pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex+1]);
+    pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
     pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
 
     if (renderConfiguration.numPasses <= 0 || 
@@ -171,15 +167,6 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             auto pass = PredictionPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight);
             pipeline->setPass(i, pass);
         }
-        else if (renderConfiguration.passOrder[i] == ScreenSpaceReflectionPass) {
-            pipeline->setPass(i, ScreenSpaceReflectionPass::create());
-        }
-        else if (renderConfiguration.passOrder[i] == ServerRayTracingReflectionPass) {
-            pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection"));
-        }
-        else if (renderConfiguration.passOrder[i] == ReflectionCompositePass) {
-            pipeline->setPass(i, ReflectionCompositePass::create());
-        }
     }
 }
 
@@ -199,7 +186,7 @@ void runDebug()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        14,
+        11,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -218,13 +205,9 @@ void runDebug()
             // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
             PredictionPass,
             VShadingPass,
-            // --- RenderConfigPass 9 calculates reflections in a hybrid method. --- //
-            ScreenSpaceReflectionPass,
-            ServerRayTracingReflectionPass,
-            ReflectionCompositePass,
-            // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
+            // --- RenderConfigPass 9 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
+            // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
          }
     };
@@ -238,9 +221,9 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
         });
 
     // Start our program
