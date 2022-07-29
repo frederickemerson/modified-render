@@ -185,7 +185,7 @@ void runDebug()
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
+        1, // sceneIndex
         11,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
@@ -261,7 +261,7 @@ void runServer()
 
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
-    0, // sceneIndex
+    1, // sceneIndex
     5,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
@@ -308,12 +308,7 @@ void runClient()
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
     
-    // 003 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
-    // 004 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
-    // 005 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.26", DEFAULT_PORT_UDP);
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.73", DEFAULT_PORT_UDP);
 
     // --- RenderConfigPass 1 Send camera data to server--- //
     // --- RenderConfigPass 2 receive visibility bitmap from server --- //
@@ -326,7 +321,7 @@ void runClient()
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
+        1, // sceneIndex
         8,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
