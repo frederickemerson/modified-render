@@ -41,7 +41,7 @@ bool ServerRayTracingReflectionPass::initialize(RenderContext* pRenderContext, R
     mpResManager->requestTextureResource("VisibilityBitmap");
     mpResManager->requestTextureResource("RayMask");
     mpResManager->requestTextureResource("__TextureData");
-    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R11G11B10Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     RenderConfig::mConfig[1].resourceIndex = mOutputIndex;
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
