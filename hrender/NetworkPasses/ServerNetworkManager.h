@@ -50,7 +50,7 @@
 #define DEFAULT_PORT_UDP "1505"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
-#define REF_TEX_LEN 16588800 // 8 * 1920 * 1080
+#define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
 
 // While waiting for the first packet from the client, wait
 // this amount of time in milliseconds before giving up
