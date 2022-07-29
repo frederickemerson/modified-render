@@ -171,6 +171,15 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             auto pass = PredictionPass::create(RENDER_WIDTH, RENDER_HEIGHT);
             pipeline->setPass(i, pass);
         }
+        else if (renderConfiguration.passOrder[i] == ScreenSpaceReflectionPass) {
+            pipeline->setPass(i, ScreenSpaceReflectionPass::create());
+        }
+        else if (renderConfiguration.passOrder[i] == ServerRayTracingReflectionPass) {
+            pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection"));
+        }
+        else if (renderConfiguration.passOrder[i] == ReflectionCompositePass) {
+            pipeline->setPass(i, ReflectionCompositePass::create());
+        }
     }
 }
 
@@ -180,7 +189,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap } );
+    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection } );
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -196,6 +205,14 @@ void runDebug()
             JitteredGBufferPass,
             // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
             VisibilityPass,
+
+            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            PredictionPass,
+            VShadingPass,
+            // --- RenderConfigPass 9 calculates reflections in a hybrid method. --- //
+            ScreenSpaceReflectionPass,
+            ServerRayTracingReflectionPass,
+            ReflectionCompositePass,
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
@@ -206,10 +223,7 @@ void runDebug()
             //DecompressionPass,
             // --- RenderConfigPass 7 transfers CPU information into GPU --- //
             MemoryTransferPassCPU_GPU,
-            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
-            PredictionPass,
-            VShadingPass,
-            // --- RenderConfigPass 9 just lets us select which pass to view on screen --- //
+            // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
@@ -265,8 +279,8 @@ void runServer()
 
     RenderConfiguration renderConfiguration = {
     1920, 1080, // texWidth and texHeight
-    0, // sceneIndex
-    5,
+    1, // sceneIndex
+    7,
     { // Array of RenderConfigPass
             NetworkServerRecvPass, 
             JitteredGBufferPass,
