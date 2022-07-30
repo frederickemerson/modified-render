@@ -101,18 +101,18 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
     pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
     pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
 
-    if (renderConfiguration.numPasses <= 0 || 
+    if (renderConfiguration.numPasses <= 0 ||
         renderConfiguration.numPasses > RenderConfig::RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED) {
         OutputDebugString(L"Error: incorrect num passes parameter in render configuration");
     }
 
-    std::function<char*()> inputBufferArgument;
-    std::function<int ()> inputBufferSizeArgument;
+    std::function<char* ()> inputBufferArgument;
+    std::function<int()> inputBufferSizeArgument;
 
     for (int i = 0; i < renderConfiguration.numPasses; i++) {
         if (renderConfiguration.passOrder[i] == JitteredGBufferPass) {
             pipeline->setPass(i, JitteredGBufferPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
-        } 
+        }
         else if (renderConfiguration.passOrder[i] == VisibilityPass) {
             pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
@@ -189,7 +189,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection } );
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -270,7 +270,7 @@ void runServer()
     int texWidth, texHeight;
 
     ResourceManager::mServerNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-   
+
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 
@@ -282,7 +282,7 @@ void runServer()
     1, // sceneIndex
     7,
     { // Array of RenderConfigPass
-            NetworkServerRecvPass, 
+            NetworkServerRecvPass,
             JitteredGBufferPass,
             VisibilityPass,
             ScreenSpaceReflectionPass,
@@ -328,7 +328,7 @@ void runClient()
 
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
-    
+
     // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
     // 004 SERVER
@@ -372,7 +372,7 @@ void runClient()
     // ============================ //
     pipeline->setPresets({
         RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
-    });
+        });
 
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
 
