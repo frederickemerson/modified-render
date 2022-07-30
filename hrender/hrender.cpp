@@ -53,6 +53,10 @@
 #include "SVGFPasses/SVGFServerPass.h"
 #include "SVGFPasses/SVGFClientPass.h"
 #include "SVGFPasses/DistrSVGFPass.h"
+#include "NetworkPasses/ScreenSpaceReflectionPass.h"
+#include "NetworkPasses/ServerRayTracingReflectionPass.h"
+#include "NetworkPasses/ReflectionCompositePass.h"
+
 
 void runServer();
 void runClient();
@@ -117,7 +121,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
     pipeline->setDefaultSceneName(defaultSceneNames[renderConfiguration.sceneIndex]);
     pipeline->updateEnvironmentMap(environmentMaps[renderConfiguration.sceneIndex]);
 
-    if (renderConfiguration.numPasses <= 0 || 
+    if (renderConfiguration.numPasses <= 0 ||
         renderConfiguration.numPasses > RenderConfig::RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED) {
         OutputDebugString(L"Error: incorrect num passes parameter in render configuration");
     }
@@ -128,10 +132,10 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 
     for (int i = 0; i < renderConfiguration.numPasses; i++) {
         if (renderConfiguration.passOrder[i] == JitteredGBufferPass) {
-            pipeline->setPass(i, JitteredGBufferPass::create(RENDER_WIDTH, RENDER_HEIGHT));
-        } 
+            pipeline->setPass(i, JitteredGBufferPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
         else if (renderConfiguration.passOrder[i] == VisibilityPass) {
-            pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition", RENDER_WIDTH, RENDER_HEIGHT));
+            pipeline->setPass(i, VisibilityPass::create("VisibilityBitmap", "WorldPosition", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == MemoryTransferPassGPU_CPU) {
             auto pass = MemoryTransferPassServerGPU_CPU::create(isHybridRendering);
@@ -154,18 +158,18 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             inputBufferArgument = std::bind(&CompressionPass::getOutputBuffer, pass.get());
         }
         else if (renderConfiguration.passOrder[i] == NetworkClientRecvPass) {
-            pipeline->setPass(i, NetworkClientRecvPass::create(RENDER_WIDTH, RENDER_HEIGHT));
+            pipeline->setPass(i, NetworkClientRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
             inputBufferArgument = std::bind(&ClientNetworkManager::getOutputBuffer, ResourceManager::mClientNetworkManager.get());
             inputBufferSizeArgument = std::bind(&ClientNetworkManager::getOutputBufferSize, ResourceManager::mClientNetworkManager.get());
         }
         else if (renderConfiguration.passOrder[i] == NetworkClientSendPass) {
-            pipeline->setPass(i, NetworkClientSendPass::create(RENDER_WIDTH, RENDER_HEIGHT));
+            pipeline->setPass(i, NetworkClientSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == NetworkServerRecvPass) {
-            pipeline->setPass(i, NetworkServerRecvPass::create(RENDER_WIDTH, RENDER_HEIGHT));
+            pipeline->setPass(i, NetworkServerRecvPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == NetworkServerSendPass) {
-            pipeline->setPass(i, NetworkServerSendPass::create(RENDER_WIDTH, RENDER_HEIGHT));
+            pipeline->setPass(i, NetworkServerSendPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight));
             ResourceManager::mServerNetworkManager->mGetInputBuffer = inputBufferArgument;
             ResourceManager::mServerNetworkManager->mGetInputBufferSize = inputBufferSizeArgument;
         }
@@ -179,10 +183,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
                 DecodeGBufferPass::create(RENDER_WIDTH, RENDER_HEIGHT, "DecodedGBuffer") });*/
         }
         else if (renderConfiguration.passOrder[i] == CopyToOutputPass) {
-            int widthOffset = (RENDER_WIDTH - DISPLAY_WIDTH) / 2;
-            int heightOffset = (RENDER_HEIGHT - DISPLAY_HEIGHT) /2 ;
-            uint4 srcRect = { widthOffset, heightOffset, RENDER_WIDTH - widthOffset, RENDER_HEIGHT - heightOffset };
-            pipeline->setPass(i, CopyToOutputPass::create(srcRect));
+            pipeline->setPass(i, CopyToOutputPass::create());
         }
         else if (renderConfiguration.passOrder[i] == SimpleAccumulationPass) {
             pipeline->setPass(i, SimpleAccumulationPass::create(ResourceManager::kOutputChannel));
@@ -194,7 +195,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             inputBufferSizeArgument = std::bind(&SimulateDelayPass::getOutputBufferSize, pass.get());
         }
         else if (renderConfiguration.passOrder[i] == PredictionPass) {
-            auto pass = PredictionPass::create(RENDER_WIDTH, RENDER_HEIGHT);
+            auto pass = PredictionPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight);
             pipeline->setPass(i, pass);
         }
         else if (renderConfiguration.passOrder[i] == ServerRemoteConverter) {
@@ -237,7 +238,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
 void runDebug()
 {
     // hrender config
-    RenderConfig::setConfiguration( { RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection } );
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -245,9 +246,9 @@ void runDebug()
     config.windowDesc.resizableWindow = true;
 
     RenderConfiguration renderConfiguration = {
-        RENDER_WIDTH, RENDER_HEIGHT, // texWidth and texHeight
+        1920, 1080, // texWidth and texHeight
         1, // sceneIndex
-        9,
+        13,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -273,16 +274,16 @@ void runDebug()
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
             //MemoryTransferPassGPU_CPU,
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-           // CompressionPass,
+            CompressionPass,
             // --- RenderConfigPass 5 simulates delay across network --- //
             //SimulateDelayPass,
             // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
-           // DecompressionPass,
+            DecompressionPass,
             // --- RenderConfigPass 7 transfers CPU information into GPU --- //
             //MemoryTransferPassCPU_GPU,
             // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
+            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
          }
     };
@@ -290,7 +291,7 @@ void runDebug()
     RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
 
     // Create our rendering pipeline
-    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(RENDER_WIDTH, RENDER_HEIGHT));
+    RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(renderConfiguration.texWidth, renderConfiguration.texHeight));
 
     CreatePipeline(renderConfiguration, pipeline);
 
@@ -298,9 +299,9 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
         });
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
@@ -341,7 +342,7 @@ void runServer()
     int texWidth, texHeight;
 
     ResourceManager::mServerNetworkManager->SetUpServerUdp(DEFAULT_PORT_UDP, texWidth, texHeight);
-   
+
     config.windowDesc.height = texHeight;
     config.windowDesc.width = texWidth;
 
@@ -353,9 +354,12 @@ void runServer()
     0, // sceneIndex
     5,
     { // Array of RenderConfigPass
-            NetworkServerRecvPass, 
+            NetworkServerRecvPass,
             JitteredGBufferPass,
             VisibilityPass,
+            ScreenSpaceReflectionPass,
+            ServerRayTracingReflectionPass,
+            // --- TODO: create a new buffer to send back the texture "SRTReflection" --- //
             MemoryTransferPassGPU_CPU,
             //CompressionPass,
             NetworkServerSendPass
@@ -406,7 +410,7 @@ void runClient()
 
     //pipeline->setDefaultSceneName(defaultSceneNames[0]);
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
-    
+
     // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
     // 004 SERVER
@@ -425,18 +429,21 @@ void runClient()
 
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
-        8,
+        1, // sceneIndex
+        10,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
+                // --- TODO: receive and load the the texture "SRTReflection" --- //
                 NetworkClientRecvPass,
                 //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
                 PredictionPass,
-                JitteredGBufferPass,
                 VShadingPass,
+                ScreenSpaceReflectionPass,
+                ReflectionCompositePass,
                 CopyToOutputPass,
                 SimpleAccumulationPass,
+                JitteredGBufferPass
          }
     };
     RenderConfiguration renderConfiguration = getClientRenderConfig(renderMode, renderType, sceneIdx);
