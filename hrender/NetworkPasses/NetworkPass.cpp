@@ -31,7 +31,7 @@ bool NetworkPass::initialize(RenderContext* pRenderContext, ResourceManager::Sha
     // For server buffers, we are creating them here, so we specify their width/height accordingly
     mpResManager->requestTextureResource("WorldPosition2", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource("VisibilityBitmap", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    mpResManager->requestTextureResource("SRTReflection", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SRTReflection", ResourceFormat::R11G11B10Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     if (mpScene) {
