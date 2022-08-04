@@ -330,7 +330,7 @@ void runClient()
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
 
     // 003 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.186.144", DEFAULT_PORT_UDP);
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.129", DEFAULT_PORT_UDP);
     // 004 SERVER
     //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
     // 005 SERVER
