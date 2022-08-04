@@ -71,8 +71,11 @@ void VShadowsRayGen()
     float4 specMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].y));
     if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
 
+    // Add emissive Color
+    float4 emissiveColor = unpackUnorm4x8(asuint(gTexData[launchIndex].z));
+
     // If we don't hit any geometry, our difuse material contains our background color.
-    float3 shadeColor = difMatlColor.rgb;
+    float3 shadeColor = difMatlColor.rgb ;
 
     if (!gDecodeMode)
     {
@@ -131,10 +134,9 @@ void VShadowsRayGen()
             float AOfactor = clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
             finalColor *= AOfactor;
         }
-
-        // Add diffuse-diffuse interactions if enabled
-        //finalColor *= gSkipDD ? 1.0f : float4(gAO[launchIndex].rgb / 255.0, 1.0f);
-        gOutput[launchIndex] = finalColor;
+    
+        // Save out our AO color
+        gOutput[launchIndex] = float4(shadeColor , 1.0f) + emissiveColor;
     } 
     else
     {
@@ -142,20 +144,12 @@ void VShadowsRayGen()
         {
             float shadowMult = gSkipShadows ? 1.0f :
             ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
-        
-            shadeColor *= shadowMult;
-            gOutput[launchIndex] = float4(shadeColor, 1.0);
-        }
-        else
-        {
-            uint2 actualIndex = uint2(launchIndex.x, launchIndex.y >> 2);
-            uint shiftFactor = 24 - 8 * (launchIndex.y % 4);
-            uint numOfUnoccludedRays = (gAO[actualIndex] & (0xFF << shiftFactor));
-            
-            float AOfactor = clamp((float) gAO[launchIndex] / gNumAORays, 0.0, 1.0);
-            gOutput[launchIndex] = float4(float3(AOfactor), 1.0);
-        }
-       
+
+
+        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
+
+        //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
+
     }
 
 }

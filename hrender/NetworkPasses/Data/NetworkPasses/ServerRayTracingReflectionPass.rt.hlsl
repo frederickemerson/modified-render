@@ -166,7 +166,7 @@ void GGXRayGen()
                 float3 V = normalize(gScene.camera.getPosition() - worldPos.xyz);
                 float3 H = normalize(V + L);
                 float3 R = normalize(reflect(V, worldNorm.xyz));
-                float roughness = specMatlColor.g;
+                float roughness = specMatlColor.a * specMatlColor.a;
                 float NdotL = saturate(dot(worldNorm.xyz, L));
                 float NdotH = saturate(dot(worldNorm.xyz, H));
                 float LdotH = saturate(dot(L, H));

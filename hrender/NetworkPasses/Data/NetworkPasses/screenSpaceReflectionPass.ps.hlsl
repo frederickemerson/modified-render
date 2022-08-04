@@ -43,8 +43,7 @@ struct PS_OUTPUT
 
 float3 SSRRayMarch(float3 origin, float3 direction)
 {
-	int iteration = 200;
-	float threshold = 0.025;
+	int iteration = 50;
 	float3 temp = origin;
 	for (int i = 0; i < iteration; i++) {
 		// Test point goes along the direction
@@ -65,7 +64,7 @@ float3 SSRRayMarch(float3 origin, float3 direction)
 			float4 matlOthers;
 			unpackTextureData(asuint(gTexData[origin.xy]), difMatlColor, specMatlColor, pixelEmissive, matlOthers);
 			//return  2 * gVshading[origin.xy].rgb;
-			return 3 * specMatlColor.rgb;
+			return  specMatlColor.rgb;
 		}
 	}
 
@@ -95,7 +94,6 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// If geometry invalid or we skip SSR, this pixel is discard for raytracing.
 	SSRBufOut.RayMask = (!isGeometryValid || gSkipSSR) ? 1 : 0;
 	// We use this temp color to check SSR hit or miss
-	float3 maskColor =  pixelEmissive.rgb;
 	float3 SSRColor = float3(0);
 	float roughness = specMatlColor.a * specMatlColor.a;
 
@@ -103,7 +101,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	{
 
 		// Set V-shading color and emissive color.
-		shadeColor =  pixelEmissive.rgb;
+		shadeColor = float3(0);
 
 		for (int lightIndex = 0; lightIndex < gLightCount; lightIndex++)
 		{
@@ -118,8 +116,8 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 				float3 ssrColor = gSkipSSR ? float3(0, 0, 0) : SSRRayMarch(worldPos.xyz, R);
 
 				if (SSRColor.r != 0.0f && SSRColor.g != 0.0f && SSRColor.b != 0.0f) SSRBufOut.RayMask = 1;
-				//shadeColor = maskColor + 0.5f * SSRColor;
-				SSRColor += ssrColor;
+				// roughness helps reduce noise
+				SSRColor += roughness * ssrColor;
 
 				
 			}
@@ -128,13 +126,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	}
 
 	// If shaderColor has been changed, means SSR worked for this pixel, no need to do raytracing.
-	//if (shadeColor.r != maskColor.r || shadeColor.g != maskColor.g || shadeColor.b != maskColor.b) SSRBufOut.RayMask = 1;
-	//else SSRBufOut.RayMask = 0;
-	//if(shadeColor.r < 0.5f) SSRBufOut.RayMask = 0;
-	//else SSRBufOut.RayMask = 1;
-
-	// SSRColor blend vshading color, emissive color and SSR color.
-	if (SSRBufOut.RayMask == 1) shadeColor = maskColor + specMatlColor.g * SSRColor;
+	if (SSRBufOut.RayMask == 1) shadeColor =  SSRColor;
 
 	if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
 	else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;
