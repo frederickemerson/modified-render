@@ -65,8 +65,11 @@ void VShadowsRayGen()
     float4 specMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].y));
     if (dot(difMatlColor.rgb, difMatlColor.rgb) < 0.00001f) difMatlColor = specMatlColor;
 
+    // Add emissive Color
+    float4 emissiveColor = unpackUnorm4x8(asuint(gTexData[launchIndex].z));
+
     // If we don't hit any geometry, our difuse material contains our background color.
-    float3 shadeColor = difMatlColor.rgb;
+    float3 shadeColor = difMatlColor.rgb ;
 
 
     if (!gDecodeMode)
@@ -108,7 +111,7 @@ void VShadowsRayGen()
         }
     
         // Save out our AO color
-        gOutput[launchIndex] = float4(shadeColor, 1.0f);
+        gOutput[launchIndex] = float4(shadeColor , 1.0f) + emissiveColor;
     } 
     else
     {
@@ -116,7 +119,7 @@ void VShadowsRayGen()
             ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
 
-        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult;
+        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
 
         //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
 

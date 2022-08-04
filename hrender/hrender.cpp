@@ -214,15 +214,15 @@ void runDebug()
             ServerRayTracingReflectionPass,
             ReflectionCompositePass,
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
-            MemoryTransferPassGPU_CPU,
+            //MemoryTransferPassGPU_CPU,
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-            CompressionPass,
+           // CompressionPass,
             // --- RenderConfigPass 5 simulates delay across network --- //
             //SimulateDelayPass,
             // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
-            DecompressionPass,
+           // DecompressionPass,
             // --- RenderConfigPass 7 transfers CPU information into GPU --- //
-            MemoryTransferPassCPU_GPU,
+            //MemoryTransferPassCPU_GPU,
             // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
