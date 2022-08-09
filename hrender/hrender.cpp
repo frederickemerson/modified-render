@@ -335,9 +335,9 @@ void runClient()
     // 003 SERVER
     ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.129", DEFAULT_PORT_UDP);
     // 004 SERVER
-    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.46", DEFAULT_PORT_UDP);
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.73", DEFAULT_PORT_UDP);
     // 005 SERVER
-    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.187.26", DEFAULT_PORT_UDP);
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
 
     // --- RenderConfigPass 1 Send camera data to server--- //
     // --- RenderConfigPass 2 receive visibility bitmap from server --- //
