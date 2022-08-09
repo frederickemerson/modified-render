@@ -206,12 +206,15 @@ void runDebug()
             // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
             VisibilityPass,
 
-            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
-            PredictionPass,
-            VShadingPass,
+            
             // --- RenderConfigPass 9 calculates reflections in a hybrid method. --- //
             ScreenSpaceReflectionPass,
             ServerRayTracingReflectionPass,
+
+            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            PredictionPass,
+            VShadingPass,
+
             ReflectionCompositePass,
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
             //MemoryTransferPassGPU_CPU,
@@ -351,13 +354,12 @@ void runClient()
         10,
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
-                // --- TODO: receive and load the the texture "SRTReflection" --- //
                 NetworkClientRecvPass,
                 //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
+                ScreenSpaceReflectionPass,
                 PredictionPass,
                 VShadingPass,
-                ScreenSpaceReflectionPass,
                 ReflectionCompositePass,
                 CopyToOutputPass,
                 SimpleAccumulationPass,
