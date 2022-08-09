@@ -57,6 +57,8 @@ protected:
     int32_t                                 mVisBufOffsetIndex;             ///< An index for the offset visibility buffer
     int32_t                                 mAOBufOrigIndex;               ///< An index for the original AO buffer
     int32_t                                 mAOBufOffsetIndex;             ///< An index for the offset AO buffer
+    int32_t                                 mRefBufOrigIndex;              ///< An index for the original RayTracing Reflection buffer
+    int32_t                                 mRefBufOffsetIndex;             ///< An index for the offset RayTracing Reflection buffer
     int32_t                                 mWorldPosIndex;                 ///< An index for the world position
     int32_t                                 mZBufferIndex;                  ///< An index for the Z buffer
     bool                                    mUsePrediction = true;          ///< A flag to toggle prediction
