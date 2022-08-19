@@ -13,6 +13,11 @@
 #include <wrl.h>
 #include "../Utils/FFmpegDemuxer.h"
 
+extern "C"
+{
+    #include "libswscale/swscale.h"
+}
+
 class UploadInput
 {
 public:
@@ -248,12 +253,15 @@ protected:
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     bool initialiseEncoder();
+    bool initialiseH264Encoder();
+    bool initialiseH264Decoder();
     bool initialiseDecoder();
     bool initialiseDecoder2();
     void DecodeMediaFile();
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
     void executeLZ4(RenderContext* pRenderContext);
+    void executeH264(RenderContext* pRenderContext);
     void executeNVENC(RenderContext* pRenderContext);
     void renderGui(Gui::Window* pPassWindow) override;
 
@@ -283,4 +291,9 @@ protected:
     int nHeight = 1080;
     int nSize = nWidth * nHeight * 4;
     char msg[100];
+
+    AVFrame* mpFrame = nullptr;
+    AVPacket* mpPacket = nullptr;
+    struct SwsContext* mpSwsContext = nullptr;
+    AVCodecContext* mpCodecContext = nullptr;
 };
