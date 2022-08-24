@@ -33,6 +33,9 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     outputBuffer = new char[RenderConfig::getTotalSize()];
     outputBufferNVENC = new char[RenderConfig::getTotalSize()];
     
+    mDisplayableBuffers.push_back({ 0, "LZ4" });
+    mDisplayableBuffers.push_back({ 1, "H264" });
+
     if (mMode == Mode::Decompression) {
         initialiseH264Decoder();
         //initialiseDecoder();
@@ -299,11 +302,10 @@ void CompressionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr 
 
 void CompressionPass::execute(RenderContext* pRenderContext)
 {
-    bool LZ4 = false;
-    if (LZ4) {
+    if (mCodecType == LZ4) {
         executeLZ4(pRenderContext);
     }
-    else {
+    else if (mCodecType == H264) {
         executeH264(pRenderContext);
     }
     //executeNVENC(pRenderContext);
@@ -545,9 +547,7 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
 void CompressionPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
-    pPassWindow->text(mMode == Mode::Compression ? "Compression"
-        : mMode == Mode::Decompression? "Decompression"
-        : "Unknown Compression Pass");
+    pPassWindow->dropdown("Codec Method", mDisplayableBuffers, mCodecType);
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
