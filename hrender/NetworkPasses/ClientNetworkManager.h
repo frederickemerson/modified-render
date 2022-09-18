@@ -186,7 +186,7 @@ public:
     float getTimeForOneSequentialFrame();
 
 private:
-    bool compression = true;
+    bool compression = false;
 
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();

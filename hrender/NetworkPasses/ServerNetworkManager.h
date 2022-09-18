@@ -188,5 +188,5 @@ public:
     bool CloseServerConnectionUdp();
 
 private:
-        bool compression = true;
+        bool compression = false;
 };
