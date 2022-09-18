@@ -364,7 +364,7 @@ void runServer()
             ScreenSpaceReflectionPass,
             ServerRayTracingReflectionPass,
             MemoryTransferPassGPU_CPU,
-            //CompressionPass,
+            CompressionPass,
             NetworkServerSendPass
      }
     };
@@ -437,7 +437,7 @@ void runClient()
         { // Array of RenderConfigPass
                 NetworkClientSendPass,
                 NetworkClientRecvPass,
-                //DecompressionPass,
+                DecompressionPass,
                 MemoryTransferPassCPU_GPU,
                 PredictionPass,
                 ScreenSpaceReflectionPass,
