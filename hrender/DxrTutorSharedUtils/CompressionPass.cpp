@@ -343,7 +343,14 @@ bool CompressionPass::initialiseH264Decoders() {
 }
 
 bool CompressionPass::initialiseH264Encoder() {
-    AVCodec* h264enc = avcodec_find_encoder(AV_CODEC_ID_H264);
+    AVCodec* h264enc;
+    if (isUsingCPU) {
+        h264enc = avcodec_find_encoder(AV_CODEC_ID_H264);
+    }
+    else {
+        h264enc = avcodec_find_encoder_by_name("h264_nvenc");
+    }
+    
     mpCodecContext = avcodec_alloc_context3(h264enc);
     if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
 
@@ -351,18 +358,31 @@ bool CompressionPass::initialiseH264Encoder() {
     mpCodecContext->width = nWidth;
     mpCodecContext->height = nHeight;
     mpCodecContext->time_base = av_make_q(1, 90000);
-    mpCodecContext->bit_rate = 4000000; // Arbitrary value
+    int64_t bitrate = 900000;
+    mpCodecContext->bit_rate = bitrate;
+    mpCodecContext->rc_buffer_size = (int)bitrate / 60;
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
-    mpCodecContext->thread_type = FF_THREAD_SLICE;
-    mpCodecContext->codec_id = h264enc->id;
-    mpCodecContext->gop_size = 12;
+    mpCodecContext->thread_type = FF_THREAD_FRAME;
+    mpCodecContext->gop_size = 999999;
     mpCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
 
     AVDictionary* param = nullptr;
     av_dict_set(&param, "qp", "0", 0);
-    av_dict_set(&param, "preset", "ultrafast", 0);
-    //av_dict_set(&param, "tune", "zerolatency", 0);
+    if (isUsingCPU) {
+        av_dict_set(&param, "preset", "ultrafast", 0);
+        av_dict_set(&param, "profile:v", "high", 0);
+        av_dict_set(&param, "vsync", "0", 0);
+        av_dict_set(&param, "tune", "zerolatency", 0);
+    }
+    else {
+        av_dict_set(&param, "preset", "llhp", 0);
+        av_dict_set(&param, "profile:v", "high", 0);
+        //av_dict_set(&param, "rc", "cbr_ld_hq", 0);
+        av_dict_set(&param, "vsync", "0", 0);
+    }
+
+
 
     /* Open the context for encoding */
     int err = avcodec_open2(mpCodecContext, h264enc, &param);
@@ -375,7 +395,7 @@ bool CompressionPass::initialiseH264Encoder() {
     /* Initialise the color converter */
     mpSwsContext = sws_getContext(nWidth, nHeight, AV_PIX_FMT_RGBA,
         nWidth, nHeight, AV_PIX_FMT_YUV420P,
-            SWS_POINT, nullptr, nullptr, nullptr);
+        SWS_POINT, nullptr, nullptr, nullptr);
 
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
@@ -394,27 +414,28 @@ bool CompressionPass::initialiseH264Decoder() {
     mpCodecContext->height = nHeight;
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
-    mpCodecContext->thread_type = FF_THREAD_SLICE;
-    mpCodecContext->codec_id = h264dec->id;
+    mpCodecContext->thread_type = FF_THREAD_FRAME;
     mpCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
 
     AVDictionary* param = nullptr;
     av_dict_set(&param, "qp", "0", 0);
     av_dict_set(&param, "preset", "ultrafast", 0);
-    //av_dict_set(&param, "tune", "zerolatency", 0);
+    av_dict_set(&param, "tune", "zerolatency", 0);
 
     /* Open the context for decoding */
-    int err = avcodec_open2(mpCodecContext, h264dec, &param);
+    int err = avcodec_open2(mpCodecContext, h264dec, NULL);
     if (err < 0) {
         av_strerror(err, msg, 120);
         OutputDebugString(L"\nFailure to open decoder context due to: ");
         OutputDebugStringA(msg);
     }
 
-    /* Initialise the color converter*/
-    mpSwsContext = sws_getContext(nWidth, nHeight, AV_PIX_FMT_YUV420P,
+    /* Initialise the color converter + upscaling*/
+    mpSwsContext = sws_getContext(
+        nWidth, nHeight, AV_PIX_FMT_YUV420P,
         nWidth, nHeight, AV_PIX_FMT_RGBA,
-        SWS_POINT, nullptr, nullptr, nullptr);
+        SWS_BILINEAR, nullptr, nullptr, nullptr
+    );
 
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
@@ -640,6 +661,13 @@ void CompressionPass::executeNVENC(RenderContext* pRenderContext)
             memcpy(&outputBufferNVENC[compressedSize], packet.data(), packet.size());
             //fpOut.write(reinterpret_cast<char*>(packet.data()), packet.size());
         }
+
+        if (compressedSize == 0) {
+            // We currently don't have enough frames collated to receive a packet. Wait for another pass.
+            outputBufferSize = 0;
+            return;
+        }
+
         sprintf(msg, "\nSize of NVENC compressed output: %zu\n", compressedSize);
         //RenderConfig::mConfig[0].compressionPassOutputLocation2 = outputBufferNVENC;
         RenderConfig::mConfig[0].compressedSize2 = (int)compressedSize;
@@ -904,8 +932,9 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             mpFrame->format = mpCodecContext->pix_fmt;
             mpFrame->width = mpCodecContext->width;
             mpFrame->height = mpCodecContext->height;
+            mpFrame->pts = 0;
 
-            if (av_frame_get_buffer(mpFrame, 32) < 0)
+            if (av_frame_get_buffer(mpFrame, 0) < 0)
             {
                 OutputDebugString(L"\nCannot allocate frame buffer in encoder.\n");
             }
@@ -916,10 +945,9 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             /* Convert RGBA -> YUV420P, for encoder friendly format. */
             const int stride[1] = { nWidth * 4 };
             const uint8_t* const pData[1] = { sourceBuffer };
-            sws_scale(mpSwsContext, pData, stride, 0, nHeight, mpFrame->data, mpFrame->linesize);
-
+            int ret = sws_scale(mpSwsContext, pData, stride, 0, nHeight, mpFrame->data, mpFrame->linesize);
             /* Send frame to encoder and receive encoded packet*/
-            int ret = avcodec_send_frame(mpCodecContext, mpFrame);
+            ret = avcodec_send_frame(mpCodecContext, mpFrame);
             if (ret < 0) {
                 av_strerror(ret, msg, 100);
                 OutputDebugString(L"\nFailure to send frame due to: ");
@@ -996,15 +1024,21 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             /* Convert YUV420P -> RGBA into the output buffer */
             const int stride[] = { nWidth * 4 };
             uint8_t* const pData[1] = { (uint8_t*)outputBuffer };
-            sws_scale(mpSwsContext, mpFrame->data, mpFrame->linesize, 0, nHeight, pData, stride);
-           
+            ret = sws_scale(mpSwsContext, mpFrame->data, mpFrame->linesize,
+                                0, nHeight, pData, stride);
+            if (ret < 0) {
+                av_strerror(ret, msg, 100);
+                OutputDebugString(L"\ncannot scale due to : ");
+                OutputDebugStringA(msg);
+            }
+            //memcpy(outputBuffer, mpFrame->data[0], nSize);
             // Not sure of how to find out the decompressed size, so for now decompressed size is always the same as original
             char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, sourceBufferSize);
+            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, nSize);
             OutputDebugStringA(buffer);
 
             // Update size of decompressed buffer
-            outputBufferSize = sourceBufferSize;
+            outputBufferSize = nSize;
 
             /* Reset the frame and packet to be reused in the next loop */
             av_frame_unref(mpFrame);
