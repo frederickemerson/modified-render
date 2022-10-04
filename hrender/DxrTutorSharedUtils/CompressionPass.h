@@ -299,7 +299,7 @@ protected:
 
     Gui::DropdownList mDisplayableBuffers;
     bool isUsingCPU = false;
-    uint32_t          mCodecType = H264; // LZ4 by default
+    uint32_t          mCodecType = H264; // H264 by default
     enum CodecType : uint32_t {
         LZ4,
         H264

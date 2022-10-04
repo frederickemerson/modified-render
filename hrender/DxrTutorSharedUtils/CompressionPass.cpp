@@ -366,13 +366,6 @@ void CompressionPass::executeNVENC(RenderContext* pRenderContext)
             memcpy(&outputBufferNVENC[compressedSize], packet.data(), packet.size());
             //fpOut.write(reinterpret_cast<char*>(packet.data()), packet.size());
         }
-
-        if (compressedSize == 0) {
-            // We currently don't have enough frames collated to receive a packet. Wait for another pass.
-            outputBufferSize = 0;
-            return;
-        }
-
         sprintf(msg, "\nSize of NVENC compressed output: %zu\n", compressedSize);
         //RenderConfig::mConfig[0].compressionPassOutputLocation2 = outputBufferNVENC;
         RenderConfig::mConfig[0].compressedSize2 = (int)compressedSize;
@@ -436,7 +429,6 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
                 if (decompressedSize <= 0) {
                     OutputDebugString(L"\nError: Decompression failed\n");
-                    return;
                 }
 
                 char buffer[140];
