@@ -298,7 +298,8 @@ protected:
     AVCodecContext* mpCodecContext = nullptr;
 
     Gui::DropdownList mDisplayableBuffers;
-    uint32_t          mCodecType = LZ4; // LZ4 by default
+    bool isUsingCPU = false;
+    uint32_t          mCodecType = H264; // LZ4 by default
     enum CodecType : uint32_t {
         LZ4,
         H264
