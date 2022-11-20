@@ -350,7 +350,7 @@ bool CompressionPass::initialiseH264Encoder() {
     else {
         h264enc = avcodec_find_encoder_by_name("h264_nvenc");
     }
-    
+
     mpCodecContext = avcodec_alloc_context3(h264enc);
     if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
 
@@ -358,30 +358,34 @@ bool CompressionPass::initialiseH264Encoder() {
     mpCodecContext->width = nWidth;
     mpCodecContext->height = nHeight;
     mpCodecContext->time_base = av_make_q(1, 90000);
-    int64_t bitrate = 900000;
+    int64_t bitrate = 2000000;
     mpCodecContext->bit_rate = bitrate;
-    mpCodecContext->rc_buffer_size = (int)bitrate / 60;
+    mpCodecContext->framerate = AVRational{ 1, 60 };
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
-    mpCodecContext->thread_type = FF_THREAD_FRAME;
-    mpCodecContext->gop_size = 999999;
+    mpCodecContext->thread_type = FF_THREAD_SLICE;
     mpCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
 
     AVDictionary* param = nullptr;
-    av_dict_set(&param, "qp", "0", 0);
+    av_dict_set(&param, "crf", "0", 0);
     if (isUsingCPU) {
-        av_dict_set(&param, "preset", "ultrafast", 0);
         av_dict_set(&param, "profile:v", "high", 0);
-        av_dict_set(&param, "vsync", "0", 0);
+        av_dict_set(&param, "preset", "slower", 0);
         av_dict_set(&param, "tune", "zerolatency", 0);
+        //av_dict_set(&param, "-b:v", "3000k", 0);
+        av_dict_set(&param, "refs", "1", 0);
+        av_dict_set(&param, "me_range", "16", 0);
+        //av_dict_set(&param, "intra-refresh", "1", 0);
+        av_dict_set(&param, "g", "1", 0);
+        //av_dict_set(&param, "vsync", "0", 0);
     }
     else {
-        av_dict_set(&param, "preset", "llhp", 0);
+        av_dict_set(&param, "preset", "llhq", 0);
         av_dict_set(&param, "profile:v", "high", 0);
         //av_dict_set(&param, "rc", "cbr_ld_hq", 0);
-        av_dict_set(&param, "vsync", "0", 0);
+        //av_dict_set(&param, "vsync", "0", 0);
+        av_dict_set(&param, "g", "1", 0);
     }
-
 
 
     /* Open the context for encoding */
@@ -945,6 +949,7 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             /* Convert RGBA -> YUV420P, for encoder friendly format. */
             const int stride[1] = { nWidth * 4 };
             const uint8_t* const pData[1] = { sourceBuffer };
+            
             int ret = sws_scale(mpSwsContext, pData, stride, 0, nHeight, mpFrame->data, mpFrame->linesize);
             /* Send frame to encoder and receive encoded packet*/
             ret = avcodec_send_frame(mpCodecContext, mpFrame);
@@ -952,13 +957,16 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
                 av_strerror(ret, msg, 100);
                 OutputDebugString(L"\nFailure to send frame due to: ");
                 OutputDebugStringA(msg);
+                continue;
             }
 
             ret = avcodec_receive_packet(mpCodecContext, mpPacket);
             if (ret < 0) {
                 // We currently don't have enough frames collated to receive a packet. Wait for another pass.
-                outputBufferSize = 0;
-                continue;
+            } else if (ret < 0) {
+                av_strerror(ret, msg, 100);
+                OutputDebugString(L"\nFailure to receive packet due to: ");
+                OutputDebugStringA(msg);
             }
 
             /* Update size of compressed buffer */
@@ -968,7 +976,7 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             /* Packet contains output buffer data*/
             memcpy(outputBuffer, mpPacket->data, mpPacket->size);
             char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
+            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", nSize, compressedSize);
             OutputDebugStringA(buffer);
 
             /* Reset the frame and packet to be reused in the next loop */
@@ -1031,6 +1039,7 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
                 OutputDebugString(L"\ncannot scale due to : ");
                 OutputDebugStringA(msg);
             }
+
             //memcpy(outputBuffer, mpFrame->data[0], nSize);
             // Not sure of how to find out the decompressed size, so for now decompressed size is always the same as original
             char buffer[140];
