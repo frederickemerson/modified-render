@@ -15,7 +15,7 @@
 
 extern "C"
 {
-    #include "libswscale/swscale.h"
+#include "libswscale/swscale.h"
 }
 
 class UploadInput
@@ -218,9 +218,9 @@ public:
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;
-    std::function<int ()> mGetInputBufferSize;
+    std::function<int()> mGetInputBufferSize;
 
-    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int ()> getInputBufferSize) {
+    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize) {
         if (mode == Mode::Compression) {
             return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui"));
         }
@@ -232,7 +232,7 @@ public:
     int getOutputBufferSize() { return outputBufferSize; }
 
 protected:
-    CompressionPass(Mode mode, std::function<char*()> getInputBuffer, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+    CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
         mMode = mode;
         mGetInputBuffer = getInputBuffer;
     }
@@ -298,7 +298,8 @@ protected:
     AVCodecContext* mpCodecContext = nullptr;
 
     Gui::DropdownList mDisplayableBuffers;
-    bool isUsingCPU = false;
+    bool isUsingCPU = true;
+    bool isRemoteRendering = false; // True if rendering whole scene on server
     uint32_t          mCodecType = H264; // H264 by default
     enum CodecType : uint32_t {
         LZ4,
