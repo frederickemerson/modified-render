@@ -123,7 +123,7 @@ bool CompressionPass::initialiseH264Decoder() {
     mpCodecContext->height = nHeight;
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
-    mpCodecContext->thread_type = FF_THREAD_FRAME;
+    mpCodecContext->thread_type = FF_THREAD_SLICE;
     mpCodecContext->pix_fmt = AV_PIX_FMT_YUV420P;
 
     AVDictionary* param = nullptr;
