@@ -19,9 +19,6 @@
 #include "VShadingPass.h"
 
 namespace {
-    // Where is our shaders located?
-    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
-
     // What are the entry points in that shader for various ray tracing shaders?
     const char* kEntryPointRayGen = "VShadowsRayGen";
 
@@ -37,12 +34,19 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     // Our GUI needs less space than other passes, so shrink the GUI window.
     setGuiSize(int2(300, 70));
 
+    // Where is our shaders located?
+    const char* kFileRayTrace = mHybridMode
+        ? "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl"
+        : "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpassYUV.hlsl"; 
+
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
     mpResManager->requestTextureResource(kVisBuffer);
     mpResManager->requestTextureResource("__TextureData");
-    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
+    mOutputIndex = mHybridMode
+        ? mpResManager->requestTextureResource(mOutputTexName) 
+        : mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080); // Represents YUV444P, each channel is 1920 x 1080 
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
@@ -62,6 +66,11 @@ void VShadingPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pSc
     mpScene = pScene;
     if (!mpScene) return;
 
+    // Where is our shaders located?
+    const char* kFileRayTrace = mHybridMode
+        ? "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl"
+        : "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpassYUV.hlsl"; 
+
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
 
@@ -75,7 +84,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
-
+    //Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
