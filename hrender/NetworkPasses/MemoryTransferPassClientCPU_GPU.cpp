@@ -70,6 +70,8 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     //Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
     Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
+    // Load visibility buffer from CPU into GPU texture
+    Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
 
     pRenderContext->flush(true);
 

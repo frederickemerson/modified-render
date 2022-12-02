@@ -71,7 +71,8 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
-
+    // Loads relevant texture from GPU to CPU
+    Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
     // OLD METHOD: use if bugs start appearing
     //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
@@ -89,7 +90,8 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     //memcpy(outputBuffer, pGiTex, VIS_TEX_LEN);
 
     std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
-
+    //outputBuffer = tex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    }
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 
