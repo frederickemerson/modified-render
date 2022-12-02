@@ -25,7 +25,7 @@ public:
 	using SharedPtr = std::shared_ptr<SimulateDelayPass>;
 
 	static SharedPtr create(std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize,
-		int maxSize = 300000, int numBuffers = 4, int numFramesDelay = 1) {
+		int maxSize = 4*1920*1080, int numBuffers = 4, int numFramesDelay = 1) {
 		return SharedPtr(new SimulateDelayPass(getInputBuffer, getInputBufferSize, maxSize, numBuffers, numFramesDelay));
 	}
 

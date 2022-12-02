@@ -49,9 +49,14 @@ enum RenderConfigPass : uint8_t {
     CopyToOutputPass,
     SimpleAccumulationPass,
     SimulateDelayPass,
-    PredictionPass
+    PredictionPass,
+    YUVToRGBAPass
 };
 
+enum class RenderMode : uint8_t {
+    RemoteRender, // Scenes fully rendered on server
+    HybridRender
+};
 
 // total size: 16 bytes
 struct RenderConfiguration {

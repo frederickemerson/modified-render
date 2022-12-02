@@ -32,7 +32,7 @@ public:
     using SharedPtr = std::shared_ptr<MemoryTransferPassServerGPU_CPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassServerGPU_CPU>;
 
-    static SharedPtr create() { return SharedPtr(new MemoryTransferPassServerGPU_CPU()); }
+    static SharedPtr create(bool isHybridRendering) { return SharedPtr(new MemoryTransferPassServerGPU_CPU(isHybridRendering)); }
     virtual ~MemoryTransferPassServerGPU_CPU() = default;
 
     // get output buffer on CPU memory after memory transfer
@@ -40,7 +40,9 @@ public:
     int getOutputBufferSize() { return VIS_TEX_LEN; }
 
 protected:
-    MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
+    MemoryTransferPassServerGPU_CPU(bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") {
+        mHybridMode = isHybridRendering;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -55,8 +57,10 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mTexIndex = -1;                                  ///< index of texture to be extracted, obtained in initialization
 
     // output on CPU memory and function to get it
     uint8_t* outputBuffer;
+
+    bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
 };

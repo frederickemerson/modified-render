@@ -32,14 +32,15 @@ public:
     using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassClientCPU_GPU>;
 
-    static SharedPtr create(std::function<char* ()> getInputBuffer) { 
-        return SharedPtr(new MemoryTransferPassClientCPU_GPU(getInputBuffer)); 
+    static SharedPtr create(std::function<char* ()> getInputBuffer, bool isHybridRendering) { 
+        return SharedPtr(new MemoryTransferPassClientCPU_GPU(getInputBuffer, isHybridRendering)); 
     }
     virtual ~MemoryTransferPassClientCPU_GPU() = default;
 
 protected:
-    MemoryTransferPassClientCPU_GPU(std::function<char* ()> getInputBuffer) : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") {
+    MemoryTransferPassClientCPU_GPU(std::function<char* ()> getInputBuffer, bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") {
         mGetInputBuffer = getInputBuffer;
+        mHybridMode = isHybridRendering;
     }
 
     // Implementation of RenderPass interface
@@ -58,8 +59,10 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mTexIndex = -1;                                  ///< index of texture to send to, obtained in initialization
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;
+
+    bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
 };

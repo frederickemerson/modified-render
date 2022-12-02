@@ -19,6 +19,7 @@
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\YUVToRGBAPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\YUVToRGBAPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp" />
     <ClInclude Include="DxrTutorSharedUtils\Compression.h" />
@@ -122,6 +124,7 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\CopyBuffer.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl" />
@@ -129,6 +132,7 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>

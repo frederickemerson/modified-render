@@ -220,28 +220,31 @@ public:
     std::function<char* ()> mGetInputBuffer;
     std::function<int()> mGetInputBufferSize;
 
-    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize) {
+    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize, bool isHybridRendering) {
         if (mode == Mode::Compression) {
-            return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui", isHybridRendering));
         }
         else {
-            return SharedPtr(new CompressionPass(mode, getInputBuffer, getInputBufferSize, "Decompression Pass", "Decompression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, getInputBufferSize, "Decompression Pass", "Decompression Pass Gui", isHybridRendering));
         }
     }
     char* getOutputBuffer() { return outputBuffer; }
     int getOutputBufferSize() { return outputBufferSize; }
 
 protected:
-    CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+    CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, const std::string name = "<Unknown render pass>",
+        const std::string guiName = "<Unknown gui group>", bool isHybridRendering = true) :RenderPass(name, guiName) {
         mMode = mode;
         mGetInputBuffer = getInputBuffer;
+        mHybridMode = isHybridRendering;
     }
 
     CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize,
-        const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+        const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>", bool isHybridRendering = true) :RenderPass(name, guiName) {
         mMode = mode;
         mGetInputBuffer = getInputBuffer;
         mGetInputBufferSize = getInputBufferSize;
+        mHybridMode = isHybridRendering;
     }
 
     // Buffer for storing output of compression/decompression
@@ -253,8 +256,10 @@ protected:
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     bool initialiseEncoder();
-    bool initialiseH264Encoder();
-    bool initialiseH264Decoder();
+    bool initialiseH264HybridEncoder();
+    bool initialiseH264HybridDecoder();
+    bool initialiseH264RemoteEncoder();
+    bool initialiseH264RemoteDecoder();
     bool initialiseDecoder();
     bool initialiseDecoder2();
     void DecodeMediaFile();
@@ -299,10 +304,11 @@ protected:
 
     Gui::DropdownList mDisplayableBuffers;
     bool isUsingCPU = true;
-    bool isRemoteRendering = false; // True if rendering whole scene on server
-    uint32_t          mCodecType = H264; // H264 by default
+    bool isRemoteRendering = false;                                ///< True if rendering whole scene on server
+    uint32_t          mCodecType = H264;                           ///< H264 by default
     enum CodecType : uint32_t {
         LZ4,
         H264
     };
+    bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
 };

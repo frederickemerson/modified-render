@@ -30,7 +30,9 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     mpResManager->requestTextureResource("WorldPosition");
 
     // store index of texture(s) we will be transferring to
-    mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+    mTexIndex = mHybridMode
+        ? mpResManager->getTextureIndex("VisibilityBitmap")
+        : mpResManager->requestTextureResource("__V-shadingYUVClient", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080); // Intermediate texture used when remote rendering.
 
     return true;
 }
@@ -44,13 +46,13 @@ void MemoryTransferPassClientCPU_GPU::initScene(RenderContext* pRenderContext, S
 
 void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
-    // Load visibility texture from GPU to CPU
-    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    // Load visibility buffer from CPU into GPU texture
+    Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
 
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
-    visTex->apiInitPub(mGetInputBuffer(), true);
+    tex->apiInitPub(mGetInputBuffer(), true);
     Regression::addNonSeqFrame((int*)mGetInputBuffer());
 }
 

@@ -101,6 +101,9 @@
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\YUVToRGBAPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -212,6 +215,9 @@
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\Compression.h">
       <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\YUVToRGBAPass.h">
+      <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -354,6 +360,12 @@
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl">
+      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

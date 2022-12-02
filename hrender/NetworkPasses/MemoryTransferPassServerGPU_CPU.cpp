@@ -30,7 +30,9 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     mpResManager->requestTextureResource("WorldPosition");
 
     // store index of texture(s) we will be transferring from
-    mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+    mTexIndex = mHybridMode
+        ? mpResManager->getTextureIndex("VisibilityBitmap")
+        : mpResManager->getTextureIndex("__V-shadingYUVServer");
 
     return true;
 }
@@ -45,16 +47,16 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
     for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
-        // Load visibility texture from GPU to CPU
-        Texture::SharedPtr visTex = mpResManager->getTexture(RenderConfig::mConfig[i].resourceIndex);
-
+        // Loads relevant texture from GPU to CPU
+        //Texture::SharedPtr visTex = mpResManager->getTexture(RenderConfig::mConfig[i].resourceIndex);
+        Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
         // OLD METHOD: use if bugs start appearing
         //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
         // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
         // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
         // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
-        outputBuffer = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+        outputBuffer = tex->getTextureData2(pRenderContext, 0, 0, nullptr);
         std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
     }
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
