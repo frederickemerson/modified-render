@@ -28,4 +28,18 @@
 #pragma once
 #include "Falcor.h"
 
+#include "DxrTutorSharedUtils/RenderConfig.h"
+
 using namespace Falcor;
+
+void runServer();
+void runClient();
+void runDebug();
+
+RenderConfiguration getRenderConfigDebugHybrid();
+RenderConfiguration getRenderConfigServerHybrid();
+RenderConfiguration getRenderConfigClientHybrid();
+
+RenderConfiguration getRenderConfigDebugRemote();
+RenderConfiguration getRenderConfigServerRemote();
+RenderConfiguration getRenderConfigClientRemote();
