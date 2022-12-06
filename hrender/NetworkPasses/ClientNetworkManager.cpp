@@ -37,6 +37,7 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
     serverAddress.sin_port = htons((u_short)std::strtoul(serverPort, NULL, 0));
     inet_pton(AF_INET, serverName, &serverAddress.sin_addr.S_un.S_addr);
 
+    mOutputBuffer = NetworkClientRecvPass::clientReadBuffer;
     //bind
     //if (bind(mClientUdpSock, (struct sockaddr*) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR)
     //{
@@ -60,7 +61,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-        int visTexLen = VIS_TEX_LEN;
+        int visTexLen = VIS_TEX_LEN + AO_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, latestFrameRecv, 0 };
         
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
