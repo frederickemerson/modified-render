@@ -59,7 +59,9 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mTexIndex = -1;                                  ///< index of texture to send to, obtained in initialization
+    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mAOIndex = -1;                                          ///< index of ambient occlusion texture, to be obtained in initialization
+    int32_t mVShadingIndex = -1;                                    ///< index of v-shading, to be obtained in initialization only for remote
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;

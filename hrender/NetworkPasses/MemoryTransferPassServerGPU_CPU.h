@@ -37,7 +37,7 @@ public:
 
     // get output buffer on CPU memory after memory transfer
     char* getOutputBuffer() { return (char*)outputBuffer; }
-    int getOutputBufferSize() { return VIS_TEX_LEN; }
+    int getOutputBufferSize() { return mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN : VIS_TEX_LEN; } // Remote uses same size as VIS_TEX_LEN
 
 protected:
     MemoryTransferPassServerGPU_CPU(bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") {
@@ -57,10 +57,13 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mTexIndex = -1;                                  ///< index of texture to be extracted, obtained in initialization
-
-    // output on CPU memory and function to get it
-    uint8_t* outputBuffer;
+    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mAOIndex = -1;                                          ///< index of ambient occlusion texture, to be obtained in initialization
+    int32_t mVShadingIndex = -1;                                    ///< index of v-shading, to be obtained in initialization only for remote
 
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
+
+    // initialise output buffer
+    uint8_t* outputBuffer;
+    
 };

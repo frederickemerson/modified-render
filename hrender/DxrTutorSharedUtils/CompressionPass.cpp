@@ -29,16 +29,16 @@
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    int sizeToAllocateOutputBuffer = RenderConfig::getTotalSize();
-    outputBuffer = new char[RenderConfig::getTotalSize()];
-    outputBufferNVENC = new char[RenderConfig::getTotalSize()];
+    int sizeToAllocateOutputBuffer = VIS_TEX_LEN + AO_TEX_LEN;
+    outputBuffer = new char[sizeToAllocateOutputBuffer];
+    outputBufferNVENC = new char[sizeToAllocateOutputBuffer];
     
     mDisplayableBuffers.push_back({ 0, "LZ4" });
     mDisplayableBuffers.push_back({ 1, "H264" });
 
     if (mMode == Mode::Compression) {
         if (mHybridMode) {
-            initialiseH264HybridEncoder();
+            initialiseH264Encoders();
         }
         else {
             initialiseH264RemoteEncoder();
@@ -46,7 +46,14 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
         //initialiseEncoder();
     } else if (mMode == Mode::Decompression) {
         if (mHybridMode) {
-            initialiseH264HybridDecoder();
+            initialiseH264Decoders();
+            // 24 out of 32 bits are unused for AO, so we just keep them as 0.
+            uint8_t* pOutputBuffer = (uint8_t*)outputBuffer + VIS_TEX_LEN;
+            for (int i = 0; i < VIS_TEX_LEN; i++) {
+                if (i % 4 == 0) continue;
+                pOutputBuffer[i] = 0;
+            }
+
         }
         else {
             initialiseH264RemoteDecoder();
@@ -57,21 +64,28 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     return true;
 }
 
-bool CompressionPass::initialiseH264HybridEncoder() {
+bool CompressionPass::initialiseH264HybridEncoder(CodecParams* codecParams) {
     AVCodec* h264enc;
     if (isUsingCPU) {
-        h264enc = avcodec_find_encoder(AV_CODEC_ID_H264);
+        h264enc = avcodec_find_encoder(codecParams->codecID);
     }
     else {
-        h264enc = avcodec_find_encoder_by_name("h264_nvenc");
+        h264enc = avcodec_find_encoder_by_name(codecParams->codecName);
     }
 
     mpCodecContext = avcodec_alloc_context3(h264enc);
-    if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
+    if (!mpCodecContext) {
+        OutputDebugString(L"\nError: Could not allocated codec context.\n");
+        return false;
+    }
+
+    mpCodecContexts.push_back(mpCodecContext);
 
     /* Set up parameters for the context */
-    mpCodecContext->width = nWidth;
-    mpCodecContext->height = nHeight;
+    mpCodecContext->width = codecParams->width;
+    mpCodecContext->height = codecParams->height;
+    mpCodecContext->pix_fmt = codecParams->outPixFmt;
+
     mpCodecContext->time_base = av_make_q(1, 90000);
     int64_t bitrate = 2000000;
     mpCodecContext->bit_rate = bitrate;
@@ -79,7 +93,6 @@ bool CompressionPass::initialiseH264HybridEncoder() {
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
     mpCodecContext->thread_type = FF_THREAD_SLICE;
-    mpCodecContext->pix_fmt = AV_PIX_FMT_YUV444P;
 
     AVDictionary* param = nullptr;
     av_dict_set(&param, "crf", "0", 0);
@@ -102,7 +115,6 @@ bool CompressionPass::initialiseH264HybridEncoder() {
         av_dict_set(&param, "g", "1", 0);
     }
 
-
     /* Open the context for encoding */
     int err = avcodec_open2(mpCodecContext, h264enc, &param);
     if (err < 0) {
@@ -111,10 +123,16 @@ bool CompressionPass::initialiseH264HybridEncoder() {
         OutputDebugStringA(msg);
     }
 
-    /* Initialise the color converter */
-    mpSwsContext = sws_getContext(nWidth, nHeight, AV_PIX_FMT_RGBA,
-        nWidth, nHeight, AV_PIX_FMT_YUV444P,
-        SWS_POINT, nullptr, nullptr, nullptr);
+    if (codecParams->isColorConvertNeeded) {
+        /* Initialise the color converter */
+        mpSwsContexts.push_back(sws_getContext(
+            codecParams->width, codecParams->height, codecParams->inPixFmt,
+            codecParams->width, codecParams->height, codecParams->outPixFmt,
+            SWS_POINT, nullptr, nullptr, nullptr));
+    }
+    else {
+        mpSwsContexts.push_back(nullptr);
+    }
 
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
@@ -123,23 +141,24 @@ bool CompressionPass::initialiseH264HybridEncoder() {
     return true;
 }
 
-bool CompressionPass::initialiseH264HybridDecoder() {
-    AVCodec* h264dec = avcodec_find_decoder(AV_CODEC_ID_H264);
+bool CompressionPass::initialiseH264HybridDecoder(CodecParams* codecParams) {
+    AVCodec* h264dec = avcodec_find_decoder(codecParams->codecID);
     mpCodecContext = avcodec_alloc_context3(h264dec);
-    if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
+    if (!mpCodecContext) {
+        OutputDebugString(L"\nError: Could not allocated codec context.\n");
+        return false;
+    }
+
+    mpCodecContexts.push_back(mpCodecContext);
 
     /* Set params for the context */
-    mpCodecContext->width = nWidth;
-    mpCodecContext->height = nHeight;
+    mpCodecContext->width = codecParams->width;
+    mpCodecContext->height = codecParams->height;
+    mpCodecContext->pix_fmt = codecParams->inPixFmt;
+
     mpCodecContext->ticks_per_frame = 2;
     mpCodecContext->thread_count = 0; // 0 makes FFmpeg choose the optimal number
     mpCodecContext->thread_type = FF_THREAD_SLICE;
-    mpCodecContext->pix_fmt = AV_PIX_FMT_YUV444P;
-
-    AVDictionary* param = nullptr;
-    av_dict_set(&param, "qp", "0", 0);
-    av_dict_set(&param, "preset", "ultrafast", 0);
-    av_dict_set(&param, "tune", "zerolatency", 0);
 
     /* Open the context for decoding */
     int err = avcodec_open2(mpCodecContext, h264dec, NULL);
@@ -149,13 +168,17 @@ bool CompressionPass::initialiseH264HybridDecoder() {
         OutputDebugStringA(msg);
     }
 
-    /* Initialise the color converter + upscaling*/
-    mpSwsContext = sws_getContext(
-        nWidth, nHeight, AV_PIX_FMT_YUV444P,
-        nWidth, nHeight, AV_PIX_FMT_RGBA,
-        SWS_BILINEAR, nullptr, nullptr, nullptr
-    );
-
+    if (codecParams->isColorConvertNeeded) {
+        /* Initialise the color converter*/
+        mpSwsContexts.push_back(sws_getContext(
+            codecParams->width, codecParams->height, codecParams->inPixFmt,
+            codecParams->width, codecParams->height, codecParams->outPixFmt,
+            SWS_BILINEAR, nullptr, nullptr, nullptr
+        ));
+    }
+    else {
+        mpSwsContexts.push_back(nullptr);
+    }
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
     mpPacket = av_packet_alloc();
@@ -163,6 +186,7 @@ bool CompressionPass::initialiseH264HybridDecoder() {
     return true;
 }
 
+// Remote encoder/decoder is initialised separately out of convenience
 bool CompressionPass::initialiseH264RemoteEncoder() {
     AVCodec* h264enc;
     if (isUsingCPU) {
@@ -175,6 +199,8 @@ bool CompressionPass::initialiseH264RemoteEncoder() {
     mpCodecContext = avcodec_alloc_context3(h264enc);
     if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
 
+    mpCodecContexts.push_back(mpCodecContext);
+
     /* Set up parameters for the context */
     mpCodecContext->width = nWidth;
     mpCodecContext->height = nHeight;
@@ -197,7 +223,7 @@ bool CompressionPass::initialiseH264RemoteEncoder() {
         av_dict_set(&param, "refs", "1", 0);
         av_dict_set(&param, "me_range", "16", 0);
         //av_dict_set(&param, "intra-refresh", "1", 0);
-        av_dict_set(&param, "g", "48", 0);
+        av_dict_set(&param, "g", "1", 0);
         //av_dict_set(&param, "vsync", "0", 0);
     }
     else {
@@ -217,16 +243,21 @@ bool CompressionPass::initialiseH264RemoteEncoder() {
         OutputDebugStringA(msg);
     }
 
+    mpSwsContexts.push_back(nullptr);
+
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
     mpPacket = av_packet_alloc();
 
     return true;
 }
+
 bool CompressionPass::initialiseH264RemoteDecoder() {
     AVCodec* h264dec = avcodec_find_decoder(AV_CODEC_ID_H264);
     mpCodecContext = avcodec_alloc_context3(h264dec);
     if (!mpCodecContext) OutputDebugString(L"\nError: Could not allocated codec context.\n");
+
+    mpCodecContexts.push_back(mpCodecContext);
 
     /* Set params for the context */
     mpCodecContext->width = nWidth;
@@ -249,9 +280,63 @@ bool CompressionPass::initialiseH264RemoteDecoder() {
         OutputDebugStringA(msg);
     }
 
+    mpSwsContexts.push_back(nullptr);
+
     /* Initialise the AVFrame and AVPacket*/
     mpFrame = av_frame_alloc();
     mpPacket = av_packet_alloc();
+    return true;
+}
+
+bool CompressionPass::initialiseH264Encoders() {
+    // First encoder: VisTex Encoder
+    CodecParams params = CodecParams();
+    params.codecID = AV_CODEC_ID_H264;
+    params.width = nWidth;
+    params.height = nHeight;
+    params.isColorConvertNeeded = true;
+    params.inPixFmt = AV_PIX_FMT_RGBA;
+    params.outPixFmt = AV_PIX_FMT_YUV444P;
+
+    initialiseH264HybridEncoder(&params);
+
+    // Second encoder: AO Encoder
+    params = CodecParams();
+    params.codecID = AV_CODEC_ID_H264;
+    params.width = nWidth;
+    params.height = nHeight;
+    params.isColorConvertNeeded = false;
+    params.inPixFmt = AV_PIX_FMT_GRAY8;
+    params.outPixFmt = AV_PIX_FMT_GRAY8;
+
+    initialiseH264HybridEncoder(&params);
+
+    return true;
+}
+
+bool CompressionPass::initialiseH264Decoders() {
+    // First decoder: VisTex Decoder
+    CodecParams params = CodecParams();
+    params.codecID = AV_CODEC_ID_H264;
+    params.width = nWidth;
+    params.height = nHeight;
+    params.isColorConvertNeeded = true;
+    params.inPixFmt = AV_PIX_FMT_YUV444P;
+    params.outPixFmt = AV_PIX_FMT_RGBA;
+
+    initialiseH264HybridDecoder(&params);
+
+    // Second decoder: AO Decoder
+    params = CodecParams();
+    params.codecID = AV_CODEC_ID_H264;
+    params.width = nWidth;
+    params.height = nHeight;
+    params.isColorConvertNeeded = false;
+    params.inPixFmt = AV_PIX_FMT_GRAY8;
+    params.outPixFmt = AV_PIX_FMT_GRAY8;
+
+    initialiseH264HybridDecoder(&params);
+
     return true;
 }
 
@@ -493,7 +578,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Parameters for Compression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
+                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN;
 
                 // Compress buffer
                 int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
@@ -524,7 +609,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 // Parameters for Decompression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = mGetInputBufferSize();
-                int maxDecompressedSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
+                int maxDecompressedSize = VIS_TEX_LEN + AO_TEX_LEN;
 
                 if (sourceBufferSize == maxDecompressedSize) {
                     OutputDebugString(L"Skipping decompression, texture didnt change");
@@ -554,15 +639,20 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
 
     // ===================== COMPRESSION ===================== //
     if (mMode == Mode::Compression) {
+        char* pOutputBuffer = outputBuffer;
+        std::vector<int> compressedSizes; // Stores compressed sizes of all buffers
+        outputBufferSize = 0;
+
         // Loop over all textures, compress each one
-        for (int i = 0; i < RenderConfig::mConfig.size(); i++)
+        for (int i = 0; i < mNumOfTextures; i++)
         {
             std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
-
+ 
             // Parameters for Compression
-            uint8_t* sourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer());
-            int sourceBufferSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
-            outputBufferSize = 0;
+            uint8_t* sourceBuffer = &reinterpret_cast<uint8_t*>(mGetInputBuffer())[mBufferOffsets[i]];
+            int sourceBufferSize = mBufferSizes[i];
+            mpCodecContext = mpCodecContexts[i];
+            mpSwsContext = mpSwsContexts[i];
 
             /* Set up AVFrame/AVPacket params and buffers */
             mpFrame->format = mpCodecContext->pix_fmt;
@@ -578,20 +668,27 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             mpPacket->data = NULL;
             mpPacket->size = 0;
 
-            /* Convert RGBA -> YUV420P, for encoder friendly format. */
-            const int stride[1] = { nWidth * 4 };
-            const uint8_t* const pData[1] = { sourceBuffer };
-            
-
             int ret = 0;
             if (mHybridMode) {
-                // We do color conversion if hybrid rendering
-                ret = sws_scale(mpSwsContext, pData, stride, 0, nHeight, mpFrame->data, mpFrame->linesize);
-                if (ret < 0) {
-                    av_strerror(ret, msg, 100);
-                    OutputDebugString(L"\nFailure to color convert due to: ");
-                    OutputDebugStringA(msg);
-                    continue;
+                if (mpSwsContext) {
+                    // We do color conversion if hybrid rendering and context exists
+                    const int stride[1] = { mpCodecContext->width * 4 };
+                    const uint8_t* const pData[1] = { sourceBuffer };
+                    ret = sws_scale(mpSwsContext, pData, stride, 0, mpCodecContext->height, mpFrame->data, mpFrame->linesize);
+                    if (ret < 0) {
+                        av_strerror(ret, msg, 100);
+                        OutputDebugString(L"\nCompression: Failure to color convert due to: ");
+                        OutputDebugStringA(msg);
+                        continue;
+                    }
+                }
+                else { 
+                    // No color conversion, so we have to manually load the data into the frame
+                    // Future consideration: Have a function to copy data for each different pixel format.
+                    // Currently used only for AO
+                    for (int i = 0; i < AO_TEX_LEN / 4; i++) {
+                        mpFrame->data[0][i] = sourceBuffer[i << 2];
+                    }
                 }
             }
             else {
@@ -618,49 +715,84 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             }
 
             ret = avcodec_receive_packet(mpCodecContext, mpPacket);
-            if (ret < 0) {
-                // We currently don't have enough frames collated to receive a packet. Wait for another pass.
-            } else if (ret < 0) {
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                 av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nFailure to receive packet due to: ");
+                OutputDebugString(L"\nNot enough data to compress. Waiting for more data. ");
+                compressedSizes.push_back(0);
+            }
+            else if (ret < 0) {
+                av_strerror(ret, msg, 100);
+                OutputDebugString(L"\nCompression: Failure to receive packet due to: ");
                 OutputDebugStringA(msg);
+                compressedSizes.push_back(0);
             }
 
             /* Update size of compressed buffer */
             int compressedSize = mpPacket->size;
-            outputBufferSize = compressedSize;
+            outputBufferSize += compressedSize;
 
             /* Packet contains output buffer data*/
-            memcpy(outputBuffer, mpPacket->data, mpPacket->size);
+            memcpy(pOutputBuffer, mpPacket->data, mpPacket->size);
+            /* Move the output buffer pointer to store next compressed buffer */
+            pOutputBuffer += compressedSize;
+            compressedSizes.push_back(compressedSize);
 
             char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", nSize, compressedSize);
+            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
             OutputDebugStringA(buffer);
 
             /* Reset the frame and packet to be reused in the next loop */
             av_frame_unref(mpFrame);
             av_packet_unref(mpPacket);
         }
+
+        // We store the sizes of the compressed buffers so the decoder can retrieve each one individually.
+        for (int i = mNumOfTextures - 1; i >= 0; i--) {
+            int bufSize = compressedSizes[i];
+            /*
+            * We store the ints using 4 bytes
+            *    0     1     2     3 
+            * | MSB | ... | ... | LSB | 
+            */
+            pOutputBuffer[0] = bufSize >> 24;
+            pOutputBuffer[1] = bufSize >> 16 & 255;
+            pOutputBuffer[2] = bufSize >> 8 & 255;
+            pOutputBuffer[3] = bufSize & 255;
+            pOutputBuffer += 4;
+            outputBufferSize += 4;
+        }
     }
-    else { // mMode == Mode::Decompression
-      // Loop over all textures, compress each one
-        for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
+    else { 
+    // ===================== DECOMPRESSION ===================== //
+        // We start from the end of the buffer to retrieve the sizes
+        if (mGetInputBufferSize() == 0) return;
+        uint8_t* pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer()) + mGetInputBufferSize();
+        std::vector<int> compressedSizes; // Stores compressed sizes of all buffers
+        // We first retrieve the sizes of all compressed buffers
+        for (int i = 0; i < mNumOfTextures; i++) {
+            pSourceBuffer -= 4;
+            int bufSize = (pSourceBuffer[0] << 24) + (pSourceBuffer[1] << 16) + (pSourceBuffer[2] << 8) + (pSourceBuffer[3]);
+            compressedSizes.push_back(bufSize);
+        }
+
+        pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer());
+        char* pOutputBuffer = outputBuffer;
+        outputBufferSize = 0;
+
+        // Loop over all textures, decompress each one
+        for (int i = 0; i < mNumOfTextures; i++) {
             std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
 
             // Parameters for Decompression
-            uint8_t* sourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer());
-            int sourceBufferSize = mGetInputBufferSize();
+            uint8_t* pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer()) + (i == 0 ? 0 : compressedSizes[i - 1]);
+            int sourceBufferSize = compressedSizes[i];
+            mpCodecContext = mpCodecContexts[i];
+            mpSwsContext = mpSwsContexts[i];
 
             if (sourceBufferSize == 0) {
                 // We currently don't have any data yet. Wait for another pass.
                 outputBufferSize = 0;
                 continue;
-            }
-
-            int maxDecompressedSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
-            if (sourceBufferSize == maxDecompressedSize) {
-                OutputDebugString(L"Skipping decompression, texture didnt change");
-                return;
             }
 
             mpFrame->format = mpCodecContext->pix_fmt;
@@ -669,7 +801,7 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
 
             /* AVPacket data must be av_malloc'd data so we do a copy here. */
             uint8_t* tmp_data = (uint8_t*)av_malloc(sourceBufferSize);
-            memcpy(tmp_data, sourceBuffer, sourceBufferSize);
+            memcpy(tmp_data, pSourceBuffer, sourceBufferSize);
             av_packet_from_data(mpPacket, tmp_data, sourceBufferSize);
 
             /* Send the encoded packet and receive decoded frame */
@@ -681,29 +813,39 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
             }
 
             ret = avcodec_receive_frame(mpCodecContext, mpFrame);
-            if (ret < 0) {
-                // We currently don't have enough packets collated to receive a frame. Wait for another pass.
-                outputBufferSize = 0;
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                av_strerror(ret, msg, 100);
+                OutputDebugString(L"\nNot enough data to decompress. Waiting for more data. ");
+                continue;
+            }
+            else if (ret < 0) {
+                av_strerror(ret, msg, 100);
+                OutputDebugString(L"\nDecompression: Failure to receive frame due to: ");
+                OutputDebugStringA(msg);
                 continue;
             }
 
             if (mHybridMode) {
-                /* Convert YUV -> RGBA into the output buffer */
-                const int stride[] = { nWidth * 4 };
-                uint8_t* const pData[1] = { (uint8_t*)outputBuffer };
-                ret = sws_scale(mpSwsContext, mpFrame->data, mpFrame->linesize,
-                    0, nHeight, pData, stride);
-                if (ret < 0) {
-                    av_strerror(ret, msg, 100);
-                    OutputDebugString(L"\nFailure to color convert due to: ");
-                    OutputDebugStringA(msg);
+                if (mpSwsContext) {
+                    /* Convert YUV -> RGBA into the output buffer */
+                    const int stride[] = { mpCodecContext->width * 4 };
+                    uint8_t* const pData[1] = { (uint8_t*)pOutputBuffer };
+                    ret = sws_scale(mpSwsContext, mpFrame->data, mpFrame->linesize,
+                        0, mpCodecContext->height, pData, stride);
+                    if (ret < 0) {
+                        av_strerror(ret, msg, 100);
+                        OutputDebugString(L"\nDecompression: Failure to color convert due to: ");
+                        OutputDebugStringA(msg);
+                    }
+                }
+                else {
+                    for (int i = 0, j = 0; i < AO_TEX_LEN / 4; i++, j+=4) {
+                        pOutputBuffer[j] = mpFrame->data[0][i];
+                    }
                 }
             }
             else {
                 // We copy the YUV data into the output buffer
-                //memcpy(outputBuffer, mpFrame->data[0], nHeight * nWidth);
-                //memcpy(outputBuffer + nHeight * nWidth, mpFrame->data[1], nHeight* nWidth);
-                //memcpy(outputBuffer + 2 * nHeight * nWidth, mpFrame->data[2], nHeight* nWidth);
                 for (int j = 0; j < nSize; j += 4) {
                     int k = j >> 2;
                     outputBuffer[j] = 0;
@@ -715,16 +857,18 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
 
             // Not sure of how to find out the decompressed size, so assume decompressed size is always the same as original.
             char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, nSize);
+            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, mBufferSizes[i]);
             OutputDebugStringA(buffer);
 
             // Update size of decompressed buffer
-            outputBufferSize = nSize;
+            outputBufferSize += mBufferSizes[i];
+            pOutputBuffer += mBufferSizes[i];
 
             /* Reset the frame and packet to be reused in the next loop */
             av_frame_unref(mpFrame);
             av_packet_unref(mpPacket);
         }
+        int x = 0;
     }
 }
 

@@ -30,9 +30,15 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     mpResManager->requestTextureResource("WorldPosition");
 
     // store index of texture(s) we will be transferring from
-    mTexIndex = mHybridMode
-        ? mpResManager->getTextureIndex("VisibilityBitmap")
-        : mpResManager->getTextureIndex("__V-shadingYUVServer");
+    if (mHybridMode) {
+        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+        outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN];
+    }
+    else {
+        mVShadingIndex = mpResManager->getTextureIndex("__V-shadingYUVServer");
+        outputBuffer = new uint8_t[VIS_TEX_LEN];
+    }
 
     return true;
 }
@@ -46,19 +52,31 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
-    for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
-        // Loads relevant texture from GPU to CPU
-        //Texture::SharedPtr visTex = mpResManager->getTexture(RenderConfig::mConfig[i].resourceIndex);
-        Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
-        // OLD METHOD: use if bugs start appearing
-        //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
-
-        // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
-        // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
-        // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
+    // Loads relevant texture from GPU to CPU
+    if (!mHybridMode) {
+        Texture::SharedPtr tex = mpResManager->getTexture(mVShadingIndex);
         outputBuffer = tex->getTextureData2(pRenderContext, 0, 0, nullptr);
-        std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
+
+        OutputDebugString(L"\n\n= MemoryTransferPass - V-Shading loaded to CPU =========");
+        return;
     }
+    
+    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
+    // OLD METHOD: use if bugs start appearing
+    //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
+
+    // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
+    // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
+    // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
+    uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+
+    memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
+    memcpy(&outputBuffer[VIS_TEX_LEN], pAOTex, AO_TEX_LEN);
+
+    std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
+
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
 }
 

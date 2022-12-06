@@ -36,9 +36,11 @@ cbuffer RayGenCB
 {
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
+    bool gSkipAO; // Render the scene without ambient occlusion
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     float gAmbient;
+    uint gNumAORays;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -46,6 +48,7 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
 Texture2D<uint>  gVisibility;
+Texture2D<uint> gAO;
 RWTexture2D<uint> gOutput;
 
 // Values used for RGB -> YUV conversion. Alpha value ignored.

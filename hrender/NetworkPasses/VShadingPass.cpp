@@ -24,6 +24,9 @@ namespace {
 
     // The visibility bitmap to use for the V-Shading Pass
     const std::string kVisBuffer = "OffsetVisibilityBitmap";
+
+    // The ambient occlusion texture to calculation occlusion factor
+    const std::string kAOtex = "AmbientOcclusion";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -42,7 +45,8 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
-    mpResManager->requestTextureResource(kVisBuffer);
+    //mpResManager->requestTextureResource(kVisBuffer);
+    //mpResManager->requestTextureResource(kAOtex);
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mHybridMode
         ? mpResManager->requestTextureResource(mOutputTexName) 
@@ -92,12 +96,15 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
+    rayVars["RayGenCB"]["gSkipAO"] = mSkipAO;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
+    rayVars["RayGenCB"]["gNumAORays"] = mNumAORays;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
     rayVars["gVisibility"] = mpResManager->getTexture(kVisBuffer);
+    rayVars["gAO"] = mpResManager->getTexture(kAOtex);
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 
@@ -111,6 +118,7 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
 
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
+    dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
 
     if (mDecodeMode)

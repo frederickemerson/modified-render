@@ -30,9 +30,14 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     mpResManager->requestTextureResource("WorldPosition");
 
     // store index of texture(s) we will be transferring to
-    mTexIndex = mHybridMode
-        ? mpResManager->getTextureIndex("VisibilityBitmap")
-        : mpResManager->requestTextureResource("__V-shadingYUVClient", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080); // Intermediate texture used when remote rendering.
+    if (mHybridMode) {
+        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+    }
+    else {
+        // Intermediate texture used when remote rendering.
+        mVShadingIndex = mpResManager->requestTextureResource("__V-shadingYUVClient", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080);
+    }
 
     return true;
 }
@@ -47,12 +52,28 @@ void MemoryTransferPassClientCPU_GPU::initScene(RenderContext* pRenderContext, S
 void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
     // Load visibility buffer from CPU into GPU texture
-    Texture::SharedPtr tex = mpResManager->getTexture(mTexIndex);
+    if (!mHybridMode) {
+        Texture::SharedPtr tex = mpResManager->getTexture(mVShadingIndex);
+
+        pRenderContext->flush(true);
+
+        std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
+        tex->apiInitPub(mGetInputBuffer(), true);
+        Regression::addNonSeqFrame((int*)mGetInputBuffer());
+
+        return;
+    }
+
+    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
 
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
-    tex->apiInitPub(mGetInputBuffer(), true);
+    visTex->apiInitPub(mGetInputBuffer(), true);
+    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+    AOTex->apiInitPub(pAOTex, true);
+
     Regression::addNonSeqFrame((int*)mGetInputBuffer());
 }
 

@@ -36,16 +36,19 @@ cbuffer RayGenCB
 {
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
+    bool gSkipAO; // Render the scene without ambient occlusion
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     float gAmbient;
+    uint gNumAORays;
 }
 
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
-Texture2D<uint>  gVisibility;
+Texture2D<uint>   gVisibility;
+Texture2D<uint>   gAO;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
@@ -100,21 +103,23 @@ void VShadowsRayGen()
             }
             if (length(shadeColor) < 0.00001)
             {
-                shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache ;
+                shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
             }
 
             // Physically based Lambertian term is albedo/pi
             shadeColor *= difMatlColor.rgb / 3.141592f;
         }
     
-        // Save out our AO color
+        // Save out our AO color    
+        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+        shadeColor *= AOfactor;
+        
         gOutput[launchIndex] = float4(shadeColor, 1.0f);
     } 
     else
     {
         float shadowMult = gSkipShadows ? 1.0f :
             ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
-
 
         gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult;
 

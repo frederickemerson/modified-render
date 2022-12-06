@@ -199,6 +199,18 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> vUploadBfr;
 };
 
+
+// Contains parameters for H264 encoding/decoding a texture
+struct CodecParams {
+    AVCodecID codecID;
+    char* codecName; // Used when ID not available
+    AVPixelFormat inPixFmt; // Source buffer pixel format
+    AVPixelFormat outPixFmt; // Output buffer pixel format
+    bool isColorConvertNeeded;  // Makes use of dstPixFmt if true.
+    int width;
+    int height;
+};
+
 /**
  * Transfer data from server to client or client to server
  * based on the configuration setting.
@@ -256,8 +268,12 @@ protected:
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     bool initialiseEncoder();
-    bool initialiseH264HybridEncoder();
-    bool initialiseH264HybridDecoder();
+
+    bool initialiseH264Encoders();
+    bool initialiseH264Decoders();
+
+    bool initialiseH264HybridEncoder(CodecParams* codecParams);
+    bool initialiseH264HybridDecoder(CodecParams* codecParams);
     bool initialiseH264RemoteEncoder();
     bool initialiseH264RemoteDecoder();
     bool initialiseDecoder();
@@ -297,8 +313,13 @@ protected:
     int nSize = nWidth * nHeight * 4;
     char msg[100];
 
+    // Each different buffer has different encoder settings.
     AVFrame* mpFrame = nullptr;
     AVPacket* mpPacket = nullptr;
+
+    std::vector<struct SwsContext*> mpSwsContexts;
+    std::vector<AVCodecContext*> mpCodecContexts;
+
     struct SwsContext* mpSwsContext = nullptr;
     AVCodecContext* mpCodecContext = nullptr;
 
@@ -311,4 +332,7 @@ protected:
         H264
     };
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
+    int mNumOfTextures = 2;                                        ///< Number of textures to encode each frame
+    int mBufferOffsets[2] = { 0, VIS_TEX_LEN };                    ///< Offset before next buffer
+    int mBufferSizes[2] = { VIS_TEX_LEN, AO_TEX_LEN };             ///< Size of each buffer 
 };

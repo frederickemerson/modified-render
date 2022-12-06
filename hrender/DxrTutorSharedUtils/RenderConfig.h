@@ -50,7 +50,8 @@ enum RenderConfigPass : uint8_t {
     SimpleAccumulationPass,
     SimulateDelayPass,
     PredictionPass,
-    YUVToRGBAPass
+    YUVToRGBAPass,
+    AmbientOcclusionPass
 };
 
 enum class RenderMode : uint8_t {

@@ -45,6 +45,7 @@
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "NetworkPasses/PredictionPass.h"
 #include "DxrTutorCommonPasses/YUVToRGBAPass.h"
+#include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 
 // Available scenes and corresponding environment maps
 std::string defaultSceneNames[] = {
@@ -62,8 +63,8 @@ const char* environmentMaps[] = {
 };
 
 // Switches rendering modes between HybridRender and RemoteRender
-//RenderMode renderMode = RenderMode::HybridRender;
-RenderMode renderMode = RenderMode::RemoteRender;
+RenderMode renderMode = RenderMode::HybridRender;
+//RenderMode renderMode = RenderMode::RemoteRender;
 
 /**
  * Determines the mode or configuration that the program runs
@@ -178,6 +179,9 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             // If output texture is named V-shading, it causes problems during debug mode.
             pipeline->setPass(i, YUVToRGBAPass::create("__V-shadingYUVClient", "V-shading")); 
         }
+        else if (renderConfiguration.passOrder[i] == AmbientOcclusionPass) {
+            pipeline->setPass(i, AmbientOcclusionPass::create("AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
     }
 }
 
@@ -212,9 +216,9 @@ void runDebug()
 // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
-            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -345,29 +349,31 @@ RenderConfiguration getRenderConfigDebugHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        11,
+        12,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
             // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
             VisibilityPass,
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
+            AmbientOcclusionPass,
+            // --- RenderConfigPass 4 transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
+            // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
             CompressionPass,
-            // --- RenderConfigPass 5 simulates delay across network --- //
+            // --- RenderConfigPass 6 simulates delay across network --- //
             SimulateDelayPass,
-            // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
+            // --- RenderConfigPass 7 decompresses buffers sent across Network--- //
             DecompressionPass,
-            // --- RenderConfigPass 7 transfers CPU information into GPU --- //
+            // --- RenderConfigPass 8 transfers CPU information into GPU --- //
             MemoryTransferPassCPU_GPU,
-            // --- RenderConfigPass 8 performs prediction on visibility bitmap if frames are behind. --- //
+            // --- RenderConfigPass 9 performs prediction on visibility bitmap if frames are behind. --- //
             PredictionPass,
-            // --- RenderConfigPass 9 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            // --- RenderConfigPass 10 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
             VShadingPass,
-            // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
+            // --- RenderConfigPass 11 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
+            // --- RenderConfigPass 12 temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
         }
     };
