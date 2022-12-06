@@ -466,7 +466,7 @@ RenderConfiguration getRenderConfigDebugHybrid() {
             JitteredGBufferPass,
             // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
             VisibilityPass,
-            // --- RenderConfigPass 3 transfers GPU information into CPU --- //
+            // --- RenderConfigPass 3 performs per-pixel ambient occlusion --- //
             AmbientOcclusionPass,
             // --- RenderConfigPass 4 transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
@@ -494,7 +494,7 @@ RenderConfiguration getRenderConfigServerHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        6,
+        7,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 Receive camera data from client --- //
             NetworkServerRecvPass,
@@ -502,11 +502,13 @@ RenderConfiguration getRenderConfigServerHybrid() {
             JitteredGBufferPass,
             // --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
             VisibilityPass,
-            // --- RenderConfigPass 4 transfers GPU information into GPU --- //
+            // --- RenderConfigPass 4 performs per-pixel ambient occlusion --- //
+            AmbientOcclusionPass,
+            // --- RenderConfigPass 5 transfers GPU information into GPU --- //
             MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 5 compresses buffers to be sent across network --- //
+            // --- RenderConfigPass 6 compresses buffers to be sent across network --- //
             CompressionPass,
-            // --- RenderConfigPass 6 sends the visibility bitmap to the client --- //
+            // --- RenderConfigPass 7 sends the visibility bitmap to the client --- //
             NetworkServerSendPass
         }
     };
