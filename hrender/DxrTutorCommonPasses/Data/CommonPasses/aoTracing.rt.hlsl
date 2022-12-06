@@ -23,7 +23,7 @@ import Scene.Shading;                      // Shading functions, etc
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "aoCommonUtils.hlsli"
 
-// Payload for our primary rays.  We really don't use this for this g-buffer pass
+// Payload for our primary rays. 
 struct AORayPayload
 {
 	float hitDist;
@@ -41,7 +41,7 @@ cbuffer RayGenCB
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
-RWTexture2D<float4> gOutput;
+RWTexture2D<uint> gOutput;
 
 
 [shader("miss")]
@@ -50,10 +50,10 @@ void AoMiss(inout AORayPayload hitData : SV_RayPayload)
 }
 
 [shader("anyhit")]
-void AoAnyHit(uniform HitShaderParams hitParams, inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void AoAnyHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
 	// Is this a transparent part of the surface?  If so, ignore this hit
-	if (alphaTestFails(hitParams, attribs))
+	if (alphaTestFails(attribs))
 		IgnoreHit();
 
 	// We update the hit distance with our current hitpoint
@@ -82,13 +82,13 @@ void AoRayGen()
 	float4 worldNorm = gNorm[launchIndex];
 
 	// Default ambient occlusion
-	float ambientOcclusion = float(gNumRays);
+	uint ambientOcclusion = gNumRays;
 
 	// Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
 	if (worldPos.w != 0.0f)  
 	{
 		// Start accumulating from zero if we don't hit the background
-		ambientOcclusion = 0.0f;
+		ambientOcclusion = 0;
 
 		for (int i = 0; i < gNumRays; i++)
 		{
@@ -106,14 +106,16 @@ void AoRayGen()
 			AORayPayload rayPayload = { gAORadius + 1.0f };
 
 			// Trace our ray
-			TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0, hitProgramCount, 0, rayAO, rayPayload);
-
+            uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
+			
+            TraceRay(gScene.rtAccel, rayFlags, 0xFF, 0, rayTypeCount, 0, rayAO, rayPayload);
+			
 			// If our hit is what we initialized it to, above, we hit no geometry (else we did hit a surface)
-			ambientOcclusion += (rayPayload.hitDist > gAORadius) ? 1.0f : 0.0f;
+			ambientOcclusion += (rayPayload.hitDist > gAORadius) ? 1 : 0;
 		}
 	}
 	
 	// Save out our AO color
-	float aoColor = ambientOcclusion / float(gNumRays);
-	gOutput[launchIndex] = float4(aoColor, aoColor, aoColor, 1.0f);
+    gOutput[launchIndex] = ambientOcclusion;
+
 }

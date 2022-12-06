@@ -67,12 +67,12 @@ float3 getCosHemisphereSample(inout uint randSeed, float3 hitNorm)
 // This function tests if the alpha test fails, given the attributes of the current hit. 
 //   -> Can legally be called in a DXR any-hit shader or a DXR closest-hit shader, and 
 //      accesses Falcor helpers and data structures to extract and perform the alpha test.
-bool alphaTestFails(HitShaderParams hitParams, BuiltInTriangleIntersectionAttributes attribs)
+bool alphaTestFails(BuiltInTriangleIntersectionAttributes attribs)
 {
     // Run a Falcor helper to extract the current hit point's geometric data
-    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
-
-    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
+    GeometryInstanceID instanceID = getGeometryInstanceID();
+    VertexData v = getVertexData(instanceID, PrimitiveIndex(), attribs);
+    const uint materialID = gScene.getMaterialID(instanceID);
 
     return alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f);
 }
