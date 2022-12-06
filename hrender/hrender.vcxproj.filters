@@ -104,6 +104,9 @@
     <ClCompile Include="DxrTutorCommonPasses\YUVToRGBAPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -217,6 +220,9 @@
       <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\YUVToRGBAPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
   </ItemGroup>

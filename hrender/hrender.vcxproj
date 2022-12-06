@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
@@ -52,6 +53,7 @@
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
