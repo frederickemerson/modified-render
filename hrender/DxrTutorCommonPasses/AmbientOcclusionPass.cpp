@@ -38,19 +38,17 @@ bool AmbientOcclusionPass::initialize(RenderContext* pRenderContext, ResourceMan
     setGuiSize(int2(300, 90));
 
     // Note that we need the G-buffer's position and normal buffer, plus the standard output buffer
-    mPositionIndex = mpResManager->requestTextureResource("WorldPosition");
-    mNormalIndex   = mpResManager->requestTextureResource("WorldNormal");
-    mNormalIndex   = (mNormalIndex == -1) ? mpResManager->getTextureIndex("WorldNormal") : mNormalIndex;
-    mOutputIndex   = mpResManager->requestTextureResource(mOutputTexName);
-
+    mPositionIndex = mpResManager->requestTextureResource("WorldPosition", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mNormalIndex = mpResManager->requestTextureResource("WorldNormal", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
-    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
-    mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
-    mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
+    mpRays = RayLaunch::create(1, 1, kFileRayTrace, kEntryPointRayGen);
 
     // Now that we've passed all our shaders in, compile.  If we already have our scene, let it know what scene to use.
     if (mpScene) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
 
@@ -62,13 +60,17 @@ void AmbientOcclusionPass::initScene(RenderContext* pRenderContext, Scene::Share
     // Stash a copy of the scene and pass it to our ray tracer (if initialized)
     mpScene = pScene;
     if (!mpScene) return;
+
     if (mpRays) {
         mpRays->setScene(mpScene);
+        mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);
+        mpRays->addHitShader(kFileRayTrace, kEntryAoClosestHit, kEntryAoAnyHit);
         mpRays->compileRayProgram();
     }
    
     // Set a default AO radius when we load a new scene.
-    mAORadius = glm::max(0.1f, mpScene->getSceneBounds().radius() * 0.1f);
+    //mAORadius = glm::max(0.1f, mpScene->getSceneBounds().radius() * 0.1f);
+    mAORadius = 0.1f;
 }
 
 void AmbientOcclusionPass::renderGui(Gui::Window* pPassWindow)
@@ -101,4 +103,5 @@ void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 
     // Shoot our AO rays
     mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()) );
+
 }

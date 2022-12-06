@@ -28,11 +28,14 @@ public:
     using SharedPtr = std::shared_ptr<AmbientOcclusionPass>;
     using SharedConstPtr = std::shared_ptr<const AmbientOcclusionPass>;
 
-    static SharedPtr create(const std::string &outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new AmbientOcclusionPass(outBuf)); }
+    static SharedPtr create(const std::string &outBuf = ResourceManager::kOutputChannel, int texWidth = -1, int texHeight = -1) { 
+        return SharedPtr(new AmbientOcclusionPass(outBuf, texWidth, texHeight)); }
     virtual ~AmbientOcclusionPass() = default;
 
 protected:
-    AmbientOcclusionPass(const std::string &outBuf) : ::RenderPass("Ambient Occlusion Rays", "Ambient Occlusion Options") { mOutputTexName = outBuf; }
+    AmbientOcclusionPass(const std::string &outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("Ambient Occlusion Pass", "Ambient Occlusion Options") {
+        mOutputTexName = outBuf; mTexWidth = texWidth; mTexHeight = texHeight;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -51,7 +54,9 @@ protected:
     // Various internal parameters
     float                                   mAORadius = 0.0f;       ///< What radius are we using for AO rays (i.e., maxT when ray tracing)
     uint32_t                                mFrameCount = 0;        ///< Frame count used to help seed our shaders' random number generator
-    int32_t                                 mNumRaysPerPixel = 1;   ///< How many ambient occlusion rays should we shot per pixel?
+    int32_t                                 mNumRaysPerPixel = 32;   ///< How many ambient occlusion rays should we shot per pixel?
+    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
 
     // Indices we can use to query the resource manager for various texture resources
     int32_t                                 mPositionIndex;         ///< An index for the G-Buffer wsPosition buffer
