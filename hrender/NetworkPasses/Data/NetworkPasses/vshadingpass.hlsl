@@ -37,7 +37,6 @@ cbuffer RayGenCB
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
     bool gSkipAO; // Render the scene without ambient occlusion
-    bool gSkipDD; // Render the scene without diffuse-diffuse interactions
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     bool gDecodeVis; // Do we want to decode Visibility buffer or Ambient Occlusion?
@@ -135,8 +134,10 @@ void VShadowsRayGen()
             finalColor *= AOfactor;
         }
     
-        // Save out our AO color
-        gOutput[launchIndex] = float4(shadeColor , 1.0f) + emissiveColor;
+        // Save out our AO color    
+        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+        shadeColor *= AOfactor;
+        gOutput[launchIndex] = float4(shadeColor, 1.0f) + emissiveColor;
     } 
     else
     {
