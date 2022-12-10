@@ -332,7 +332,7 @@ protected:
         H264
     };
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
-    int mNumOfTextures = 2;                                        ///< Number of textures to encode each frame
+    int mNumOfTextures = -1;                                        ///< Number of textures to encode each frame
     int mBufferOffsets[2] = { 0, VIS_TEX_LEN };                    ///< Offset before next buffer
     int mBufferSizes[2] = { VIS_TEX_LEN, AO_TEX_LEN };             ///< Size of each buffer 
 };

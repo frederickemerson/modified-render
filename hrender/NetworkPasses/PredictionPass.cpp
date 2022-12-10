@@ -164,6 +164,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     Falcor::Fbo::SharedPtr offsetBufferFbo = mpResManager->
         createManagedFbo({ mVisBufOffsetIndex, mAOBufOffsetIndex, mRefBufOffsetIndex }, mZBufferIndex);
     //pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
+
     // Failed to create valid FBOs? We're done.
     if (!(predictionFbo && offsetBufferFbo))
     {

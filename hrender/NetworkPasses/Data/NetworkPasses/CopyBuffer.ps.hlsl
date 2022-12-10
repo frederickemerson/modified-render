@@ -1,5 +1,6 @@
 // Input texture that needs to be set by the C++ code
 Texture2D<float4> gVisBufferOrig;
+Texture2D<float4> gAOBufferOrig;
 Texture2D<float3> gRefBufferOrig;
 Texture2D<float4> gAOBufferOrig;
 
