@@ -326,13 +326,13 @@ protected:
     Gui::DropdownList mDisplayableBuffers;
     bool isUsingCPU = true;
     bool isRemoteRendering = false;                                ///< True if rendering whole scene on server
-    uint32_t          mCodecType = H264;                           ///< H264 by default
+    uint32_t          mCodecType = LZ4;                           ///< H264 by default
     enum CodecType : uint32_t {
         LZ4,
         H264
     };
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
-    int mNumOfTextures = 2;                                        ///< Number of textures to encode each frame
+    int mNumOfTextures = -1;                                        ///< Number of textures to encode each frame
     int mBufferOffsets[2] = { 0, VIS_TEX_LEN };                    ///< Offset before next buffer
     int mBufferSizes[2] = { VIS_TEX_LEN, AO_TEX_LEN };             ///< Size of each buffer 
 };

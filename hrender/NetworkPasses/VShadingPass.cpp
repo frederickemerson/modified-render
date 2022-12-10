@@ -26,7 +26,7 @@ namespace {
     const std::string kVisBuffer = "OffsetVisibilityBitmap";
 
     // The ambient occlusion texture to calculation occlusion factor
-    const std::string kAOtex = "AmbientOcclusion";
+    const std::string kAOtex = "OffsetAmbientOcclusion";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)

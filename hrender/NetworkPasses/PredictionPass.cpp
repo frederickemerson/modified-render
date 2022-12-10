@@ -26,7 +26,10 @@ namespace {
     const std::string kVisBufOrig = "VisibilityBitmap";
     // Offset visibility buffer resource location
     const std::string kVisBufOffset = "OffsetVisibilityBitmap";
-
+    // Original AO buffer resource location
+    const std::string kAOBufOrig = "AmbientOcclusion";
+    // Offset AO buffer resource location
+    const std::string kAOBufOffset = "OffsetAmbientOcclusion";
 
     // ========================= SHADER VARIABLES FOR PredictionPass.ps.hlsl =========================
 
@@ -66,6 +69,8 @@ namespace {
     const std::string sVarOffsetFactor = "gOffsetFactor";
     // Name of shader variable for original visibility buffer texture
     const std::string sVarVisBufOriginalTex = "gVisBufferOrig";
+    // Name of shader variable for original visibility buffer texture
+    const std::string sVarAOBufOriginalTex = "gAOBufferOrig";
     // Name of shader variable for motion vectors texture from PredictionPass.ps.hlsl
     const std::string sVarMotionVecTex = "gMotionVectors";
     // Name of shader variable for mode of "filling-in" for unknown fragments
@@ -109,6 +114,12 @@ bool PredictionPass::initialize(RenderContext* pRenderContext, ResourceManager::
     // Request for offset visibility buffer texture
     mVisBufOffsetIndex = mpResManager->requestTextureResource(
         kVisBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for original AO buffer texture
+    mAOBufOrigIndex = mpResManager->requestTextureResource(
+        kAOBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for offset AO buffer texture
+    mAOBufOffsetIndex = mpResManager->requestTextureResource(
+        kAOBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Request for the Z-Buffer
     mZBufferIndex = mpResManager->requestTextureResource(
@@ -136,10 +147,10 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     Falcor::Fbo::SharedPtr predictionFbo = mpResManager->
         createManagedFbo({ mMotionVecIndex }, mZBufferIndex);
     pRenderContext->clearFbo(predictionFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
-    // Create a FBO for the step to offset the visibility buffer
+    // Create a FBO for the step to offset the buffers
     Falcor::Fbo::SharedPtr offsetBufferFbo = mpResManager->
-        createManagedFbo({ mVisBufOffsetIndex }, mZBufferIndex);
-    pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
+        createManagedFbo({ mVisBufOffsetIndex, mAOBufOffsetIndex }, mZBufferIndex);
+    //pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
     // Failed to create valid FBOs? We're done.
     if (!(predictionFbo && offsetBufferFbo))
     {
@@ -171,6 +182,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
         // Pass original visibility buffer to copy shader
         Falcor::GraphicsVars::SharedPtr copyShaderVars = mpCopyShader->getVars();
         copyShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
+        copyShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
 
         // Using output FBO for OffsetBuffer, run CopyBuffer shader to copy over the visibility buffer
         mpCopyShader->execute(pRenderContext, offsetBufferFbo);
@@ -225,6 +237,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     offsetShaderVars[sVarCBufferOffset][sVarOffsetFactor] = mOffsetFactor;
     offsetShaderVars[sVarCBufferOffset][sVarUnknownFrag] = mUnknownFragmentsMode;
     offsetShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
+    offsetShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
     // Pass motion vectors texture to OffsetBuffer shader
     offsetShaderVars[sVarMotionVecTex] = mpResManager->getTexture(mMotionVecIndex);
 

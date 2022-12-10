@@ -53,8 +53,10 @@ protected:
 
     // Various internal parameters
     int32_t                                 mMotionVecIndex;                ///< An index for our output buffer
-    int32_t                                 mVisBufOrigIndex;               ///< An index for the voriginal visibility buffer
+    int32_t                                 mVisBufOrigIndex;               ///< An index for the original visibility buffer
     int32_t                                 mVisBufOffsetIndex;             ///< An index for the offset visibility buffer
+    int32_t                                 mAOBufOrigIndex;               ///< An index for the original AO buffer
+    int32_t                                 mAOBufOffsetIndex;             ///< An index for the offset AO buffer
     int32_t                                 mWorldPosIndex;                 ///< An index for the world position
     int32_t                                 mZBufferIndex;                  ///< An index for the Z buffer
     bool                                    mUsePrediction = true;          ///< A flag to toggle prediction

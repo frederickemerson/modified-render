@@ -36,6 +36,8 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     mDisplayableBuffers.push_back({ 0, "LZ4" });
     mDisplayableBuffers.push_back({ 1, "H264" });
 
+    mNumOfTextures = mHybridMode ? 2 : 1;
+
     if (mMode == Mode::Compression) {
         if (mHybridMode) {
             initialiseH264Encoders();

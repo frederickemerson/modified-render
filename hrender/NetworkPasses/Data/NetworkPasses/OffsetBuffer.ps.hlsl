@@ -10,12 +10,14 @@ cbuffer OffsetCb
 
 // Input textures that needs to be set by the C++ code
 Texture2D<uint> gVisBufferOrig;
+Texture2D<uint> gAOBufferOrig;
 Texture2D<float4> gMotionVectors;
 
 // Output texture with offset visibility buffer
 struct PsOut
 {
 	uint visOffset : SV_Target0;
+    uint AoOffset  : SV_Target1;
 };
 
 PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
@@ -36,16 +38,19 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
         {
             // Copy mode
             motionVecBufOut.visOffset = gVisBufferOrig[screenCoords];
+            motionVecBufOut.AoOffset = gAOBufferOrig[screenCoords];
         }
         else if (gUnknownFragMode == 1)
         {
             // Fill with shadow mode
             motionVecBufOut.visOffset = 0x00000000;
+            motionVecBufOut.AoOffset = 0x00000000;
         }
         else // (gUnknownFragMode == 2)
         {
             // Fill with light mode
             motionVecBufOut.visOffset = 0xFFFFFFFF;
+            motionVecBufOut.AoOffset = 0xFFFFFFFF;
         }
         return motionVecBufOut;
     }
@@ -65,8 +70,10 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
 
     // Read original visibility buffer using the offset coordinates
     uint offsetVisibilityInfo = gVisBufferOrig[offsetCoords];
+    uint offsetAOInfo = gAOBufferOrig[offsetCoords];
 
     // Return the offset visibility buffer
     motionVecBufOut.visOffset = offsetVisibilityInfo;
+    motionVecBufOut.AoOffset = offsetAOInfo;
     return motionVecBufOut;
 }
