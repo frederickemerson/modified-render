@@ -382,7 +382,7 @@ RenderConfiguration getRenderConfigDebugHybrid() {
 RenderConfiguration getRenderConfigServerHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
+        1, // sceneIndex
         7,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 Receive camera data from client --- //
@@ -406,7 +406,7 @@ RenderConfiguration getRenderConfigServerHybrid() {
 RenderConfiguration getRenderConfigClientHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
+        1, // sceneIndex
         9,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 Send camera data to server --- //

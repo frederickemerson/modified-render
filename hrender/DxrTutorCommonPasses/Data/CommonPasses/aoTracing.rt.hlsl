@@ -27,6 +27,7 @@ import Scene.Shading;                      // Shading functions, etc
 struct AORayPayload
 {
 	float hitDist;
+    float3 hitColor;
 };
 
 // A constant buffer we'll fill in for our ray generation shader
@@ -41,7 +42,7 @@ cbuffer RayGenCB
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
-RWTexture2D<uint> gOutput;
+RWTexture2D<uint4> gOutput;
 
 
 [shader("miss")]
@@ -55,15 +56,23 @@ void AoAnyHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes 
 	// Is this a transparent part of the surface?  If so, ignore this hit
 	if (alphaTestFails(attribs))
 		IgnoreHit();
-
-	// We update the hit distance with our current hitpoint
-	rayData.hitDist = RayTCurrent();
 }
 
 [shader("closesthit")]
 void AoClosestHit(inout AORayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
-	rayData.hitDist = RayTCurrent();
+	// We update the hit distance with our current hitpoint
+    rayData.hitDist = RayTCurrent();
+	
+	// Get the hit-point data
+    const GeometryInstanceID instanceID = getGeometryInstanceID();
+    VertexData v = getVertexData(instanceID, PrimitiveIndex(), attribs);
+    uint materialID = gScene.getMaterialID(instanceID);
+	
+	 // Extract Falcor scene data for shading
+    ShadingData shadeData = prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], -WorldRayDirection(), 0);
+	
+    rayData.hitColor = shadeData.diffuse.rgb;
 }
 
 
@@ -83,7 +92,8 @@ void AoRayGen()
 
 	// Default ambient occlusion
 	uint ambientOcclusion = gNumRays;
-
+    float3 accumGlobalIllum = float3(0.0f);
+	
 	// Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
 	if (worldPos.w != 0.0f)  
 	{
@@ -100,10 +110,10 @@ void AoRayGen()
 			rayAO.Origin = worldPos.xyz;
 			rayAO.Direction = worldDir;
 			rayAO.TMin = gMinT;
-			rayAO.TMax = gAORadius;
+            rayAO.TMax = 1.0e38f;
 
 			// Initialize the maximum hitT (which will be the return value if we hit no surfaces)
-			AORayPayload rayPayload = { gAORadius + 1.0f };
+            AORayPayload rayPayload = { gAORadius + 1.0f, float3(0.0f) };
 
 			// Trace our ray
             uint rayFlags = RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH;
@@ -111,11 +121,16 @@ void AoRayGen()
             TraceRay(gScene.rtAccel, rayFlags, 0xFF, 0, rayTypeCount, 0, rayAO, rayPayload);
 			
 			// If our hit is what we initialized it to, above, we hit no geometry (else we did hit a surface)
-			ambientOcclusion += (rayPayload.hitDist > gAORadius) ? 1 : 0;
+            if (rayPayload.hitDist > gAORadius)
+            {
+                ambientOcclusion += 1;
+                accumGlobalIllum += rayPayload.hitColor;
+            }
+			
 		}
 	}
 	
 	// Save out our AO color
-    gOutput[launchIndex] = ambientOcclusion;
+    gOutput[launchIndex] = uint4(255 * accumGlobalIllum / ambientOcclusion, ambientOcclusion);
 
 }

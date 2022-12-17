@@ -37,6 +37,7 @@ cbuffer RayGenCB
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
     bool gSkipAO; // Render the scene without ambient occlusion
+    bool gSkipDD; // Render the scene without diffuse-diffuse interactions
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     float gAmbient;
@@ -48,7 +49,7 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
 Texture2D<uint>   gVisibility;
-Texture2D<uint>   gAO;
+Texture2D<uint4>   gAO;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
@@ -75,46 +76,54 @@ void VShadowsRayGen()
     if (!gDecodeMode)
     {
         // Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
-        if (worldPos.w != 0.0f)
+        if (worldPos.w == 0.0f)
         {
-            // We're going to accumulate contributions from multiple lights, so zero our our sum
-            shadeColor = float3(0.0, 0.0, 0.0);
-
-            const uint lightCount = gScene.getLightCount();
-            float3 lightIntensityCache;
-
-            for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
-            {
-                float distToLight;
-                float3 lightIntensity;
-                float3 toLight;
-                // A helper (that queries the Falcor scene to get needed data about this light)
-                getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
-
-                // Compute our lambertion term (L dot N)
-                float LdotN = saturate(dot(worldNorm.xyz, toLight));
-
-                // Shoot our ray
-                float shadowMult = gSkipShadows ? 1.0f : 
-                    ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
-                lightIntensityCache = lightIntensity;
-                // Compute our Lambertian shading color
-                shadeColor += shadowMult * LdotN * lightIntensity; 
-            }
-            if (length(shadeColor) < 0.00001)
-            {
-                shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
-            }
-
-            // Physically based Lambertian term is albedo/pi
-            shadeColor *= difMatlColor.rgb / 3.141592f;
+            gOutput[launchIndex] = float4(shadeColor, 1.0f);
+            return;
         }
-    
-        // Save out our AO color    
-        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex] / gNumAORays, 0.0, 1.0);
-        shadeColor *= AOfactor;
+
+        // We're going to accumulate contributions from multiple lights, so zero our our sum
+        shadeColor = float3(0.0, 0.0, 0.0);
+
+        const uint lightCount = gScene.getLightCount();
+        float3 lightIntensityCache;
+
+        for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+        {
+            float distToLight;
+            float3 lightIntensity;
+            float3 toLight;
+            // A helper (that queries the Falcor scene to get needed data about this light)
+            getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
+
+            // Compute our lambertion term (L dot N)
+            float LdotN = saturate(dot(worldNorm.xyz, toLight));
+
+            // Shoot our ray
+            float shadowMult = gSkipShadows ? 1.0f : 
+                ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
+            lightIntensityCache = lightIntensity;
+            // Compute our Lambertian shading color
+            shadeColor += shadowMult * LdotN * lightIntensity; 
+        }
+        if (length(shadeColor) < 0.00001)
+        {
+            shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
+        }
+
+        // Physically based Lambertian term is albedo/pi
+        shadeColor *= difMatlColor.rgb / 3.141592f;
+
+        float4 finalColor = float4(shadeColor, 1.0f);
         
-        gOutput[launchIndex] = float4(shadeColor, 1.0f);
+        // Calculate AO factor if enabled    
+        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex].a / gNumAORays, 0.0, 1.0);
+        finalColor *= AOfactor;
+        
+        // Add diffuse-diffuse interactions if enabled
+        finalColor *= gSkipDD ? 1.0f : float4(gAO[launchIndex].rgb / 255.0, 1.0f);
+        
+        gOutput[launchIndex] = finalColor;
     } 
     else
     {

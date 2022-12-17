@@ -116,10 +116,10 @@ bool PredictionPass::initialize(RenderContext* pRenderContext, ResourceManager::
         kVisBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     // Request for original AO buffer texture
     mAOBufOrigIndex = mpResManager->requestTextureResource(
-        kAOBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+        kAOBufOrig, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     // Request for offset AO buffer texture
     mAOBufOffsetIndex = mpResManager->requestTextureResource(
-        kAOBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+        kAOBufOffset, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Request for the Z-Buffer
     mZBufferIndex = mpResManager->requestTextureResource(

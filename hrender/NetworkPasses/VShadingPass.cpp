@@ -35,7 +35,7 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     mpResManager = pResManager;
 
     // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(int2(300, 70));
+    setGuiSize(int2(300, 170));
 
     // Where is our shaders located?
     const char* kFileRayTrace = mHybridMode
@@ -97,6 +97,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["RayGenCB"]["gSkipAO"] = mSkipAO;
+    rayVars["RayGenCB"]["gSkipDD"] = mSkipDD;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
@@ -119,6 +120,7 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
     dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
+    dirty |= (int)pPassWindow->checkbox("Skip diffuse-diffuse interactions", mSkipDD, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
 
     if (mDecodeMode)
