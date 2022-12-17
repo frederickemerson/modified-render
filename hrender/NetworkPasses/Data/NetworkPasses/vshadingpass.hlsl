@@ -37,6 +37,7 @@ cbuffer RayGenCB
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
     bool gSkipAO; // Render the scene without ambient occlusion
+    bool gSkipDD; // Render the scene without diffuse-diffuse interactions
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     bool gDecodeVis; // Do we want to decode Visibility buffer or Ambient Occlusion?
@@ -50,7 +51,7 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
 Texture2D<uint>   gVisibility;
-Texture2D<uint>   gAO;
+Texture2D<uint4>   gAO;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
