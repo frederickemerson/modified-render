@@ -36,7 +36,7 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     mDisplayableBuffers.push_back({ 0, "LZ4" });
     mDisplayableBuffers.push_back({ 1, "H264" });
 
-    mNumOfTextures = mHybridMode ? 2 : 1;
+    mNumOfTextures = mHybridMode ? 1 : 1;
 
     if (mMode == Mode::Compression) {
         if (mHybridMode) {
@@ -580,7 +580,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Parameters for Compression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN;
+                int sourceBufferSize = VIS_TEX_LEN;
 
                 // Compress buffer
                 int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
@@ -611,7 +611,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 // Parameters for Decompression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = mGetInputBufferSize();
-                int maxDecompressedSize = VIS_TEX_LEN + AO_TEX_LEN;
+                int maxDecompressedSize = VIS_TEX_LEN;
 
                 if (sourceBufferSize == maxDecompressedSize) {
                     OutputDebugString(L"Skipping decompression, texture didnt change");

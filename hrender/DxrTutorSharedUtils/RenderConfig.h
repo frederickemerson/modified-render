@@ -51,7 +51,9 @@ enum RenderConfigPass : uint8_t {
     SimulateDelayPass,
     PredictionPass,
     YUVToRGBAPass,
-    AmbientOcclusionPass
+    AmbientOcclusionPass,
+    ServerGlobalIllumPass,
+    ClientGlobalIllumPass
 };
 
 enum class RenderMode : uint8_t {
