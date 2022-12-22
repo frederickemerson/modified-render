@@ -72,14 +72,9 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
     // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
     // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
-    uint8_t* pVisTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-
-    for (int i = 3; i < VIS_TEX_LEN; i+=4) {
-        if (pVisTex[i] == 2) {
-            int x = 0;
-        }
-    }
-    memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
+    //uint8_t* pVisTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    uint8_t* pGiTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    memcpy(outputBuffer, pGiTex, VIS_TEX_LEN);
 
     std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 

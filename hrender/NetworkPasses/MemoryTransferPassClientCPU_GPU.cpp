@@ -67,8 +67,7 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 
     /*Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);*/
-    Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
-
+    Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
