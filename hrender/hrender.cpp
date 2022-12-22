@@ -285,8 +285,11 @@ void runServer()
     // Set presets for the pipeline //
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
+        //pipeline->setPresets({
+        //    RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
+        //    });
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -337,7 +340,7 @@ void runClient()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
