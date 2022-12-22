@@ -40,6 +40,7 @@ cbuffer RayGenCB
     bool gSkipDD; // Render the scene without diffuse-diffuse interactions
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
+    bool gDecodeDI; // Which illumination should be decoded and displayed?
     float gAmbient;
     uint gNumAORays;
 }
@@ -50,6 +51,8 @@ Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
 Texture2D<uint>   gVisibility;
 Texture2D<uint4>   gAO;
+Texture2D<float4> gDirectIllum;
+Texture2D<float4> gIndirectIllum;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
@@ -85,54 +88,67 @@ void VShadowsRayGen()
         // We're going to accumulate contributions from multiple lights, so zero our our sum
         shadeColor = float3(0.0, 0.0, 0.0);
 
-        const uint lightCount = gScene.getLightCount();
-        float3 lightIntensityCache;
+        shadeColor += gDirectIllum[launchIndex].rgb;
+        shadeColor += gIndirectIllum[launchIndex].rgb;
+        gOutput[launchIndex] = float4(shadeColor, 1.0);
+        
+        //const uint lightCount = gScene.getLightCount();
+        //float3 lightIntensityCache;
 
-        for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
-        {
-            float distToLight;
-            float3 lightIntensity;
-            float3 toLight;
-            // A helper (that queries the Falcor scene to get needed data about this light)
-            getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
+        //for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+        //{
+        //    float distToLight;
+        //    float3 lightIntensity;
+        //    float3 toLight;
+        //    // A helper (that queries the Falcor scene to get needed data about this light)
+        //    getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
 
-            // Compute our lambertion term (L dot N)
-            float LdotN = saturate(dot(worldNorm.xyz, toLight));
+        //    // Compute our lambertion term (L dot N)
+        //    float LdotN = saturate(dot(worldNorm.xyz, toLight));
 
-            // Shoot our ray
-            float shadowMult = gSkipShadows ? 1.0f : 
-                ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
-            lightIntensityCache = lightIntensity;
-            // Compute our Lambertian shading color
-            shadeColor += shadowMult * LdotN * lightIntensity; 
-        }
-        if (length(shadeColor) < 0.00001)
-        {
-            shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
-        }
+        //    // Shoot our ray
+        //    float shadowMult = gSkipShadows ? 1.0f : 
+        //        ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
+        //    lightIntensityCache = lightIntensity;
+        //    // Compute our Lambertian shading color
+        //    shadeColor += shadowMult * LdotN * lightIntensity; 
+        //}
+        
+
+        
+        //if (length(shadeColor) < 0.00001)
+        //{
+        //    shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
+        //}
 
         // Physically based Lambertian term is albedo/pi
-        shadeColor *= difMatlColor.rgb / 3.141592f;
+        //shadeColor *= difMatlColor.rgb / 3.141592f;
 
-        float4 finalColor = float4(shadeColor, 1.0f);
+        //float4 finalColor = float4(shadeColor, 1.0f);
         
-        // Calculate AO factor if enabled    
-        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex].a / gNumAORays, 0.0, 1.0);
-        finalColor *= AOfactor;
+        //// Calculate AO factor if enabled    
+        //float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex].a / gNumAORays, 0.0, 1.0);
+        //finalColor *= AOfactor;
         
-        // Add diffuse-diffuse interactions if enabled
-        finalColor *= gSkipDD ? 1.0f : float4(gAO[launchIndex].rgb / 255.0, 1.0f);
-        
-        gOutput[launchIndex] = finalColor;
+        //// Add diffuse-diffuse interactions if enabled
+        //finalColor *= gSkipDD ? 1.0f : float4(gAO[launchIndex].rgb / 255.0, 1.0f);
+
     } 
     else
     {
-        float shadowMult = gSkipShadows ? 1.0f :
-            ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
+        //float shadowMult = gSkipShadows ? 1.0f :
+        //    ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
-        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult;
+        //gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult;
 
-        //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
+        if (gDecodeDI)
+        {
+            gOutput[launchIndex] = float4(gDirectIllum[launchIndex].rgb, 1.0);
+        }
+        else
+        {
+            gOutput[launchIndex] = float4(gIndirectIllum[launchIndex].rgb, 1.0);
+        }
 
     }
 

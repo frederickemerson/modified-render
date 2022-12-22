@@ -46,6 +46,8 @@
 #include "NetworkPasses/PredictionPass.h"
 #include "DxrTutorCommonPasses/YUVToRGBAPass.h"
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
+#include "DxrTutorCommonPasses/GGXClientGlobalIllumPass.h"
+#include "DxrTutorCommonPasses/GGXServerGlobalIllumPass.h"
 
 // Available scenes and corresponding environment maps
 std::string defaultSceneNames[] = {
@@ -180,7 +182,14 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, YUVToRGBAPass::create("__V-shadingYUVClient", "V-shading")); 
         }
         else if (renderConfiguration.passOrder[i] == AmbientOcclusionPass) {
+            // This pass exists but has been replaced in favour of the GlobalIllum passes.
             pipeline->setPass(i, AmbientOcclusionPass::create("AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
+        else if (renderConfiguration.passOrder[i] == ServerGlobalIllumPass) {
+            pipeline->setPass(i, GGXServerGlobalIllumPass::create("ServerGlobalIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
+        else if (renderConfiguration.passOrder[i] == ClientGlobalIllumPass) {
+            pipeline->setPass(i, GGXClientGlobalIllumPass::create("DirectIllum", "IndirectIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
     }
 }
@@ -346,34 +355,71 @@ void runClient()
 * Functions to get corresponding RenderCongurations
 */
 RenderConfiguration getRenderConfigDebugHybrid() {
+    // Previous implementation: visibility bitmap + ambient occlusion
+    //return {
+    //   1920, 1080, // texWidth and texHeight
+    //   0, // sceneIndex
+    //   12,
+    //   { // Array of RenderConfigPass
+    //       // --- RenderConfigPass 1 creates a GBuffer --- //
+    //       JitteredGBufferPass,
+    //       // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
+    //       VisibilityPass,
+    //       // --- RenderConfigPass 3 performs per-pixel ambient occlusion --- //
+    //       AmbientOcclusionPass,
+    //       // --- RenderConfigPass 4 transfers GPU information into CPU --- //
+    //       MemoryTransferPassGPU_CPU,
+    //       // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
+    //       CompressionPass,
+    //       // --- RenderConfigPass 6 simulates delay across network --- //
+    //       SimulateDelayPass,
+    //       // --- RenderConfigPass 7 decompresses buffers sent across Network--- //
+    //       DecompressionPass,
+    //       // --- RenderConfigPass 8 transfers CPU information into GPU --- //
+    //       MemoryTransferPassCPU_GPU,
+    //       // --- RenderConfigPass 9 performs prediction on visibility bitmap if frames are behind. --- //
+    //       PredictionPass,
+    //       // --- RenderConfigPass 10 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+    //       VShadingPass,
+    //       // --- RenderConfigPass 11 just lets us select which pass to view on screen --- //
+    //       CopyToOutputPass,
+    //       // --- RenderConfigPass 12 temporally accumulates frames for denoising --- //
+    //       SimpleAccumulationPass
+    //   }
+    //};
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
         12,
         { // Array of RenderConfigPass
-            // --- RenderConfigPass 1 creates a GBuffer --- //
+            // --- JitteredGBufferPass creates a GBuffer --- //
             JitteredGBufferPass,
-            // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
-            VisibilityPass,
-            // --- RenderConfigPass 3 performs per-pixel ambient occlusion --- //
-            AmbientOcclusionPass,
-            // --- RenderConfigPass 4 transfers GPU information into CPU --- //
+            // --- VisibilityPass makes use of the GBuffer determining visibility under different lights --- //
+            //VisibilityPass,
+            // --- ServerGlobalIllumPass computes indirect illumination color and
+            //     selects random light index to be used for direct illumination. --- //
+            ServerGlobalIllumPass,
+            // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
+            // --- CompressionPass compresses buffers to be sent across Network --- //
             CompressionPass,
-            // --- RenderConfigPass 6 simulates delay across network --- //
+            // --- SimulateDelayPass simulates delay across network --- //
             SimulateDelayPass,
-            // --- RenderConfigPass 7 decompresses buffers sent across Network--- //
+            // --- DecompressionPass decompresses buffers sent across Network--- //
             DecompressionPass,
-            // --- RenderConfigPass 8 transfers CPU information into GPU --- //
+            // --- MemoryTransferPassCPU_GPU transfers CPU information into GPU --- //
             MemoryTransferPassCPU_GPU,
-            // --- RenderConfigPass 9 performs prediction on visibility bitmap if frames are behind. --- //
+            // --- ClientGlobalIllumPass loads server indirect illumination into texture and
+            //     calculates direct illumination using given random light index --- //
+            ClientGlobalIllumPass,
+            // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
             PredictionPass,
-            // --- RenderConfigPass 10 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
+            // --- VShadingPass makes use of the direct and indirect lighting to shade the sceneIndex.
+            //     We also provide the ability to preview the GBuffer alternatively. --- //
             VShadingPass,
-            // --- RenderConfigPass 11 just lets us select which pass to view on screen --- //
+            // --- CopyToOutputPass just lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 12 temporally accumulates frames for denoising --- //
+            // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
         }
     };
@@ -382,51 +428,83 @@ RenderConfiguration getRenderConfigDebugHybrid() {
 RenderConfiguration getRenderConfigServerHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
-        1, // sceneIndex
-        7,
+        0, // sceneIndex
+        6,
         { // Array of RenderConfigPass
-            // --- RenderConfigPass 1 Receive camera data from client --- //
+            // --- NetworkServerRecvPass receives camera data from client --- //
             NetworkServerRecvPass,
-            // --- RenderConfigPass 2 creates a GBuffer on server side--- //
+            // --- JitteredGBufferPass creates a GBuffer on server side--- //
             JitteredGBufferPass,
-            // --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
-            VisibilityPass,
-            // --- RenderConfigPass 4 performs per-pixel ambient occlusion --- //
-            AmbientOcclusionPass,
-            // --- RenderConfigPass 5 transfers GPU information into GPU --- //
+            // --- VisibilityPass makes use of the GBuffer determining visibility under different lights --- //
+            //VisibilityPass,
+            // --- AmbientOcclusionPass performs per-pixel ambient occlusion --- //
+            //AmbientOcclusionPass,
+            // --- ServerGlobalIllumPass computes indirect illumination color and
+            //     selects random light index to be used for direct illumination. --- //
+            ServerGlobalIllumPass,
+            // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 6 compresses buffers to be sent across network --- //
+            // --- CompressionPass compresses buffers to be sent across network --- //
             CompressionPass,
-            // --- RenderConfigPass 7 sends the visibility bitmap to the client --- //
+            // --- NetworkServerSendPass sends the visibility bitmap to the client --- //
             NetworkServerSendPass
         }
     };
 }
 
 RenderConfiguration getRenderConfigClientHybrid() {
+    // Previous implementation for client.
+    //return {
+    //    1920, 1080, // texWidth and texHeight
+    //    0, // sceneIndex
+    //    9,
+    //    { // Array of RenderConfigPass
+    //        // --- RenderConfigPass 1 Send camera data to server --- //
+    //        NetworkClientSendPass,
+    //        // --- RenderConfigPass 2 receive visibility bitmap from server --- //
+    //        NetworkClientRecvPass,
+    //        // --- RenderConfigPass 3 decompresses buffers sent across network--- //
+    //        DecompressionPass,
+    //        // --- RenderConfigPass 4 transfers CPU information into GPU --- //
+    //        MemoryTransferPassCPU_GPU,
+    //        // --- RenderConfigPass 5 performs prediction on visibility bitmap if frames are behind. --- //
+    //        PredictionPass,
+    //        // --- RenderConfigPass 6 makes use of the visibility bitmap to shade the sceneIndex. --- //
+    //        VShadingPass,
+    //        // --- RenderConfigPass 7 just lets us select which pass to view on screen --- //
+    //        CopyToOutputPass,
+    //        // --- RenderConfigPass 8 temporally accumulates frames for denoising --- //
+    //        SimpleAccumulationPass,
+    //        // --- RenderConfigPass 9 creates a GBuffer on client side--- //
+    //        JitteredGBufferPass
+    //    }
+    //};
     return {
         1920, 1080, // texWidth and texHeight
-        1, // sceneIndex
-        9,
+        0, // sceneIndex
+        10,
         { // Array of RenderConfigPass
-            // --- RenderConfigPass 1 Send camera data to server --- //
+            // --- JitteredGBufferPass creates a GBuffer on client side--- //
+            JitteredGBufferPass,
+            // --- NetworkClientSendPass sends camera data to server --- //
             NetworkClientSendPass,
-            // --- RenderConfigPass 2 receive visibility bitmap from server --- //
+            // --- NetworkClientRecvPass receives visibility bitmap from server --- //
             NetworkClientRecvPass,
-            // --- RenderConfigPass 3 decompresses buffers sent across network--- //
+            // --- DecompressionPass decompresses buffers sent across network--- //
             DecompressionPass,
-            // --- RenderConfigPass 4 transfers CPU information into GPU --- //
+            // --- MemoryTransferPassCPU_GPU transfers CPU information into GPU --- //
             MemoryTransferPassCPU_GPU,
-            // --- RenderConfigPass 5 performs prediction on visibility bitmap if frames are behind. --- //
+            // --- ClientGlobalIllumPass loads server indirect illumination into texture and
+            //     calculates direct illumination using given random light index --- //
+            ClientGlobalIllumPass,
+            // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
             PredictionPass,
-            // --- RenderConfigPass 6 makes use of the visibility bitmap to shade the sceneIndex. --- //
+            // --- VShadingPass makes use of the visibility bitmap to shade the sceneIndex. --- //
             VShadingPass,
-            // --- RenderConfigPass 7 just lets us select which pass to view on screen --- //
+            // --- CopyToOutputPass lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 8 temporally accumulates frames for denoising --- //
+            // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
             SimpleAccumulationPass,
-            // --- RenderConfigPass 9 creates a GBuffer on client side--- //
-            JitteredGBufferPass
         }
     };
 }

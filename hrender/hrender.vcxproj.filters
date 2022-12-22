@@ -107,6 +107,12 @@
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp">
+      <Filter>GIPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp">
+      <Filter>GIPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -225,6 +231,12 @@
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -268,6 +280,12 @@
     </Filter>
     <Filter Include="SharedUtils\Network">
       <UniqueIdentifier>{f8b1fd99-3c4e-435e-9d2d-d60c4bcde845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GIPasses">
+      <UniqueIdentifier>{268e75a5-a0a5-41fd-a722-706d6d57f4f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GIPasses\Shaders">
+      <UniqueIdentifier>{9a743fc0-9531-47c2-96cd-b03fee8e0295}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -372,6 +390,12 @@
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl">
       <Filter>CommonPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

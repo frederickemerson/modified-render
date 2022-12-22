@@ -31,9 +31,11 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
 
     // store index of texture(s) we will be transferring from
     if (mHybridMode) {
-        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
-        outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN];
+        //mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+        //mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+        //outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN];
+        mGIIndex = mpResManager->getTextureIndex("ServerGlobalIllum");
+        outputBuffer = new uint8_t[VIS_TEX_LEN];
     }
     else {
         mVShadingIndex = mpResManager->getTextureIndex("__V-shadingYUVServer");
@@ -61,19 +63,23 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
         return;
     }
     
-    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
-    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
+    /*Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);*/
+    Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
     // OLD METHOD: use if bugs start appearing
     //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
     // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
     // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
     // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
-    uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    uint8_t* pVisTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
+    for (int i = 3; i < VIS_TEX_LEN; i+=4) {
+        if (pVisTex[i] == 2) {
+            int x = 0;
+        }
+    }
     memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
-    memcpy(&outputBuffer[VIS_TEX_LEN], pAOTex, AO_TEX_LEN);
 
     std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 

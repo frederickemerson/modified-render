@@ -27,6 +27,12 @@ namespace {
 
     // The ambient occlusion texture to calculation occlusion factor
     const std::string kAOtex = "OffsetAmbientOcclusion";
+
+    // The direct illumination texture to use
+    const std::string kDirectIllumTex = "OffsetDirectIllum";
+
+    // The indirect illumination texture to use
+    const std::string kIndirectIllumTex = "OffsetIndirectIllum";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -100,12 +106,16 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gSkipDD"] = mSkipDD;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
+    rayVars["RayGenCB"]["gDecodeDI"] = mDecodeDI;
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
     rayVars["RayGenCB"]["gNumAORays"] = mNumAORays;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
+    // visTex and AOTex are unused; kept here just in case it is needed.
     rayVars["gVisibility"] = mpResManager->getTexture(kVisBuffer);
     rayVars["gAO"] = mpResManager->getTexture(kAOtex);
+    rayVars["gDirectIllum"] = mpResManager->getTexture(kDirectIllumTex);
+    rayVars["gIndirectIllum"] = mpResManager->getTexture(kIndirectIllumTex);
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 
@@ -118,14 +128,18 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     int dirty = 0;
 
     // Window is marked dirty if any of the configuration is changed.
-    dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
-    dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
-    dirty |= (int)pPassWindow->checkbox("Skip diffuse-diffuse interactions", mSkipDD, false);
-    dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
+    //dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
+    //dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
+    //dirty |= (int)pPassWindow->checkbox("Skip diffuse-diffuse interactions", mSkipDD, false);
+    //dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
+    dirty |= (int)pPassWindow->checkbox("Debug global illumination mode", mDecodeMode, false);
 
     if (mDecodeMode)
     {
-        dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
+        dirty |= (int)pPassWindow->checkbox(mDecodeDI ? 
+            "Displaying direct illumination map" : 
+            "Displaying indirect illumination map",
+            mDecodeDI);
     }
     else {
         dirty |= (int)pPassWindow->var("Ambient term", mAmbient, 0.0f, 1.0f, 0.01f);

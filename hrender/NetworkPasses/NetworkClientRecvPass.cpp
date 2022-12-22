@@ -1,9 +1,9 @@
 #include "NetworkClientRecvPass.h"
 #include <cmath>
 
-char* NetworkClientRecvPass::clientReadBuffer = new char[VIS_TEX_LEN + AO_TEX_LEN];
-char* NetworkClientRecvPass::clientWriteBuffer = new char[VIS_TEX_LEN + AO_TEX_LEN];
-char* NetworkClientRecvPass::intermediateBuffer = new char[VIS_TEX_LEN + AO_TEX_LEN];
+char* NetworkClientRecvPass::clientReadBuffer = new char[VIS_TEX_LEN];
+char* NetworkClientRecvPass::clientWriteBuffer = new char[VIS_TEX_LEN];
+char* NetworkClientRecvPass::intermediateBuffer = new char[VIS_TEX_LEN];
 
 void NetworkClientRecvPass::execute(RenderContext* pRenderContext)
 {
