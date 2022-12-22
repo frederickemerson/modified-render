@@ -72,7 +72,7 @@ protected:
     std::string             mDirectColorTex;
     std::string             mDirectAlbedoTex;
     std::string             mIndirectIllumTex = "ClientIndirectLighting";
-
+    
     // Various internal parameters
     uint32_t                mFrameCount = 0x8465u;        ///< A frame counter to vary random numbers over time
     int                     mTexWidth = -1;               ///< The width of the texture we render, based on the client

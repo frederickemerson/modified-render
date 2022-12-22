@@ -69,7 +69,7 @@ protected:
     // What texture should was ask the resource manager to store our result in?
     std::string             mIndirectAlbedoTex;
     std::string             mIndirectColorTex;
-
+    
     // Various internal parameters
     uint32_t                mFrameCount = 0x1337u;        ///< A frame counter to vary random numbers over time
     int                     mTexWidth = -1;               ///< The width of the texture we render, based on the client
