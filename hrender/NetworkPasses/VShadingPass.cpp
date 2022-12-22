@@ -27,6 +27,12 @@ namespace {
 
     // The ambient occlusion texture to calculation occlusion factor
     const std::string kAOtex = "OffsetAmbientOcclusion";
+
+    // The direct illumination texture to use
+    const std::string kDirectIllumTex = "OffsetDirectIllum";
+
+    // The indirect illumination texture to use
+    const std::string kIndirectIllumTex = "OffsetIndirectIllum";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -101,8 +107,11 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gNumAORays"] = mNumAORays;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
+    // visTex and AOTex are unused; kept here just in case it is needed.
     rayVars["gVisibility"] = mpResManager->getTexture(kVisBuffer);
     rayVars["gAO"] = mpResManager->getTexture(kAOtex);
+    rayVars["gDirectIllum"] = mpResManager->getTexture(kDirectIllumTex);
+    rayVars["gIndirectIllum"] = mpResManager->getTexture(kIndirectIllumTex);
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 

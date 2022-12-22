@@ -65,6 +65,9 @@ protected:
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
     int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
     int32_t mTexIndex = -1;                                  ///< index of texture to be extracted, obtained in initialization
+    int32_t mVShadingIndex = -1;                                    ///< index of v-shading, to be obtained in initialization only for remote
+    int32_t mGIIndex = -1;                                          ///< index of global illumination texture, to be obtained in initialization
+
     bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
 
     // initialise output buffer

@@ -33,10 +33,9 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
         mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
-        mSRTReflectionsIndex = mpResManager->requestTextureResource("SRTReflection");
-        outputBuffer = new uint8_t[VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN];
-        //mGIIndex = mpResManager->getTextureIndex("ServerIndirectLighting");
-        //outputBuffer = new uint8_t[VIS_TEX_LEN];
+        mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
+        outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN + REF_TEX_LEN];
+        //mGIIndex = mpResManager->getTextureIndex("ServerGlobalIllum");
     }
     else {
         mVShadingIndex = mpResManager->getTextureIndex("V-shadingServer");
@@ -71,7 +70,7 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
-
+    //Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
     // OLD METHOD: use if bugs start appearing
     //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
@@ -81,6 +80,7 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
     uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
     uint8_t* pSRTReflectionTex = srtReflectionTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    //uint8_t* pVisTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
     memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
     memcpy(&outputBuffer[VIS_TEX_LEN], pSRTReflectionTex, REF_TEX_LEN);

@@ -33,7 +33,6 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
         mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
-        mSRTReflectionsIndex = mpResManager->requestTextureResource("SRTReflection");
         //mGIIndex = mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
     }
     else {
@@ -70,7 +69,8 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     //Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
     Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
-   
+    //Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
+
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);

@@ -59,11 +59,11 @@ void VShadowsRayGen()
 {
     // Where is this ray on screen?
     uint2 launchIndex = DispatchRaysIndex().xy;
-    uint2 launchDim   = DispatchRaysDimensions().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
 
     // Load g-buffer data
-    float4 worldPos     = gPos[launchIndex];
-    float4 worldNorm    = gNorm[launchIndex];
+    float4 worldPos = gPos[launchIndex];
+    float4 worldNorm = gNorm[launchIndex];
     float4 difMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].x));
 
     // We're only doing Lambertian, but sometimes Falcor gives a black Lambertian color.
@@ -75,7 +75,7 @@ void VShadowsRayGen()
     float4 emissiveColor = unpackUnorm4x8(asuint(gTexData[launchIndex].z));
 
     // If we don't hit any geometry, our difuse material contains our background color.
-    float3 shadeColor = difMatlColor.rgb ;
+    float3 shadeColor = difMatlColor.rgb;
 
     if (!gDecodeMode)
     {
@@ -121,25 +121,13 @@ void VShadowsRayGen()
 
         // Physically based Lambertian term is albedo/pi
         shadeColor *= difMatlColor.rgb / 3.141592f;
+    }
 
-        float4 finalColor = float4(shadeColor, 1.0f);
-
-        // Calculate AO factor if enabled   
-        if (!gSkipAO)
-        {
-            uint2 actualIndex = uint2(launchIndex.x, launchIndex.y >> 2);
-            uint shiftFactor = 24 - 8 * (launchIndex.y % 4);
-            uint numOfUnoccludedRays = (gAO[actualIndex] & (0xFF << shiftFactor));
-            
-            float AOfactor = clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
-            finalColor *= AOfactor;
-        }
-    
-        // Save out our AO color    
-        float AOfactor = gSkipAO ? 1.0f : clamp((float) gAO[launchIndex] / gNumAORays, 0.0, 1.0);
-        shadeColor *= AOfactor;
-        gOutput[launchIndex] = float4(shadeColor, 1.0f) + emissiveColor;
-    } 
+    // Save out our AO color    
+    float AOfactor = gSkipAO ? 1.0f : clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+    shadeColor *= AOfactor;
+    gOutput[launchIndex] = float4(shadeColor, 1.0f) + emissiveColor;
+}
     else
     {
         if (gDecodeVis)
@@ -148,9 +136,9 @@ void VShadowsRayGen()
             ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
 
-        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
+    gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
 
-        //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
+    //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
 
     }
 

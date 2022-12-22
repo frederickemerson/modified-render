@@ -285,6 +285,12 @@
     <ClInclude Include="SVGFPasses\DistrSVGFPass.h">
       <Filter>SVGFPasses\DistrSVGF</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -468,6 +474,12 @@
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl">
       <Filter>CommonPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
