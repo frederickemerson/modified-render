@@ -40,7 +40,10 @@ bool GGXServerGlobalIllumPass::initialize(RenderContext* pRenderContext, Resourc
     // Stash a copy of our resource manager so we can get rendering resources
     mpResManager = pResManager;
     mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "__TextureData" });
-    mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+
+    // Indirect Albedo is stored in the RGB portion, alpha portion stores light index for direct illumination.
+    mpResManager->requestTextureResource(mIndirectAlbedoTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("OutIndirectColor", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     //mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap); might not need, need to look into it
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
@@ -101,10 +104,11 @@ void GGXServerGlobalIllumPass::renderGui(Gui::Window* pPassWindow)
 void GGXServerGlobalIllumPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputTexName, float4(0.0f));
+    Texture::SharedPtr pAlbedoTex = mpResManager->getClearedTexture(mIndirectAlbedoTex, float4(0.0f));
+    Texture::SharedPtr pColorTex = mpResManager->getClearedTexture(mIndirectColorTex, float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
-    if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
+    if (!pAlbedoTex || !pColorTex || !mpRays || !mpRays->readyToRender()) return;
 
     // Set our variables into the global HLSL namespace
     auto globalVars = mpRays->getRayVars();
@@ -114,12 +118,13 @@ void GGXServerGlobalIllumPass::execute(RenderContext* pRenderContext)
     globalVars["GlobalCB"]["gDoDirectGI"]   = mDoDirectGI;
     globalVars["GlobalCB"]["gMaxDepth"]     = mUserSpecifiedRayDepth;
     globalVars["GlobalCB"]["gEmitMult"]     = 1.0f;
-    globalVars["gPos"]         = mpResManager->getTexture("WorldPosition");
-    globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
-    globalVars["gTexData"]     = mpResManager->getTexture("__TextureData");
-    globalVars["gOutput"]      = pDstTex;
+    globalVars["gPos"]                      = mpResManager->getTexture("WorldPosition");
+    globalVars["gNorm"]                     = mpResManager->getTexture("WorldNormal");
+    globalVars["gTexData"]                  = mpResManager->getTexture("__TextureData");
+    globalVars["gColorOutput"]              = pColorTex;
+    globalVars["gAlbedoOutput"]             = pAlbedoTex;
     globalVars["gEnvMap"]      = mpResManager->getTexture(ResourceManager::kEnvironmentMap); // already in tex, modify to use it.
 
     // Shoot our rays and shade our primary hit points
-    mpRays->execute( pRenderContext, uint2(pDstTex->getWidth(), pDstTex->getHeight()));
+    mpRays->execute( pRenderContext, uint2(pColorTex->getWidth(), pColorTex->getHeight()));
 }

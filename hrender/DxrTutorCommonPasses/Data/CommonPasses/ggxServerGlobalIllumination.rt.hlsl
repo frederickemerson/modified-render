@@ -99,6 +99,9 @@ void SimpleDiffuseGIRayGen()
     // Initialize our random number generator
     uint randSeed        = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
 
+    // Store our indirect color computation
+    float3 indirectColor, indirectAlbedo;
+    
     // Do shading, if we have geometry here (otherwise, output the background color)
     if (isGeometryValid)
     {
@@ -132,31 +135,22 @@ void SimpleDiffuseGIRayGen()
             lightToSample = min(int(nextRand(randSeed) * lightCount), lightCount - 1);
         }
             
-        shadeColor = float3(0.0f);
-        
         // (Optionally) do indirect lighting for global illumination
         if (gDoIndirectGI && (gMaxDepth > 0))
         {
             // We have to raytrace for indirect illumination, so we send the computed indirect colour to the client.
             // Compute the incoming indirect illumination either from the diffuse or GGX lobe
-            float3 indirectColor, indirectAlbedo;
+
             ggxIndirect(randSeed, worldPos.xyz, worldNorm.xyz, noMapN,
                 V, difMatlColor.rgb, specMatlColor.rgb, roughness, 0, indirectColor, indirectAlbedo);
             
             // Don't add if there are any nan values
-            float3 addColor = indirectColor * indirectAlbedo;
-            shadeColor += any(isnan(addColor)) ? float3(0.0f) : addColor;
+            indirectColor = any(isnan(indirectColor)) ? float3(0.0f) : indirectColor;
         }
             
     }
-    
-    // Since we didn't do a good job above catching NaN's, div by 0, infs, etc.,
-    //    zero out samples that would blow up our frame buffer.  Note:  You can and should
-    //    do better, but the code gets more complex with all error checking conditions.
-    shadeColor = any(isnan(shadeColor)) ? float3(0.0f) : shadeColor;
-    shadeColor *= 255.0;
-    
-    // Store out the color of this shaded pixel
-    gOutput[launchIndex] = uint4(uint3(shadeColor), lightToSample);
 
+    // Store out the color of this shaded pixel
+    gColorOutput[launchIndex] = float4(indirectColor, 1.0);
+    gAlbedoOutput[launchIndex] = float4(indirectAlbedo, lightToSample);
 }

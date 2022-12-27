@@ -30,15 +30,18 @@ public:
     using SharedPtr = std::shared_ptr<GGXServerGlobalIllumPass>;
     using SharedConstPtr = std::shared_ptr<const GGXServerGlobalIllumPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new GGXServerGlobalIllumPass(outBuf, texWidth, texHeight));
+    static SharedPtr create(const std::string& outColor, const std::string& outAlbedo,
+        int texWidth = -1, int texHeight = -1) {
+        return SharedPtr(new GGXServerGlobalIllumPass(outColor, outAlbedo, texWidth, texHeight));
     }
     virtual ~GGXServerGlobalIllumPass() = default;
 
 protected:
-    GGXServerGlobalIllumPass(const std::string &outBuf, int texWidth = -1, int texHeight = -1) :
+    GGXServerGlobalIllumPass(const std::string& outColor, const std::string& outAlbedo,
+        int texWidth = -1, int texHeight = -1) :
         ::RenderPass("Server Global Illum., GGX BRDF", "GGX Global Illumination Options") { 
-        mOutputTexName = outBuf; mTexWidth = texWidth; mTexHeight = texHeight; 
+        mIndirectColorTex = outColor; mIndirectAlbedoTex = outAlbedo;
+        mTexWidth = texWidth; mTexHeight = texHeight;
     }
 
     // Implementation of RenderPass interface
@@ -64,8 +67,9 @@ protected:
 
 
     // What texture should was ask the resource manager to store our result in?
-    std::string             mOutputTexName;
-    
+    std::string             mIndirectAlbedoTex;
+    std::string             mIndirectColorTex;
+
     // Various internal parameters
     uint32_t                mFrameCount = 0x1337u;        ///< A frame counter to vary random numbers over time
     int                     mTexWidth = -1;               ///< The width of the texture we render, based on the client

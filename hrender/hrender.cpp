@@ -188,7 +188,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, AmbientOcclusionPass::create("AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ServerGlobalIllumPass) {
-            pipeline->setPass(i, GGXServerGlobalIllumPass::create("OutIndirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
+            pipeline->setPass(i, GGXServerGlobalIllumPass::create("OutIndirectColor", "OutIndirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ClientGlobalIllumPass) {
             pipeline->setPass(i, GGXClientGlobalIllumPass::create("OutDirectColor", "IndirectIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
