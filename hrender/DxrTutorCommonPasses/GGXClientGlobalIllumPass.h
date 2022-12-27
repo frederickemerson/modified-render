@@ -30,16 +30,18 @@ public:
     using SharedPtr = std::shared_ptr<GGXClientGlobalIllumPass>;
     using SharedConstPtr = std::shared_ptr<const GGXClientGlobalIllumPass>;
 
-    static SharedPtr create(const std::string& outDirectIllum, const std::string& outIndirectIllum, int texWidth = -1, int texHeight = -1) {
-        return SharedPtr(new GGXClientGlobalIllumPass(outDirectIllum, outIndirectIllum, texWidth, texHeight));
+    static SharedPtr create(const std::string& outDirectColor, const std::string& outDirectAlbedo,
+        int texWidth = -1, int texHeight = -1) {
+        return SharedPtr(new GGXClientGlobalIllumPass(outDirectColor, outDirectAlbedo, texWidth, texHeight));
     }
     virtual ~GGXClientGlobalIllumPass() = default;
 
 protected:
-    GGXClientGlobalIllumPass(const std::string& outDirectIllum, const std::string& outIndirectIllum, int texWidth = -1, int texHeight = -1) :
+    GGXClientGlobalIllumPass(const std::string& outDirectColor, const std::string& outDirectAlbedo,
+        int texWidth = -1, int texHeight = -1) :
         ::RenderPass("Client Global Illum., GGX BRDF", "GGX Global Illumination Options") {
-        mDirectIllumTex = outDirectIllum; 
-        mIndirectIllumTex = outIndirectIllum;
+        mDirectColorTex = outDirectColor;
+        mDirectAlbedoTex = outDirectAlbedo;
         mTexWidth = texWidth;
         mTexHeight = texHeight;
     }
@@ -67,9 +69,10 @@ protected:
 
 
     // What texture should was ask the resource manager to store our result in?
-    std::string             mDirectIllumTex;
-    std::string             mIndirectIllumTex;
-    
+    std::string             mDirectColorTex;
+    std::string             mDirectAlbedoTex;
+    std::string             mIndirectIllumTex = "IndirectLighting";
+
     // Various internal parameters
     uint32_t                mFrameCount = 0x8465u;        ///< A frame counter to vary random numbers over time
     int                     mTexWidth = -1;               ///< The width of the texture we render, based on the client

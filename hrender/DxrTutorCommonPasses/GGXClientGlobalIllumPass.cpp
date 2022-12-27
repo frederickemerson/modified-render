@@ -33,7 +33,8 @@ bool GGXClientGlobalIllumPass::initialize(RenderContext* pRenderContext, Resourc
     mpResManager = pResManager;
     mpResManager->requestTextureResources({ "WorldPosition", "WorldNormal", "__TextureData" });
     mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
-    mpResManager->requestTextureResource(mDirectIllumTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource(mDirectColorTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource(mDirectAlbedoTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     mpResManager->requestTextureResource(mIndirectIllumTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     //mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap);
 
@@ -71,11 +72,12 @@ void GGXClientGlobalIllumPass::renderGui(Gui::Window* pPassWindow)
 void GGXClientGlobalIllumPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
-    Texture::SharedPtr pDirectIllumDstTex = mpResManager->getClearedTexture(mDirectIllumTex, float4(0.0f));
-    Texture::SharedPtr pIndirectIllumDstTex = mpResManager->getClearedTexture(mIndirectIllumTex, float4(0.0f));
+    Texture::SharedPtr pDirectColorTex = mpResManager->getClearedTexture(mDirectColorTex, float4(0.0f));
+    Texture::SharedPtr pDirectAlbedoTex = mpResManager->getClearedTexture(mDirectAlbedoTex, float4(0.0f));
+    Texture::SharedPtr pIndirectLightTex = mpResManager->getClearedTexture(mIndirectIllumTex, float4(0.0f));
 
     // Do we have all the resources we need to render?  If not, return
-    if (!pDirectIllumDstTex || !pIndirectIllumDstTex || !mpRays || !mpRays->readyToRender()) return;
+    if (!pDirectColorTex || !pDirectAlbedoTex || !pIndirectLightTex || !mpRays || !mpRays->readyToRender()) return;
 
     // Set our variables into the global HLSL namespace
     auto globalVars = mpRays->getRayVars();
@@ -87,10 +89,11 @@ void GGXClientGlobalIllumPass::execute(RenderContext* pRenderContext)
     globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
     globalVars["gTexData"]     = mpResManager->getTexture("__TextureData");
     globalVars["gGIData"]      = mpResManager->getTexture("ClientGlobalIllum");
-    globalVars["gDirectIllumOut"] = pDirectIllumDstTex;
-    globalVars["gIndirectIllumOut"] = pIndirectIllumDstTex;
+    globalVars["gDirectColorOutput"] = pDirectColorTex;
+    globalVars["gDirectAlbedoOutput"] = pDirectAlbedoTex;
+    globalVars["gIndirectLightOut"] = pIndirectLightTex;
     globalVars["gEnvMap"]      = mpResManager->getTexture(ResourceManager::kEnvironmentMap);
 
     // Shoot our rays and shade our primary hit points
-    mpRays->execute( pRenderContext, uint2(pDirectIllumDstTex->getWidth(), pDirectIllumDstTex->getHeight()));
+    mpRays->execute( pRenderContext, uint2(pDirectColorTex->getWidth(), pDirectColorTex->getHeight()));
 }

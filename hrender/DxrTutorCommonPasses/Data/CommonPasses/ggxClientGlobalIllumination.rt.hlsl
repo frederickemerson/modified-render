@@ -38,8 +38,9 @@ shared Texture2D<float4>   gNorm;
 shared Texture2D<float4>   gTexData;
 shared Texture2D<float4>   gEnvMap;
 shared Texture2D<uint4>    gGIData;
-shared RWTexture2D<float4> gDirectIllumOut;
-shared RWTexture2D<float4> gIndirectIllumOut;
+shared RWTexture2D<float4> gDirectColorOutput;
+shared RWTexture2D<float4> gDirectAlbedoOutput;
+shared RWTexture2D<float4> gIndirectLightOut;
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "ggxGlobalIlluminationUtils.hlsli"
@@ -113,8 +114,10 @@ void SimpleDiffuseGIRayGen()
     float roughness = specMatlColor.a * specMatlColor.a;
     float3 V        = normalize(gScene.camera.getPosition() - worldPos.xyz);
 
-    // Direct color (shadows) has to be computed. Indirect lighting has been computed on the server.
-    float3 directColor = float3(0.0f);
+    // Compute the incoming direct illumination from a random light, and albedo of the hit spot
+    float3 outDirectColor, outDirectAlbedo;
+    
+    // Direct color and albedo have to be computed. Indirect lighting has been computed on the server.
     float3 indirectColor = float3(gGIData[launchIndex].rgb) / 255.0f;
     
     // Initialize our random number generator
@@ -123,31 +126,19 @@ void SimpleDiffuseGIRayGen()
     // Do shading, if we have geoemtry here (otherwise, output the background color)
     if (isGeometryValid)
     {
-        // Add any emissive color from primary rays
-        directColor = gEmitMult * pixelEmissive.rgb;
-
         // Do explicit direct lighting to a random light in the scene
         int lightToSample = gGIData[launchIndex].a;
-        
-        // Compute the incoming direct illumination from a random light, and albedo of the hit spot
-        float3 outDirectColor, outDirectAlbedo;
-           
+          
         ggxDirectWithIdx(lightToSample, worldPos.xyz, worldNorm.xyz, V, difMatlColor.rgb, specMatlColor.rgb, roughness,
                     outDirectColor, outDirectAlbedo);
             
-        float3 addColor = outDirectColor * outDirectAlbedo;
-
-        directColor += addColor;        
+        outDirectColor = any(isnan(indirectColor)) ? float3(0.0f) : outDirectColor;
     }
-    
-    // Since we didn't do a good job above catching NaN's, div by 0, infs, etc.,
-    //    zero out samples that would blow up our frame buffer.  Note:  You can and should
-    //    do better, but the code gets more complex with all error checking conditions.
-    directColor = any(isnan(directColor)) ? float3(0.0) : directColor;
 
-    // We output two textures, one each for direct and indirect illumination.
-    gDirectIllumOut[launchIndex] = float4(directColor, 1.0f);
-    gIndirectIllumOut[launchIndex] = float4(indirectColor, 1.0f);
+    // We output direct color and albedo separately for the SVGF pass.
+    gDirectColorOutput[launchIndex] = float4(outDirectColor, 1.0);
+    gDirectAlbedoOutput[launchIndex] = float4(outDirectAlbedo, 1.0);
+    gIndirectLightOut[launchIndex] = float4(indirectColor, 1.0f);
 }
 
 

@@ -191,13 +191,13 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, GGXServerGlobalIllumPass::create("OutIndirectColor", "OutIndirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ClientGlobalIllumPass) {
-            pipeline->setPass(i, GGXClientGlobalIllumPass::create("OutDirectColor", "IndirectIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
+            pipeline->setPass(i, GGXClientGlobalIllumPass::create("OutDirectColor", "OutDirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == SVGFServerPass) {
             pipeline->setPass(i, SVGFServerPass::create("OutIndirectColor", "OutIndirectAlbedo"));
         }
         else if (renderConfiguration.passOrder[i] == SVGFClientPass) {
-            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "IndirectIllum", "V-shading"));
+            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "DirectLighting"));
         }
     }
 }
