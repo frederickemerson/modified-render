@@ -199,7 +199,7 @@ void runDebug()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         1, // sceneIndex
-        13,
+        9,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -219,7 +219,7 @@ void runDebug()
             // --- RenderConfigPass 3 transfers GPU information into CPU --- //
             //MemoryTransferPassGPU_CPU,
             // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-           // CompressionPass,
+            // CompressionPass,
             // --- RenderConfigPass 5 simulates delay across network --- //
             //SimulateDelayPass,
             // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
@@ -242,7 +242,7 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
         });
@@ -290,7 +290,6 @@ void runServer()
             VisibilityPass,
             ScreenSpaceReflectionPass,
             ServerRayTracingReflectionPass,
-            // --- TODO: create a new buffer to send back the texture "SRTReflection" --- //
             MemoryTransferPassGPU_CPU,
             //CompressionPass,
             NetworkServerSendPass
@@ -333,7 +332,7 @@ void runClient()
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
 
     // 003 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.129", DEFAULT_PORT_UDP);
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.129", DEFAULT_PORT_UDP);
     // 004 SERVER
     //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.73", DEFAULT_PORT_UDP);
     // 005 SERVER
@@ -357,8 +356,8 @@ void runClient()
                 NetworkClientRecvPass,
                 //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
-                ScreenSpaceReflectionPass,
                 PredictionPass,
+                ScreenSpaceReflectionPass,
                 VShadingPass,
                 ReflectionCompositePass,
                 CopyToOutputPass,
