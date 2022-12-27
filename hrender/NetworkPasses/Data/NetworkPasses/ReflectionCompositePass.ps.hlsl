@@ -18,7 +18,7 @@
 
 
 Texture2D<float4> gSSRColor;
-Texture2D<float4> gSRTColor;
+Texture2D<float3> gSRTColorRGB;
 Texture2D<float4> gVshading;
 
 cbuffer RCCB
@@ -40,9 +40,10 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	// Load VColor, SSRColor and SRTColor
 	float4 VColor = gVshading[pixelPos];
 	float4 SSRColor = gSSRColor[pixelPos];
-	float4 SRTColor = gSRTColor[pixelPos];
-	float3 shadeColor = VColor.rgb + SSRColor.rgb + 0.5f*SRTColor.rgb;
 
+	float4 SRTColor = float4 (gSRTColorRGB[pixelPos], 1.0f);
+	float3 shadeColor = VColor.rgb + SSRColor.rgb + 0.5f*SRTColor.rgb;
+	//float3 shadeColor = VColor.rgb + SSRColor.rgb;
 
 	if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
 	else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;

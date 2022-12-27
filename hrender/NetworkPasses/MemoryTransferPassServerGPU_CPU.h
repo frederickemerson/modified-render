@@ -37,7 +37,7 @@ public:
 
     // get output buffer on CPU memory after memory transfer
     char* getOutputBuffer() { return (char*)outputBuffer; }
-    int getOutputBufferSize() { return VIS_TEX_LEN; }
+    int getOutputBufferSize() { return VIS_TEX_LEN + REF_TEX_LEN; } // vistex and reflections
 
 protected:
     MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
@@ -56,6 +56,7 @@ protected:
 
     // index of textures we will be accessing
     int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
 
     // output on CPU memory and function to get it
     uint8_t* outputBuffer;

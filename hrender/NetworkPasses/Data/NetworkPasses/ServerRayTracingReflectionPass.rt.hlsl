@@ -45,7 +45,7 @@ Texture2D<float4>   gTexData;
 Texture2D<float4>   gVshading;
 Texture2D<uint>     gVisibility;
 Texture2D<uint>     gRaymask;
-RWTexture2D<float4> gOutput;
+RWTexture2D<float3> gOutput;
 
 float3 shootGGXray(float3 origin, float3 direction, float minT, float maxT)
 {
@@ -166,7 +166,7 @@ void GGXRayGen()
                 float3 V = normalize(gScene.camera.getPosition() - worldPos.xyz);
                 float3 H = normalize(V + L);
                 float3 R = normalize(reflect(V, worldNorm.xyz));
-                float roughness = specMatlColor.g;
+                float roughness = specMatlColor.a * specMatlColor.a;
                 float NdotL = saturate(dot(worldNorm.xyz, L));
                 float NdotH = saturate(dot(worldNorm.xyz, H));
                 float LdotH = saturate(dot(L, H));
@@ -196,5 +196,5 @@ void GGXRayGen()
 
     //if(gRaymask[launchIndex] == 0) gOutput[launchIndex] = float4(0, 1, 0, 1.0f);
    // else if(gRaymask[launchIndex] == 1) gOutput[launchIndex] = float4(1, 0, 0, 1.0f);
-   gOutput[launchIndex] = float4(shadeColor, 1.0f);
+   gOutput[launchIndex] =  shadeColor;
 }

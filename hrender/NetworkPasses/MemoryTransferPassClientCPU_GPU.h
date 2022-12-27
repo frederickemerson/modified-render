@@ -59,6 +59,7 @@ protected:
 
     // index of textures we will be accessing
     int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
+    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;

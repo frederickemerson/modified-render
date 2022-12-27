@@ -31,6 +31,7 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
 
     // store index of texture(s) we will be transferring to
     mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+    mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
 
     return true;
 }
@@ -46,11 +47,15 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
 {
     // Load visibility texture from GPU to CPU
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
 
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
     visTex->apiInitPub(mGetInputBuffer(), true);
+    char* pReflectionTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+    srtReflectionTex->apiInitPub(pReflectionTex, true);
+
     Regression::addNonSeqFrame((int*)mGetInputBuffer());
 }
 

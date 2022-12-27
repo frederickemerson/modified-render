@@ -355,6 +355,9 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

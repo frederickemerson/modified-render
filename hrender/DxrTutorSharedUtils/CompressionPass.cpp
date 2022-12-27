@@ -29,9 +29,9 @@
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    int sizeToAllocateOutputBuffer = RenderConfig::getTotalSize();
-    outputBuffer = new char[RenderConfig::getTotalSize()];
-    outputBufferNVENC = new char[RenderConfig::getTotalSize()];
+    int sizeToAllocateOutputBuffer = VIS_TEX_LEN + REF_TEX_LEN;
+    outputBuffer = new char[sizeToAllocateOutputBuffer];
+    outputBufferNVENC = new char[sizeToAllocateOutputBuffer];
     
     if (mMode == Mode::Decompression) {
         initialiseDecoder();
@@ -266,64 +266,55 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
     // ===================== COMPRESSION ===================== //
     if (mMode == Mode::Compression) {
         // Loop over all textures, compress each one
-        for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
-            {
-                std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
+        std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 
-                // Parameters for Compression
-                const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
+        // Parameters for Compression
+        const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
+        int sourceBufferSize = VIS_TEX_LEN + REF_TEX_LEN; // vistex + reflections
 
-                // Compress buffer
-                int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
-                if (compressedSize == 0) {
-                    OutputDebugString(L"\nError: Compression failed\n");
-                }
-
-                // Update size of compressed buffer
-                outputBufferSize = compressedSize;
-
-                // Update location of buffer
-                //RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
-
-                char buffer[140];
-                sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
-                OutputDebugStringA(buffer);
-            }
+        // Compress buffer
+        int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
+        if (compressedSize == 0) {
+            OutputDebugString(L"\nError: Compression failed\n");
         }
+
+        // Update size of compressed buffer
+        outputBufferSize = compressedSize;
+
+        // Update location of buffer
+        //RenderConfig::mConfig[i].compressionPassOutputLocation = outputBuffer;
+
+        char buffer[140];
+        sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
+        OutputDebugStringA(buffer);
     }
 
 
     // ===================== DECOMPRESSION ===================== //
     else { // mMode == Mode::Decompression
-        // Loop over all buffers, decompress each one
-        for (int i = 0; i < RenderConfig::mConfig.size(); i++) {
-            {
-                std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
-                // Parameters for Decompression
-                const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = mGetInputBufferSize();
-                int maxDecompressedSize = RenderConfig::BufferTypeToSize(RenderConfig::mConfig[i].type);
+        std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
+        // Parameters for Decompression
+        const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
+        int sourceBufferSize = mGetInputBufferSize();
+        int maxDecompressedSize = VIS_TEX_LEN + REF_TEX_LEN; // vistex + reflections
 
-                if (sourceBufferSize == maxDecompressedSize) {
-                    OutputDebugString(L"Skipping decompression, texture didnt change");
-                    return;
-                }
-
-                // Decompress buffer
-                int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
-                if (decompressedSize <= 0) {
-                    OutputDebugString(L"\nError: Decompression failed\n");
-                }
-
-                char buffer[140];
-                sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, decompressedSize);
-                OutputDebugStringA(buffer);
-
-                // Update size of decompressed buffer
-                outputBufferSize = decompressedSize;
-            }
+        if (sourceBufferSize == maxDecompressedSize) {
+            OutputDebugString(L"Skipping decompression, texture didnt change");
+            return;
         }
+
+        // Decompress buffer
+        int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
+        if (decompressedSize <= 0) {
+            OutputDebugString(L"\nError: Decompression failed\n");
+        }
+
+        char buffer[140];
+        sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, decompressedSize);
+        OutputDebugStringA(buffer);
+
+        // Update size of decompressed buffer
+        outputBufferSize = decompressedSize;
     }
 }
 
