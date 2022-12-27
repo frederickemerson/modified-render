@@ -48,6 +48,8 @@
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/GGXClientGlobalIllumPass.h"
 #include "DxrTutorCommonPasses/GGXServerGlobalIllumPass.h"
+#include "SVGFPasses/SVGFServerPass.h"
+#include "SVGFPasses/SVGFClientPass.h"
 
 // Available scenes and corresponding environment maps
 std::string defaultSceneNames[] = {
@@ -186,10 +188,16 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, AmbientOcclusionPass::create("AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ServerGlobalIllumPass) {
-            pipeline->setPass(i, GGXServerGlobalIllumPass::create("ServerGlobalIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
+            pipeline->setPass(i, GGXServerGlobalIllumPass::create("OutIndirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == ClientGlobalIllumPass) {
-            pipeline->setPass(i, GGXClientGlobalIllumPass::create("DirectIllum", "IndirectIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
+            pipeline->setPass(i, GGXClientGlobalIllumPass::create("OutDirectColor", "IndirectIllum", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
+        else if (renderConfiguration.passOrder[i] == SVGFServerPass) {
+            pipeline->setPass(i, SVGFServerPass::create("OutIndirectColor", "OutIndirectAlbedo"));
+        }
+        else if (renderConfiguration.passOrder[i] == SVGFClientPass) {
+            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "IndirectIllum", "V-shading"));
         }
     }
 }
@@ -289,7 +297,7 @@ void runServer()
         //    RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
         //    });
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -340,7 +348,7 @@ void runClient()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -432,7 +440,7 @@ RenderConfiguration getRenderConfigServerHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        6,
+        7,
         { // Array of RenderConfigPass
             // --- NetworkServerRecvPass receives camera data from client --- //
             NetworkServerRecvPass,
@@ -445,6 +453,8 @@ RenderConfiguration getRenderConfigServerHybrid() {
             // --- ServerGlobalIllumPass computes indirect illumination color and
             //     selects random light index to be used for direct illumination. --- //
             ServerGlobalIllumPass,
+            // --- SVGFServerPass performs denoising on indirect illumination.
+            SVGFServerPass,
             // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
             // --- CompressionPass compresses buffers to be sent across network --- //
@@ -485,7 +495,7 @@ RenderConfiguration getRenderConfigClientHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        10,
+        11,
         { // Array of RenderConfigPass
             // --- JitteredGBufferPass creates a GBuffer on client side--- //
             JitteredGBufferPass,
@@ -500,9 +510,11 @@ RenderConfiguration getRenderConfigClientHybrid() {
             // --- ClientGlobalIllumPass loads server indirect illumination into texture and
             //     calculates direct illumination using given random light index --- //
             ClientGlobalIllumPass,
+            // --- SVGFClientPass performs denoising on direct illumination
+            SVGFClientPass,
             // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
             PredictionPass,
-            // --- VShadingPass makes use of the visibility bitmap to shade the sceneIndex. --- //
+            // --- VShadingPass modulates the direct and indirect illumination. --- //
             VShadingPass,
             // --- CopyToOutputPass lets us select which pass to view on screen --- //
             CopyToOutputPass,

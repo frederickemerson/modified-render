@@ -29,7 +29,7 @@
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    int sizeToAllocateOutputBuffer = VIS_TEX_LEN + AO_TEX_LEN;
+    int sizeToAllocateOutputBuffer = VIS_TEX_LEN;
     outputBuffer = new char[sizeToAllocateOutputBuffer];
     outputBufferNVENC = new char[sizeToAllocateOutputBuffer];
     
@@ -50,11 +50,11 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
         if (mHybridMode) {
             initialiseH264Decoders();
             // 24 out of 32 bits are unused for AO, so we just keep them as 0.
-            uint8_t* pOutputBuffer = (uint8_t*)outputBuffer + VIS_TEX_LEN;
-            for (int i = 0; i < VIS_TEX_LEN; i++) {
-                if (i % 4 == 0) continue;
-                pOutputBuffer[i] = 0;
-            }
+            //uint8_t* pOutputBuffer = (uint8_t*)outputBuffer + VIS_TEX_LEN;
+            //for (int i = 0; i < VIS_TEX_LEN; i++) {
+            //    if (i % 4 == 0) continue;
+            //    pOutputBuffer[i] = 0;
+            //}
 
         }
         else {
@@ -630,6 +630,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Update size of decompressed buffer
                 outputBufferSize = decompressedSize;
+
             }
         }
     }

@@ -53,7 +53,9 @@ enum RenderConfigPass : uint8_t {
     YUVToRGBAPass,
     AmbientOcclusionPass,
     ServerGlobalIllumPass,
-    ClientGlobalIllumPass
+    ClientGlobalIllumPass,
+    SVGFServerPass,
+    SVGFClientPass,
 };
 
 enum class RenderMode : uint8_t {

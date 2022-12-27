@@ -52,6 +52,11 @@
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
+    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
+    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFClientPass.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFServerPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +101,11 @@
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
+    <ClInclude Include="SVGFPasses\SVGFClientPass.h" />
+    <ClInclude Include="SVGFPasses\SVGFPass.h" />
+    <ClInclude Include="SVGFPasses\SVGFServerPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +151,27 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientReproject.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerReproject.ps.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>

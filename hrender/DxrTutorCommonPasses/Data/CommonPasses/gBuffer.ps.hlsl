@@ -21,6 +21,13 @@ import Scene.Raster;            // Imports ShaderCommon and DefaultVS, plus mate
 import Scene.Scene;
 
 #include "packingUtils.hlsli"
+#include "../../../SVGFPasses/Data/SVGFPasses/svgfGBufData.hlsli"
+
+// Constant buffer passed down from our C++ code in SVGFPass.cpp
+cbuffer GBufCB
+{
+    float4 gBufSize; // xy = (size of output buf), zw = 1.0/(size of output buf)
+};
 
 struct GBuffer
 {
@@ -32,7 +39,36 @@ struct GBuffer
     // b: emissive.r,   emissive.g,     emissive.b,         doubleSided ? 1.0f : 0.0f
     // a: IoR,          metallic,       specular trans,     eta
     float4 texData  : SV_Target2;
+    // SVGF-specific buffer containing linear z, max z-derivs, last frame's z, obj-space normal
+    // x: linear Z,     y: max linZ-deriv,  z: last frame's z,  w: obj-space normal oct format (2 x uint16 packed in a 32-bit float)
+    float4 svgfLinZ : SV_Target3;
+    // SVGF-specific buffer containing motion vector and fwidth of pos & normal
+    // xy: Motion vector,   z: fwidth of position,  w: fwidth of normal
+    float4 svgfMoVec : SV_Target4;
+    // SVGF-specific buffer containing duplicate data that allows reducing memory traffic in some passes
+    // x:  world-space normal,  y: linear z,    z: max linZ-deriv,  w: dummy
+    float4 svgfCompact : SV_Target5;
 };
+
+// A simple utility to convert a float to a 2-component octohedral representation packed into one uint
+uint dirToOct(float3 normal)
+{
+    float2 p = normal.xy * (1.0 / dot(abs(normal), 1.0.xxx));
+    float2 e = normal.z > 0.0 ? p : (1.0 - abs(p.yx)) * (step(0.0, p) * 2.0 - (float2) (1.0));
+    return (asuint(f32tof16(e.y)) << 16) + (asuint(f32tof16(e.x)));
+}
+
+// Take current clip position, last frame pixel position and compute a motion vector
+float2 calcMotionVector(float4 prevClipPos, float2 currentPixelPos, float2 invFrameSize)
+{
+    float2 prevPosNDC = (prevClipPos.xy / prevClipPos.w) * float2(0.5, -0.5) + float2(0.5, 0.5);
+    float2 motionVec = prevPosNDC - (currentPixelPos * invFrameSize);
+
+    // Guard against inf/nan due to projection by w <= 0.
+    const float epsilon = 1e-5f;
+    motionVec = (prevClipPos.w < epsilon) ? float2(0, 0) : motionVec;
+    return motionVec;
+}
 
 // Our main entry point for the g-buffer fragment shader.
 GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
@@ -49,12 +85,34 @@ GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
     if (NdotV <= 0.0f && hitPt.isDoubleSided())
         hitPt.N = -hitPt.N;
 
+    // Compute data needed for SVGF
+
+    // The 'linearZ' buffer
+    float linearZ = vsOut.base.posH.z * vsOut.base.posH.w;
+    float maxChangeZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
+    float objNorm = asfloat(dirToOct(normalize(hitPt.N))); // Using world normal instead
+    float4 svgfLinearZOut = float4(linearZ, maxChangeZ, vsOut.base.prevPosH.z, objNorm);
+
+    // The 'motion vector' buffer
+    float2 svgfMotionVec = calcMotionVector(vsOut.base.prevPosH, vsOut.base.posH.xy, gBufSize.zw) +
+                           float2(gScene.camera.getJitterX(), -gScene.camera.getJitterY());
+    float2 posNormFWidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
+    float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
+    
     // Dump out our G buffer channels
     GBuffer gBufOut;
     gBufOut.wsPos    = float4(hitPt.posW, 1.f);
     gBufOut.wsNorm   = float4(hitPt.N, length(hitPt.posW - cameraPosW));
     // Use the function in packingUtils.hlsli to extract the texture data in a compact format
     gBufOut.texData = asfloat(packTextureData(hitPt));
+    
+    // SVGF data
+    gBufOut.svgfLinZ = svgfLinearZOut;
+    gBufOut.svgfMoVec = svgfMotionVecOut;
+
+    // A compacted buffer containing discretizied normal, depth, depth derivative
+    gBufOut.svgfCompact = float4(asfloat(dirToOct(hitPt.N)), linearZ, maxChangeZ, 0.0f);
+    
     return gBufOut;
 }
 

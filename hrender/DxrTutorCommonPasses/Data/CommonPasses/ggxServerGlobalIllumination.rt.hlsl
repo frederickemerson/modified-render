@@ -40,7 +40,8 @@ shared Texture2D<float4>   gPos;
 shared Texture2D<float4>   gNorm;
 shared Texture2D<float4>   gTexData;
 shared Texture2D<float4>   gEnvMap;
-shared RWTexture2D<uint4> gOutput;
+shared RWTexture2D<float4> gColorOutput;
+shared RWTexture2D<float4> gAlbedoOutput;
 
 // A separate file with some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
 #include "ggxGlobalIlluminationUtils.hlsli"
