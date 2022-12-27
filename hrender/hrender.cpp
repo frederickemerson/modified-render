@@ -44,10 +44,6 @@
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "DxrTutorSharedUtils/RenderConfig.h"
 #include "NetworkPasses/PredictionPass.h"
-#include "NetworkPasses/ScreenSpaceReflectionPass.h"
-#include "NetworkPasses/ServerRayTracingReflectionPass.h"
-#include "NetworkPasses/ReflectionCompositePass.h"
-
 
 void runServer();
 void runClient();
@@ -199,7 +195,7 @@ void runDebug()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         1, // sceneIndex
-        9,
+        11,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -228,7 +224,7 @@ void runDebug()
             //MemoryTransferPassCPU_GPU,
             // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
             CopyToOutputPass,
-            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
+            // --- RenderConfigPass 10 temporally accumulates frames for denoising --- //
             SimpleAccumulationPass
          }
     };
@@ -242,9 +238,9 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
         });
 
     // Start our program
