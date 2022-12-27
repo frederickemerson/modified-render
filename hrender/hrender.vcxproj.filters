@@ -291,6 +291,21 @@
     <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h">
       <Filter>GIPasses</Filter>
     </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFClientPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFServerPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFPass.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">

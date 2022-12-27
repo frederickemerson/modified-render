@@ -531,7 +531,7 @@ RenderConfiguration getRenderConfigServerHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        6,
+        7,
         { // Array of RenderConfigPass
             // --- NetworkServerRecvPass receives camera data from client --- //
             NetworkServerRecvPass,
@@ -544,6 +544,8 @@ RenderConfiguration getRenderConfigServerHybrid() {
             // --- ServerGlobalIllumPass computes indirect illumination color and
             //     selects random light index to be used for direct illumination. --- //
             ServerGlobalIllumPass,
+            // --- SVGFServerPass performs denoising on indirect illumination.
+            SVGFServerPass,
             // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
             // --- CompressionPass compresses buffers to be sent across network --- //
