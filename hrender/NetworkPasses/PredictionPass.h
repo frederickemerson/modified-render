@@ -71,7 +71,7 @@ protected:
                                                                             ///  is calculated by NetworkManager
     int                                     mPercvDelay = 0;
     int                                     mActualDelay = 10;
-    int                                     mUnknownFragmentsMode = 2;
+    int                                     mUnknownFragmentsMode = 0;
     int                                     mTexHeight = -1;                ///< The height of the texture we render,
                                                                             ///  based on the client and macroblock size
     CircularBuffer<CameraData>              camDataBuffer;                  ///< A buffer for camera data to be used

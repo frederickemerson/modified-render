@@ -12,7 +12,7 @@ namespace {
     // Minimum difference in number of frames before prediction occurs
     // i.e. Prediction does not occur when difference < threshhold
     //      Prediction occurs when difference >= threshhold
-    const int predictionThreshhold = 3;
+    const int predictionThreshhold = 0;
 
     // ============================= TEXTURES needed from ResourceManager ============================
 

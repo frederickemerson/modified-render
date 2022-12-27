@@ -248,7 +248,7 @@ void runDebug()
     RenderConfiguration renderConfiguration = {
         1920, 1080, // texWidth and texHeight
         1, // sceneIndex
-        13,
+        9,
         { // Array of RenderConfigPass
             // --- RenderConfigPass 1 creates a GBuffer --- //
             JitteredGBufferPass,
@@ -303,7 +303,7 @@ void runDebug()
 // Set presets for the pipeline //
 // ============================ //
     pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
         RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
         });
@@ -363,7 +363,6 @@ void runServer()
             VisibilityPass,
             ScreenSpaceReflectionPass,
             ServerRayTracingReflectionPass,
-            // --- TODO: create a new buffer to send back the texture "SRTReflection" --- //
             MemoryTransferPassGPU_CPU,
             //CompressionPass,
             NetworkServerSendPass
@@ -440,8 +439,8 @@ void runClient()
                 NetworkClientRecvPass,
                 //DecompressionPass,
                 MemoryTransferPassCPU_GPU,
-                ScreenSpaceReflectionPass,
                 PredictionPass,
+                ScreenSpaceReflectionPass,
                 VShadingPass,
                 ReflectionCompositePass,
                 CopyToOutputPass,
