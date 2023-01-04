@@ -158,9 +158,8 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientAtrous.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorFilterMoments.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientModulate.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientReproject.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl" />
@@ -169,9 +168,8 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerAtrous.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerFilterMoments.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerModulate.ps.hlsl" />
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerReproject.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorReproject.ps.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>

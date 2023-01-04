@@ -332,6 +332,9 @@
     <Filter Include="SVGFPasses\Shaders\Client">
       <UniqueIdentifier>{6ab51b0c-1a97-4ad8-a791-aac0ff34cc14}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SVGFPasses\Shaders\Shared">
+      <UniqueIdentifier>{468ac973-bc19-4905-9071-6d5d93ed6bc4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\accumulate.ps.hlsl">
@@ -466,9 +469,6 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl">
-      <Filter>SVGFPasses\Shaders</Filter>
-    </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli">
       <Filter>SVGFPasses\Shaders</Filter>
     </ShaderSource>
@@ -484,26 +484,23 @@
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientAtrous.ps.hlsl">
       <Filter>SVGFPasses\Shaders\Client</Filter>
     </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientFilterMoments.ps.hlsl">
-      <Filter>SVGFPasses\Shaders\Client</Filter>
-    </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientModulate.ps.hlsl">
-      <Filter>SVGFPasses\Shaders\Client</Filter>
-    </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientReproject.ps.hlsl">
       <Filter>SVGFPasses\Shaders\Client</Filter>
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerAtrous.ps.hlsl">
       <Filter>SVGFPasses\Shaders\Server</Filter>
     </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerFilterMoments.ps.hlsl">
-      <Filter>SVGFPasses\Shaders\Server</Filter>
-    </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerModulate.ps.hlsl">
       <Filter>SVGFPasses\Shaders\Server</Filter>
     </ShaderSource>
-    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerReproject.ps.hlsl">
-      <Filter>SVGFPasses\Shaders\Server</Filter>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorReproject.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Shared</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorFilterMoments.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Shared</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>
