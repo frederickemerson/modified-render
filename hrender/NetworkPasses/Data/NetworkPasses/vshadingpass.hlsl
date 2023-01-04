@@ -41,6 +41,7 @@ cbuffer RayGenCB
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     bool gDecodeDI; // Which illumination should be decoded and displayed?
+    float gEmitMult; // Multiply emissive amount by this factor (set to 1, usually)
     float gAmbient;
     uint gNumAORays;
 }
@@ -75,7 +76,6 @@ void VShadowsRayGen()
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor = difMatlColor.rgb;
 
-
     if (!gDecodeMode)
     {
         // Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
@@ -85,13 +85,16 @@ void VShadowsRayGen()
             return;
         }
 
-        // We're going to accumulate contributions from multiple lights, so zero our our sum
-        shadeColor = float3(0.0, 0.0, 0.0);
-
+        
+        // Add any emissive color from primary rays
+        float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[launchIndex].z)).rgb, 1.0f);
+        shadeColor = gEmitMult * emissiveColor.rgb; // need a gEmitMult variable
+                
         shadeColor += gDirectIllum[launchIndex].rgb;
         shadeColor += gIndirectIllum[launchIndex].rgb;
         gOutput[launchIndex] = float4(shadeColor, 1.0);
         
+        //// We're going to accumulate contributions from multiple lights, so zero our our sum
         //const uint lightCount = gScene.getLightCount();
         //float3 lightIntensityCache;
 

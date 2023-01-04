@@ -71,13 +71,13 @@ float2 calcMotionVector(float4 prevClipPos, float2 currentPixelPos, float2 invFr
 }
 
 // Our main entry point for the g-buffer fragment shader.
-GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
+GBuffer main(GBufVertexOut vsOut, uint primID : SV_PrimitiveID)
 {
     float3 cameraPosW = gScene.camera.getPosition();
-    float3 viewDir = normalize(cameraPosW - vsOut.posW);
+    float3 viewDir = normalize(cameraPosW - vsOut.base.posW);
     // This is a Falcor built-in that extracts data suitable for shading routines
     //     (see ShaderCommon.slang for the shading data structure and routines)
-    ShadingData hitPt = prepareShadingData(vsOut, primID, viewDir);
+    ShadingData hitPt = prepareShadingData(vsOut.base, primID, viewDir);
 
     // Check if we hit the back of a double-sided material, in which case, we flip
     //     normals around here (so we don't need to when shading)
@@ -95,7 +95,7 @@ GBuffer main(VSOut vsOut, uint primID : SV_PrimitiveID)
 
     // The 'motion vector' buffer
     float2 svgfMotionVec = calcMotionVector(vsOut.base.prevPosH, vsOut.base.posH.xy, gBufSize.zw) +
-                           float2(gScene.camera.getJitterX(), -gScene.camera.getJitterY());
+                           float2(gScene.camera.data.jitterX, -gScene.camera.data.jitterY);
     float2 posNormFWidth = float2(length(fwidth(hitPt.posW)), length(fwidth(hitPt.N)));
     float4 svgfMotionVecOut = float4(svgfMotionVec, posNormFWidth);
     

@@ -43,7 +43,7 @@ bool GGXServerGlobalIllumPass::initialize(RenderContext* pRenderContext, Resourc
 
     // Indirect Albedo is stored in the RGB portion, alpha portion stores light index for direct illumination.
     mpResManager->requestTextureResource(mIndirectAlbedoTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    mpResManager->requestTextureResource("OutIndirectColor", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource(mIndirectColorTex, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     //mpResManager->requestTextureResource(ResourceManager::kEnvironmentMap); might not need, need to look into it
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are

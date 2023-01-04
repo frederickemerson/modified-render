@@ -132,13 +132,24 @@ void SimpleDiffuseGIRayGen()
         ggxDirectWithIdx(lightToSample, worldPos.xyz, worldNorm.xyz, V, difMatlColor.rgb, specMatlColor.rgb, roughness,
                     outDirectColor, outDirectAlbedo);
             
-        outDirectColor = any(isnan(indirectColor)) ? float3(0.0f) : outDirectColor;
+        outDirectColor = any(isnan(outDirectColor)) ? float3(0.0f) : outDirectColor;
+        
+
+    }
+    else
+    {
+        // If we hit the background color, return reasonable values that won't mess up the SVGF filter
+        outDirectColor = difMatlColor.rgb; // DifMatlColor is the env. map color, in this case
+        indirectColor = float3(0.0f);
+        outDirectAlbedo = float3(1.0f);
     }
 
+
     // We output direct color and albedo separately for the SVGF pass.
-    gDirectColorOutput[launchIndex] = float4(outDirectColor, 1.0);
-    gDirectAlbedoOutput[launchIndex] = float4(outDirectAlbedo, 1.0);
+    gDirectColorOutput[launchIndex] = float4(outDirectColor, 1.0f);
+    gDirectAlbedoOutput[launchIndex] = float4(outDirectAlbedo, 1.0f);
     gIndirectLightOut[launchIndex] = float4(indirectColor, 1.0f);
+    
 }
 
 

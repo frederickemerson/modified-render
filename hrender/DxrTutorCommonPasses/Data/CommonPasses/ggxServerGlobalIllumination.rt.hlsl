@@ -100,7 +100,8 @@ void SimpleDiffuseGIRayGen()
     uint randSeed        = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
 
     // Store our indirect color computation
-    float3 indirectColor, indirectAlbedo;
+    float3 indirectColor = shadeColor;
+    float3 indirectAlbedo = float3(1.0);
     
     // Do shading, if we have geometry here (otherwise, output the background color)
     if (isGeometryValid)
@@ -148,6 +149,12 @@ void SimpleDiffuseGIRayGen()
             indirectColor = any(isnan(indirectColor)) ? float3(0.0f) : indirectColor;
         }
             
+    }
+    else
+    {
+        // If we hit the background color, return reasonable values that won't mess up the SVGF filter
+        indirectColor = float3(0.0f);
+        indirectAlbedo = float3(1.0f);
     }
 
     // Store out the color of this shaded pixel

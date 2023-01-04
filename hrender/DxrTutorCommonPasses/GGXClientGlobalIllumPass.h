@@ -71,7 +71,7 @@ protected:
     // What texture should was ask the resource manager to store our result in?
     std::string             mDirectColorTex;
     std::string             mDirectAlbedoTex;
-    std::string             mIndirectIllumTex = "IndirectLighting";
+    std::string             mIndirectIllumTex = "ClientIndirectLighting";
 
     // Various internal parameters
     uint32_t                mFrameCount = 0x8465u;        ///< A frame counter to vary random numbers over time

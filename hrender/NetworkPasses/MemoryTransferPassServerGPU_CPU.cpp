@@ -34,7 +34,7 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
         //mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
         //mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
         //outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN];
-        mGIIndex = mpResManager->getTextureIndex("ServerGlobalIllum");
+        mGIIndex = mpResManager->getTextureIndex("ServerIndirectLighting");
         outputBuffer = new uint8_t[VIS_TEX_LEN];
     }
     else {

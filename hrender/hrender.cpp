@@ -194,10 +194,10 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, GGXClientGlobalIllumPass::create("OutDirectColor", "OutDirectAlbedo", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == SVGFServerPass) {
-            pipeline->setPass(i, SVGFServerPass::create("OutIndirectColor", "OutIndirectAlbedo"));
+            pipeline->setPass(i, SVGFServerPass::create("OutIndirectColor", "ServerIndirectLighting", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == SVGFClientPass) {
-            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "DirectLighting"));
+            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "V-shading"));
         }
     }
 }
@@ -234,7 +234,7 @@ void runDebug()
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
             RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
+            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
             RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
             });
     }
@@ -410,6 +410,8 @@ RenderConfiguration getRenderConfigDebugHybrid() {
             // --- ServerGlobalIllumPass computes indirect illumination color and
             //     selects random light index to be used for direct illumination. --- //
             ServerGlobalIllumPass,
+            // --- SVGFServerPass performs denoising on indirect illumination.
+            SVGFServerPass,
             // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
             // --- CompressionPass compresses buffers to be sent across Network --- //
@@ -423,11 +425,13 @@ RenderConfiguration getRenderConfigDebugHybrid() {
             // --- ClientGlobalIllumPass loads server indirect illumination into texture and
             //     calculates direct illumination using given random light index --- //
             ClientGlobalIllumPass,
+            // --- SVGFClientPass performs denoising on direct illumination
+            SVGFClientPass,
             // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
-            PredictionPass,
+            //PredictionPass,
             // --- VShadingPass makes use of the direct and indirect lighting to shade the sceneIndex.
             //     We also provide the ability to preview the GBuffer alternatively. --- //
-            VShadingPass,
+            //VShadingPass,
             // --- CopyToOutputPass just lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
@@ -495,7 +499,7 @@ RenderConfiguration getRenderConfigClientHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        11,
+        8,
         { // Array of RenderConfigPass
             // --- JitteredGBufferPass creates a GBuffer on client side--- //
             JitteredGBufferPass,
@@ -513,13 +517,13 @@ RenderConfiguration getRenderConfigClientHybrid() {
             // --- SVGFClientPass performs denoising on direct illumination
             SVGFClientPass,
             // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
-            PredictionPass,
+            //PredictionPass,
             // --- VShadingPass modulates the direct and indirect illumination. --- //
-            VShadingPass,
+            //VShadingPass,
             // --- CopyToOutputPass lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
-            SimpleAccumulationPass,
+            //SimpleAccumulationPass,
         }
     };
 }
