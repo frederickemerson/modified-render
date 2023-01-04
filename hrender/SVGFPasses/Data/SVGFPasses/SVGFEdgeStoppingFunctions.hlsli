@@ -46,6 +46,20 @@ float2 computeWeight(
     return float2(wDirect, wIndirect);
 }
 
+// Single color computation
+float computeWeight(
+    float depthCenter, float depthP, float phiDepth,
+    float3 normalCenter, float3 normalP, float normPower,
+    float luminanceColorCenter, float luminanceColorP, float phiColor)
+{
+    const float wNormal = normalDistanceCos(normalCenter, normalP, normPower);
+    const float wZ = (phiDepth == 0) ? 0.0f : abs(depthCenter - depthP) / phiDepth;
+    const float wLColor = abs(luminanceColorCenter - luminanceColorP) / phiColor;
+
+    const float wColor = exp(0.0 - max(wLColor, 0.0) - max(wZ, 0.0)) * wNormal;
+    return wColor;
+}
+
 float computeWeightNoLuminance(float depthCenter, float depthP, float phiDepth, float3 normalCenter, float3 normalP)
 {
     const float wNormal    = normalDistanceCos(normalCenter, normalP, 128.0f);

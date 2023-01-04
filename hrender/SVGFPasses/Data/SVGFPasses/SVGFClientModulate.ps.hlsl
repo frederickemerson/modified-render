@@ -23,7 +23,6 @@
 Texture2D<float4> gDirect;
 Texture2D<float4> gIndirect;
 Texture2D<float4> gDirAlbedo;
-Texture2D<float4> gIndirAlbedo;
 
 // Texture data from the shading pass - we need this to retrieve the emissive color
 Texture2D<float4> gTexData;
@@ -49,7 +48,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     PS_OUT ret;
     ret.color = gDirect[ipos] * gDirAlbedo[ipos]
-              + gIndirect[ipos] * gIndirAlbedo[ipos]
+              + gIndirect[ipos]
               + emissiveColor * gEmitMult;
 
     return ret;

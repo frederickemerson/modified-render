@@ -28,11 +28,11 @@ public:
     using SharedPtr = std::shared_ptr<SVGFServerPass>;
     using SharedConstPtr = std::shared_ptr<const SVGFServerPass>;
 
-    static SharedPtr create(const std::string &indirectIn, const std::string &outChannel);
+    static SharedPtr create(const std::string &indirectIn, const std::string &outChannel, int texWidth = -1, int texHeight = -1);
     virtual ~SVGFServerPass() = default;
 
 protected:
-    SVGFServerPass(const std::string &indirectIn, const std::string &outChannel);
+    SVGFServerPass(const std::string &indirectIn, const std::string &outChannel, int texWidth = -1, int texHeight = -1);
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -83,7 +83,8 @@ protected:
     // Some internal state
     bool mNeedFboClear = true;
     bool mFilterEnabled = true;
-
+    int mTexWidth = -1;         ///< The width of the texture we render, based on the client
+    int mTexHeight = -1;        ///< The height of the texture we render, based on the client 
 private:
     // After resizing or creating framebuffers, make sure to initialize them
     void clearFbos(RenderContext* pCtx);

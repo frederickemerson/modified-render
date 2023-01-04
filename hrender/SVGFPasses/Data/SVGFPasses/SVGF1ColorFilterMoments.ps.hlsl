@@ -22,8 +22,7 @@ import Utils.Color.ColorHelpers; // Contains function for computing luminance
 #include "SVGFEdgeStoppingFunctions.hlsli"
 #include "SVGFPackNormal.hlsli"
 
-Texture2D   gDirect;
-Texture2D   gIndirect;
+Texture2D   gColor;
 Texture2D   gMoments;
 Texture2D   gHistoryLength;
 Texture2D   gCompactNormDepth;
@@ -36,8 +35,7 @@ cbuffer PerImageCB : register(b0)
 
 struct PS_OUT
 {
-    float4 OutDirect   : SV_TARGET0;
-    float4 OutIndirect : SV_TARGET1;
+    float4 OutColor   : SV_TARGET0;
 };
 
 PS_OUT main(FullScreenPassVsOut vsOut)
@@ -51,16 +49,12 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     if (h < 4.0) // not enough temporal history available
     {
-        float sumWDirect   = 0.0;
-        float sumWIndirect = 0.0;
-        float3  sumDirect    = float3(0.0, 0.0, 0.0);
-        float3  sumIndirect  = float3(0.0, 0.0, 0.0);
-        float4  sumMoments   = float4(0.0, 0.0, 0.0, 0.0);
+        float sumWColor   = 0.0;
+        float3 sumColor    = float3(0.0, 0.0, 0.0);
+        float4 sumMoments   = float4(0.0, 0.0, 0.0, 0.0);
 
-        const float4  directCenter    = gDirect[ipos];
-        const float4  indirectCenter  = gIndirect[ipos];
-        const float lDirectCenter     = luminance(directCenter.rgb);
-        const float lIndirectCenter   = luminance(indirectCenter.rgb);
+        const float4 colorCenter    = gColor[ipos];
+        const float lColorCenter = luminance(colorCenter.rgb);
 
         float3 normalCenter;
         float2 zCenter;
@@ -71,13 +65,11 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         if (zCenter.x < 0)
         {
             // current pixel does not a valid depth => must be envmap => do nothing
-            psOut.OutDirect   = directCenter;
-            psOut.OutIndirect = indirectCenter;
+            psOut.OutColor = colorCenter;
             return psOut;
         }
 
-        const float phiLDirect   = gPhiColor;
-        const float phiLIndirect = gPhiColor;
+        const float phiLColor   = gPhiColor;
         const float phiDepth     = max(zCenter.y, 1e-8) * 3.0;
 
         // compute first and second moment spatially. This code also applies cross-bilateral
@@ -96,44 +88,34 @@ PS_OUT main(FullScreenPassVsOut vsOut)
                 if (inside)
                 {
 
-                    const float3 directP     = gDirect[p].rgb;
-                    const float3 indirectP   = gIndirect[p].rgb;
+                    const float3 colorP     = gColor[p].rgb;
                     const float4 momentsP    = gMoments[p];
 
-                    const float lDirectP   = luminance(directP.rgb);
-                    const float lIndirectP = luminance(indirectP.rgb);
+                    const float lColorP = luminance(colorP.rgb);
 
                     float3 normalP;
                     float2 zP;
                     fetchNormalAndLinearZ(gCompactNormDepth, p, normalP, zP);
 
-                    const float2 w = computeWeight(
+                    const float w = computeWeight(
                         zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
                         normalCenter, normalP, gPhiNormal, 
-                        lDirectCenter, lDirectP, phiLDirect,
-                        lIndirectCenter, lIndirectP, phiLIndirect);
+                        lColorCenter, lColorP, phiLColor);
 
-                    const float wDirect = w.x;
-                    const float wIndirect = w.y;
+                    sumWColor  += w;
+                    sumColor   += colorP * w;
 
-                    sumWDirect  += wDirect;
-                    sumDirect   += directP * wDirect;
-
-                    sumWIndirect  += wIndirect;
-                    sumIndirect   += indirectP * wIndirect;
-
-                    sumMoments += momentsP * float4(wDirect.xx, wIndirect.xx);
+                    sumMoments += momentsP * float4(w, w, 0.0, 0.0);
                 }
             }
         }
 
         // Clamp sums to >0 to avoid NaNs.
-        sumWDirect = max(sumWDirect, 1e-6f);
-        sumWIndirect = max(sumWIndirect, 1e-6f);
+        sumWColor = max(sumWColor, 1e-6f);
+        
 
-        sumDirect   /= sumWDirect;
-        sumIndirect /= sumWIndirect;
-        sumMoments  /= float4(sumWDirect.xx, sumWIndirect.xx);
+        sumColor   /= sumWColor;
+        sumMoments  /= float4(sumWColor.xx, 1.0, 1.0);
 
         // compute variance for direct and indirect illumination using first and second moments
         float2 variance = sumMoments.ga - sumMoments.rb * sumMoments.rb;
@@ -141,9 +123,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         // give the variance a boost for the first frames
         variance *= 4.0 / h;
 
-        psOut.OutDirect = float4(sumDirect, variance.r);
-        psOut.OutIndirect = float4(sumIndirect, variance.g);
-
+        psOut.OutColor = float4(sumColor, variance.r);
+        
         return psOut;
     }
     else
@@ -151,8 +132,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         // do nothing, pass data unmodified
         PS_OUT psOut;
 
-        psOut.OutDirect = gDirect[ipos];
-        psOut.OutIndirect = gIndirect[ipos];
+        psOut.OutColor = gColor[ipos];
 
         return psOut;
     }

@@ -28,11 +28,11 @@ public:
     using SharedPtr = std::shared_ptr<SVGFClientPass>;
     using SharedConstPtr = std::shared_ptr<const SVGFClientPass>;
 
-    static SharedPtr create(const std::string &directIn, const std::string &indirectIn, const std::string &outChannel);
+    static SharedPtr create(const std::string &directIn, const std::string &outChannel);
     virtual ~SVGFClientPass() = default;
 
 protected:
-    SVGFClientPass(const std::string &directIn, const std::string &indirectIn, const std::string &outChannel);
+    SVGFClientPass(const std::string &directIn, const std::string &outChannel);
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -42,7 +42,6 @@ protected:
 
     // Which texture inputs are we reading and writing to?
     std::string mDirectInTexName;
-    std::string mIndirectInTexName;
     std::string mOutTexName;
 
     // The DX graphics state used internally in this pass
@@ -77,10 +76,8 @@ protected:
         Texture::SharedPtr    linearZ;
         Texture::SharedPtr    prevLinearZ;
         Texture::SharedPtr    dirAlbedo;
-        Texture::SharedPtr    indirAlbedo;
         Texture::SharedPtr    motionVecs;     
         Texture::SharedPtr    directIllum;
-        Texture::SharedPtr    indirectIllum;
     } mInputTex;
 
     // Some internal state

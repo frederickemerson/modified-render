@@ -56,7 +56,7 @@ bool GGXGlobalIlluminationPassDemod::initialize(RenderContext* pRenderContext, R
     mpResManager->setDefaultSceneName("pink_room/pink_room.fscene");
 
     // Create our wrapper around a ray tracing pass; specify the entry point for our ray generation shader
-    mpRays = RayLaunch::create(kFileRayTrace, kEntryPointRayGen);
+    mpRays = RayLaunch::create(2, 2, kFileRayTrace, kEntryPointRayGen);
 
     // Add ray type 0 (in this case, our shadow ray)
     mpRays->addMissShader(kFileRayTrace, kEntryPointMiss0);                       

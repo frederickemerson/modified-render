@@ -23,22 +23,24 @@
 
 namespace {
     // Where is our shaders located?
-    const char *kReprojectShader         = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGFServerReproject.ps.hlsl";
+    const char *kReprojectShader         = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGF1ColorReproject.ps.hlsl";
     const char *kAtrousShader            = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGFServerAtrous.ps.hlsl";
     const char *kModulateShader          = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGFServerModulate.ps.hlsl";
-    const char *kFilterMomentShader      = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGFServerFilterMoments.ps.hlsl";
+    const char *kFilterMomentShader      = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGF1ColorFilterMoments.ps.hlsl";
 };
 
-SVGFServerPass::SharedPtr SVGFServerPass::create(const std::string &indirectIn, const std::string &outChannel)
+SVGFServerPass::SharedPtr SVGFServerPass::create(const std::string &indirectIn, const std::string &outChannel, int texWidth, int texHeight)
 {
-    return SharedPtr(new SVGFServerPass(indirectIn, outChannel));
+    return SharedPtr(new SVGFServerPass(indirectIn, outChannel, texWidth, texHeight));
 }
 
-SVGFServerPass::SVGFServerPass(const std::string &indirectIn, const std::string &outChannel)
+SVGFServerPass::SVGFServerPass(const std::string &indirectIn, const std::string &outChannel, int texWidth, int texHeight)
     : RenderPass( "Spatiotemporal Filter (SVGF)", "SVGF Options" )
 {
     mIndirectInTexName = indirectIn; 
     mOutTexName        = outChannel; // Indirect color written RGB, A contains light index (see ggxServerGlobalIllumination)
+    mTexHeight = texHeight;
+    mTexWidth = texWidth;
 }
 
 bool SVGFServerPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -57,7 +59,8 @@ bool SVGFServerPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mpResManager->requestTextureResource("OutIndirectAlbedo");
 
     // Set the output channel
-    mpResManager->requestTextureResource(mOutTexName, ResourceFormat::RGBA8Uint);
+    mpResManager->requestTextureResource("IntermediateOutput", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // RGBA32Float version of output
+    mpResManager->requestTextureResource(mOutTexName, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Create our graphics state
     mpSvgfState = GraphicsState::create();
@@ -81,24 +84,22 @@ void SVGFServerPass::resize(uint32_t width, uint32_t height)
 
     // Have 3 different types of framebuffers and resources.  Reallocate them whenever screen resolution changes.
 
-    {   // Type 1, Screen-size FBOs with 2 RGBA32F MRTs
+    {   // Type 1, Screen-size FBOs with 1 RGBA32F MRT1
         Fbo::Desc desc;
         desc.setSampleCount(0);
         desc.setColorTarget(0, ResourceFormat::RGBA32Float);
-        desc.setColorTarget(1, ResourceFormat::RGBA32Float);
         mpPingPongFbo[0]  = Fbo::create2D(width, height, desc);
-        mpPingPongFbo[1]  = Fbo::create2D(width, height, desc);
+        mpPingPongFbo[1] = Fbo::create2D(width, height, desc);
         mpFilteredPastFbo = Fbo::create2D(width, height, desc);
     }
 
     {   // Type 2, Screen-size FBOs with 4 MRTs, 3 that are RGBA32F, one that is R16F
         Fbo::Desc desc;
         desc.setSampleCount(0);
-        desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // direct
-        desc.setColorTarget(1, Falcor::ResourceFormat::RGBA32Float); // indirect
-        desc.setColorTarget(2, Falcor::ResourceFormat::RGBA32Float); // moments
-        desc.setColorTarget(3, Falcor::ResourceFormat::R16Float);    // history length
-        mpCurReprojFbo  = Fbo::create2D(width, height, desc);
+        desc.setColorTarget(0, Falcor::ResourceFormat::RGBA32Float); // indirect
+        desc.setColorTarget(1, Falcor::ResourceFormat::RGBA32Float); // moments
+        desc.setColorTarget(2, Falcor::ResourceFormat::R16Float);    // history length
+        mpCurReprojFbo = Fbo::create2D(width, height, desc);
         mpPrevReprojFbo = Fbo::create2D(width, height, desc);
     }
 
@@ -121,7 +122,7 @@ void SVGFServerPass::clearFbos(RenderContext* pCtx)
     pCtx->clearFbo(mpCurReprojFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
     pCtx->clearFbo(mpFilteredPastFbo.get(), float4(0), 1.0f, 0, FboAttachmentType::All);
     pCtx->clearFbo(mpPingPongFbo[0].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
-    pCtx->clearFbo(mpPingPongFbo[1].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
+    //pCtx->clearFbo(mpPingPongFbo[1].get(), float4(0), 1.0f, 0, FboAttachmentType::All);
 
     // Clear our history textures
     pCtx->clearUAV(mInputTex.prevLinearZ->getUAV().get(), float4(0.f, 0.f, 0.f, 1.f));
@@ -142,7 +143,7 @@ void SVGFServerPass::renderGui(Gui::Window* pPassWindow)
     dirty |= (int)pPassWindow->var("Feedback", mFeedbackTap, -1, mFilterIterations-2, 0.2f);
 
     pPassWindow->text("");
-    pPassWindow->text("Contol edge stopping on bilateral fitler");
+    pPassWindow->text("Contol edge stopping on bilateral filter");
     dirty |= (int)pPassWindow->var("For Color", mPhiColor, 0.0f, 10000.0f, 0.05f);
     dirty |= (int)pPassWindow->var("For Normal", mPhiNormal, 0.001f, 10000.0f, 0.5f);
 
@@ -191,7 +192,8 @@ void SVGFServerPass::execute(RenderContext* pRenderContext)
             computeModulation(pRenderContext);
 
         // Output the result of SVGF to the expected output buffer for subsequent passes.
-        pRenderContext->blit(mpOutputFbo->getColorTexture(0)->getSRV(), pDst->getRTV());
+        // For the server, the color is written to the output texture directly, as we need to convert the format.
+        //pRenderContext->blit(mpOutputFbo->getColorTexture(0)->getSRV(), pDst->getRTV());
 
         // Swap resources so we're ready for next frame.
         std::swap(mpCurReprojFbo, mpPrevReprojFbo);
@@ -213,12 +215,10 @@ void SVGFServerPass::computeReprojection(RenderContext* pRenderContext)
     reprojVars["gLinearZ"]       = mInputTex.linearZ;
     reprojVars["gPrevLinearZ"]   = mInputTex.prevLinearZ;
     reprojVars["gMotion"]        = mInputTex.motionVecs;
-    reprojVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(2);
-    reprojVars["gHistoryLength"] = mpPrevReprojFbo->getColorTexture(3);
-    reprojVars["gPrevDirect"]    = mpFilteredPastFbo->getColorTexture(0);
-    reprojVars["gPrevIndirect"]  = mpFilteredPastFbo->getColorTexture(1);
-    reprojVars["gDirect"]        = mInputTex.directIllum;
-    reprojVars["gIndirect"]      = mInputTex.indirectIllum;
+    reprojVars["gPrevColor"] = mpFilteredPastFbo->getColorTexture(0);
+    reprojVars["gPrevMoments"]   = mpPrevReprojFbo->getColorTexture(1);
+    reprojVars["gHistoryLength"] = mpPrevReprojFbo->getColorTexture(2);
+    reprojVars["gColor"]      = mInputTex.indirectIllum;
 
     // Setup variables for our reprojection pass
     reprojVars["PerImageCB"]["gAlpha"] = mAlpha;
@@ -231,13 +231,12 @@ void SVGFServerPass::computeReprojection(RenderContext* pRenderContext)
 void SVGFServerPass::computeVarianceEstimate(RenderContext* pRenderContext)
 {
     auto filterMomentsVars = mpFilterMoments->getVars();
-    filterMomentsVars["gDirect"]           = mpCurReprojFbo->getColorTexture(0);
-    filterMomentsVars["gIndirect"]         = mpCurReprojFbo->getColorTexture(1);
-    filterMomentsVars["gMoments"]          = mpCurReprojFbo->getColorTexture(2);
-    filterMomentsVars["gHistoryLength"]    = mpCurReprojFbo->getColorTexture(3);
+    filterMomentsVars["gColor"] = mpCurReprojFbo->getColorTexture(0);
+    filterMomentsVars["gMoments"] = mpCurReprojFbo->getColorTexture(1);
+    filterMomentsVars["gHistoryLength"] = mpCurReprojFbo->getColorTexture(2);
     filterMomentsVars["gCompactNormDepth"] = mInputTex.miscBuf;
 
-    filterMomentsVars["PerImageCB"]["gPhiColor"]  = mPhiColor;
+    filterMomentsVars["PerImageCB"]["gPhiColor"] = mPhiColor;
     filterMomentsVars["PerImageCB"]["gPhiNormal"] = mPhiNormal;
 
     mpFilterMoments->execute(pRenderContext, mpPingPongFbo[0]);
@@ -251,22 +250,23 @@ void SVGFServerPass::computeAtrousDecomposition(RenderContext* pRenderContext)
     atrousVars["gHistoryLength"]           = mpCurReprojFbo->getColorTexture(3);
     atrousVars["gCompactNormDepth"]        = mInputTex.miscBuf;
     // Used for emissive calculation in the last filter iteration which performs modulation
-    atrousVars["gTexData"] = mpResManager->getTexture("__TextureData");
-    atrousVars["PerImageCB"]["gEmitMult"] = 1.0f;
+    //atrousVars["gTexData"] = mpResManager->getTexture("__TextureData");
+    //atrousVars["PerImageCB"]["gEmitMult"] = 1.0f;
 
     for (int i = 0; i < mFilterIterations; i++) {
         bool performModulation = (i == mFilterIterations - 1);
         Fbo::SharedPtr curTargetFbo = performModulation ? mpOutputFbo : mpPingPongFbo[1]; 
 
         // Send down our input images
-        atrousVars["gDirect"] = mpPingPongFbo[0]->getColorTexture(0);   
-        atrousVars["gIndirect"] = mpPingPongFbo[0]->getColorTexture(1);
+        atrousVars["gColor"] = mpPingPongFbo[0]->getColorTexture(0);   
         atrousVars["PerImageCB"]["gStepSize"] = 1 << i;
 
         // perform modulation in-shader if needed
         atrousVars["PerImageCB"]["gPerformModulation"] = performModulation;
-        atrousVars["gAlbedo"]      = mInputTex.dirAlbedo;
-        atrousVars["gIndirAlbedo"] = mInputTex.indirAlbedo;
+        atrousVars["gAlbedo"] = mInputTex.indirAlbedo;
+
+        // Output texture we write to
+        atrousVars["gOutput"] = mpResManager->getTexture(mOutTexName);
 
         mpAtrous->execute(pRenderContext, curTargetFbo);
 
@@ -274,7 +274,6 @@ void SVGFServerPass::computeAtrousDecomposition(RenderContext* pRenderContext)
         if (i == std::min(mFeedbackTap, mFilterIterations - 1))
         {
             pRenderContext->blit(curTargetFbo->getColorTexture(0)->getSRV(), mpFilteredPastFbo->getRenderTargetView(0));
-            pRenderContext->blit(curTargetFbo->getColorTexture(1)->getSRV(), mpFilteredPastFbo->getRenderTargetView(1));
         }
 
         std::swap(mpPingPongFbo[0], mpPingPongFbo[1]); 
@@ -283,7 +282,6 @@ void SVGFServerPass::computeAtrousDecomposition(RenderContext* pRenderContext)
     if (mFeedbackTap < 0 || mFilterIterations <= 0)
     {
         pRenderContext->blit(mpCurReprojFbo->getColorTexture(0)->getSRV(), mpFilteredPastFbo->getRenderTargetView(0));
-        pRenderContext->blit(mpCurReprojFbo->getColorTexture(1)->getSRV(), mpFilteredPastFbo->getRenderTargetView(1));
     }
 
 }
@@ -294,13 +292,11 @@ void SVGFServerPass::computeModulation(RenderContext* pRenderContext)
     auto modulateVars = mpModulate->getVars();
     // If filtering is enabled, we use modulate with the illumination from the new frame integrated with history,
     // otherwise we use the new illumination frame directly.
-    modulateVars["gDirect"]      = mFilterEnabled ? mpCurReprojFbo->getColorTexture(0) : mInputTex.directIllum;
-    modulateVars["gIndirect"]    = mFilterEnabled ? mpCurReprojFbo->getColorTexture(1) : mInputTex.indirectIllum;
-    modulateVars["gDirAlbedo"]   = mInputTex.dirAlbedo;
+    modulateVars["gIndirect"] = mFilterEnabled ? mpCurReprojFbo->getColorTexture(0) : mInputTex.indirectIllum;
     modulateVars["gIndirAlbedo"] = mInputTex.indirAlbedo;
-    // We will need to add the emissive color
-    modulateVars["gTexData"]     = mpResManager->getTexture("__TextureData");
-    modulateVars["ModulateCB"]["gEmitMult"] = 1.0f;
+
+    modulateVars["gOutput"] = mpResManager->getTexture(mOutTexName);
+    modulateVars["gFilterEnabled"] = mFilterEnabled;
 
     // Run the modulation pass. If filtering is not enabled, we simply render to the output texture. Otherwise,
     // we render to the output fbo, since there is further logic to perform (copying to history for the next frame)

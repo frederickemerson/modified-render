@@ -24,10 +24,8 @@ import Utils.Color.ColorHelpers; // Contains function for computing luminance
 
 Texture2D   gMotion;
 
-Texture2D   gDirect;
-Texture2D   gIndirect;
-Texture2D   gPrevDirect;
-Texture2D   gPrevIndirect;
+Texture2D   gColor;
+Texture2D   gPrevColor;
 Texture2D   gPrevMoments;
 //Texture2D   gAlbedo;
 
@@ -49,21 +47,18 @@ float3 demodulate(float3 x, float3 albedo)
     return x / max(albedo, float3(0.001, 0.001, 0.001));
 }
 
-void loadDirectIndirect(int2 fragCoord, out float3 direct, out float3 indirect)
+void loadColor(int2 fragCoord, out float3 color)
 {
     //float3 albedo = gAlbedo[fragCoord].rgb;
-    float3 d = gDirect[fragCoord].rgb;
-    float3 i = gIndirect[fragCoord].rgb;
 
     //direct   = gPerformDemodulation ? demodulate(d, albedo) : d;
     //indirect = gPerformDemodulation ? demodulate(i, albedo) : i;
-    direct = d;
-    indirect = i;
+    color = gColor[fragCoord].rgb;
 }
 
 bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal, float3 normalPrev, float fwidthNormal)
 {
-    const int2 imageDim = getTextureDims(gDirect, 0);
+    const int2 imageDim = getTextureDims(gColor, 0);
     // check whether reprojected pixel is inside of the screen
     if(any(coord < int2(1,1)) || any(coord > imageDim - int2(1,1))) return false;
     // check if deviation of depths is acceptable
@@ -74,10 +69,10 @@ bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal
     return true;
 }
 
-bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndirect, out float4 prevMoments, out float historyLength)
+bool loadPrevData(float2 fragCoord, out float4 prevColor, out float4 prevMoments, out float historyLength)
 {
     const int2 ipos = fragCoord;
-    const float2 imageDim = float2(getTextureDims(gDirect, 0));
+    const float2 imageDim = float2(getTextureDims(gColor, 0));
 
     // xy = motion, z = length(fwidth(pos)), w = length(fwidth(normal))
     float4 motion = gMotion[ipos]; 
@@ -90,8 +85,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
     float4 depth = gLinearZ[ipos];
     float3 normal = octToDir(asuint(depth.w));
 
-    prevDirect   = float4(0,0,0,0);
-    prevIndirect = float4(0,0,0,0);
+    prevColor   = float4(0,0,0,0);
     prevMoments  = float4(0,0,0,0);
 
     bool v[4];
@@ -129,8 +123,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
             int2 loc = int2(posPrev) + offset[sampleIdx];            
             if (v[sampleIdx])
             {
-                prevDirect   += w[sampleIdx] * gPrevDirect[loc];
-                prevIndirect += w[sampleIdx] * gPrevIndirect[loc];
+                prevColor   += w[sampleIdx] * gPrevColor[loc];
                 prevMoments  += w[sampleIdx] * gPrevMoments[loc];
                 sumw         += w[sampleIdx];
             }
@@ -138,8 +131,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
 
         // redistribute weights in case not all taps were used
         valid = (sumw >= 0.01);
-        prevDirect   = valid ? prevDirect / sumw   : float4(0, 0, 0, 0);
-        prevIndirect = valid ? prevIndirect / sumw : float4(0, 0, 0, 0);
+        prevColor = valid ? prevColor / sumw : float4(0, 0, 0, 0);
         prevMoments  = valid ? prevMoments / sumw  : float4(0, 0, 0, 0);
     }
     if(!valid) // perform cross-bilateral filter in the hope to find some suitable samples somewhere
@@ -158,8 +150,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
 
                 if ( isReprjValid(iposPrev, depth.x, depthFilter.x, depth.y, normal, normalFilter, normalFwidth) )
                 {
-                    prevDirect += gPrevDirect[p];
-                    prevIndirect += gPrevIndirect[p];
+                    prevColor += gPrevColor[p];
                     prevMoments += gPrevMoments[p];
                     cnt += 1.0;
                 }
@@ -168,8 +159,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
         if (cnt > 0)
         {
             valid = true;
-            prevDirect   /= cnt;
-            prevIndirect /= cnt;
+            prevColor /= cnt;
             prevMoments  /= cnt;
         }
 
@@ -182,8 +172,7 @@ bool loadPrevData(float2 fragCoord, out float4 prevDirect, out float4 prevIndire
     }
     else
     {
-        prevDirect = float4(0,0,0,0);
-        prevIndirect = float4(0,0,0,0);
+        prevColor = float4(0, 0, 0, 0);
         prevMoments = float4(0,0,0,0);
         historyLength = 0;
     }
@@ -200,10 +189,9 @@ float computeVarianceScale(float numSamples, float loopLength, float alpha)
 
 struct PS_OUT
 {
-    float4 OutDirect        : SV_TARGET0;
-    float4 OutIndirect      : SV_TARGET1;
-    float4 OutMoments       : SV_TARGET2;
-    float OutHistoryLength  : SV_TARGET3;
+    float4 OutColor        : SV_TARGET0;
+    float4 OutMoments       : SV_TARGET1;
+    float OutHistoryLength  : SV_TARGET2;
 };
 
 PS_OUT main(FullScreenPassVsOut vsOut)
@@ -211,11 +199,11 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     float4 fragCoord = vsOut.posH;
 
     const int2 ipos = fragCoord.xy;
-    float3 direct, indirect;
-    loadDirectIndirect(ipos, direct, indirect);
+    float3 color;
+    loadColor(ipos, color);
     float historyLength;
-    float4 prevDirect, prevIndirect, prevMoments;
-    bool success = loadPrevData(fragCoord.xy, prevDirect, prevIndirect, prevMoments, historyLength);
+    float4 prevColor, prevMoments;
+    bool success = loadPrevData(fragCoord.xy, prevColor, prevMoments, historyLength);
     historyLength = min( 32.0f, success ? historyLength + 1.0f : 1.0f );
 
     // this adjusts the alpha for the case where insufficient history is available.
@@ -226,10 +214,11 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     // compute first two moments of luminance
     float4 moments;
-    moments.r = luminance(direct);
-    moments.b = luminance(indirect);
+    // We only calculate one color at a time, so b and a are unused
+    moments.r = luminance(color);
+    moments.b = 0.0;
     moments.g = moments.r * moments.r;
-    moments.a = moments.b * moments.b;
+    moments.a = 0.0;
 
     // temporal integration of the moments
     moments = lerp(prevMoments, moments, alphaMoments);
@@ -244,12 +233,10 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     //variance *= computeVarianceScale(16, 16, alpha);
 
     // temporal integration of direct and indirect illumination
-    psOut.OutDirect   = lerp(prevDirect,   float4(direct,   0), alpha);
-    psOut.OutIndirect = lerp(prevIndirect, float4(indirect, 0), alpha);
+    psOut.OutColor  = lerp(prevColor,   float4(color,   0), alpha);
 
     // variance is propagated through the alpha channel
-    psOut.OutDirect.a = variance.r;
-    psOut.OutIndirect.a = variance.g;
+    psOut.OutColor.a = variance.r;
 
     return psOut;
 }

@@ -16,22 +16,23 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-import Utils.Color.ColorHelpers; // Contains function for computing luminance
-
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
 #include "SVGFPackNormal.hlsli"
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
-Texture2D   gDirect;
-Texture2D   gIndirect;
+import Utils.Color.ColorHelpers;
+
+Texture2D   gColor;
 Texture2D   gCompactNormDepth;
 Texture2D   gHistoryLength;
 Texture2D   gAlbedo;
-Texture2D   gIndirAlbedo;
 
 // Texture data from the shading pass - we need this to retrieve the emissive color
 Texture2D<float4> gTexData;
+
+// Output texture we write to. 
+RWTexture2D<uint4> gOutput;
 
 cbuffer PerImageCB : register(b0)
 {
@@ -44,9 +45,9 @@ cbuffer PerImageCB : register(b0)
 
 // computes a 3x3 gaussian blur of the variance, centered around
 // the current pixel
-float2 computeVarianceCenter(int2 ipos, Texture2D sDirect, Texture2D sIndirect)
+float computeVarianceCenter(int2 ipos, Texture2D sColor)
 {
-    float2 sum = float2(0.0, 0.0);
+    float sum = 0.0f;
 
     const float kernel[2][2] = {
         { 1.0 / 4.0, 1.0 / 8.0  },
@@ -62,8 +63,7 @@ float2 computeVarianceCenter(int2 ipos, Texture2D sDirect, Texture2D sIndirect)
 
             float k = kernel[abs(xx)][abs(yy)];
 
-            sum.r += sDirect.Load(int3(p, 0)).a * k;
-            sum.g += sIndirect.Load(int3(p, 0)).a * k;
+            sum += sColor.Load(int3(p, 0)).a * k;
         }
     }
 
@@ -72,8 +72,7 @@ float2 computeVarianceCenter(int2 ipos, Texture2D sDirect, Texture2D sIndirect)
 
 struct PS_OUT
 {
-    float4 OutDirect    : SV_TARGET0;
-    float4 OutIndirect  : SV_TARGET1;
+    float4 OutColor    : SV_TARGET0;
 };
 
 PS_OUT main(FullScreenPassVsOut vsOut)
@@ -81,20 +80,18 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     float4 fragCoord = vsOut.posH;
     const int2 ipos       = int2(fragCoord.xy);
-    const int2 screenSize = getTextureDims(gDirect, 0);
+    const int2 screenSize = getTextureDims(gColor, 0);
 
     const float epsVariance      = 1e-10;
     const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
 
     // constant samplers to prevent the compiler from generating code which
     // fetches the sampler descriptor from memory for each texture access
-    const float4  directCenter    = gDirect.Load(int3(ipos, 0));
-    const float4  indirectCenter  = gIndirect.Load(int3(ipos, 0));
-    const float   lDirectCenter   = luminance(directCenter.rgb);
-    const float   lIndirectCenter = luminance(indirectCenter.rgb);
+    const float4 colorCenter    = gColor.Load(int3(ipos, 0));
+    const float lColorCenter = luminance(colorCenter.rgb);
 
     // variance for direct and indirect, filtered using 3x3 gaussin blur
-    const float2 var = computeVarianceCenter(ipos, gDirect, gIndirect);
+    const float var = computeVarianceCenter(ipos, gColor);
 
     // number of temporally integrated pixels
     const float historyLength = gHistoryLength.Load(int3(ipos, 0)).r;
@@ -108,21 +105,17 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     if (zCenter.x < 0)
     {
         // not a valid depth => must be envmap => do not filter
-        psOut.OutDirect   = directCenter;
-        psOut.OutIndirect = indirectCenter;
+        psOut.OutColor   = colorCenter;
         return psOut;
     }
 
-    const float phiLDirect   = gPhiColor * sqrt(max(0.0, epsVariance + var.r));
-    const float phiLIndirect = gPhiColor * sqrt(max(0.0, epsVariance + var.g));
+    const float phiLColor   = gPhiColor * sqrt(max(0.0, epsVariance + var.r));
     const float phiDepth     = max(zCenter.y, 1e-8) * gStepSize;
 
     // explicitly store/accumulate center pixel with weight 1 to prevent issues
     // with the edge-stopping functions
-    float   sumWDirect   = 1.0;
-    float   sumWIndirect = 1.0;
-    float4  sumDirect    = directCenter;
-    float4  sumIndirect  = indirectCenter;
+    float   sumWColor   = 1.0;
+    float4 sumColor = colorCenter;
 
     for (int yy = -2; yy <= 2; yy++)
     {
@@ -135,46 +128,37 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
             if (inside && (xx != 0 || yy != 0)) // skip center pixel, it is already accumulated
             {
-                const float4 directP     = gDirect.Load(int3(p, 0));
-                const float4 indirectP   = gIndirect.Load(int3(p, 0));
+                const float4 colorP     = gColor.Load(int3(p, 0));
 
                 float3 normalP;
                 float2 zP;
                 fetchNormalAndLinearZ(gCompactNormDepth, p, normalP, zP);
-                const float lDirectP   = luminance(directP.rgb);
-                const float lIndirectP = luminance(indirectP.rgb);
+                const float lColorP   = luminance(colorP.rgb);
 
                 // compute the edge-stopping functions
-                const float2 w = computeWeight(
+                const float w = computeWeight(
                     zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
-                    normalCenter, normalP, gPhiNormal, 
-                    lDirectCenter, lDirectP, phiLDirect,
-                    lIndirectCenter, lIndirectP, phiLIndirect);
+                    normalCenter, normalP, gPhiNormal,
+                    lColorCenter, lColorP, phiLColor);
 
-                const float wDirect = w.x * kernel;
-                const float wIndirect = w.y * kernel;
+                const float wColor = w * kernel;
 
                 // alpha channel contains the variance, therefore the weights need to be squared, see paper for the formula
-                sumWDirect  += wDirect;
-                sumDirect   += float4(wDirect.xxx, wDirect * wDirect) * directP;
-
-                sumWIndirect  += wIndirect;
-                sumIndirect   += float4(wIndirect.xxx, wIndirect * wIndirect) * indirectP;
+                sumWColor += wColor;
+                sumColor += float4(wColor.xxx, wColor * wColor) * colorP;
             }
         }
     }
 
     // renormalization is different for variance, check paper for the formula
-    psOut.OutDirect   = float4(sumDirect   / float4(sumWDirect.xxx,   sumWDirect   * sumWDirect  ));
-    psOut.OutIndirect = float4(sumIndirect / float4(sumWIndirect.xxx, sumWIndirect * sumWIndirect));
+    psOut.OutColor = float4(sumColor / float4(sumWColor.xxx, sumWColor * sumWColor));
 
     // do the demodulation in the last iteration to save memory bandwidth
     if(gPerformModulation)
     {
-        float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[ipos].z)).rgb, 1.0f);
-        psOut.OutDirect = psOut.OutDirect * gAlbedo[ipos]
-                        + psOut.OutIndirect * gIndirAlbedo[ipos]
-                        + emissiveColor * gEmitMult;
+        // Albedo texture contains light index in alpha.
+        uint4 shadeIndirect = psOut.OutColor * gAlbedo[ipos] * 255.0;
+        gOutput[ipos] = uint4(shadeIndirect.rgb, gAlbedo[ipos].a);
     }
 
     return psOut;

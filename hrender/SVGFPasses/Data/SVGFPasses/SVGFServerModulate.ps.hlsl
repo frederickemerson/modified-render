@@ -20,18 +20,16 @@
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
 // Demodulated input textures from the shading pass
-Texture2D<float4> gDirect;
 Texture2D<float4> gIndirect;
-Texture2D<float4> gDirAlbedo;
 Texture2D<float4> gIndirAlbedo;
 
 // Texture data from the shading pass - we need this to retrieve the emissive color
 Texture2D<float4> gTexData;
 
-cbuffer ModulateCB
-{
-    float   gEmitMult;  // Multiply emissive amount by this factor (set to 1, usually)
-};
+// Output texture
+RWTexture2D<uint4> gOutput;
+
+bool gFilterEnabled;
 
 // We could directly output a float4 instead of this PS_OUT, but this allows for
 // future extension if necessary.
@@ -40,18 +38,19 @@ struct PS_OUT
     float4 color : SV_TARGET0;
 };
 
-PS_OUT main(FullScreenPassVsOut vsOut)
+float4 main(FullScreenPassVsOut vsOut)
 {
     float4 fragCoord = vsOut.posH;
     int2 ipos        = int2(fragCoord.xy);
 
-    float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[ipos].z)).rgb, 1.0f);
-
     PS_OUT ret;
-    ret.color = gDirect[ipos] * gDirAlbedo[ipos]
-              + gIndirect[ipos] * gIndirAlbedo[ipos]
-              + emissiveColor * gEmitMult;
-
-    return ret;
+    ret.color = gIndirect[ipos] * gIndirAlbedo[ipos];
+    
+    // Albedo texture contains light index in alpha.
+    uint4 shadeIndirect = ret.color * 255.0;
+    gOutput[ipos] = uint4(shadeIndirect.rgb, gIndirAlbedo[ipos].a);
+    
+    // If filter not enabled, output buffer is not used. So we just return float4(0.0f)
+    return gFilterEnabled ? ret.color : float4(0.0f);
 }
 
