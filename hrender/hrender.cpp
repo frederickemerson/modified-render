@@ -501,6 +501,8 @@ RenderConfiguration getRenderConfigDebugHybrid() {
             // --- ServerGlobalIllumPass computes indirect illumination color and
             //     selects random light index to be used for direct illumination. --- //
             ServerGlobalIllumPass,
+            // --- SVGFServerPass performs denoising on indirect illumination.
+            SVGFServerPass,
             // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
             MemoryTransferPassGPU_CPU,
             // --- CompressionPass compresses buffers to be sent across Network --- //
@@ -514,11 +516,13 @@ RenderConfiguration getRenderConfigDebugHybrid() {
             // --- ClientGlobalIllumPass loads server indirect illumination into texture and
             //     calculates direct illumination using given random light index --- //
             ClientGlobalIllumPass,
+            // --- SVGFClientPass performs denoising on direct illumination
+            SVGFClientPass,
             // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
-            PredictionPass,
+            //PredictionPass,
             // --- VShadingPass makes use of the direct and indirect lighting to shade the sceneIndex.
             //     We also provide the ability to preview the GBuffer alternatively. --- //
-            VShadingPass,
+            //VShadingPass,
             // --- CopyToOutputPass just lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
