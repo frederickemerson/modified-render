@@ -306,6 +306,12 @@
     <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
       <Filter>SVGFPasses\ReferencePasses</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -486,9 +492,6 @@
     </ShaderSource>
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl">
-      <Filter>CommonPasses\Shaders</Filter>
     </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
       <Filter>GIPasses\Shaders</Filter>

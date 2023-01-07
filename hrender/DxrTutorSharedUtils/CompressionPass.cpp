@@ -600,7 +600,7 @@ bool CompressionPass::initialiseH264Decoders() {
     params.width = nWidth;
     params.height = nHeight;
     params.isColorConvertNeeded = true;
-    params.inPixFmt = AV_PIX_FMT_YUV444P;
+    params.inPixFmt = AV_PIX_FMT_YUV420P;
     params.outPixFmt = AV_PIX_FMT_RGBA;
 
     initialiseH264HybridDecoder(&params);

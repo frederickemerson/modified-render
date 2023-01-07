@@ -81,8 +81,8 @@ const char* environmentMaps[] = {
 unsigned char sceneIdx = 0;
 
 // Switches rendering modes between HybridRender and RemoteRender
-RenderMode renderMode = RenderMode::HybridRender;
-//RenderMode renderMode = RenderMode::RemoteRender;
+//RenderMode renderMode = RenderMode::HybridRender;
+RenderMode renderMode = RenderMode::RemoteRender;
 
 // GGXGlobalIllum serves as ground truth; only works on debug mode.
 RenderType renderType = RenderType::Distributed;
