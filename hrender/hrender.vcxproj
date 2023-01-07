@@ -16,13 +16,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\YUVToRGBAPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
@@ -61,13 +62,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\YUVToRGBAPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp" />
     <ClInclude Include="DxrTutorSharedUtils\Compression.h" />
@@ -124,6 +126,7 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoCommonUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl" />
@@ -142,7 +145,6 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\standardShadowRay.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensGBuffer.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\thinLensUtils.hlsli" />
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl" />
     <ShaderSource Include="DxrTutorTestPasses\Data\TestPasses\sinusoid.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\CopyBuffer.ps.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\OffsetBuffer.ps.hlsl" />

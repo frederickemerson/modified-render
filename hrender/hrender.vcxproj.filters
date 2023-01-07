@@ -101,9 +101,6 @@
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\YUVToRGBAPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
       <Filter>CommonPasses</Filter>
     </ClCompile>
@@ -127,6 +124,12 @@
     </ClCompile>
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp">
       <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp">
+      <Filter>CommonPasses\Remote Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -240,9 +243,6 @@
     <ClInclude Include="DxrTutorSharedUtils\Compression.h">
       <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\YUVToRGBAPass.h">
-      <Filter>CommonPasses</Filter>
-    </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
       <Filter>CommonPasses</Filter>
     </ClInclude>
@@ -266,6 +266,12 @@
     </ClInclude>
     <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
       <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -334,6 +340,12 @@
     </Filter>
     <Filter Include="SVGFPasses\Shaders\Shared">
       <UniqueIdentifier>{468ac973-bc19-4905-9071-6d5d93ed6bc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Remote Render">
+      <UniqueIdentifier>{706756af-9255-401f-a34a-98597dabca2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Shaders\Remote Render">
+      <UniqueIdentifier>{5707469d-337d-4dc3-8496-cf3a80531047}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -436,9 +448,6 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\YUV444ToRGBA32F.hlsl">
-      <Filter>CommonPasses\Shaders</Filter>
-    </ShaderSource>
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
       <Filter>GIPasses\Shaders</Filter>
     </ShaderSource>
@@ -501,6 +510,9 @@
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorFilterMoments.ps.hlsl">
       <Filter>SVGFPasses\Shaders\Shared</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl">
+      <Filter>CommonPasses\Shaders\Remote Render</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

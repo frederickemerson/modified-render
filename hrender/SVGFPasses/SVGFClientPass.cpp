@@ -29,16 +29,17 @@ namespace {
     const char *kFilterMomentShader      = "Samples\\hrender\\SVGFPasses\\Data\\SVGFPasses\\SVGF1ColorFilterMoments.ps.hlsl";
 };
 
-SVGFClientPass::SharedPtr SVGFClientPass::create(const std::string &directIn, const std::string &outChannel)
+SVGFClientPass::SharedPtr SVGFClientPass::create(const std::string &directIn, const std::string &outChannel, bool isHybridRendering)
 {
-    return SharedPtr(new SVGFClientPass(directIn, outChannel));
+    return SharedPtr(new SVGFClientPass(directIn, outChannel, isHybridRendering));
 }
 
-SVGFClientPass::SVGFClientPass(const std::string &directIn, const std::string &outChannel)
+SVGFClientPass::SVGFClientPass(const std::string &directIn, const std::string &outChannel, bool isHybridRendering)
     : RenderPass( "Spatiotemporal Filter (SVGF)", "SVGF Options" )
 {
     mDirectInTexName   = directIn;
     mOutTexName        = outChannel;
+    mHybridMode = isHybridRendering;
 }
 
 bool SVGFClientPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -57,7 +58,14 @@ bool SVGFClientPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mpResManager->requestTextureResource("OutDirectAlbedo");
 
     // Set the output channel
-    mpResManager->requestTextureResource(mOutTexName);
+    //mpResManager->requestTextureResource(mOutTexName);
+
+    if (mHybridMode) {
+        mpResManager->requestTextureResource(mOutTexName);
+    }
+    else {
+        mpResManager->requestTextureResource(mOutTexName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, 1920, 1080);
+    }
 
     // Create our graphics state
     mpSvgfState = GraphicsState::create();

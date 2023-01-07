@@ -296,10 +296,9 @@ void SVGFServerPass::computeModulation(RenderContext* pRenderContext)
     modulateVars["gIndirAlbedo"] = mInputTex.indirAlbedo;
 
     modulateVars["gOutput"] = mpResManager->getTexture(mOutTexName);
-    modulateVars["gFilterEnabled"] = mFilterEnabled;
 
     // Run the modulation pass. If filtering is not enabled, we simply render to the output texture. Otherwise,
     // we render to the output fbo, since there is further logic to perform (copying to history for the next frame)
-    mpModulate->execute(pRenderContext, mFilterEnabled ? mpOutputFbo : mpResManager->createManagedFbo({ mOutTexName }));
+    mpModulate->execute(pRenderContext, mFilterEnabled ? mpOutputFbo : mpResManager->createManagedFbo({ "IntermediateOutput" }));
 }
 

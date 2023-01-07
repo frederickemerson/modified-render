@@ -23,13 +23,8 @@
 Texture2D<float4> gIndirect;
 Texture2D<float4> gIndirAlbedo;
 
-// Texture data from the shading pass - we need this to retrieve the emissive color
-Texture2D<float4> gTexData;
-
 // Output texture
 RWTexture2D<uint4> gOutput;
-
-bool gFilterEnabled;
 
 // We could directly output a float4 instead of this PS_OUT, but this allows for
 // future extension if necessary.
@@ -38,7 +33,7 @@ struct PS_OUT
     float4 color : SV_TARGET0;
 };
 
-float4 main(FullScreenPassVsOut vsOut)
+PS_OUT main(FullScreenPassVsOut vsOut)
 {
     float4 fragCoord = vsOut.posH;
     int2 ipos        = int2(fragCoord.xy);
@@ -51,6 +46,6 @@ float4 main(FullScreenPassVsOut vsOut)
     gOutput[ipos] = uint4(shadeIndirect.rgb, gIndirAlbedo[ipos].a);
     
     // If filter not enabled, output buffer is not used. So we just return float4(0.0f)
-    return gFilterEnabled ? ret.color : float4(0.0f);
+    return ret;
 }
 

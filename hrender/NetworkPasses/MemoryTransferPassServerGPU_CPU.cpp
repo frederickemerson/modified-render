@@ -38,7 +38,7 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
         outputBuffer = new uint8_t[VIS_TEX_LEN];
     }
     else {
-        mVShadingIndex = mpResManager->getTextureIndex("__V-shadingYUVServer");
+        mVShadingIndex = mpResManager->getTextureIndex("V-shadingServer");
         outputBuffer = new uint8_t[VIS_TEX_LEN];
     }
 

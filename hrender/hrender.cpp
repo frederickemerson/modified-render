@@ -44,7 +44,8 @@
 #include "NetworkPasses/NetworkServerSendPass.h"
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "NetworkPasses/PredictionPass.h"
-#include "DxrTutorCommonPasses/YUVToRGBAPass.h"
+#include "DxrTutorCommonPasses/ServerRemoteConverter.h"
+#include "DxrTutorCommonPasses/ClientRemoteConverter.h"
 #include "DxrTutorCommonPasses/AmbientOcclusionPass.h"
 #include "DxrTutorCommonPasses/GGXClientGlobalIllumPass.h"
 #include "DxrTutorCommonPasses/GGXServerGlobalIllumPass.h"
@@ -67,8 +68,8 @@ const char* environmentMaps[] = {
 };
 
 // Switches rendering modes between HybridRender and RemoteRender
-RenderMode renderMode = RenderMode::HybridRender;
-//RenderMode renderMode = RenderMode::RemoteRender;
+//RenderMode renderMode = RenderMode::HybridRender;
+RenderMode renderMode = RenderMode::RemoteRender;
 
 /**
  * Determines the mode or configuration that the program runs
@@ -178,10 +179,13 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             auto pass = PredictionPass::create(renderConfiguration.texWidth, renderConfiguration.texHeight);
             pipeline->setPass(i, pass);
         }
-        else if (renderConfiguration.passOrder[i] == YUVToRGBAPass) {
-            // Converts YUV444P to RGBA, Takes in texture name to convert and texture name to output to
-            // If output texture is named V-shading, it causes problems during debug mode.
-            pipeline->setPass(i, YUVToRGBAPass::create("__V-shadingYUVClient", "V-shading")); 
+        else if (renderConfiguration.passOrder[i] == ServerRemoteConverter) {
+            // Simple pass to convert RGBA32Float to R11G11B10 floats
+            pipeline->setPass(i, ServerRemoteConverter::create("RemoteIllum", "V-shadingServer", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        }
+        else if (renderConfiguration.passOrder[i] == ClientRemoteConverter) {
+            // Simple pass to convert R11G11B10 to RGBA32Float floats
+            pipeline->setPass(i, ClientRemoteConverter::create("V-shadingClient", "V-shading"));
         }
         else if (renderConfiguration.passOrder[i] == AmbientOcclusionPass) {
             // This pass exists but has been replaced in favour of the GlobalIllum passes.
@@ -197,7 +201,8 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, SVGFServerPass::create("OutIndirectColor", "ServerIndirectLighting", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
         else if (renderConfiguration.passOrder[i] == SVGFClientPass) {
-            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", "V-shading"));
+            std::string outBuf = isHybridRendering ? "V-shading" : "RemoteIllum";
+            pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", outBuf, isHybridRendering));
         }
     }
 }
@@ -240,9 +245,7 @@ void runDebug()
     }
     else if (renderMode == RenderMode::RemoteRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1  }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1  }),
-            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1 })
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
             });
     }
 
@@ -302,7 +305,7 @@ void runServer()
     }
     else if (renderMode == RenderMode::RemoteRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     // Start our program
@@ -348,7 +351,7 @@ void runClient()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1,1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -499,7 +502,7 @@ RenderConfiguration getRenderConfigClientHybrid() {
     return {
         1920, 1080, // texWidth and texHeight
         0, // sceneIndex
-        8,
+        9,
         { // Array of RenderConfigPass
             // --- JitteredGBufferPass creates a GBuffer on client side--- //
             JitteredGBufferPass,
@@ -523,7 +526,7 @@ RenderConfiguration getRenderConfigClientHybrid() {
             // --- CopyToOutputPass lets us select which pass to view on screen --- //
             CopyToOutputPass,
             // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
-            //SimpleAccumulationPass,
+            SimpleAccumulationPass
         }
     };
 }
@@ -532,17 +535,29 @@ RenderConfiguration getRenderConfigDebugRemote() {
     return {
     1920, 1080, // texWidth and texHeight
     0, // sceneIndex
-    12,
+    14,
     { // Array of RenderConfigPass
         // --- RenderConfigPass 1 creates a GBuffer --- //
         JitteredGBufferPass,
-        // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
-        VisibilityPass,
-        // --- RenderConfigPass 3 performs prediction on visibility bitmap if frames are behind. --- //
-        PredictionPass,
-        // --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex in YUV format. ---//
-        // --- We also provide the ability to preview the GBuffer alternatively. --- //
-        VShadingPass,
+        //// --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
+        //VisibilityPass,
+        // --- ServerGlobalIllumPass computes indirect illumination color and
+        //     selects random light index to be used for direct illumination. --- //
+        ServerGlobalIllumPass,
+        // --- SVGFServerPass performs denoising on indirect illumination.
+        SVGFServerPass,
+        //// --- RenderConfigPass 3 performs prediction on visibility bitmap if frames are behind. --- //
+        //PredictionPass,
+        //// --- RenderConfigPass 4 makes use of the visibility bitmap to shade the sceneIndex in YUV format. ---//
+        //// --- We also provide the ability to preview the GBuffer alternatively. --- //
+        //VShadingPass,
+        // --- ClientGlobalIllumPass loads server indirect illumination into texture and
+        //     calculates direct illumination using given random light index --- //
+        ClientGlobalIllumPass,
+        // --- SVGFClientPass performs denoising on direct illumination
+        SVGFClientPass,
+        // --- ServerRemoteConverter compacts the float values in the resulting 
+        ServerRemoteConverter,
         // --- RenderConfigPass 5 transfers GPU information into CPU --- //
         MemoryTransferPassGPU_CPU,
         // --- RenderConfigPass 6 compresses buffers to be sent across Network --- //
@@ -554,7 +569,7 @@ RenderConfiguration getRenderConfigDebugRemote() {
         // --- RenderConfigPass 9 transfers CPU information into GPU --- //
         MemoryTransferPassCPU_GPU,
         // --- RenderConfigPass 10 converts the YUV data back to RGBA format --- //
-        YUVToRGBAPass,
+        ClientRemoteConverter,
         // --- RenderConfigPass 11 just lets us select which pass to view on screen --- //
         CopyToOutputPass,
         // --- RenderConfigPass 12 temporally accumulates frames for denoising --- //
@@ -567,18 +582,29 @@ RenderConfiguration getRenderConfigServerRemote() {
     return {
     1920, 1080, // texWidth and texHeight
     0, // sceneIndex
-    8,
+    10,
     { // Array of RenderConfigPass
         // --- RenderConfigPass 1 Receive camera data from client --- //
         NetworkServerRecvPass,
         // --- RenderConfigPass 2 creates a GBuffer on server side--- //
         JitteredGBufferPass,
-        // --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
-        VisibilityPass,
+        //// --- RenderConfigPass 3 makes use of the GBuffer determining visibility under different lights --- //
+        //VisibilityPass,
+        // --- ServerGlobalIllumPass computes indirect illumination color and
+        //     selects random light index to be used for direct illumination. --- //
+        ServerGlobalIllumPass,
+        // --- SVGFServerPass performs denoising on indirect illumination.
+        SVGFServerPass,
+        // --- ClientGlobalIllumPass loads server indirect illumination into texture and
+        //     calculates direct illumination using given random light index --- //
+        ClientGlobalIllumPass,
+        // --- SVGFClientPass performs denoising on direct illumination
+        SVGFClientPass,
         // --- RenderConfigPass 4 performs prediction on visibility bitmap if frames are behind. --- //
-        PredictionPass,
+        //PredictionPass,
         // --- RenderConfigPass 5 makes use of the visibility bitmap to shade the sceneIndex. --- //
-        VShadingPass,
+        //VShadingPass,
+        ServerRemoteConverter,
         // --- RenderConfigPass 6 transfers GPU information into GPU --- //
         MemoryTransferPassGPU_CPU,
         // --- RenderConfigPass 7 compresses buffers to be sent across network --- //
@@ -604,7 +630,7 @@ RenderConfiguration getRenderConfigClientRemote() {
         // --- RenderConfigPass 4 transfers CPU information into GPU --- //
         MemoryTransferPassCPU_GPU,
         // --- RenderConfigPass 5 converts the YUV data back to RGBA format --- //
-        YUVToRGBAPass,
+        ClientRemoteConverter,
         // --- RenderConfigPass 6 just lets us select which pass to view on screen --- //
         CopyToOutputPass,
         // --- RenderConfigPass 7 temporally accumulates frames for denoising --- //

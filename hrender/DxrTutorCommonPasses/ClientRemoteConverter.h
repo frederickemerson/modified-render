@@ -6,19 +6,19 @@
 /**
  * Takes in a YUV444P texture and converts it to RGBA32Float format.
 */
-class YUVToRGBAPass : public ::RenderPass
+class ClientRemoteConverter : public ::RenderPass
 {
 public:
-    using SharedPtr = std::shared_ptr<YUVToRGBAPass>;
-    using SharedConstPtr = std::shared_ptr<const YUVToRGBAPass>;
+    using SharedPtr = std::shared_ptr<ClientRemoteConverter>;
+    using SharedConstPtr = std::shared_ptr<const ClientRemoteConverter>;
 
     static SharedPtr create(const std::string& inBuf, const std::string& outBuf) {
-        return SharedPtr(new YUVToRGBAPass(inBuf, outBuf));
+        return SharedPtr(new ClientRemoteConverter(inBuf, outBuf));
     }
-    virtual ~YUVToRGBAPass() = default;
+    virtual ~ClientRemoteConverter() = default;
 
 protected:
-    YUVToRGBAPass(const std::string& inBuf, const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("YUV to RGBA Pass", "YUV to RGBA Pass Options") {
+    ClientRemoteConverter(const std::string& inBuf, const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("YUV to RGBA Pass", "YUV to RGBA Pass Options") {
         mInputTexName = inBuf; mOutputTexName = outBuf;
     }
 

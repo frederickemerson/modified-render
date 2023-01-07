@@ -37,7 +37,7 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     }
     else {
         // Intermediate texture used when remote rendering.
-        mVShadingIndex = mpResManager->requestTextureResource("__V-shadingYUVClient", ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080);
+        mVShadingIndex = mpResManager->requestTextureResource("V-shadingClient", ResourceFormat::R11G11B10Float, ResourceManager::kDefaultFlags, 1920, 1080);
     }
 
     return true;

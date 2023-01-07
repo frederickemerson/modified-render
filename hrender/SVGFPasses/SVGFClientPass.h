@@ -28,11 +28,11 @@ public:
     using SharedPtr = std::shared_ptr<SVGFClientPass>;
     using SharedConstPtr = std::shared_ptr<const SVGFClientPass>;
 
-    static SharedPtr create(const std::string &directIn, const std::string &outChannel);
+    static SharedPtr create(const std::string& directIn, const std::string& outChannel, bool isHybridRendering = true);
     virtual ~SVGFClientPass() = default;
 
 protected:
-    SVGFClientPass(const std::string &directIn, const std::string &outChannel);
+    SVGFClientPass(const std::string &directIn, const std::string &outChannel, bool isHybridRendering);
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -83,6 +83,7 @@ protected:
     // Some internal state
     bool mNeedFboClear = true;
     bool mFilterEnabled = true;
+    bool mHybridMode = true;
 
 private:
     // After resizing or creating framebuffers, make sure to initialize them
