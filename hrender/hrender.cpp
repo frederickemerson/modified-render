@@ -81,8 +81,8 @@ const char* environmentMaps[] = {
 unsigned char sceneIdx = 0;
 
 // Switches rendering modes between HybridRender and RemoteRender
-//RenderMode renderMode = RenderMode::HybridRender;
-RenderMode renderMode = RenderMode::RemoteRender;
+RenderMode renderMode = RenderMode::HybridRender;
+//RenderMode renderMode = RenderMode::RemoteRender;
 
 // GGXGlobalIllum serves as ground truth; only works on debug mode.
 RenderType renderType = RenderType::Distributed;
@@ -297,6 +297,7 @@ void runDebug()
     
     RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
 
+    RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(renderConfiguration.texWidth, renderConfiguration.texHeight));
 
@@ -424,13 +425,7 @@ void runClient()
     // 005 SERVER
     //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
 
-    RenderConfiguration renderConfiguration;
-    if (renderMode == RenderMode::HybridRender) {
-        renderConfiguration = getRenderConfigClientHybrid();
-    }
-    else if (renderMode == RenderMode::RemoteRender) {
-        renderConfiguration = getRenderConfigClientRemote();
-    }
+    RenderConfiguration renderConfiguration = getClientRenderConfig(renderMode, renderType, sceneIdx);
 
     CreatePipeline(renderConfiguration, pipeline);
 

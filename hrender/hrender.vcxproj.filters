@@ -312,6 +312,9 @@
     <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
       <Filter>CommonPasses\Remote Render</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">

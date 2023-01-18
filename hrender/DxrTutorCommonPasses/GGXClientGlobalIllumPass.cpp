@@ -88,8 +88,7 @@ void GGXClientGlobalIllumPass::execute(RenderContext* pRenderContext)
     globalVars["gPos"]         = mpResManager->getTexture("WorldPosition");
     globalVars["gNorm"]        = mpResManager->getTexture("WorldNormal");
     globalVars["gTexData"]     = mpResManager->getTexture("__TextureData");
-    //globalVars["gGIData"]      = mpResManager->getTexture("ClientGlobalIllum");
-    globalVars["gGIData"]      = mpResManager->getTexture("ServerIndirectLighting");
+    globalVars["gGIData"]      = mpResManager->getTexture("ClientGlobalIllum");
     globalVars["gDirectColorOutput"] = pDirectColorTex;
     globalVars["gDirectAlbedoOutput"] = pDirectAlbedoTex;
     globalVars["gIndirectLightOut"] = pIndirectLightTex;

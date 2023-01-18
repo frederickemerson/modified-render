@@ -88,11 +88,6 @@ enum RenderConfigPass : uint8_t {
     FilterPass
 };
 
-enum class RenderMode : uint8_t {
-    RemoteRender, // Scenes fully rendered on server
-    HybridRender
-};
-
 // total size: 16 bytes
 struct RenderConfiguration {
     int texWidth;
