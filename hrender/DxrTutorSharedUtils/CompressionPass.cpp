@@ -29,7 +29,9 @@
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    int sizeToAllocateOutputBuffer = VIS_TEX_LEN;
+    // AO uses a VIS_TEX_LEN buffer as textures initalization currently only supports 32-bit per pixel buffers and nothing smaller.
+    // If the above issue is fixed, we can then use VIS_TEX_LEN + AO_TEX_LEN as the size of the output buffer instead.
+    int sizeToAllocateOutputBuffer = VIS_TEX_LEN * 2;
     outputBuffer = new char[sizeToAllocateOutputBuffer];
     outputBufferNVENC = new char[sizeToAllocateOutputBuffer];
     
@@ -580,7 +582,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Parameters for Compression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = VIS_TEX_LEN;
+                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN;
 
                 // Compress buffer
                 int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
@@ -611,7 +613,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 // Parameters for Decompression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = mGetInputBufferSize();
-                int maxDecompressedSize = VIS_TEX_LEN;
+                int maxDecompressedSize = VIS_TEX_LEN + AO_TEX_LEN;
 
                 if (sourceBufferSize == maxDecompressedSize) {
                     OutputDebugString(L"Skipping decompression, texture didnt change");

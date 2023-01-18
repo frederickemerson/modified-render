@@ -131,6 +131,9 @@
     <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp">
       <Filter>CommonPasses\Remote Render</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfigUtils.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -272,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
       <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h">
+      <Filter>SharedUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

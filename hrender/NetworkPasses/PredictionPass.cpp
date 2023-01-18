@@ -30,14 +30,6 @@ namespace {
     const std::string kAOBufOrig = "AmbientOcclusion";
     // Offset AO buffer resource location
     const std::string kAOBufOffset = "OffsetAmbientOcclusion";
-    // Original AO buffer resource location
-    const std::string kDirectIllumOrig = "DirectIllum";
-    // Offset AO buffer resource location
-    const std::string kDirectIllumOffset = "OffsetDirectIllum";
-    // Original AO buffer resource location
-    const std::string kIndirectIllumOrig = "IndirectIllum";
-    // Offset AO buffer resource location
-    const std::string kIndirectIllumOffset = "OffsetIndirectIllum";
 
     // ========================= SHADER VARIABLES FOR PredictionPass.ps.hlsl =========================
 
@@ -79,10 +71,6 @@ namespace {
     const std::string sVarVisBufOriginalTex = "gVisBufferOrig";
     // Name of shader variable for original visibility buffer texture
     const std::string sVarAOBufOriginalTex = "gAOBufferOrig";
-    // Name of shader variable for original direct illum texture
-    const std::string sVarDirectIllumOriginalTex = "gDirectIllumOrig";
-    // Name of shader variable for original indirect illum texture
-    const std::string sVarIndirectIllumOriginalTex = "gIndirectIllumOrig";
     // Name of shader variable for motion vectors texture from PredictionPass.ps.hlsl
     const std::string sVarMotionVecTex = "gMotionVectors";
     // Name of shader variable for mode of "filling-in" for unknown fragments
@@ -121,30 +109,18 @@ bool PredictionPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mWorldPosIndex = mpResManager->requestTextureResource(
         kWorldPos, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     //// Request for original visibility buffer texture
-    //mVisBufOrigIndex = mpResManager->requestTextureResource(
-    //    kVisBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    //// Request for offset visibility buffer texture
-    //mVisBufOffsetIndex = mpResManager->requestTextureResource(
-    //    kVisBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    //// Request for original AO buffer texture
-    //mAOBufOrigIndex = mpResManager->requestTextureResource(
-    //    kAOBufOrig, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    //// Request for offset AO buffer texture
-    //mAOBufOffsetIndex = mpResManager->requestTextureResource(
-    //    kAOBufOffset, ResourceFormat::RGBA8Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    // Request for original direct illum texture
-    mDirectIllumOrigIndex = mpResManager->requestTextureResource(
-        kDirectIllumOrig, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    // Request for offset direct illum texture
-    mDirectIllumOffsetIndex = mpResManager->requestTextureResource(
-        kDirectIllumOffset, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    // Request for original indirect illum texture
-    mIndirectIllumOrigIndex = mpResManager->requestTextureResource(
-        kIndirectIllumOrig, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    // Request for offset indirect illum texture
-    mIndirectIllumOffsetIndex = mpResManager->requestTextureResource(
-        kIndirectIllumOffset, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    
+    mVisBufOrigIndex = mpResManager->requestTextureResource(
+        kVisBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for offset visibility buffer texture
+    mVisBufOffsetIndex = mpResManager->requestTextureResource(
+        kVisBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for original AO buffer texture
+    mAOBufOrigIndex = mpResManager->requestTextureResource(
+        kAOBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for offset AO buffer texture
+    mAOBufOffsetIndex = mpResManager->requestTextureResource(
+        kAOBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+
     // Request for the Z-Buffer
     mZBufferIndex = mpResManager->requestTextureResource(
         kZBuffer, Falcor::ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags, mTexWidth, mTexHeight);
@@ -173,7 +149,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     pRenderContext->clearFbo(predictionFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
     // Create a FBO for the step to offset the buffers
     Falcor::Fbo::SharedPtr offsetBufferFbo = mpResManager->
-        createManagedFbo({ mDirectIllumOffsetIndex, mIndirectIllumOffsetIndex }, mZBufferIndex);
+        createManagedFbo({ mVisBufOffsetIndex, mAOBufOffsetIndex }, mZBufferIndex);
     //pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
     // Failed to create valid FBOs? We're done.
     if (!(predictionFbo && offsetBufferFbo))
@@ -207,8 +183,6 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
         Falcor::GraphicsVars::SharedPtr copyShaderVars = mpCopyShader->getVars();
         copyShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
         copyShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
-        copyShaderVars[sVarDirectIllumOriginalTex] = mpResManager->getTexture(mDirectIllumOrigIndex);
-        copyShaderVars[sVarIndirectIllumOriginalTex] = mpResManager->getTexture(mIndirectIllumOrigIndex);
 
         // Using output FBO for OffsetBuffer, run CopyBuffer shader to copy over the visibility buffer
         mpCopyShader->execute(pRenderContext, offsetBufferFbo);

@@ -31,9 +31,9 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
 
     // store index of texture(s) we will be transferring to
     if (mHybridMode) {
-        /*mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");*/
-        mGIIndex = mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
+        mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
+        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+        //mGIIndex = mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
     }
     else {
         // Intermediate texture used when remote rendering.
@@ -65,15 +65,16 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
         return;
     }
 
-    /*Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
-    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);*/
-    Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
+    Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
+    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
+    //Texture::SharedPtr giTex = mpResManager->getClearedTexture(mGIIndex, float4(0.0f));
     pRenderContext->flush(true);
 
     std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
-    giTex->apiInitPub(mGetInputBuffer(), true);
-    //char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
-    //AOTex->apiInitPub(pAOTex, true);
+    //giTex->apiInitPub(mGetInputBuffer(), true);
+    visTex->apiInitPub(mGetInputBuffer(), true);
+    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+    AOTex->apiInitPub(pAOTex, true);
 
     Regression::addNonSeqFrame((int*)mGetInputBuffer());
 }

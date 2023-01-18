@@ -57,10 +57,6 @@ protected:
     int32_t                                 mVisBufOffsetIndex;             ///< An index for the offset visibility buffer
     int32_t                                 mAOBufOrigIndex;               ///< An index for the original AO buffer
     int32_t                                 mAOBufOffsetIndex;             ///< An index for the offset AO buffer
-    int32_t                                 mDirectIllumOrigIndex;          ///< An index for the original direct illumination buffer
-    int32_t                                 mDirectIllumOffsetIndex;        ///< An index for the offset direct illumination buffer
-    int32_t                                 mIndirectIllumOrigIndex;        ///< An index for the original indirect illumination buffer
-    int32_t                                 mIndirectIllumOffsetIndex;      ///< An index for the offset indirect illumination buffer
     int32_t                                 mWorldPosIndex;                 ///< An index for the world position
     int32_t                                 mZBufferIndex;                  ///< An index for the Z buffer
     bool                                    mUsePrediction = true;          ///< A flag to toggle prediction

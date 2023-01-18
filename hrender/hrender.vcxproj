@@ -30,6 +30,7 @@
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Regression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfigUtils.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
     <ClInclude Include="DxrTutorSharedUtils\Regression.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
