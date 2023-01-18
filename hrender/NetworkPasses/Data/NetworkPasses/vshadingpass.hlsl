@@ -41,7 +41,6 @@ cbuffer RayGenCB
     bool gDecodeMode; // Just debug the visibility bitmaps
     int gDecodeBit; // Which light of the visibility bitmap to preview
     bool gDecodeVis; // Do we want to decode Visibility buffer or Ambient Occlusion?
-    float gEmitMult; // Multiply emissive amount by this factor (set to 1, usually)
     float gAmbient;
     uint gNumAORays;
 }
@@ -51,7 +50,11 @@ Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
 Texture2D<uint>   gVisibility;
-Texture2D<uint4>   gAO;
+Texture2D<uint>   gAO;
+Texture2D<float4> gDirectIllum;
+Texture2D<float4> gIndirectIllum;
+Texture2D<float4> gDirectIllum;
+Texture2D<float4> gIndirectIllum;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
@@ -89,7 +92,7 @@ void VShadowsRayGen()
         
         // Add any emissive color from primary rays
         float4 emissiveColor = float4(unpackUnorm4x8(asuint(gTexData[launchIndex].z)).rgb, 1.0f);
-        shadeColor = gEmitMult * emissiveColor.rgb; // need a gEmitMult variable
+        shadeColor = emissiveColor.rgb; // need a gEmitMult variable
         
         // We're going to accumulate contributions from multiple lights
         const uint lightCount = gScene.getLightCount();
@@ -105,7 +108,7 @@ void VShadowsRayGen()
 
             // Compute our lambertion term (L dot N)
             float LdotN = saturate(dot(worldNorm.xyz, toLight));
-
+        
             // Shoot our ray
             float shadowMult = gSkipShadows ? 1.0f :
                 ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
@@ -118,8 +121,8 @@ void VShadowsRayGen()
         {
             shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
         }
-
-        // Physically based Lambertian term is albedo/pi
+        //if (length(shadeColor) < 0.00001)
+        //{
         shadeColor *= difMatlColor.rgb / 3.141592f;
     }
 
@@ -133,13 +136,19 @@ void VShadowsRayGen()
         if (gDecodeVis)
         {
             float shadowMult = gSkipShadows ? 1.0f :
-            ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
+                ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
+            shadeColor *= shadowMult;
+            gOutput[launchIndex] = float4(shadeColor, 1.0);
+        }
+        else
+        {
+            uint2 actualIndex = uint2(launchIndex.x, launchIndex.y >> 2);
+            uint shiftFactor = 24 - 8 * (launchIndex.y % 4);
+            uint numOfUnoccludedRays = (gAO[actualIndex] & (0xFF << shiftFactor));
 
-    gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
-
-    //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
-
+            float AOfactor = clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+            gOutput[launchIndex] = float4(float3(AOfactor), 1.0);
+        }
     }
-
 }
