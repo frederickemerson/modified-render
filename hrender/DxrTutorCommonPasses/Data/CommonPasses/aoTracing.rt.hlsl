@@ -124,13 +124,18 @@ void AoRayGen()
             if (rayPayload.hitDist > gAORadius)
             {
                 ambientOcclusion += 1;
-                accumGlobalIllum += rayPayload.hitColor;
+                //accumGlobalIllum += rayPayload.hitColor;
             }
 			
 		}
 	}
 	
 	// Save out our AO color
-    gOutput[launchIndex] = uint4(255 * accumGlobalIllum / ambientOcclusion, ambientOcclusion);
-
+ //   uint2 actualIndex = uint2(launchIndex.x, launchIndex.y >> 2); // We use a quarter of the actual texture size.
+ //   // Every 32-bits has the following format
+	////			 |   8   |   8   |   8   |   8   |
+	////   y % 4   |   0   |   1   |   2   |   3   |
+ //   uint shiftFactor = 24 - 8 * (launchIndex.y % 4);
+ //   gOutput[actualIndex] = (gOutput[actualIndex] | ((ambientOcclusion) << shiftFactor));
+    gOutput[launchIndex] = ambientOcclusion;
 }

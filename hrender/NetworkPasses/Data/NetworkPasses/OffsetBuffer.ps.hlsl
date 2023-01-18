@@ -11,17 +11,13 @@ cbuffer OffsetCb
 // Input textures that needs to be set by the C++ code
 Texture2D<uint> gVisBufferOrig;
 Texture2D<uint> gAOBufferOrig;
-Texture2D<float4> gDirectIllumOrig;
-Texture2D<float4> gIndirectIllumOrig;
 Texture2D<float4> gMotionVectors;
 
 // Output texture with offset visibility buffer
 struct PsOut
 {
-	//uint visOffset : SV_Target0;
-    //uint AoOffset  : SV_Target1;
-    float4 directIllumOffset : SV_Target0;
-    float4 indirectIllumOffset  : SV_Target1;
+    uint visOffset : SV_Target0;
+    uint AoOffset : SV_Target1;
 };
 
 PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
@@ -41,20 +37,20 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
         if (gUnknownFragMode == 0)
         {
             // Copy mode
-            motionVecBufOut.directIllumOffset = gDirectIllumOrig[screenCoords];
-            motionVecBufOut.indirectIllumOffset = gIndirectIllumOrig[screenCoords];
+            motionVecBufOut.visOffset = gVisBufferOrig[screenCoords];
+            motionVecBufOut.AoOffset = gAOBufferOrig[screenCoords];
         }
         else if (gUnknownFragMode == 1)
         {
             // Fill with shadow mode
-            motionVecBufOut.directIllumOffset = float4(float3(0.0), 1.0);
-            motionVecBufOut.indirectIllumOffset = float4(float3(0.0), 1.0);
+            motionVecBufOut.visOffset = 0x00000000;
+            motionVecBufOut.AoOffset = 0x00000000;
         }
         else // (gUnknownFragMode == 2)
         {
             // Fill with light mode
-            motionVecBufOut.directIllumOffset = float4(float3(1.0), 1.0);
-            motionVecBufOut.indirectIllumOffset = float4(float3(1.0), 1.0);
+            motionVecBufOut.visOffset = 0xFFFFFFFF;
+            motionVecBufOut.AoOffset = 0xFFFFFFFF;
         }
         return motionVecBufOut;
     }
@@ -72,12 +68,12 @@ PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)
         offsetCoords = screenCoords;
     }
 
-    // Read original illumination using the offset coordinates
-    float4 offsetDirectIllumInfo = gDirectIllumOrig[offsetCoords];
-    float4 offsetIndirectIllumInfo = gIndirectIllumOrig[offsetCoords];
+    // Read original visibility buffer using the offset coordinates
+    uint offsetVisibilityInfo = gVisBufferOrig[offsetCoords];
+    uint offsetAOInfo = gAOBufferOrig[offsetCoords];
 
     // Return the offset visibility buffer
-    motionVecBufOut.directIllumOffset = offsetDirectIllumInfo;
-    motionVecBufOut.indirectIllumOffset = offsetIndirectIllumInfo;
+    motionVecBufOut.visOffset = offsetVisibilityInfo;
+    motionVecBufOut.AoOffset = offsetAOInfo;
     return motionVecBufOut;
 }

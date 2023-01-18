@@ -35,6 +35,9 @@ struct ShadowRayPayload
 cbuffer RayGenCB
 {
     float gMinT;
+    uint gFrameCount;
+    bool gUseConeSampling; // True if cone sampling is to be used.
+    float gCosThetaMax; // Has a range of [0, pi/2]
     bool gSkipShadows; // Render all lights without shadow rays
 }
 
@@ -42,6 +45,17 @@ cbuffer RayGenCB
 Texture2D<float4> gPos;
 RWTexture2D<uint> gOutput;
 
+// Cone sampling for direct shadows
+float3 uniformSampleCone(inout uint randSeed, float cosThetaMax)
+{
+    // Get 2 random numbers to select our sample with
+    float2 randVal = float2(nextRand(randSeed), nextRand(randSeed));
+    float cosTheta = (1.0 - randVal.x) + randVal.x * cosThetaMax;
+    float sinTheta = sqrt(1 - cosTheta * cosTheta);
+    float phi = 2.0f * 3.14159265f * randVal.y;
+   
+    return normalize(float3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta));
+}
 
 float shadowRayVisibility( float3 origin, float3 direction, float minT, float maxT )
 {
@@ -94,7 +108,10 @@ void SimpleShadowsRayGen()
     // Where is this ray on screen?
     uint2 launchIndex = DispatchRaysIndex().xy;
     uint2 launchDim   = DispatchRaysDimensions().xy;
-
+    
+    // Initialize random seed per sample based on a screen position and temporally varying count
+    uint randSeed = initRand(launchIndex.x + launchIndex.y * launchDim.x, gFrameCount, 16);
+    
     // Load g-buffer data
     float4 worldPos     = gPos[launchIndex];
 
@@ -114,6 +131,19 @@ void SimpleShadowsRayGen()
             // A helper (that queries the Falcor scene to get needed data about this light)
             getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
 
+            if (gUseConeSampling)
+            {
+                float3 rndDirection = uniformSampleCone(randSeed, gCosThetaMax);
+                
+                // Getting the direction in terms of the basis
+                float3 bitangent = getPerpendicularVector(toLight);
+                float3 tangent = cross(bitangent, toLight);
+                
+                toLight = tangent * rndDirection.x + bitangent * rndDirection.y + toLight * rndDirection.z;
+                toLight = normalize(toLight);
+                distToLight = distToLight / gCosThetaMax;
+            }
+            
             // Shoot our ray
             float visibility = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 

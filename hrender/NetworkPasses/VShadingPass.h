@@ -61,7 +61,7 @@ protected:
 
     bool                                    mDecodeMode = false;    ///< Do we perform shading, or just debug the visibility bitmap?
     int32_t                                 mDecodeBit = 0;         ///< If we are debugging visibility bitmap, which light should we see?
-    bool                                    mDecodeDI = true;      ///< True for direct, false for indirect 
+    bool                                    mDecodeVis = true;      ///< True for Visibility, false for AO
 
     float                                   mAmbient = 0.5f;        ///< Scene-dependent variable to avoid perfectly dark shadows
     int32_t                                 mNumAORays = 32;        ///< Number of AO rays shot per pixel
