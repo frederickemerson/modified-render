@@ -21,6 +21,8 @@ import Utils.Color.ColorHelpers; // Contains function for computing luminance
 #include "SVGFCommon.hlsli"
 #include "SVGFPackNormal.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
+#include "SVGFBitwiseUtils.hlsli"
+
 Texture2D   gMotion;
 
 Texture2D<uint>   gVisTex;
@@ -108,7 +110,7 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out float prevAoTex, ou
 
         valid = valid || v[sampleIdx];
     }    
-    
+
     float lights[32]; // Accumulates interpolated light values
     
     int lightIndex;
@@ -149,6 +151,9 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out float prevAoTex, ou
             }
         }
 
+        // Bitwise operation on the visibility bitmap
+        loadPrevVis2x2(posPrev, v, gPrevVisTex, prevVisTex);
+        
         // redistribute weights in case not all taps were used
         valid = (sumw >= 0.01);
         prevVisTex = 0x0;
@@ -195,6 +200,13 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out float prevAoTex, ou
                 }
             }
         }
+        
+        float4 depthFilter = gPrevLinearZ[p];
+        float3 normalFilter = octToDir(asuint(depthFilter.w));
+        // Bitwise operation on the visibility bitmap
+        loadPrevVis3x3(iposPrev, depth, depthFilter.x, 
+                        normal, normalFilter, normalFwidth,
+                        gPrevVisTex, prevVisTex);
         
         if (cnt > 0)
         {

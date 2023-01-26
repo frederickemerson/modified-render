@@ -17,6 +17,7 @@
 **********************************************************************************************************************/
 
 import Utils.Color.ColorHelpers; // Contains function for computing luminance
+importExperimental.Scene.Lights.LightHelpers;
 
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
@@ -117,7 +118,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     // variance for vis and ao, filtered using 3x3 gaussin blur
     const float2 var = computeVarianceCenter(ipos, gAo);
     
-    
+
     // number of temporally integrated pixels
     const float historyLength = gHistoryLength.Load(int3(ipos, 0)).r;
 
@@ -126,7 +127,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     fetchNormalAndLinearZ(gCompactNormDepth, ipos, normalCenter, zCenter);
 
     PS_OUT psOut;
-    
+
     if (zCenter.x < 0)
     {
         // not a valid depth => must be envmap => do not filter
@@ -162,6 +163,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
                 float2 zP;
                 fetchNormalAndLinearZ(gCompactNormDepth, p, normalP, zP);
 
+                // compute the edge-stopping functions
                 const float w = computeWeight(
                         zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
                         normalCenter, normalP, gPhiNormal,

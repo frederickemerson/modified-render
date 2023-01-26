@@ -102,6 +102,7 @@ void DistrSVGFPass::resize(uint32_t width, uint32_t height)
         mpPrevReprojFbo = Fbo::create2D(width, height, desc);
     }
 
+    // Probably don't need this one.
     {   // Type 3, Screen-size FBOs with 1 RGBA32F buffer
         Fbo::Desc desc;
         desc.setColorTarget(0, Falcor::ResourceFormat::R32Uint); // VisTex
