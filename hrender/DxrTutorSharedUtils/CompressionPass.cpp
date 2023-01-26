@@ -582,8 +582,15 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Parameters for Compression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN;
 
+                // Very hacky solution, should fix by using a 8bit per pixel texture.
+                char* const s1 = reinterpret_cast<char* const>(mGetInputBuffer()) + VIS_TEX_LEN;
+                for (int i = 0; i < AO_TEX_LEN / 4; i++) {
+                    s1[i] = s1[i * 4];
+                }
+
+                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN / 4;
+                
                 // Compress buffer
                 int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
                 if (compressedSize == 0) {
@@ -613,7 +620,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                 // Parameters for Decompression
                 const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
                 int sourceBufferSize = mGetInputBufferSize();
-                int maxDecompressedSize = VIS_TEX_LEN + AO_TEX_LEN;
+                int maxDecompressedSize = VIS_TEX_LEN + AO_TEX_LEN / 4;
 
                 if (sourceBufferSize == maxDecompressedSize) {
                     OutputDebugString(L"Skipping decompression, texture didnt change");
@@ -622,6 +629,12 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
                 // Decompress buffer
                 int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
+                
+                char* const out2 = outputBuffer + VIS_TEX_LEN;
+                for (int i = AO_TEX_LEN - 1; i >= 0; i--) {
+                    out2[i] = i % 4 == 0 ? out2[i / 4] : 0;
+                }
+
                 if (decompressedSize <= 0) {
                     OutputDebugString(L"\nError: Decompression failed\n");
                 }

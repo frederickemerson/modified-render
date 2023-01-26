@@ -60,9 +60,9 @@ float computeWeight(
     return wColor;
 }
 
-float computeWeightNoLuminance(float depthCenter, float depthP, float phiDepth, float3 normalCenter, float3 normalP)
+float computeWeightNoLuminance(float depthCenter, float depthP, float phiDepth, float3 normalCenter, float3 normalP, float normPower)
 {
-    const float wNormal    = normalDistanceCos(normalCenter, normalP, 128.0f);
+    const float wNormal =  normalDistanceCos(normalCenter, normalP, normPower);
     const float wZ         = abs(depthCenter - depthP) / phiDepth;
 
     return exp(-max(wZ, 0.0)) * wNormal;

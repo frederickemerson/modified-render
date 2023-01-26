@@ -14,6 +14,7 @@ RenderConfiguration getDebugRenderConfig(RenderMode mode, RenderType type, unsig
                     JitteredGBufferPass,
                     VisibilityPass,
                     AmbientOcclusionPass,
+                    //DistrSVGFPass, // Activate once it's done.
                     MemoryTransferPassGPU_CPU,
                     CompressionPass,
                     SimulateDelayPass,

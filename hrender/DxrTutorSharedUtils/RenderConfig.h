@@ -82,6 +82,9 @@ enum RenderConfigPass : uint8_t {
     SVGFServerPass,
     // --- SVGFClientPass performs denoising on direct illumination
     SVGFClientPass,
+    // --- DistrSVGFPass performs SVGF on AO + soft shadowing
+    DistrSVGFPass,
+    FilterPass
 };
 
 // total size: 16 bytes

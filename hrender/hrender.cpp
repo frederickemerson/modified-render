@@ -52,6 +52,7 @@
 #include "DxrTutorCommonPasses/GGXServerGlobalIllumPass.h"
 #include "SVGFPasses/SVGFServerPass.h"
 #include "SVGFPasses/SVGFClientPass.h"
+#include "SVGFPasses/DistrSVGFPass.h"
 
 // Available scenes and corresponding environment maps
 std::string defaultSceneNames[] = {
@@ -69,7 +70,7 @@ const char* environmentMaps[] = {
 };
 
 // Scene index follows the scenes mentioned above.
-unsigned char sceneIdx = 0;
+unsigned char sceneIdx = 1;
 
 // Switches rendering modes between HybridRender and RemoteRender
 RenderMode renderMode = RenderMode::HybridRender;
@@ -211,6 +212,10 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             std::string outBuf = isHybridRendering ? "V-shading" : "RemoteIllum";
             pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", outBuf, isHybridRendering));
         }
+        else if (renderConfiguration.passOrder[i] == DistrSVGFPass) {
+            // TODO: Implement and change below.
+            pipeline->setPass(i, DistrSVGFPass::create("VisibilityBitmap", "AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
+        } 
     }
 }
 
