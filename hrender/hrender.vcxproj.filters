@@ -137,9 +137,6 @@
     <ClCompile Include="SVGFPasses\DistrSVGFPass.cpp">
       <Filter>SVGFPasses\DistrSVGF</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\FilterPass.cpp">
-      <Filter>CommonPasses\Filtering</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -288,9 +285,6 @@
     <ClInclude Include="SVGFPasses\DistrSVGFPass.h">
       <Filter>SVGFPasses\DistrSVGF</Filter>
     </ClInclude>
-    <ClInclude Include="DxrTutorCommonPasses\FilterPass.h">
-      <Filter>CommonPasses\Filtering</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -370,12 +364,6 @@
     </Filter>
     <Filter Include="SVGFPasses\DistrSVGF\Shaders">
       <UniqueIdentifier>{7a9514d8-fc23-4c9f-a970-3c2a6bbd1421}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CommonPasses\Filtering">
-      <UniqueIdentifier>{e857dd62-f087-4aea-837b-79b23467ca2f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="CommonPasses\Filtering\Shaders">
-      <UniqueIdentifier>{08a84cd6-a463-4405-b1a8-6d40a0fc980f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -555,9 +543,6 @@
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFReproject.ps.hlsl">
       <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
-    </ShaderSource>
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gaussianFilter.ps.hlsl">
-      <Filter>CommonPasses\Filtering\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>
