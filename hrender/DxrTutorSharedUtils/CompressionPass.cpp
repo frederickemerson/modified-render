@@ -589,10 +589,10 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
                     s1[i] = s1[i * 4];
                 }
 
-                int sourceBufferSize = VIS_TEX_LEN + AO_TEX_LEN / 4;
-                
+                int sourceBufferSize =  VIS_TEX_LEN + AO_TEX_LEN / 4;
+
                 // Compress buffer
-                int compressedSize = LZ4_compress_default(sourceBuffer, outputBuffer, sourceBufferSize, sourceBufferSize);
+                int compressedSize = LZ4_compress_default(sourceBuffer , outputBuffer, sourceBufferSize, sourceBufferSize);
                 if (compressedSize == 0) {
                     OutputDebugString(L"\nError: Compression failed\n");
                 }

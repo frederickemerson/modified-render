@@ -53,7 +53,7 @@ protected:
     float   mVarainceEpsilon     = 1e-4f;
     float   mPhiColor            = 10.0f; 
     float   mPhiNormal           = 128.0f; 
-    float   mAlpha               = 0.05f;
+    float   mAlpha               = 0.75f;
     float   mMomentsAlpha        = 0.2f;
 
     // SVGF passes

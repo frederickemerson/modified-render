@@ -102,11 +102,10 @@ void DistrSVGFPass::resize(uint32_t width, uint32_t height)
         mpPrevReprojFbo = Fbo::create2D(width, height, desc);
     }
 
-    // Probably don't need this one.
     {   // Type 3, Screen-size FBOs with 1 RGBA32F buffer
         Fbo::Desc desc;
         desc.setColorTarget(0, Falcor::ResourceFormat::R32Uint); // VisTex
-        desc.setColorTarget(0, Falcor::ResourceFormat::R32Uint); // AoTex
+        desc.setColorTarget(1, Falcor::ResourceFormat::R32Uint); // AoTex
         mpOutputFbo = Fbo::create2D(width, height, desc);
     }
     
@@ -188,7 +187,7 @@ void DistrSVGFPass::execute(RenderContext* pRenderContext)
             computeModulation(pRenderContext);
 
         // Output the result of SVGF to the expected output buffer for subsequent passes.
-        pRenderContext->blit(mpOutputFbo->getColorTexture(0)->getSRV(), mInputTex.visTex->getRTV());
+        //pRenderContext->blit(mpOutputFbo->getColorTexture(0)->getSRV(), mInputTex.visTex->getRTV());
         pRenderContext->blit(mpOutputFbo->getColorTexture(1)->getSRV(), mInputTex.aoTex->getRTV());
 
         // Swap resources so we're ready for next frame.

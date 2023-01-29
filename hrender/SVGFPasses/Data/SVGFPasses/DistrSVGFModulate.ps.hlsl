@@ -20,8 +20,8 @@
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
 // Input textures from the shading pass
-Texture2D<float4> gVis;
-Texture2D<float4> gAo;
+Texture2D<uint> gVis;
+Texture2D<uint> gAo;
 
 struct PS_OUT
 {

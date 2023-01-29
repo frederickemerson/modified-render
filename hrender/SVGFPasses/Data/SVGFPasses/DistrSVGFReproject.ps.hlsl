@@ -21,15 +21,13 @@ import Utils.Color.ColorHelpers; // Contains function for computing luminance
 #include "SVGFCommon.hlsli"
 #include "SVGFPackNormal.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
-#include "SVGFBitwiseUtils.hlsli"
-
 Texture2D   gMotion;
 
-Texture2D   gVisTex;
-Texture2D   gAoTex;
-Texture2D   gPrevVisTex;
-Texture2D   gPrevAoTex;
-Texture2D   gPrevMoments;
+Texture2D<uint>   gVisTex;
+Texture2D<uint>   gAoTex;
+Texture2D<uint>   gPrevVisTex;
+Texture2D<uint>   gPrevAoTex;
+Texture2D<float4>   gPrevMoments;
 //Texture2D   gAlbedo;
 
 Texture2D   gLinearZ;
@@ -57,11 +55,28 @@ void loadVisAo(int2 fragCoord, out uint vis, out uint ao)
     ao = a;
 }
 
-bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out float4 prevMoments, out float historyLength)
+bool isReprjValid(int2 coord, float Z, float Zprev, float fwidthZ, float3 normal, float3 normalPrev, float fwidthNormal, const int2 imageDim)
+{
+    // check whether reprojected pixel is inside of the screen
+    if (any(coord < int2(1, 1)) || any(coord > imageDim - int2(1, 1)))
+        return false;
+    // check if deviation of depths is acceptable
+    if (abs(Zprev - Z) / (fwidthZ + 1e-2) > 10.0)
+        return false;
+    // check normals for compatibility
+    if (distance(normal, normalPrev) / (fwidthNormal + 1e-2) > 16.0)
+        return false;
+
+    return true;
+}
+
+bool loadPrevData(float2 fragCoord, out uint prevVisTex, out float prevAoTex, out float4 prevMoments, out float historyLength)
 {
     const int2 ipos = fragCoord;
-    const float2 imageDim = float2(getTextureDims(gVisTex, 0));
+    const float2 imageDim = float2(getTextureDims(gPrevMoments, 0));
 
+    const uint lightCount = 32;
+    
     // xy = motion, z = length(fwidth(pos)), w = length(fwidth(normal))
     float4 motion = gMotion[ipos]; 
     float normalFwidth = motion.w;
@@ -74,7 +89,7 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out
     float3 normal = octToDir(asuint(depth.w));
 
     prevVisTex = 0x00000000;
-    prevAoTex = 0x00000000;
+    prevAoTex = 0.0;
     prevMoments  = float4(0,0,0,0);
 
     bool v[4];
@@ -89,10 +104,19 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out
         float4 depthPrev = gPrevLinearZ[loc];
         float3 normalPrev = octToDir(asuint(depthPrev.w));
 
-        v[sampleIdx] = isReprjValid(iposPrev, depth.x, depthPrev.x, depth.y, normal, normalPrev, normalFwidth);
+        v[sampleIdx] = isReprjValid(iposPrev, depth.x, depthPrev.x, depth.y, normal, normalPrev, normalFwidth, imageDim);
 
         valid = valid || v[sampleIdx];
     }    
+    
+    float lights[32]; // Accumulates interpolated light values
+    
+    int lightIndex;
+        // Just in case not initialized, can remove if confirmed
+    for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    {
+        lights[lightIndex] = 0;
+    }
 
     if (valid) 
     {
@@ -115,16 +139,31 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out
                 prevAoTex += w[sampleIdx] * gPrevAoTex[loc];
                 prevMoments  += w[sampleIdx] * gPrevMoments[loc];
                 sumw         += w[sampleIdx];
+                
+                uint sampleVis = gPrevVisTex[loc];
+                for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+                {
+                    lights[lightIndex] += (1 & sampleVis);
+                    sampleVis = sampleVis >> 1;
+                }
             }
         }
 
-        // Bitwise operation on the visibility bitmap
-        loadPrevVis2x2(posPrev, v, gPrevVisTex, prevVisTex);
-        
         // redistribute weights in case not all taps were used
         valid = (sumw >= 0.01);
-        prevAoTex = valid ? prevAoTex / sumw : 0x00000000;
+        prevVisTex = 0x0;
+        prevAoTex = valid ? prevAoTex / sumw : 0.0;
         prevMoments  = valid ? prevMoments / sumw  : float4(0, 0, 0, 0);
+        
+        if (valid)
+        {
+            for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+            {
+                int bit = lights[lightIndex] / sumw > 0.5 ? 1 : 0;
+                bit = bit << lightIndex;
+                prevVisTex += bit;
+            }
+        }  
     }
     
     if(!valid) // perform cross-bilateral filter in the hope to find some suitable samples somewhere
@@ -141,27 +180,33 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out
                 float4 depthFilter = gPrevLinearZ[p];
                 float3 normalFilter = octToDir(asuint(depthFilter.w));
 
-                if ( isReprjValid(iposPrev, depth.x, depthFilter.x, depth.y, normal, normalFilter, normalFwidth) )
+                if (isReprjValid(iposPrev, depth.x, depthFilter.x, depth.y, normal, normalFilter, normalFwidth, imageDim))
                 {
-                    prevAoTex += gPrevAoTex[p];
+                    prevAoTex += float(gPrevAoTex[p]);
                     prevMoments += gPrevMoments[p];
                     cnt += 1.0;
+                    
+                    uint sampleVis = gPrevVisTex[p];
+                    for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+                    {
+                        lights[lightIndex] += (1 & sampleVis);
+                        sampleVis = sampleVis >> 1;
+                    }
                 }
             }
         }
-        
-        float4 depthFilter = gPrevLinearZ[p];
-        float3 normalFilter = octToDir(asuint(depthFilter.w));
-        // Bitwise operation on the visibility bitmap
-        loadPrevVis3x3(iposPrev, depth, depthFilter.x, 
-                        normal, normalFilter, normalFwidth,
-                        gPrevVisTex, prevVisTex);
         
         if (cnt > 0)
         {
             valid = true;
             prevAoTex /= cnt;
             prevMoments  /= cnt;
+            for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+            {
+                int bit = lights[lightIndex] > cnt / 2 ? 1 : 0;
+                bit = bit << lightIndex;
+                prevVisTex += bit;
+            }
         }
 
     }
@@ -174,7 +219,7 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out uint prevAoTex, out
     else
     {
         prevVisTex = 0x00000000;
-        prevAoTex = 0x00000000;
+        prevAoTex = 0.0;
         prevMoments = float4(0,0,0,0);
         historyLength = 0;
     }
@@ -205,7 +250,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     uint vis, ao;
     loadVisAo(ipos, vis, ao);
     float historyLength;
-    uint prevVisTex, prevAoTex;
+    uint prevVisTex;
+    float prevAoTex;
     float4 prevMoments;
     bool success = loadPrevData(fragCoord.xy, prevVisTex, prevAoTex, prevMoments, historyLength);
     historyLength = min( 32.0f, success ? historyLength + 1.0f : 1.0f );
@@ -231,7 +277,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     // temporal integration of visTex and AO
     psOut.OutVisTex = prevVisTex; // With alpha < 0.5 (=0.2), lerp eqn = (prev * (1-alpha) + curr * alpha), only the bits in prevVisTex matter when doing bitwise lerp
-    psOut.OutAoTex = lerp(prevAoTex, ao, alpha);
+    psOut.OutAoTex = uint(lerp(prevAoTex, float(ao), alpha));
 
     // Variance of visibility is just the XOR of current vs previous bitmaps
     float2 variance = max(float2(0, 0), float2(asfloat(prevVisTex ^ vis), moments.b - moments.r * moments.r));

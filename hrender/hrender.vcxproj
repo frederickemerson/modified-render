@@ -18,6 +18,7 @@
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\FilterPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
+    <ClCompile Include="SVGFPasses\DistrSVGFPass.cpp" />
     <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
     <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
     <ClCompile Include="SVGFPasses\SVGFClientPass.cpp" />
@@ -65,6 +67,7 @@
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\FilterPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
@@ -105,6 +108,7 @@
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SVGFPasses\DistrSVGFPass.h" />
     <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
     <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
     <ClInclude Include="SVGFPasses\SVGFClientPass.h" />
@@ -129,6 +133,7 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gaussianFilter.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl" />
@@ -156,6 +161,10 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFReproject.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl" />

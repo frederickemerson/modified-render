@@ -17,7 +17,6 @@
 **********************************************************************************************************************/
 
 import Utils.Color.ColorHelpers; // Contains function for computing luminance
-import Experimental.Scene.Lights.LightHelpers;
 
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
@@ -54,12 +53,12 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     if (h < 4.0) // not enough temporal history available
     {
         uint sumVis        = 0x00000000;
-        uint sumAo         = 0x00000000;
+        float sumAo         = 0.0;
         float sumW = 0.0;
         float4  sumMoments = float4(0.0, 0.0, 0.0, 0.0);
 
         const uint visCenter = gVisTex[ipos];
-        const uint aoCenter = gAoTex[ipos];
+        const float aoCenter = float(gAoTex[ipos]);
 
         float3 normalCenter;
         float2 zCenter;
@@ -71,7 +70,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         {
             // current pixel does not a valid depth => must be envmap => do nothing
             psOut.OutVisTex   = visCenter;
-            psOut.OutAoTex = aoCenter;
+            psOut.OutAoTex = uint(aoCenter);
+            psOut.OutVar = float2(0.0);
             return psOut;
         }
 
@@ -81,8 +81,8 @@ PS_OUT main(FullScreenPassVsOut vsOut)
         // filtering on the input samples
         const int radius = 3;
 
+        const uint lightCount = 32;
         float lights[32]; // Accumulates interpolated light values
-        const uint lightCount = gScene.getLightCount();
         
         int lightIndex;
         // Just in case not initialized, can remove if confirmed
@@ -103,15 +103,15 @@ PS_OUT main(FullScreenPassVsOut vsOut)
                 if (inside)
                 {
 
-                    const uint visP  = gVisTex[p];
-                    const uint aoP   = gAoTex[p];
+                    uint visP  = gVisTex[p];
+                    const float aoP = float(gAoTex[p]);
                     const float4 momentsP    = gMoments[p];
 
                     float3 normalP;
                     float2 zP;
                     fetchNormalAndLinearZ(gCompactNormDepth, p, normalP, zP);
 
-                    // Vis and Ao share weights
+                    // TODO: maybe use single color computer with Ao ??
                     const float w = computeWeightNoLuminance(
                         zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
                         normalCenter, normalP, gPhiNormal);

@@ -17,18 +17,17 @@
 **********************************************************************************************************************/
 
 import Utils.Color.ColorHelpers; // Contains function for computing luminance
-importExperimental.Scene.Lights.LightHelpers;
 
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
 #include "SVGFPackNormal.hlsli"
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli"  // Utilities to pack the GBuffer content
 
-Texture2D   gVis;
-Texture2D   gAo;
-Texture2D   gVar;
-Texture2D   gCompactNormDepth;
-Texture2D   gHistoryLength;
+Texture2D<uint>   gVis;
+Texture2D<uint>   gAo;
+Texture2D<float2>   gVar;
+Texture2D<float4>   gCompactNormDepth;
+Texture2D<float4>   gHistoryLength;
 
 cbuffer PerImageCB : register(b0)
 {
@@ -39,7 +38,7 @@ cbuffer PerImageCB : register(b0)
 
 // computes a 3x3 gaussian blur of the variance, centered around
 // the current pixel
-float2 computeVarianceCenter(int2 ipos, Texture2D sVar)
+float2 computeVarianceCenter(int2 ipos, Texture2D<uint> sAo)
 {
     float2 sum = float2(0.0, 0.0);
 
@@ -48,16 +47,16 @@ float2 computeVarianceCenter(int2 ipos, Texture2D sVar)
         { 1.0 / 8.0, 1.0 / 16.0 }
     };
 
-    const uint lightCount = gScene.getLightCount();
-    float lights[32]; // Accumulates interpolated light values
+    //const uint lightCount = 32;
+    //float lights[32]; // Accumulates interpolated light values
     
-    int lightIndex;
+    //int lightIndex;
     
-    // Just in case not initialized, can remove if confirmed
-    for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
-    {
-        lights[lightIndex] = 0;
-    }
+    //// Just in case not initialized, can remove if confirmed
+    //for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    //{
+    //    lights[lightIndex] = 0;
+    //}
     
     const int radius = 1;
     for (int yy = -radius; yy <= radius; yy++)
@@ -68,28 +67,28 @@ float2 computeVarianceCenter(int2 ipos, Texture2D sVar)
 
             float k = kernel[abs(xx)][abs(yy)];
 
-            const float2 var = sVar.Load(int3(p, 0));
-            uint visVar = asuint(var.r);
+            const uint ao = sAo.Load(int3(p, 0));
+            //uint visVar = asuint(var.r);
             
-            for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
-            {
-                lights[lightIndex] += (1 & visVar) * k;
-                visVar = visVar >> 1;
-            }
+            //for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+            //{
+            //    lights[lightIndex] += (1 & visVar) * k;
+            //    visVar = visVar >> 1;
+            //}
             
-            sum.g += var.g * k;
+            sum.g += ao * k;
         }
     }
 
-    uint sumVis = 0;
-    for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
-    {
-        int bit = lights[lightIndex] > 0.5 ? 1 : 0;
-        bit = bit << lightIndex;
-        sumVis += bit;
-    }
+    //uint sumVis = 0;
+    //for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    //{
+    //    int bit = lights[lightIndex] > 0.5 ? 1 : 0;
+    //    bit = bit << lightIndex;
+    //    sumVis += bit;
+    //}
     
-    sum.r = asfloat(sumVis);
+    //sum.r = asfloat(sumVis);
     return sum;
 }
 
@@ -105,7 +104,7 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
     float4 fragCoord = vsOut.posH;
     const int2 ipos       = int2(fragCoord.xy);
-    const int2 screenSize = getTextureDims(gVis, 0);
+    const int2 screenSize = getTextureDims(gHistoryLength, 0);
 
     const float epsVariance      = 1e-10;
     const float kernelWeights[3] = { 1.0, 2.0 / 3.0, 1.0 / 6.0 };
@@ -116,8 +115,9 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     const uint  aoCenter  = gAo.Load(int3(ipos, 0));
 
     // variance for vis and ao, filtered using 3x3 gaussin blur
-    const float2 var = computeVarianceCenter(ipos, gVar);
-
+    const float2 var = computeVarianceCenter(ipos, gAo);
+    
+    
     // number of temporally integrated pixels
     const float historyLength = gHistoryLength.Load(int3(ipos, 0)).r;
 
@@ -126,43 +126,42 @@ PS_OUT main(FullScreenPassVsOut vsOut)
     fetchNormalAndLinearZ(gCompactNormDepth, ipos, normalCenter, zCenter);
 
     PS_OUT psOut;
-
+    
     if (zCenter.x < 0)
     {
         // not a valid depth => must be envmap => do not filter
-        psOut.OutVis   = visCenter;
+        psOut.OutVis = visCenter;
         psOut.OutAo = aoCenter;
         psOut.OutVar = gVar.Load(int3(ipos, 0));
         return psOut;
     }
 
-    const float phiAo   = gPhiColor * sqrt(max(0.0, epsVariance + var.g));
-    const float phiDepth     = max(zCenter.y, 1e-8) * gStepSize;
+    const float phiAo = gPhiColor * sqrt(max(0.0, epsVariance + var.g));
+    const float phiDepth = max(zCenter.y, 1e-8) * gStepSize;
 
     // explicitly store/accumulate center pixel with weight 1 to prevent issues
     // with the edge-stopping functions
-    float   sumW   = 1.0;
-    uint sumVis   = visCenter;
-    float sumAo  = aoCenter;
+    float sumW = 1.0;
+    uint sumVis = visCenter;
+    float sumAo = aoCenter;
 
     for (int yy = -2; yy <= 2; yy++)
     {
         for (int xx = -2; xx <= 2; xx++)
         {
-            const int2 p     = ipos + int2(xx, yy) * gStepSize;
-            const bool inside = all(p >= int2(0,0)) && all(p < screenSize);
+            const int2 p = ipos + int2(xx, yy) * gStepSize;
+            const bool inside = all(p >= int2(0, 0)) && all(p < screenSize);
 
             const float kernel = kernelWeights[abs(xx)] * kernelWeights[abs(yy)];
 
             if (inside && (xx != 0 || yy != 0)) // skip center pixel, it is already accumulated
             {
-                const uint aoP   = gAo.Load(int3(p, 0));
+                const uint aoP = gAo.Load(int3(p, 0));
 
                 float3 normalP;
                 float2 zP;
                 fetchNormalAndLinearZ(gCompactNormDepth, p, normalP, zP);
 
-                // compute the edge-stopping functions
                 const float w = computeWeight(
                         zCenter.x, zP.x, phiDepth * length(float2(xx, yy)),
                         normalCenter, normalP, gPhiNormal,

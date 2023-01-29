@@ -70,7 +70,7 @@ const char* environmentMaps[] = {
 };
 
 // Scene index follows the scenes mentioned above.
-unsigned char sceneIdx = 1;
+unsigned char sceneIdx = 0;
 
 // Switches rendering modes between HybridRender and RemoteRender
 RenderMode renderMode = RenderMode::HybridRender;
@@ -244,9 +244,9 @@ void runDebug()
 // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
-            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1})
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}),
+            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1})
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -300,7 +300,7 @@ void runServer()
         //    RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
         //    });
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
