@@ -17,7 +17,6 @@
 **********************************************************************************************************************/
 
 import Utils.Color.ColorHelpers; // Contains function for computing luminance
-import Experimental.Scene.Lights.LightHelpers;
 
 #include "SVGFCommon.hlsli"
 #include "SVGFEdgeStoppingFunctions.hlsli"
@@ -84,7 +83,6 @@ PS_OUT main(FullScreenPassVsOut vsOut)
 
         const uint lightCount = 32;
         float lights[32]; // Accumulates interpolated light values
-        const uint lightCount = gScene.getLightCount();
         
         int lightIndex;
         // Just in case not initialized, can remove if confirmed

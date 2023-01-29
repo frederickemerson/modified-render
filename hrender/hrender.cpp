@@ -78,7 +78,7 @@ const char* environmentMaps[] = {
 };
 
 // Scene index follows the scenes mentioned above.
-unsigned char sceneIdx = 1;
+unsigned char sceneIdx = 0;
 
 // Switches rendering modes between HybridRender and RemoteRender
 RenderMode renderMode = RenderMode::HybridRender;
