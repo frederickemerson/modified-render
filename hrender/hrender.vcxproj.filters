@@ -137,6 +137,15 @@
     <ClCompile Include="SVGFPasses\DistrSVGFPass.cpp">
       <Filter>SVGFPasses\DistrSVGF</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -314,6 +323,15 @@
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h">
       <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -502,9 +520,6 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl">
       <Filter>GIPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
@@ -585,6 +600,15 @@
     </ShaderSource>
     <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFReproject.ps.hlsl">
       <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
   </ItemGroup>
   <ItemGroup>

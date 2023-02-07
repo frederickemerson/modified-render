@@ -32,19 +32,17 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     // store index of texture(s) we will be transferring from
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
         mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
+        mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
+
         outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN + REF_TEX_LEN];
+        
         //mGIIndex = mpResManager->getTextureIndex("ServerGlobalIllum");
     }
     else {
         mVShadingIndex = mpResManager->getTextureIndex("V-shadingServer");
         outputBuffer = new uint8_t[VIS_TEX_LEN];
     }
-
-
-    // initialise output buffer
-    outputBuffer = new uint8_t[VIS_TEX_LEN + REF_TEX_LEN];
 
     return true;
 }
@@ -59,7 +57,7 @@ void MemoryTransferPassServerGPU_CPU::initScene(RenderContext* pRenderContext, S
 void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 {
     // Loads relevant texture from GPU to CPU
-    if (!mHybridMode) {
+    if (!mHybridMode) { // Remote rendering
         Texture::SharedPtr tex = mpResManager->getTexture(mVShadingIndex);
         outputBuffer = tex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
@@ -68,29 +66,32 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     }
     
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
-    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
-    //Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
+    Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
+
     // OLD METHOD: use if bugs start appearing
     //NetworkPass::visibilityData = visTex->getTextureData(pRenderContext, 0, 0, &NetworkPass::visibilityData);
 
     // New optimised method: old getTextureData() opens a buffer to the texture and copies data into our desired location
     // new getTextureData2() returns address of the buffer so we skip the copying to our desired location.
     // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
+
     uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
     uint8_t* pSRTReflectionTex = srtReflectionTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    //uint8_t* pVisTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    // NOTE: for now, AO texture must be the last texture since it is resized in compression pass. 
+    uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
     memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
     memcpy(&outputBuffer[VIS_TEX_LEN], pSRTReflectionTex, REF_TEX_LEN);
     memcpy(&outputBuffer[VIS_TEX_LEN + REF_TEX_LEN], pAOTex, AO_TEX_LEN);
-    //uint8_t* pGiTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    //memcpy(outputBuffer, pGiTex, VIS_TEX_LEN);
 
     std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
-    //outputBuffer = tex->getTextureData2(pRenderContext, 0, 0, nullptr);
+
     OutputDebugString(L"\n\n= MemoryTransferPass - VisTex loaded to CPU =========");
+
+    //Texture::SharedPtr giTex = mpResManager->getTexture(mGIIndex);
+    //uint8_t* pGiTex = giTex->getTextureData2(pRenderContext, 0, 0, nullptr);
+    //memcpy(outputBuffer, pGiTex, VIS_TEX_LEN);
 }
 
 void MemoryTransferPassServerGPU_CPU::renderGui(Gui::Window* pPassWindow)

@@ -179,8 +179,6 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
                 VShadingPass::create(outBuf, isHybridRendering),
                 DecodeGBufferPass::create("DecodedGBuffer") 
             });
-            /*pipeline->setPassOptions(i, { VShadingPass::create(RENDER_WIDTH, RENDER_HEIGHT, "V-shading"), 
-                DecodeGBufferPass::create(RENDER_WIDTH, RENDER_HEIGHT, "DecodedGBuffer") });*/
         }
         else if (renderConfiguration.passOrder[i] == CopyToOutputPass) {
             pipeline->setPass(i, CopyToOutputPass::create());
@@ -222,6 +220,9 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             std::string outBuf = isHybridRendering ? "V-shading" : "RemoteIllum";
             pipeline->setPass(i, SVGFClientPass::create("OutDirectColor", outBuf, isHybridRendering));
         }
+        else if (renderConfiguration.passOrder[i] == ScreenSpaceReflectionPass) {
+            pipeline->setPass(i, ScreenSpaceReflectionPass::create());
+        }
         else if (renderConfiguration.passOrder[i] == ServerRayTracingReflectionPass) {
             pipeline->setPass(i, ServerRayTracingReflectionPass::create("SRTReflection", renderConfiguration.texWidth, renderConfiguration.texHeight));
         }
@@ -229,7 +230,6 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             pipeline->setPass(i, ReflectionCompositePass::create());
         }
         else if (renderConfiguration.passOrder[i] == DistrSVGFPass) {
-            // TODO: Implement and change below.
             pipeline->setPass(i, DistrSVGFPass::create("VisibilityBitmap", "AmbientOcclusion", renderConfiguration.texWidth, renderConfiguration.texHeight));
         } 
     }
@@ -248,55 +248,6 @@ void runDebug()
     config.windowDesc.title = "NRender";
     config.windowDesc.resizableWindow = true;
 
-    RenderConfiguration renderConfiguration = {
-        1920, 1080, // texWidth and texHeight
-        1, // sceneIndex
-        9,
-        { // Array of RenderConfigPass
-            // --- RenderConfigPass 1 creates a GBuffer --- //
-            JitteredGBufferPass,
-            // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
-            VisibilityPass,
-            // --- RenderConfigPass 3 transfers GPU information into CPU --- //
-            MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-            //CompressionPass,
-            // --- RenderConfigPass 5 simulates delay across network --- //
-            SimulateDelayPass,
-            // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
-            //DecompressionPass,
-            // --- RenderConfigPass 7 transfers CPU information into GPU --- //
-            MemoryTransferPassCPU_GPU,
-
-            
-            // --- RenderConfigPass 9 calculates reflections in a hybrid method. --- //
-            ScreenSpaceReflectionPass,
-            ServerRayTracingReflectionPass,
-
-            // --- RenderConfigPass 8 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
-            PredictionPass,
-            VShadingPass,
-
-            ReflectionCompositePass,
-            // --- RenderConfigPass 3 transfers GPU information into CPU --- //
-            //MemoryTransferPassGPU_CPU,
-            // --- RenderConfigPass 4 compresses buffers to be sent across Network --- //
-            CompressionPass,
-            // --- RenderConfigPass 5 simulates delay across network --- //
-            //SimulateDelayPass,
-            // --- RenderConfigPass 6 decompresses buffers sent across Network--- //
-            DecompressionPass,
-            // --- RenderConfigPass 7 transfers CPU information into GPU --- //
-            //MemoryTransferPassCPU_GPU,
-            // --- RenderConfigPass 10 just lets us select which pass to view on screen --- //
-            CopyToOutputPass,
-            // --- RenderConfigPass 11 temporally accumulates frames for denoising --- //
-            SimpleAccumulationPass
-         }
-    };
-    
-    RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
-
     RenderConfiguration renderConfiguration = getDebugRenderConfig(renderMode, renderType, sceneIdx);
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(renderConfiguration.texWidth, renderConfiguration.texHeight));
@@ -304,23 +255,18 @@ void runDebug()
     CreatePipeline(renderConfiguration, pipeline);
 
     // ============================ //
-// Set presets for the pipeline //
-// ============================ //
-    pipeline->setPresets({
-        RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1 }),
-        RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1 })
-        });
+    // Set presets for the pipeline //
+    // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1 }),
-            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
             });
     }
 
@@ -357,21 +303,6 @@ void runServer()
     // Create our rendering pipeline
     RenderingPipeline* pipeline = new RenderingPipeline(true, uint2(texWidth, texHeight));
 
-    RenderConfiguration renderConfiguration = {
-    1920, 1080, // texWidth and texHeight
-    0, // sceneIndex
-    5,
-    { // Array of RenderConfigPass
-            NetworkServerRecvPass,
-            JitteredGBufferPass,
-            VisibilityPass,
-            ScreenSpaceReflectionPass,
-            ServerRayTracingReflectionPass,
-            MemoryTransferPassGPU_CPU,
-            CompressionPass,
-            NetworkServerSendPass
-     }
-    };
     RenderConfiguration renderConfiguration = getServerRenderConfig(renderMode, renderType, sceneIdx);
 
     CreatePipeline(renderConfiguration, pipeline);
@@ -384,12 +315,12 @@ void runServer()
         //    RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
         //    });
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     // Start our program
@@ -434,182 +365,7 @@ void runClient()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 })
-            });
-    }
-    else if (renderMode == RenderMode::RemoteRender) {
-        pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 })
-            });
-    }
-    OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
-
-    // Start our program
-    RenderingPipeline::run(pipeline, config);
-}
-
-/**
-* Functions to get corresponding RenderCongurations
-*/
-RenderConfiguration getRenderConfigDebugHybrid() {
-    // Previous implementation: visibility bitmap + ambient occlusion
-    //return {
-    //   1920, 1080, // texWidth and texHeight
-    //   0, // sceneIndex
-    //   12,
-    //   { // Array of RenderConfigPass
-    //       // --- RenderConfigPass 1 creates a GBuffer --- //
-    //       JitteredGBufferPass,
-    //       // --- RenderConfigPass 2 makes use of the GBuffer determining visibility under different lights --- //
-    //       VisibilityPass,
-    //       // --- RenderConfigPass 3 performs per-pixel ambient occlusion --- //
-    //       AmbientOcclusionPass,
-    //       // --- RenderConfigPass 4 transfers GPU information into CPU --- //
-    //       MemoryTransferPassGPU_CPU,
-    //       // --- RenderConfigPass 5 compresses buffers to be sent across Network --- //
-    //       CompressionPass,
-    //       // --- RenderConfigPass 6 simulates delay across network --- //
-    //       SimulateDelayPass,
-    //       // --- RenderConfigPass 7 decompresses buffers sent across Network--- //
-    //       DecompressionPass,
-    //       // --- RenderConfigPass 8 transfers CPU information into GPU --- //
-    //       MemoryTransferPassCPU_GPU,
-    //       // --- RenderConfigPass 9 performs prediction on visibility bitmap if frames are behind. --- //
-    //       PredictionPass,
-    //       // --- RenderConfigPass 10 makes use of the visibility bitmap to shade the sceneIndex. We also provide the ability to preview the GBuffer alternatively. --- //
-    //       VShadingPass,
-    //       // --- RenderConfigPass 11 just lets us select which pass to view on screen --- //
-    //       CopyToOutputPass,
-    //       // --- RenderConfigPass 12 temporally accumulates frames for denoising --- //
-    //       SimpleAccumulationPass
-    //   }
-    //};
-    return {
-        1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
-        12,
-        { // Array of RenderConfigPass
-            // --- JitteredGBufferPass creates a GBuffer --- //
-            JitteredGBufferPass,
-            // --- VisibilityPass makes use of the GBuffer determining visibility under different lights --- //
-            //VisibilityPass,
-            // --- ServerGlobalIllumPass computes indirect illumination color and
-            //     selects random light index to be used for direct illumination. --- //
-            ServerGlobalIllumPass,
-            // --- SVGFServerPass performs denoising on indirect illumination.
-            SVGFServerPass,
-            // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
-            MemoryTransferPassGPU_CPU,
-            // --- CompressionPass compresses buffers to be sent across Network --- //
-            CompressionPass,
-            // --- SimulateDelayPass simulates delay across network --- //
-            SimulateDelayPass,
-            // --- DecompressionPass decompresses buffers sent across Network--- //
-            DecompressionPass,
-            // --- MemoryTransferPassCPU_GPU transfers CPU information into GPU --- //
-            MemoryTransferPassCPU_GPU,
-            // --- ClientGlobalIllumPass loads server indirect illumination into texture and
-            //     calculates direct illumination using given random light index --- //
-            ClientGlobalIllumPass,
-            // --- SVGFClientPass performs denoising on direct illumination
-            SVGFClientPass,
-            // --- PredictionPass performs prediction on visibility bitmap if frames are behind. --- //
-            //PredictionPass,
-            // --- VShadingPass makes use of the direct and indirect lighting to shade the sceneIndex.
-            //     We also provide the ability to preview the GBuffer alternatively. --- //
-            //VShadingPass,
-            // --- CopyToOutputPass just lets us select which pass to view on screen --- //
-            CopyToOutputPass,
-            // --- SimpleAccumulationPass temporally accumulates frames for denoising --- //
-            SimpleAccumulationPass
-        }
-    };
-}
-
-RenderConfiguration getRenderConfigServerHybrid() {
-    return {
-        1920, 1080, // texWidth and texHeight
-        0, // sceneIndex
-        7,
-        { // Array of RenderConfigPass
-            // --- NetworkServerRecvPass receives camera data from client --- //
-            NetworkServerRecvPass,
-            // --- JitteredGBufferPass creates a GBuffer on server side--- //
-            JitteredGBufferPass,
-            // --- VisibilityPass makes use of the GBuffer determining visibility under different lights --- //
-            //VisibilityPass,
-            // --- AmbientOcclusionPass performs per-pixel ambient occlusion --- //
-            //AmbientOcclusionPass,
-            // --- ServerGlobalIllumPass computes indirect illumination color and
-            //     selects random light index to be used for direct illumination. --- //
-            ServerGlobalIllumPass,
-            // --- SVGFServerPass performs denoising on indirect illumination.
-            SVGFServerPass,
-            // --- MemoryTransferPassGPU_CPU transfers GPU information into CPU --- //
-            MemoryTransferPassGPU_CPU,
-            // --- CompressionPass compresses buffers to be sent across network --- //
-            CompressionPass,
-            // --- NetworkServerSendPass sends the visibility bitmap to the client --- //
-            NetworkServerSendPass
-        }
-    };
-}
-
-RenderConfiguration getRenderConfigClientHybrid() {
-    // Previous implementation for client.
-    //return {
-    //    1920, 1080, // texWidth and texHeight
-    //    0, // sceneIndex
-    //    9,
-    //    { // Array of RenderConfigPass
-    //        // --- RenderConfigPass 1 Send camera data to server --- //
-    //        NetworkClientSendPass,
-    //        // --- RenderConfigPass 2 receive visibility bitmap from server --- //
-    //        NetworkClientRecvPass,
-    //        // --- RenderConfigPass 3 decompresses buffers sent across network--- //
-    //        DecompressionPass,
-    //        // --- RenderConfigPass 4 transfers CPU information into GPU --- //
-    //        MemoryTransferPassCPU_GPU,
-    //        // --- RenderConfigPass 5 performs prediction on visibility bitmap if frames are behind. --- //
-    //        PredictionPass,
-    //        // --- RenderConfigPass 6 makes use of the visibility bitmap to shade the sceneIndex. --- //
-    //        VShadingPass,
-    //        // --- RenderConfigPass 7 just lets us select which pass to view on screen --- //
-    //        CopyToOutputPass,
-    //        // --- RenderConfigPass 8 temporally accumulates frames for denoising --- //
-    //        SimpleAccumulationPass,
-    //        // --- RenderConfigPass 9 creates a GBuffer on client side--- //
-    //        JitteredGBufferPass
-    //    }
-    //};
-    return {
-        1920, 1080, // texWidth and texHeight
-        1, // sceneIndex
-        10,
-        { // Array of RenderConfigPass
-                NetworkClientSendPass,
-                NetworkClientRecvPass,
-                DecompressionPass,
-                MemoryTransferPassCPU_GPU,
-                PredictionPass,
-                ScreenSpaceReflectionPass,
-                VShadingPass,
-                ReflectionCompositePass,
-                CopyToOutputPass,
-                SimpleAccumulationPass,
-                JitteredGBufferPass
-         }
-    };
-    RenderConfiguration renderConfiguration = getClientRenderConfig(renderMode, renderType, sceneIdx);
-
-    CreatePipeline(renderConfiguration, pipeline);
-
-    // ============================ //
-    // Set presets for the pipeline //
-    // ============================ //
-    if (renderMode == RenderMode::HybridRender) {
-        pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {

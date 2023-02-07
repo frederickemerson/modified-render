@@ -18,7 +18,6 @@
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\FilterPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
@@ -51,7 +50,10 @@
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
     <ClCompile Include="NetworkPasses\PredictionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
@@ -67,7 +69,6 @@
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
-    <ClInclude Include="DxrTutorCommonPasses\FilterPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
@@ -103,7 +104,10 @@
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
     <ClInclude Include="NetworkPasses\PredictionPass.h" />
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
     <ClInclude Include="NetworkPasses\ServerNetworkManager.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
@@ -133,7 +137,6 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl" />
-    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gaussianFilter.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl" />

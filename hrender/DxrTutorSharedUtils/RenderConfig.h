@@ -7,7 +7,7 @@
 
 class RenderConfig {
 public:
-    static const int RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED = 14;
+    static const int RENDER_CONFIGURATION_MAX_PASSES_SUPPORTED = 17;
 
     enum class BufferType {
         VisibilityBitmap,
@@ -85,7 +85,9 @@ enum RenderConfigPass : uint8_t {
     SVGFClientPass,
     // --- DistrSVGFPass performs SVGF on AO + soft shadowing
     DistrSVGFPass,
-    FilterPass
+    ServerRayTracingReflectionPass,
+    ScreenSpaceReflectionPass,
+    ReflectionCompositePass
 };
 
 // total size: 16 bytes
@@ -94,7 +96,7 @@ struct RenderConfiguration {
     int texHeight;
     uint8_t sceneIndex;
     uint8_t numPasses; // 1 byte
-    RenderConfigPass passOrder[14]; // 1 * 14 bytes
+    RenderConfigPass passOrder[17]; // 1 * 14 bytes
 };
 
 enum class RenderMode : uint8_t {

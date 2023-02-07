@@ -9,11 +9,13 @@ RenderConfiguration getDebugRenderConfig(RenderMode mode, RenderType type, unsig
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                13,
+                16,
                 { // Array of RenderConfigPass
                     JitteredGBufferPass,
                     VisibilityPass,
                     AmbientOcclusionPass,
+                    ScreenSpaceReflectionPass,
+                    ServerRayTracingReflectionPass,
                     DistrSVGFPass,
                     MemoryTransferPassGPU_CPU,
                     CompressionPass,
@@ -22,6 +24,7 @@ RenderConfiguration getDebugRenderConfig(RenderMode mode, RenderType type, unsig
                     MemoryTransferPassCPU_GPU,
                     PredictionPass,
                     VShadingPass,
+                    ReflectionCompositePass,
                     CopyToOutputPass,
                     SimpleAccumulationPass
                 }
@@ -53,13 +56,16 @@ RenderConfiguration getDebugRenderConfig(RenderMode mode, RenderType type, unsig
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                14,
+                17,
                 { // Array of RenderConfigPass
                     JitteredGBufferPass,
                     VisibilityPass,
                     AmbientOcclusionPass,
+                    ScreenSpaceReflectionPass,
+                    ServerRayTracingReflectionPass,
                     PredictionPass,
                     VShadingPass,
+                    ReflectionCompositePass,
                     ServerRemoteConverter,
                     MemoryTransferPassGPU_CPU,
                     CompressionPass,
@@ -104,11 +110,13 @@ RenderConfiguration getServerRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                8,
+                10,
                 { // Array of RenderConfigPass
                     NetworkServerRecvPass,
                     JitteredGBufferPass,
                     VisibilityPass,
+                    ScreenSpaceReflectionPass,
+                    ServerRayTracingReflectionPass,
                     AmbientOcclusionPass,
                     DistrSVGFPass,
                     MemoryTransferPassGPU_CPU,
@@ -139,14 +147,17 @@ RenderConfiguration getServerRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                10,
+                13,
                 { // Array of RenderConfigPass
                     NetworkServerRecvPass,
                     JitteredGBufferPass,
                     VisibilityPass,
+                    ScreenSpaceReflectionPass,
+                    ServerRayTracingReflectionPass,
                     AmbientOcclusionPass,
                     PredictionPass,
                     VShadingPass,
+                    ReflectionCompositePass,
                     ServerRemoteConverter,
                     MemoryTransferPassGPU_CPU,
                     CompressionPass,
@@ -182,14 +193,16 @@ RenderConfiguration getClientRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                9,
+                11,
                 { // Array of RenderConfigPass
                     NetworkClientSendPass,
                     NetworkClientRecvPass,
                     DecompressionPass,
                     MemoryTransferPassCPU_GPU,
                     PredictionPass,
+                    ScreenSpaceReflectionPass,
                     VShadingPass,
+                    ReflectionCompositePass,
                     CopyToOutputPass,
                     SimpleAccumulationPass,
                     JitteredGBufferPass
