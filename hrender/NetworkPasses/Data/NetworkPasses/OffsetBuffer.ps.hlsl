@@ -18,8 +18,8 @@ Texture2D<float4> gMotionVectors;
 struct PsOut
 {
     uint visOffset : SV_Target0;
-    uint AoOffset : SV_Target1;
-    float3 RefOffset : SV_Target2;
+    float3 RefOffset : SV_Target1;
+    uint AoOffset : SV_Target2;
 };
 
 PsOut main(float2 texC : TEXCOORD, float4 currScreenSpacePos : SV_Position)

@@ -34,10 +34,6 @@ namespace {
     const std::string kRefBufOrig = "SRTReflection";
     // Offset RCColor buffer resource location
     const std::string kRefBufOffset = "OffsetSRTReflection";
-    // Original AO buffer resource location
-    const std::string kIndirectIllumOrig = "IndirectIllum";
-    // Offset AO buffer resource location
-    const std::string kIndirectIllumOffset = "OffsetIndirectIllum";
 
     // ========================= SHADER VARIABLES FOR PredictionPass.ps.hlsl =========================
 
@@ -75,14 +71,13 @@ namespace {
     // const std::string sVarTexWidth = "gTexWidth";
     // Name of shader variable for offset factor
     const std::string sVarOffsetFactor = "gOffsetFactor";
+    // Name of shader variable for original visibility buffer texture
+    const std::string sVarVisBufOriginalTex = "gVisBufferOrig";
     // Name of shader variable for original RayTracing Reflection buffer texture
     const std::string sVarRefBufOriginalTex = "gRefBufferOrig";
-
+    // Name of shader variable for original ambient occlusion buffer texture
     const std::string sVarAOBufOriginalTex = "gAOBufferOrig";
-    // Name of shader variable for original direct illum texture
-    const std::string sVarDirectIllumOriginalTex = "gDirectIllumOrig";
-    // Name of shader variable for original indirect illum texture
-    const std::string sVarIndirectIllumOriginalTex = "gIndirectIllumOrig";
+   
     // Name of shader variable for motion vectors texture from PredictionPass.ps.hlsl
     const std::string sVarMotionVecTex = "gMotionVectors";
     // Name of shader variable for mode of "filling-in" for unknown fragments
@@ -156,7 +151,7 @@ void PredictionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
 {
     // Get the CameraData for the current scene
-        createManagedFbo({ mVisBufOffsetIndex, mAOBufOffsetIndex, mRefBufOffsetIndex }, mZBufferIndex);
+    const Falcor::CameraData& currCamData = mpScene->getCamera()->getData();
 
     // Used for clearing output FBOs
     const Falcor::float4 clearColor(1, 0, 0, 1);
@@ -165,9 +160,10 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     Falcor::Fbo::SharedPtr predictionFbo = mpResManager->
         createManagedFbo({ mMotionVecIndex }, mZBufferIndex);
     pRenderContext->clearFbo(predictionFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
+
     // Create a FBO for the step to offset the buffers
     Falcor::Fbo::SharedPtr offsetBufferFbo = mpResManager->
-        createManagedFbo({ mDirectIllumOffsetIndex, mIndirectIllumOffsetIndex }, mZBufferIndex);
+        createManagedFbo({ mVisBufOffsetIndex,  mRefBufOffsetIndex, mAOBufOffsetIndex }, mZBufferIndex);
     //pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
 
     // Failed to create valid FBOs? We're done.
@@ -191,7 +187,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     // than the threshhold, or if it is larger than the
     // number of elements in the camera data circular buffer
     if (!(mUsePrediction && framesDifference >= predictionThreshhold &&
-        copyShaderVars[sVarRefBufOriginalTex] = mpResManager->getTexture(mRefBufOrigIndex);
+        framesDifference <= camDataBuffer.getNumberOfElements()))
     {
         camDataBuffer.push_back(currCamData);
 
@@ -201,9 +197,8 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
         // Pass original visibility buffer to copy shader
         Falcor::GraphicsVars::SharedPtr copyShaderVars = mpCopyShader->getVars();
         copyShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
+        copyShaderVars[sVarRefBufOriginalTex] = mpResManager->getTexture(mRefBufOrigIndex);
         copyShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
-        copyShaderVars[sVarDirectIllumOriginalTex] = mpResManager->getTexture(mDirectIllumOrigIndex);
-        copyShaderVars[sVarIndirectIllumOriginalTex] = mpResManager->getTexture(mIndirectIllumOrigIndex);
 
         // Using output FBO for OffsetBuffer, run CopyBuffer shader to copy over the visibility buffer
         mpCopyShader->execute(pRenderContext, offsetBufferFbo);
@@ -258,8 +253,9 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     offsetShaderVars[sVarCBufferOffset][sVarOffsetFactor] = mOffsetFactor;
     offsetShaderVars[sVarCBufferOffset][sVarUnknownFrag] = mUnknownFragmentsMode;
     offsetShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
-    offsetShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
     offsetShaderVars[sVarRefBufOriginalTex] = mpResManager->getTexture(mRefBufOrigIndex);
+    offsetShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
+
     // Pass motion vectors texture to OffsetBuffer shader
     offsetShaderVars[sVarMotionVecTex] = mpResManager->getTexture(mMotionVecIndex);
 

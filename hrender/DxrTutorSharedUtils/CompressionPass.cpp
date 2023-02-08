@@ -370,22 +370,22 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         // Loop over all textures, compress each one
         std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 
-                // Parameters for Compression
-                const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
+        // Parameters for Compression
+        const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
 
-                // Very hacky solution, should fix by using a 8bit per pixel texture.
-                char* const s1 = reinterpret_cast<char* const>(mGetInputBuffer()) + VIS_TEX_LEN + REF_TEX_LEN;
-                for (int i = 0; i < AO_TEX_LEN / 4; i++) {
-                    s1[i] = s1[i * 4];
-                }
+        // Very hacky solution, should fix by using a 8bit per pixel texture.
+        char* const s1 = reinterpret_cast<char* const>(mGetInputBuffer()) + VIS_TEX_LEN + REF_TEX_LEN;
+        for (int i = 0; i < AO_TEX_LEN / 4; i++) {
+            s1[i] = s1[i * 4];
+        }
 
-                int sourceBufferSize = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN / 4;
+        int sourceBufferSize = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN / 4;
 
-                // Compress buffer
-                int compressedSize = LZ4_compress_default(sourceBuffer , outputBuffer, sourceBufferSize, sourceBufferSize);
-                if (compressedSize == 0) {
-                    OutputDebugString(L"\nError: Compression failed\n");
-                }
+        // Compress buffer
+        int compressedSize = LZ4_compress_default(sourceBuffer , outputBuffer, sourceBufferSize, sourceBufferSize);
+        if (compressedSize == 0) {
+            OutputDebugString(L"\nError: Compression failed\n");
+        }
 
         // Update size of compressed buffer
         outputBufferSize = compressedSize;
@@ -416,7 +416,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
                 
         char* const out2 = outputBuffer + VIS_TEX_LEN + REF_TEX_LEN;
-        // AO should be moved to the back
+
         for (int i = AO_TEX_LEN - 1; i >= 0; i--) {
             out2[i] = i % 4 == 0 ? out2[i / 4] : 0;
         }
@@ -597,245 +597,6 @@ void CompressionPass::executeH264(RenderContext* pRenderContext)
                 continue;
             }
         }
-    }
-}
-
-void CompressionPass::executeH264(RenderContext* pRenderContext)
-{
-    /* H264 compression using FFmpeg API*/
-
-    // ===================== COMPRESSION ===================== //
-    if (mMode == Mode::Compression) {
-        char* pOutputBuffer = outputBuffer;
-        std::vector<int> compressedSizes; // Stores compressed sizes of all buffers
-        outputBufferSize = 0;
-
-        // Loop over all textures, compress each one
-        for (int i = 0; i < mNumOfTextures; i++)
-        {
-            std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
- 
-            // Parameters for Compression
-            uint8_t* sourceBuffer = &reinterpret_cast<uint8_t*>(mGetInputBuffer())[mBufferOffsets[i]];
-            int sourceBufferSize = mBufferSizes[i];
-            mpCodecContext = mpCodecContexts[i];
-            mpSwsContext = mpSwsContexts[i];
-
-            /* Set up AVFrame/AVPacket params and buffers */
-            mpFrame->format = mpCodecContext->pix_fmt;
-            mpFrame->width = mpCodecContext->width;
-            mpFrame->height = mpCodecContext->height;
-            mpFrame->pts = 0;
-
-            if (av_frame_get_buffer(mpFrame, 0) < 0)
-            {
-                OutputDebugString(L"\nCannot allocate frame buffer in encoder.\n");
-            }
-
-            mpPacket->data = NULL;
-            mpPacket->size = 0;
-
-            int ret = 0;
-            if (mHybridMode) {
-                if (mpSwsContext) {
-                    // We do color conversion if hybrid rendering and context exists
-                    const int stride[1] = { mpCodecContext->width * 4 };
-                    const uint8_t* const pData[1] = { sourceBuffer };
-                    ret = sws_scale(mpSwsContext, pData, stride, 0, mpCodecContext->height, mpFrame->data, mpFrame->linesize);
-                    if (ret < 0) {
-                        av_strerror(ret, msg, 100);
-                        OutputDebugString(L"\nCompression: Failure to color convert due to: ");
-                        OutputDebugStringA(msg);
-                        continue;
-                    }
-                }
-                else { 
-                    // No color conversion, so we have to manually load the data into the frame
-                    // Future consideration: Have a function to copy data for each different pixel format.
-                    // Currently used only for AO
-                    for (int i = 0; i < AO_TEX_LEN / 4; i++) {
-                        mpFrame->data[0][i] = sourceBuffer[i << 2];
-                    }
-                }
-            }
-            else {
-                // We have to copy the values in our input into the frame
-                //mpFrame->data[0] = &sourceBuffer[0];                         ///<  Y channel
-                //mpFrame->data[1] = &sourceBuffer[nWidth * nHeight];          ///<  U channel
-                //mpFrame->data[2] = &sourceBuffer[2 * nWidth * nHeight];      ///<  V channel
-                for (int j = 0; j < nSize; j+=4) {
-                    // Due to different endianness, texture: YUV0, buffer: 0VUY
-                    int k = j >> 2;
-                    mpFrame->data[2][k] = sourceBuffer[j + 1];
-                    mpFrame->data[1][k] = sourceBuffer[j + 2];
-                    mpFrame->data[0][k] = sourceBuffer[j + 3];
-                }
-            }
-
-            /* Send frame to encoder and receive encoded packet*/
-            ret = avcodec_send_frame(mpCodecContext, mpFrame);
-            if (ret < 0) {
-                av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nFailure to send frame due to: ");
-                OutputDebugStringA(msg);
-                continue;
-            }
-
-            ret = avcodec_receive_packet(mpCodecContext, mpPacket);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nNot enough data to compress. Waiting for more data. ");
-                compressedSizes.push_back(0);
-            }
-            else if (ret < 0) {
-                av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nCompression: Failure to receive packet due to: ");
-                OutputDebugStringA(msg);
-                compressedSizes.push_back(0);
-            }
-
-            /* Update size of compressed buffer */
-            int compressedSize = mpPacket->size;
-            outputBufferSize += compressedSize;
-
-            /* Packet contains output buffer data*/
-            memcpy(pOutputBuffer, mpPacket->data, mpPacket->size);
-            /* Move the output buffer pointer to store next compressed buffer */
-            pOutputBuffer += compressedSize;
-            compressedSizes.push_back(compressedSize);
-
-            char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Compressed size: %d =========", sourceBufferSize, compressedSize);
-            OutputDebugStringA(buffer);
-
-            /* Reset the frame and packet to be reused in the next loop */
-            av_frame_unref(mpFrame);
-            av_packet_unref(mpPacket);
-        }
-
-        // We store the sizes of the compressed buffers so the decoder can retrieve each one individually.
-        for (int i = mNumOfTextures - 1; i >= 0; i--) {
-            int bufSize = compressedSizes[i];
-            /*
-            * We store the ints using 4 bytes
-            *    0     1     2     3 
-            * | MSB | ... | ... | LSB | 
-            */
-            pOutputBuffer[0] = bufSize >> 24;
-            pOutputBuffer[1] = bufSize >> 16 & 255;
-            pOutputBuffer[2] = bufSize >> 8 & 255;
-            pOutputBuffer[3] = bufSize & 255;
-            pOutputBuffer += 4;
-            outputBufferSize += 4;
-        }
-    }
-    else { 
-    // ===================== DECOMPRESSION ===================== //
-        // We start from the end of the buffer to retrieve the sizes
-        if (mGetInputBufferSize() == 0) return;
-        uint8_t* pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer()) + mGetInputBufferSize();
-        std::vector<int> compressedSizes; // Stores compressed sizes of all buffers
-        // We first retrieve the sizes of all compressed buffers
-        for (int i = 0; i < mNumOfTextures; i++) {
-            pSourceBuffer -= 4;
-            int bufSize = (pSourceBuffer[0] << 24) + (pSourceBuffer[1] << 16) + (pSourceBuffer[2] << 8) + (pSourceBuffer[3]);
-            compressedSizes.push_back(bufSize);
-        }
-
-        pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer());
-        char* pOutputBuffer = outputBuffer;
-        outputBufferSize = 0;
-
-        // Loop over all textures, decompress each one
-        for (int i = 0; i < mNumOfTextures; i++) {
-            std::lock_guard lock(ClientNetworkManager::mMutexClientVisTexRead);
-
-            // Parameters for Decompression
-            uint8_t* pSourceBuffer = reinterpret_cast<uint8_t*>(mGetInputBuffer()) + (i == 0 ? 0 : compressedSizes[i - 1]);
-            int sourceBufferSize = compressedSizes[i];
-            mpCodecContext = mpCodecContexts[i];
-            mpSwsContext = mpSwsContexts[i];
-
-            if (sourceBufferSize == 0) {
-                // We currently don't have any data yet. Wait for another pass.
-                outputBufferSize = 0;
-                continue;
-            }
-
-            mpFrame->format = mpCodecContext->pix_fmt;
-            mpFrame->width = mpCodecContext->width;
-            mpFrame->height = mpCodecContext->height;
-
-            /* AVPacket data must be av_malloc'd data so we do a copy here. */
-            uint8_t* tmp_data = (uint8_t*)av_malloc(sourceBufferSize);
-            memcpy(tmp_data, pSourceBuffer, sourceBufferSize);
-            av_packet_from_data(mpPacket, tmp_data, sourceBufferSize);
-
-            /* Send the encoded packet and receive decoded frame */
-            int ret = avcodec_send_packet(mpCodecContext, mpPacket);
-            if (ret < 0) {
-                OutputDebugString(L"\nFailure to send packet due to: ");
-                av_strerror(ret, msg, 100);
-                OutputDebugStringA(msg);
-            }
-
-            ret = avcodec_receive_frame(mpCodecContext, mpFrame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nNot enough data to decompress. Waiting for more data. ");
-                continue;
-            }
-            else if (ret < 0) {
-                av_strerror(ret, msg, 100);
-                OutputDebugString(L"\nDecompression: Failure to receive frame due to: ");
-                OutputDebugStringA(msg);
-                continue;
-            }
-
-            if (mHybridMode) {
-                if (mpSwsContext) {
-                    /* Convert YUV -> RGBA into the output buffer */
-                    const int stride[] = { mpCodecContext->width * 4 };
-                    uint8_t* const pData[1] = { (uint8_t*)pOutputBuffer };
-                    ret = sws_scale(mpSwsContext, mpFrame->data, mpFrame->linesize,
-                        0, mpCodecContext->height, pData, stride);
-                    if (ret < 0) {
-                        av_strerror(ret, msg, 100);
-                        OutputDebugString(L"\nDecompression: Failure to color convert due to: ");
-                        OutputDebugStringA(msg);
-                    }
-                }
-                else {
-                    for (int i = 0, j = 0; i < AO_TEX_LEN / 4; i++, j+=4) {
-                        pOutputBuffer[j] = mpFrame->data[0][i];
-                    }
-                }
-            }
-            else {
-                // We copy the YUV data into the output buffer
-                for (int j = 0; j < nSize; j += 4) {
-                    int k = j >> 2;
-                    outputBuffer[j] = 0;
-                    outputBuffer[j+1] = mpFrame->data[2][k];
-                    outputBuffer[j+2] = mpFrame->data[1][k];
-                    outputBuffer[j+3] = mpFrame->data[0][k];
-                }
-            }
-
-            // Not sure of how to find out the decompressed size, so assume decompressed size is always the same as original.
-            char buffer[140];
-            sprintf(buffer, "\n\n= Compressed Buffer: Original size: %d, Decompressed size: %d =========", sourceBufferSize, mBufferSizes[i]);
-            OutputDebugStringA(buffer);
-
-            // Update size of decompressed buffer
-            outputBufferSize += mBufferSizes[i];
-            pOutputBuffer += mBufferSizes[i];
-
-            /* Reset the frame and packet to be reused in the next loop */
-            av_frame_unref(mpFrame);
-            av_packet_unref(mpPacket);
-        }
-        int x = 0;
     }
 }
 

@@ -93,7 +93,6 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
     rayVars["RayGenCB"]["gSkipAO"] = mSkipAO;
-    rayVars["RayGenCB"]["gSkipDD"] = mSkipDD;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
     rayVars["RayGenCB"]["gDecodeVis"] = mDecodeVis;
@@ -117,7 +116,6 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
     dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
-    dirty |= (int)pPassWindow->checkbox("Skip diffuse-diffuse interactions", mSkipDD, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
     //dirty |= (int)pPassWindow->checkbox("Debug global illumination mode", mDecodeMode, false);
 

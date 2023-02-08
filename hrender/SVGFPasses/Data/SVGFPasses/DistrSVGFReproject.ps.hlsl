@@ -118,15 +118,6 @@ bool loadPrevData(float2 fragCoord, out uint prevVisTex, out float prevAoTex, ou
         lights[lightIndex] = 0;
     }
 
-    float lights[32]; // Accumulates interpolated light values
-    
-    int lightIndex;
-        // Just in case not initialized, can remove if confirmed
-    for (lightIndex = 0; lightIndex < lightCount; lightIndex++)
-    {
-        lights[lightIndex] = 0;
-    }
-
     if (valid) 
     {
         float sumw = 0;
