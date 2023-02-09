@@ -3,7 +3,7 @@
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080
 #define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
 
-std::vector<RenderConfig::Config> RenderConfig::mConfig(1);
+std::vector<RenderConfig::Config> RenderConfig::mConfig(2);
 int RenderConfig::totalSize = 0;
 
 void RenderConfig::setConfiguration(std::vector<BufferType> orderedTypes) {

@@ -52,7 +52,6 @@
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
 #define AO_TEX_LEN 8294400 // 4 * 1920 * 1080 
 #define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
-#define AO_TEX_LEN 8294400 // 4 * 1920 * 1080 
 
 // While waiting for the first packet from the client, wait
 // this amount of time in milliseconds before giving up

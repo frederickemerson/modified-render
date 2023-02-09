@@ -283,7 +283,7 @@ void runDebug()
  */
 void runServer()
 {
-    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap });
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -311,9 +311,6 @@ void runServer()
     // Set presets for the pipeline //
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
-        //pipeline->setPresets({
-        //    RenderingPipeline::PresetData("Network visibility", "VisibilityBitmap", { 1, 1, 1, 1, 1, 1 })
-        //    });
         pipeline->setPresets({
             RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
@@ -336,7 +333,7 @@ void runServer()
  */
 void runClient()
 {
-    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap });
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
@@ -350,11 +347,11 @@ void runClient()
     //pipeline->updateEnvironmentMap(environmentMaps[0]);
 
     // 003 SERVER
-    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
+    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.129", DEFAULT_PORT_UDP);
     // 004 SERVER
     //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.73", DEFAULT_PORT_UDP);
     // 005 SERVER
-    //ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
+    ResourceManager::mClientNetworkManager->SetUpClientUdp("172.26.191.146", DEFAULT_PORT_UDP);
 
     RenderConfiguration renderConfiguration = getClientRenderConfig(renderMode, renderType, sceneIdx);
 
