@@ -76,6 +76,7 @@ void AmbientOcclusionPass::initScene(RenderContext* pRenderContext, Scene::Share
 void AmbientOcclusionPass::renderGui(Gui::Window* pPassWindow)
 {
     int dirty = 0;
+    dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion computation", mSkipAo, false);
     dirty |= (int)pPassWindow->var("AO radius", mAORadius, 1e-4f, 1e38f, mAORadius * 0.01f);
     dirty |= (int)pPassWindow->var("Num AO Rays", mNumRaysPerPixel, 1, 64);
 
@@ -95,6 +96,7 @@ void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
     auto rayGenVars = mpRays->getRayVars();
     rayGenVars["RayGenCB"]["gFrameCount"]  = mFrameCount++;
     rayGenVars["RayGenCB"]["gAORadius"]    = mAORadius;
+    rayGenVars["RayGenCB"]["gSkipAo"]      = mSkipAo;
     rayGenVars["RayGenCB"]["gMinT"]        = mpResManager->getMinTDist();  // From the UI dropdown
     rayGenVars["RayGenCB"]["gNumRays"]     = uint32_t(mNumRaysPerPixel);
     rayGenVars["gPos"]    = mpResManager->getTexture(mPositionIndex);

@@ -375,10 +375,10 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
         // Very hacky solution, should fix by using a 8bit per pixel texture.
         char* const s1 = reinterpret_cast<char* const>(mGetInputBuffer()) + VIS_TEX_LEN + REF_TEX_LEN;
-        for (int i = 0; i < AO_TEX_LEN / 4; i++) {
-            s1[i] = s1[i * 4];
-        }
 
+        // Compress AO buffer into quarter its size, since only every 4 indices are filled.
+        compBufWithOffset(s1, s1, AO_TEX_LEN / 4, 4);
+        
         int sourceBufferSize = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN / 4;
 
         // Compress buffer
@@ -414,12 +414,10 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
         // Decompress buffer
         int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
-                
+        
+        // Decompress AO buffer into its original size
         char* const out2 = outputBuffer + VIS_TEX_LEN + REF_TEX_LEN;
-
-        for (int i = AO_TEX_LEN - 1; i >= 0; i--) {
-            out2[i] = i % 4 == 0 ? out2[i / 4] : 0;
-        }
+        decompBufWithOffset(out2, out2, AO_TEX_LEN, 4);
 
         if (decompressedSize <= 0) {
             OutputDebugString(L"\nError: Decompression failed\n");
@@ -607,6 +605,19 @@ void CompressionPass::renderGui(Gui::Window* pPassWindow)
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();
+}
+
+// Custom memcpy to copy data with offset between each value
+void CompressionPass::compBufWithOffset(char* dest, const char* src, size_t len, int offset) {
+    for (int i = 0; i < len; i++) {
+        dest[i] = src[i * offset];
+    }
+}
+
+void CompressionPass::decompBufWithOffset(char* dest, const char* src, size_t len, int offset) {
+    for (int i = (int)len - 1; i >= 0; i--) {
+        dest[i] = i % offset == 0 ? src[i / offset] : 0;
+    }
 }
 
 // The functions below are used for NVENC hardware encoding, but do not really work.

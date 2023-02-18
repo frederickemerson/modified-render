@@ -33,6 +33,7 @@ struct AORayPayload
 // A constant buffer we'll fill in for our ray generation shader
 cbuffer RayGenCB
 {
+    bool  gSkipAo;
 	float gAORadius;
 	uint  gFrameCount;
 	float gMinT;
@@ -97,6 +98,13 @@ void AoRayGen()
 	// Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
 	if (worldPos.w != 0.0f)  
 	{
+        if (gSkipAo)
+        {
+			// Skipping AO, so mark all rays as unoccluded.
+            gOutput[launchIndex] = gNumRays;
+            return;
+        }
+		
 		// Start accumulating from zero if we don't hit the background
 		ambientOcclusion = 0;
 

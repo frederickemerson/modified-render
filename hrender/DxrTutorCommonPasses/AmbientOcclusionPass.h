@@ -52,6 +52,7 @@ protected:
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)  
     
     // Various internal parameters
+    bool                                    mSkipAo = false;        ///< Should we skip ambient occlusion?
     float                                   mAORadius = 0.0f;       ///< What radius are we using for AO rays (i.e., maxT when ray tracing)
     uint32_t                                mFrameCount = 0x4641u;  ///< Frame count used to help seed our shaders' random number generator
     int32_t                                 mNumRaysPerPixel = 32;  ///< How many ambient occlusion rays should we shot per pixel?

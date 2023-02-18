@@ -286,6 +286,9 @@ protected:
     void executeNVENC(RenderContext* pRenderContext);
     void renderGui(Gui::Window* pPassWindow) override;
 
+    void compBufWithOffset(char* dest, const char* src, size_t len, int offset);
+    void decompBufWithOffset(char* dest, const char* src, size_t len, int offset);
+
     Mode                                    mMode;                     ///< Whether this pass runs as compression or decompression
 
     CUdevice cuDevice = 0;
