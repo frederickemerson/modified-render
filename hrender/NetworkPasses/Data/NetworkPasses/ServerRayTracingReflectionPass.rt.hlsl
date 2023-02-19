@@ -145,6 +145,12 @@ void GGXRayGen()
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor = float3(0, 0, 0);
     
+    if (gSkipSRT)
+    {
+        gOutput[launchIndex] = float3(0.0);
+        return;
+    }
+    
     if (isGeometryValid && !raymask)
     {
         //shadeColor = VColor.rgb + pixelEmissive.rgb;
@@ -176,7 +182,7 @@ void GGXRayGen()
                 if (valid)
                 {
                     // Shoot secondary ray
-                    float3 GGXcolor = gSkipSRT ? float3(0, 0, 0) : shootGGXray(worldPos.xyz, R, gMinT, 1.0e38f);
+                    float3 GGXcolor = shootGGXray(worldPos.xyz, R, gMinT, 1.0e38f);
                     //float3 GGXcolor = gSkipGGX ? float3(0, 0, 0) : float3(0, 0, 0.3);
 
                     float  D = ggxNormalDistribution(NdotH, roughness);

@@ -119,7 +119,7 @@ void SimpleShadowsRayGen()
     int visibilityBit = 0;
 
     // Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
-    if (worldPos.w != 0.0f)
+    if (worldPos.w != 0.0f && !gSkipShadows)
     {
 
         const uint lightCount = gScene.getLightCount();
@@ -145,10 +145,23 @@ void SimpleShadowsRayGen()
             }
             
             // Shoot our ray
-            float visibility = gSkipShadows ? 1.0f : shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
+            float visibility = shadowRayVisibility(worldPos.xyz, toLight, gMinT, distToLight);
 
             // Store visibility
             visibilityBit |= (int(visibility) << lightIndex);
+        }
+    }
+    else if (gSkipShadows)
+    {
+        const uint lightCount = gScene.getLightCount();
+        if (lightCount == 32)
+        {
+            visibilityBit = (1 << 31) - 1;
+            visibilityBit = visibilityBit << 1 + 1;
+        }
+        else
+        {
+            visibilityBit = (1 << lightCount) - 1;
         }
     }
     
