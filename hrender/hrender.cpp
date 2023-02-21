@@ -312,7 +312,7 @@ void runServer()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Global Illumination", "Direct / Indirect Illumination", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -320,6 +320,7 @@ void runServer()
             RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
+
     // Start our program
     RenderingPipeline::run(pipeline, config);
 }
@@ -370,6 +371,7 @@ void runClient()
             RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
+
     OutputDebugString(L"\n\n================================PIPELINE CLIENT IS CONFIGURED=================\n\n");
 
     // Start our program

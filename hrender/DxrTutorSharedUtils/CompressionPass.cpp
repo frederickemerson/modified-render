@@ -834,3 +834,4 @@ void CompressionPass::DecodeMediaFile()
     }
     nFrame += 1; //nFrameReturned;
 }
+

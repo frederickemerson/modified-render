@@ -77,7 +77,7 @@ namespace {
     const std::string sVarRefBufOriginalTex = "gRefBufferOrig";
     // Name of shader variable for original ambient occlusion buffer texture
     const std::string sVarAOBufOriginalTex = "gAOBufferOrig";
-   
+
     // Name of shader variable for motion vectors texture from PredictionPass.ps.hlsl
     const std::string sVarMotionVecTex = "gMotionVectors";
     // Name of shader variable for mode of "filling-in" for unknown fragments

@@ -73,7 +73,7 @@ void VShadowsRayGen()
     float4 emissiveColor = unpackUnorm4x8(asuint(gTexData[launchIndex].z));
 
     // If we don't hit any geometry, our difuse material contains our background color.
-    float3 shadeColor = difMatlColor.rgb;
+    float3 shadeColor = difMatlColor.rgb ;
 
     if (!gDecodeMode)
     {
