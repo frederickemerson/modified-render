@@ -50,7 +50,9 @@ protected:
     RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
     Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
     bool                                    mSkipSRT = false;       ///< Should we skip SSR?
-
+    float                                   mRoughnessThreshold = 0.4f; ///< Controls how shiny required for reflections to work
+    float                                   mLumThreshold = 0.15f;   ///< Controls how bright each reflection should be to be accepted
+    bool                                    mUseThresholds = true; ///< Do we want to limit the colour output?
     // Various internal parameters
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
