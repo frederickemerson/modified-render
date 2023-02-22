@@ -30,6 +30,11 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Stores 16 x uint8
     mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags, mTexWidth, mTexHeight);
 
+    // These textures are used for SVGF denoising
+    mpResManager->requestTextureResource("SVGF_LinearZ", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SVGF_MotionVecs", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SVGF_CompactNormDepth", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    
     // // Set default environment map and scene
     // mpResManager->updateEnvironmentMap(kEnvironmentMap);
     // mpResManager->setDefaultSceneName(kDefaultScene);
@@ -85,7 +90,7 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
-        { "WorldPosition", "WorldNormal", "__TextureData" }, 
+        { "WorldPosition", "WorldNormal", "__TextureData", "SVGF_LinearZ", "SVGF_MotionVecs", "SVGF_CompactNormDepth" },
         "Z-Buffer");                                                                                      
 
     // Failed to create a valid FBO?  We're done.
@@ -133,6 +138,11 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
         mpClearGBuf->execute(pRenderContext, outputFbo); 
     }
     
+    // Pass down our output size to the G-buffer shader
+    auto shaderVars = mpRaster->getVars();
+    float2 fboSize = float2(outputFbo->getWidth(), outputFbo->getHeight());
+    shaderVars["GBufCB"]["gBufSize"] = float4(fboSize.x, fboSize.y, 1.0f / fboSize.x, 1.0f / fboSize.y);
+
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
 

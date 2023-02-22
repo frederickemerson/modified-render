@@ -32,15 +32,17 @@ public:
     using SharedPtr = std::shared_ptr<MemoryTransferPassServerGPU_CPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassServerGPU_CPU>;
 
-    static SharedPtr create() { return SharedPtr(new MemoryTransferPassServerGPU_CPU()); }
+    static SharedPtr create(bool isHybridRendering) { return SharedPtr(new MemoryTransferPassServerGPU_CPU(isHybridRendering)); }
     virtual ~MemoryTransferPassServerGPU_CPU() = default;
 
     // get output buffer on CPU memory after memory transfer
     char* getOutputBuffer() { return (char*)outputBuffer; }
-    int getOutputBufferSize() { return VIS_TEX_LEN + REF_TEX_LEN; } // vistex and reflections
+    int getOutputBufferSize() { return mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN + REF_TEX_LEN : VIS_TEX_LEN; } // Remote uses same size as VIS_TEX_LEN
 
 protected:
-    MemoryTransferPassServerGPU_CPU() : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") { }
+    MemoryTransferPassServerGPU_CPU(bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Server GPU-CPU", "Memory Transfer Pass Options") {
+        mHybridMode = isHybridRendering;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -52,12 +54,18 @@ protected:
     bool requiresScene() override { return true; }
 
     // Rendering state
-    Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
+    Scene::SharedPtr mpScene;                ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
-    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
+    int32_t mVisibilityIndex = -1;           ///< index of visibility texture, to be obtained in initialization
+    int32_t mSRTReflectionsIndex = -1;       ///< index of reflections texture, to be obtained in initialization
+    int32_t mAOIndex = -1;                   ///< index of ambient occlusion texture, to be obtained in initialization
+    int32_t mVShadingIndex = -1;             ///< index of v-shading, to be obtained in initialization only for remote
+    int32_t mGIIndex = -1;                   ///< index of global illumination texture, current unused
 
-    // output on CPU memory and function to get it
+    bool mHybridMode = true;                 ///< True if doing hybrid rendering, else remote rendering.
+
+    // initialise output buffer
     uint8_t* outputBuffer;
+    
 };

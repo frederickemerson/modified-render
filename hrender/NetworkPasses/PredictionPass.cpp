@@ -26,11 +26,14 @@ namespace {
     const std::string kVisBufOrig = "VisibilityBitmap";
     // Offset visibility buffer resource location
     const std::string kVisBufOffset = "OffsetVisibilityBitmap";
+    // Original AO buffer resource location
+    const std::string kAOBufOrig = "AmbientOcclusion";
+    // Offset AO buffer resource location
+    const std::string kAOBufOffset = "OffsetAmbientOcclusion";
     // Original RCColor buffer resource location
     const std::string kRefBufOrig = "SRTReflection";
     // Offset RCColor buffer resource location
     const std::string kRefBufOffset = "OffsetSRTReflection";
-
 
     // ========================= SHADER VARIABLES FOR PredictionPass.ps.hlsl =========================
 
@@ -72,6 +75,8 @@ namespace {
     const std::string sVarVisBufOriginalTex = "gVisBufferOrig";
     // Name of shader variable for original RayTracing Reflection buffer texture
     const std::string sVarRefBufOriginalTex = "gRefBufferOrig";
+    // Name of shader variable for original ambient occlusion buffer texture
+    const std::string sVarAOBufOriginalTex = "gAOBufferOrig";
 
     // Name of shader variable for motion vectors texture from PredictionPass.ps.hlsl
     const std::string sVarMotionVecTex = "gMotionVectors";
@@ -110,12 +115,18 @@ bool PredictionPass::initialize(RenderContext* pRenderContext, ResourceManager::
     // Request for world positions
     mWorldPosIndex = mpResManager->requestTextureResource(
         kWorldPos, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
-    // Request for original visibility buffer texture
+    //// Request for original visibility buffer texture
     mVisBufOrigIndex = mpResManager->requestTextureResource(
         kVisBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     // Request for offset visibility buffer texture
     mVisBufOffsetIndex = mpResManager->requestTextureResource(
         kVisBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for original AO buffer texture
+    mAOBufOrigIndex = mpResManager->requestTextureResource(
+        kAOBufOrig, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    // Request for offset AO buffer texture
+    mAOBufOffsetIndex = mpResManager->requestTextureResource(
+        kAOBufOffset, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
     // Request for original RayTracing Reflection buffer texture
     mRefBufOrigIndex = mpResManager->requestTextureResource(
         kRefBufOrig, ResourceFormat::R11G11B10Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
@@ -149,10 +160,12 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     Falcor::Fbo::SharedPtr predictionFbo = mpResManager->
         createManagedFbo({ mMotionVecIndex }, mZBufferIndex);
     pRenderContext->clearFbo(predictionFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
+
     // Create a FBO for the step to offset the buffers
     Falcor::Fbo::SharedPtr offsetBufferFbo = mpResManager->
-        createManagedFbo({ mVisBufOffsetIndex,  mRefBufOffsetIndex}, mZBufferIndex);
+        createManagedFbo({ mVisBufOffsetIndex,  mRefBufOffsetIndex, mAOBufOffsetIndex }, mZBufferIndex);
     //pRenderContext->clearFbo(offsetBufferFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
+
     // Failed to create valid FBOs? We're done.
     if (!(predictionFbo && offsetBufferFbo))
     {
@@ -185,6 +198,7 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
         Falcor::GraphicsVars::SharedPtr copyShaderVars = mpCopyShader->getVars();
         copyShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
         copyShaderVars[sVarRefBufOriginalTex] = mpResManager->getTexture(mRefBufOrigIndex);
+        copyShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
 
         // Using output FBO for OffsetBuffer, run CopyBuffer shader to copy over the visibility buffer
         mpCopyShader->execute(pRenderContext, offsetBufferFbo);
@@ -240,6 +254,8 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     offsetShaderVars[sVarCBufferOffset][sVarUnknownFrag] = mUnknownFragmentsMode;
     offsetShaderVars[sVarVisBufOriginalTex] = mpResManager->getTexture(mVisBufOrigIndex);
     offsetShaderVars[sVarRefBufOriginalTex] = mpResManager->getTexture(mRefBufOrigIndex);
+    offsetShaderVars[sVarAOBufOriginalTex] = mpResManager->getTexture(mAOBufOrigIndex);
+
     // Pass motion vectors texture to OffsetBuffer shader
     offsetShaderVars[sVarMotionVecTex] = mpResManager->getTexture(mMotionVecIndex);
 

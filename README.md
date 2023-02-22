@@ -60,6 +60,11 @@ Note: some errors may occur if the path is not set correctly for Visual Studio
 
 ![image](https://user-images.githubusercontent.com/59093518/168444108-84f4e853-77b1-4f56-9470-0b5f91cf7f45.png)
 
+- As this project uses ffmpeg 4.4, the following deprecated functions should be modified inside `Video_Codec_SDK_11010\Samples\Utils\FFmpegDemuxer.h`.
+    - Line 150: change `av_init_packet(&pkt);` to `pkt = *av_packet_alloc();`
+    - Line 153: change `av_init_packet(&pktFiltered);` to `pktFiltered = *av_packet_alloc();`
+
+
 - Lastly, when building the `Falcor` solution, if you run into a compile error saying that `ComPtr` is ambiguous in `NvEncoder.cpp` (or another file), fix it by changing all ComPtr in NvEncoder.cpp to `Microsoft::WRL::ComPtr`. There should be about 4 of these occurrences.
 
 ### Scene Data

@@ -39,6 +39,9 @@ struct GBuffer
     float4 wsPos       : SV_Target0;   // World space position.  .w component = 0 if a background pixel
     float4 wsNorm      : SV_Target1;   // World space normal.  (.w is distance from camera to hit point; this may not be used)
     float4 texData     : SV_Target2;   // Texture data of the hit point. For details, refer to gBuffer.ps.hlsl
+    float4 svgfLinZ : SV_Target3;      //  SVGF related data. Refer to gBuffer.ps.hlsl for details
+    float4 svgfMoVec : SV_Target4;
+    float4 svgfCompact : SV_Target5;
 };
 
 // Convert our world space direction to a (u,v) coord in a latitude-longitude spherical map
@@ -69,6 +72,11 @@ GBuffer main(float2 texC : TEXCOORD, float4 pos : SV_Position)
     // Put the environment map color into the diffuse component of the texture data,
     // clear the rest
     gBufOut.texData = float4(asfloat(packUnorm4x8(float4(bgColor, 0.0f))), 0.f, 0.f, 0.f);
+    // LinearZ value is left as -1.0f to indicate this value as invalid
+    gBufOut.svgfLinZ = float4(-1.0f, 0.0f, 0.0f, 0.0f);
+    gBufOut.svgfMoVec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    // LinearZ value is left as -1.0f to indicate this value as invalid
+    gBufOut.svgfCompact = float4(0.0f, -1.0f, 0.0f, 0.0f);
 
     return gBufOut;
 }

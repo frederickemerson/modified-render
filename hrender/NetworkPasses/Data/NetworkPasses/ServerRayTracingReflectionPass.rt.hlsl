@@ -20,6 +20,7 @@
 import Scene.Raytracing;
 import Scene.Shading;                          // Shading functions, etc
 import Experimental.Scene.Lights.LightHelpers; // Light structures for our current scene
+import Utils.Color.ColorHelpers;
 
 #include "../../../DxrTutorCommonPasses/Data/CommonPasses/packingUtils.hlsli" // Functions used to unpack the GBuffer's gTexData
 #include "networkUtils.hlsli" // Some simple utility functions: getPerpendicularVector(), initRand(), nextRand()
@@ -36,6 +37,9 @@ cbuffer RayGenCB
 {
     float gMinT;
     bool gSkipSRT; // Skip this GGX pass
+    float gLumThreshold; // Threshold for luminance of reflected light
+    float gRoughnessThreshold; // Threshold for roughness
+    bool gUseThresholds;
 }
 
 // Input and out textures that need to be set by the C++ code
@@ -144,6 +148,16 @@ void GGXRayGen()
 
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor = float3(0, 0, 0);
+
+    /* We skip based on the following:
+    *  1. We are skipping SRT
+    *  2. Surface is not shiny enough (represented by large roughness)
+    */      
+    if (gSkipSRT || (gUseThresholds && (specMatlColor.a * specMatlColor.a > gRoughnessThreshold)))
+    {
+        gOutput[launchIndex] = float3(0.0);
+        return;
+    }
     
     if (isGeometryValid && !raymask)
     {
@@ -155,13 +169,14 @@ void GGXRayGen()
             float distToLight;
             float3 lightIntensity;
             float3 L;
-            // A helper (that queries the Falcor scene to get needed data about this light)
-            getLightData(lightIndex, worldPos.xyz, L, lightIntensity, distToLight);
 
             float shadowMult = (visibility & (1 << lightIndex)) ? 1.0 : 0.0;
 
             if (shadowMult == 1.0)
             {
+                // A helper (that queries the Falcor scene to get needed data about this light)
+                getLightData(lightIndex, worldPos.xyz, L, lightIntensity, distToLight);
+                
                 // Get mirror reflection vector
                 float3 V = normalize(gScene.camera.getPosition() - worldPos.xyz);
                 float3 H = normalize(V + L);
@@ -176,9 +191,8 @@ void GGXRayGen()
                 if (valid)
                 {
                     // Shoot secondary ray
-                    float3 GGXcolor = gSkipSRT ? float3(0, 0, 0) : shootGGXray(worldPos.xyz, R, gMinT, 1.0e38f);
+                    float3 GGXcolor = shootGGXray(worldPos.xyz, R, gMinT, 1.0e38f);
                     //float3 GGXcolor = gSkipGGX ? float3(0, 0, 0) : float3(0, 0, 0.3);
-
                     float  D = ggxNormalDistribution(NdotH, roughness);
                     float  G = ggxSchlickMaskingTerm(NdotL, NdotV, roughness);
                     float3 F = schlickFresnel(specMatlColor.rgb, LdotH);
@@ -186,15 +200,23 @@ void GGXRayGen()
                     float3 BRDF = F * G * D / (4.f * NdotV * NdotL);
 
                     shadeColor += GGXcolor * float3(BRDF);
-                    if (shadeColor.r >= 1.0f)shadeColor.r = 1.0f;
-                    else if (shadeColor.g >= 1.0f)shadeColor.g = 1.0f;
-                    else if (shadeColor.b >= 1.0f)shadeColor.b = 1.0f;
                 }
             }
         }
     }
-
+    
+    // Clamp function doesn't seem to work for some reason. So this is a workaround
+    shadeColor.r = max(0.0, min(shadeColor.r, 1.0));
+    shadeColor.g = max(0.0, min(shadeColor.g, 1.0));
+    shadeColor.b = max(0.0, min(shadeColor.b, 1.0));
+    
+    if (gUseThresholds && luminance(shadeColor) < gLumThreshold)
+    {
+        gOutput[launchIndex] = float3(0);
+        return;
+    }
+    
     //if(gRaymask[launchIndex] == 0) gOutput[launchIndex] = float4(0, 1, 0, 1.0f);
-   // else if(gRaymask[launchIndex] == 1) gOutput[launchIndex] = float4(1, 0, 0, 1.0f);
-   gOutput[launchIndex] =  shadeColor;
+    // else if(gRaymask[launchIndex] == 1) gOutput[launchIndex] = float4(1, 0, 0, 1.0f);
+    gOutput[launchIndex] = shadeColor;
 }

@@ -93,11 +93,12 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 	float3 shadeColor = isGeometryValid ? float3(0.0f) : difMatlColor.rgb;
 	// If geometry invalid or we skip SSR, this pixel is discard for raytracing.
 	SSRBufOut.RayMask = (!isGeometryValid || gSkipSSR) ? 1 : 0;
+	
 	// We use this temp color to check SSR hit or miss
-	float3 SSRColor = float3(0);
+	float3 SSRColor = float3(0.0);
 	float roughness = specMatlColor.a * specMatlColor.a;
 
-	if (isGeometryValid)
+	if (isGeometryValid && !gSkipSSR)
 	{
 
 		// Set V-shading color and emissive color.
@@ -113,7 +114,7 @@ PS_OUTPUT main(float2 texC : TEXCOORD, float4 pos : SV_Position)
 				float3 R = normalize(reflect(V, worldNorm.xyz));
 
 				// Do SSR
-				float3 ssrColor = gSkipSSR ? float3(0, 0, 0) : SSRRayMarch(worldPos.xyz, R);
+				float3 ssrColor = SSRRayMarch(worldPos.xyz, R);
 
 				if (SSRColor.r != 0.0f && SSRColor.g != 0.0f && SSRColor.b != 0.0f) SSRBufOut.RayMask = 1;
 				// roughness helps reduce noise

@@ -52,15 +52,18 @@ protected:
     bool usesRayTracing() override { return true; }
 
     // Rendering state
-    RayLaunch::SharedPtr                    mpRays;                 ///< Our wrapper around a DX Raytracing pass
-    Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
+    RayLaunch::SharedPtr                    mpRays;                         ///< Our wrapper around a DX Raytracing pass
+    Scene::SharedPtr                        mpScene;                        ///< Our scene file (passed in from app)
 
     // Various internal parameters
-    int32_t                                 mOutputIndex;           ///< An index for our output buffer
-    std::string                             mOutputTexName;         ///< Where do we want to store the results?
-    int32_t                                 mPosIndex;              ///< An index for our position buffer
-    std::string                             mPosBufName = "WorldPosition";            ///< Where to find the position buffer
-    bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
-    int                                     mTexWidth = -1;         ///< The width of the texture we render, based on the client
-    int                                     mTexHeight = -1;        ///< The height of the texture we render, based on the client
+    int32_t                                 mOutputIndex;                   ///< An index for our output buffer
+    std::string                             mOutputTexName;                 ///< Where do we want to store the results?
+    int32_t                                 mPosIndex;                      ///< An index for our position buffer
+    std::string                             mPosBufName = "WorldPosition";  ///< Where to find the position buffer
+    bool                                    mSkipShadows = false;           ///< Should we skip shadow computation?
+    uint32_t                                mFrameCount = 0x6395u;          ///< Frame count used to help seed our shaders' random number generator
+    bool                                    mUseConeSampling = false;       ///< Should we sample the shadow rays using a cone?
+    float                                   mThetaMax = 0.025f;             ///< Maximum angle of the cone sampling.
+    int                                     mTexWidth = -1;                 ///< The width of the texture we render, based on the client
+    int                                     mTexHeight = -1;                ///< The height of the texture we render, based on the client
 };

@@ -36,16 +36,20 @@ cbuffer RayGenCB
 {
     float gMinT;
     bool gSkipShadows; // Render all lights without shadow rays
-    bool gDecodeMode; // Just debug the visibility bitmaps
+    bool gSkipAO; // Render the scene without ambient occlusion
+    bool gDecodeMode; // Debug visibility / AO
     int gDecodeBit; // Which light of the visibility bitmap to preview
+    bool gDecodeVis; // Do we want to decode Visibility buffer or Ambient Occlusion?
     float gAmbient;
+    uint gNumAORays;
 }
 
 // Input and out textures that need to be set by the C++ code
 Texture2D<float4> gPos;
 Texture2D<float4> gNorm;
 Texture2D<float4> gTexData;
-Texture2D<uint>  gVisibility;
+Texture2D<uint>   gVisibility;
+Texture2D<uint>   gAO;
 RWTexture2D<float4> gOutput;
 
 [shader("raygeneration")]
@@ -53,11 +57,11 @@ void VShadowsRayGen()
 {
     // Where is this ray on screen?
     uint2 launchIndex = DispatchRaysIndex().xy;
-    uint2 launchDim   = DispatchRaysDimensions().xy;
+    uint2 launchDim = DispatchRaysDimensions().xy;
 
     // Load g-buffer data
-    float4 worldPos     = gPos[launchIndex];
-    float4 worldNorm    = gNorm[launchIndex];
+    float4 worldPos = gPos[launchIndex];
+    float4 worldNorm = gNorm[launchIndex];
     float4 difMatlColor = unpackUnorm4x8(asuint(gTexData[launchIndex].x));
 
     // We're only doing Lambertian, but sometimes Falcor gives a black Lambertian color.
@@ -71,58 +75,68 @@ void VShadowsRayGen()
     // If we don't hit any geometry, our difuse material contains our background color.
     float3 shadeColor = difMatlColor.rgb ;
 
-
     if (!gDecodeMode)
     {
         // Our camera sees the background if worldPos.w is 0, only shoot an AO ray elsewhere
-        if (worldPos.w != 0.0f)
+        if (worldPos.w == 0.0f)
         {
-            // We're going to accumulate contributions from multiple lights, so zero our our sum
-            shadeColor = float3(0.0, 0.0, 0.0);
-
-            const uint lightCount = gScene.getLightCount();
-            float3 lightIntensityCache;
-
-            for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
-            {
-                float distToLight;
-                float3 lightIntensity;
-                float3 toLight;
-                // A helper (that queries the Falcor scene to get needed data about this light)
-                getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
-
-                // Compute our lambertion term (L dot N)
-                float LdotN = saturate(dot(worldNorm.xyz, toLight));
-
-                // Shoot our ray
-                float shadowMult = gSkipShadows ? 1.0f : 
-                    ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
-                lightIntensityCache = lightIntensity;
-                // Compute our Lambertian shading color
-                shadeColor += shadowMult * LdotN * lightIntensity; 
-            }
-            if (length(shadeColor) < 0.00001)
-            {
-                shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache ;
-            }
-
-            // Physically based Lambertian term is albedo/pi
-            shadeColor *= difMatlColor.rgb / 3.141592f;
+            gOutput[launchIndex] = float4(shadeColor, 1.0f) + emissiveColor;
+            return;
         }
-    
-        // Save out our AO color
-        gOutput[launchIndex] = float4(shadeColor , 1.0f) + emissiveColor;
-    } 
-    else
-    {
-        float shadowMult = gSkipShadows ? 1.0f :
-            ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
+        // Add any emissive color from primary rays
+        shadeColor = emissiveColor.rgb;
 
-        gOutput[launchIndex] = float4(shadeColor, 1.0f) * shadowMult + emissiveColor;
+        // We're going to accumulate contributions from multiple lights
+        const uint lightCount = gScene.getLightCount();
+        float3 lightIntensityCache;
 
-        //gOutput[launchIndex] = float4(1.0f, 0.0f, 1.0f, 1.0f);
+        for (int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+        {
+            float distToLight;
+            float3 lightIntensity;
+            float3 toLight;
+            // A helper (that queries the Falcor scene to get needed data about this light)
+            getLightData(lightIndex, worldPos.xyz, toLight, lightIntensity, distToLight);
 
+            // Compute our lambertion term (L dot N)
+            float LdotN = saturate(dot(worldNorm.xyz, toLight));
+
+            // Shoot our ray
+            float shadowMult = gSkipShadows ? 1.0f :
+                ((gVisibility[launchIndex] & (1 << lightIndex)) ? 1.0 : 0.0);
+            lightIntensityCache = lightIntensity;
+            // Compute our Lambertian shading color
+            shadeColor += shadowMult * LdotN * lightIntensity;
+        }
+
+        if (length(shadeColor) < 0.00001)
+        {
+            shadeColor += difMatlColor.rgb * gAmbient * lightIntensityCache;
+        }
+
+        // Physically based Lambertian term is albedo/pi
+        shadeColor *= difMatlColor.rgb / 3.141592f;
+
+        // Save out our AO color    
+        float AOfactor = gSkipAO ? 1.0f : clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+        shadeColor *= AOfactor;
+        gOutput[launchIndex] = float4(shadeColor, 1.0f);
     }
+    else // Decode Mode
+    {
+        if (gDecodeVis) // Decoding Visibility
+        {
+            float shadowMult = gSkipShadows ? 1.0f :
+                ((gVisibility[launchIndex] & (1 << gDecodeBit)) ? 1.0 : 0.0f);
 
+            shadeColor *= shadowMult;
+            gOutput[launchIndex] = float4(shadeColor, 1.0) + emissiveColor;
+        }
+        else  // Decoding AO
+        {
+            float AOfactor = clamp((float)gAO[launchIndex] / gNumAORays, 0.0, 1.0);
+            gOutput[launchIndex] = float4(float3(AOfactor), 1.0);
+        }
+    }
 }

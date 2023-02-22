@@ -101,6 +101,51 @@
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp">
+      <Filter>GIPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp">
+      <Filter>GIPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\SVGFClientPass.cpp">
+      <Filter>SVGFPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\SVGFServerPass.cpp">
+      <Filter>SVGFPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\SVGFPass.cpp">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfigUtils.cpp">
+      <Filter>SharedUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="SVGFPasses\DistrSVGFPass.cpp">
+      <Filter>SVGFPasses\DistrSVGF</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -213,6 +258,81 @@
     <ClInclude Include="DxrTutorSharedUtils\Compression.h">
       <Filter>SharedUtils\Compression</Filter>
     </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h">
+      <Filter>CommonPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFClientPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFServerPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFPass.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\DistrSVGFPass.h">
+      <Filter>SVGFPasses\DistrSVGF</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h">
+      <Filter>GIPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFClientPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFServerPass.h">
+      <Filter>SVGFPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\SVGFPass.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h">
+      <Filter>SVGFPasses\ReferencePasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h">
+      <Filter>CommonPasses\Remote Render</Filter>
+    </ClInclude>
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h">
+      <Filter>SharedUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CommonPasses">
@@ -256,6 +376,42 @@
     </Filter>
     <Filter Include="SharedUtils\Network">
       <UniqueIdentifier>{f8b1fd99-3c4e-435e-9d2d-d60c4bcde845}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GIPasses">
+      <UniqueIdentifier>{268e75a5-a0a5-41fd-a722-706d6d57f4f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GIPasses\Shaders">
+      <UniqueIdentifier>{9a743fc0-9531-47c2-96cd-b03fee8e0295}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses">
+      <UniqueIdentifier>{aa8f19cc-8cb3-4bfe-9831-c1d9ccf327a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\Shaders">
+      <UniqueIdentifier>{8eaac114-11b1-4caf-a364-96651fa80a36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\ReferencePasses">
+      <UniqueIdentifier>{a2af5d25-545a-4df3-bd0e-04219e29036e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\Shaders\Server">
+      <UniqueIdentifier>{b726675f-1c1b-4f9c-b6e6-fa0892767bac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\Shaders\Client">
+      <UniqueIdentifier>{6ab51b0c-1a97-4ad8-a791-aac0ff34cc14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\Shaders\Shared">
+      <UniqueIdentifier>{468ac973-bc19-4905-9071-6d5d93ed6bc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Remote Render">
+      <UniqueIdentifier>{706756af-9255-401f-a34a-98597dabca2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CommonPasses\Shaders\Remote Render">
+      <UniqueIdentifier>{5707469d-337d-4dc3-8496-cf3a80531047}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\DistrSVGF">
+      <UniqueIdentifier>{6d4a0690-75e7-4a47-ad41-e16af2ab0fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SVGFPasses\DistrSVGF\Shaders">
+      <UniqueIdentifier>{7a9514d8-fc23-4c9f-a970-3c2a6bbd1421}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -355,9 +511,105 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl">
+      <Filter>GIPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientAtrous.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Client</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientModulate.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Client</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerAtrous.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Server</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerModulate.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Server</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorReproject.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Shared</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl">
+      <Filter>SVGFPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorFilterMoments.ps.hlsl">
+      <Filter>SVGFPasses\Shaders\Shared</Filter>
+    </ShaderSource>
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl">
+      <Filter>CommonPasses\Shaders\Remote Render</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFAtrous.ps.hlsl">
+      <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFFilterMoments.ps.hlsl">
+      <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFModulate.ps.hlsl">
+      <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFReproject.ps.hlsl">
+      <Filter>SVGFPasses\DistrSVGF\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

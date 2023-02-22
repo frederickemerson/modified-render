@@ -49,6 +49,7 @@
 #define DEFAULT_PORT_UDP "1505"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
+#define AO_TEX_LEN  8294400 // 4 * 1920 * 1080 
 #define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
 
 // While listening for a specific sequence number with texture data,
@@ -187,7 +188,7 @@ public:
     float getTimeForOneSequentialFrame();
 
 private:
-    bool compression = true;
+    bool compression = false;
 
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
