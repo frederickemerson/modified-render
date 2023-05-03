@@ -110,13 +110,13 @@ RenderConfiguration getServerRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                10,
+                8,
                 { // Array of RenderConfigPass
                     NetworkServerRecvPass,
                     JitteredGBufferPass,
                     VisibilityPass,
-                    ScreenSpaceReflectionPass,
-                    ServerRayTracingReflectionPass,
+                    //ScreenSpaceReflectionPass,
+                    //ServerRayTracingReflectionPass,
                     AmbientOcclusionPass,
                     DistrSVGFPass,
                     MemoryTransferPassGPU_CPU,
@@ -147,17 +147,17 @@ RenderConfiguration getServerRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                13,
+                10,
                 { // Array of RenderConfigPass
                     NetworkServerRecvPass,
                     JitteredGBufferPass,
                     VisibilityPass,
-                    ScreenSpaceReflectionPass,
-                    ServerRayTracingReflectionPass,
+                    //ScreenSpaceReflectionPass,
+                    //ServerRayTracingReflectionPass,
                     AmbientOcclusionPass,
                     PredictionPass,
                     VShadingPass,
-                    ReflectionCompositePass,
+                    //ReflectionCompositePass,
                     ServerRemoteConverter,
                     MemoryTransferPassGPU_CPU,
                     CompressionPass,
@@ -193,16 +193,16 @@ RenderConfiguration getClientRenderConfig(RenderMode mode, RenderType type, unsi
             return {
                 texWidth, texHeight, // texWidth and texHeight
                 sceneIdx, // sceneIndex
-                11,
+                9,
                 { // Array of RenderConfigPass
                     NetworkClientSendPass,
                     NetworkClientRecvPass,
                     DecompressionPass,
                     MemoryTransferPassCPU_GPU,
                     PredictionPass,
-                    ScreenSpaceReflectionPass,
+                    //ScreenSpaceReflectionPass,
                     VShadingPass,
-                    ReflectionCompositePass,
+                    //ReflectionCompositePass,
                     CopyToOutputPass,
                     SimpleAccumulationPass,
                     JitteredGBufferPass
