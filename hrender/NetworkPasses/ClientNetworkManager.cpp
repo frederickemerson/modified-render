@@ -56,7 +56,9 @@ bool ClientNetworkManager::SetUpClientUdp(PCSTR serverName, PCSTR serverPort)
 void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeForever)
 {
     int32_t latestFrameRecv = 0;
-
+    int32_t totalFrames = 0;
+    int32_t successFrames = 0;
+    int32_t maxFrames = -1; // Stops the client after n frames received. -1 to run forever.
     while (true)
     {
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
@@ -94,7 +96,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                     static_cast<int>(timeDifference.count()));
             OutputDebugStringA(fasterMessage);
         }
-        
+        totalFrames++;
         if (recvStatus == 0)
         {
             char frameDataMessage[90];
@@ -104,6 +106,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         }
         else // recvStatus == 1
         {
+            successFrames++;
             OutputDebugString(L"\n\n= visTex received over network =========");
             char frameDataMessage[89];
             sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
@@ -157,6 +160,13 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             if (clientFrameNum % pollNetworkPingFrequency == 0) {
                 updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
             }
+        }
+
+        if (maxFrames > 0 && totalFrames == maxFrames) {
+            char printData[102];
+            sprintf(printData, "\n\n= ListenClientUdp - %d frames sent, %d frames received. %.4f %% success rate. =========", totalFrames, successFrames, (float)successFrames * 100 / totalFrames);
+            OutputDebugStringA(printData);
+            break;
         }
 
         if (!executeForever)
