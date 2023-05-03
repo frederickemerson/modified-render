@@ -46,9 +46,7 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     mpResManager->requestTextureResource(kVisBuffer);
     mpResManager->requestTextureResource(kAOtex);
     mpResManager->requestTextureResource("__TextureData");
-    mOutputIndex = mHybridMode
-        ? mpResManager->requestTextureResource(mOutputTexName) 
-        : mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R32Uint, ResourceManager::kDefaultFlags, 1920, 1080); // Represents YUV444P, each channel is 1920 x 1080 
+    mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
@@ -128,6 +126,7 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
     }
     else {
         dirty |= (int)pPassWindow->var("Ambient term", mAmbient, 0.0f, 1.0f, 0.01f);
+        dirty |= (int)pPassWindow->var("Number of AO rays", mNumAORays, 0, 64, 0.1f);
     }
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
