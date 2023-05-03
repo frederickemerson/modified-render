@@ -4,7 +4,7 @@
 #include "../DxrTutorSharedUtils/RenderConfig.h"
 #include "../DxrTutorSharedUtils/FullscreenLaunch.h"
 /**
- * Takes in a YUV444P texture and converts it to RGBA32Float format.
+ * Takes in a R11G11B10 texture and converts it to RGBA32Float format.
 */
 class ClientRemoteConverter : public ::RenderPass
 {
@@ -18,7 +18,7 @@ public:
     virtual ~ClientRemoteConverter() = default;
 
 protected:
-    ClientRemoteConverter(const std::string& inBuf, const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("YUV to RGBA Pass", "YUV to RGBA Pass Options") {
+    ClientRemoteConverter(const std::string& inBuf, const std::string& outBuf, int texWidth = -1, int texHeight = -1) : ::RenderPass("Float Decompaction Pass", "Float decompaction pass Options") {
         mInputTexName = inBuf; mOutputTexName = outBuf;
     }
 

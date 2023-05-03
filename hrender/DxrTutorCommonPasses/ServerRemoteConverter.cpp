@@ -22,7 +22,7 @@ bool ServerRemoteConverter::initialize(RenderContext* pRenderContext, ResourceMa
     setGuiSize(Falcor::int2(300, 70));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
-    mInputIndex = mpResManager->requestTextureResource(mInputTexName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mInputIndex = mpResManager->requestTextureResource(mInputTexName);
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName, ResourceFormat::R11G11B10Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
 
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are

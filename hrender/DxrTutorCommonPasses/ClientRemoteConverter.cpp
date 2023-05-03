@@ -57,7 +57,7 @@ void ClientRemoteConverter::execute(RenderContext* pRenderContext)
     // Get the output buffer we're writing into
     //Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
     Texture::SharedPtr pSrcTex = mpResManager->getTexture(mInputIndex);
-    Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
+    Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0));
 
     // Do we have all the resources we need to render?  If not, return
     if (!pSrcTex || !pDstTex || !mpRays || !mpRays->readyToRender()) {
