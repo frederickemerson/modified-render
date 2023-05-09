@@ -78,7 +78,6 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
 
     uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
     //uint8_t* pSRTReflectionTex = srtReflectionTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    // NOTE: for now, AO texture must be the last texture since it is resized in compression pass. 
     uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
     memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);

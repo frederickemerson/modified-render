@@ -92,6 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipShadows) return;
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
 
