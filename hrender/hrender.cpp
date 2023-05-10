@@ -78,7 +78,7 @@ const char* environmentMaps[] = {
 };
 
 // Scene index follows the scenes mentioned above.
-unsigned char sceneIdx = 1;
+unsigned char sceneIdx = 0;
 
 // Switches rendering modes between HybridRender and RemoteRender
 RenderMode renderMode = RenderMode::HybridRender;
@@ -174,7 +174,7 @@ void CreatePipeline(RenderConfiguration renderConfiguration, RenderingPipeline* 
             ResourceManager::mServerNetworkManager->mGetInputBufferSize = inputBufferSizeArgument;
         }
         else if (renderConfiguration.passOrder[i] == VShadingPass) {
-            std::string outBuf = isHybridRendering ? "V-shading" : "__V-shadingYUVServer";
+            std::string outBuf = isHybridRendering ? "V-shading" : "RemoteIllum";
             pipeline->setPassOptions(i, { 
                 VShadingPass::create(outBuf, isHybridRendering),
                 DecodeGBufferPass::create("DecodedGBuffer") 
@@ -259,9 +259,9 @@ void runDebug()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1 }),
-            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Regular shading", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }),
+            RenderingPipeline::PresetData("Preview GBuffer", "DecodedGBuffer", { 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1}),
+            RenderingPipeline::PresetData("No compression, no memory transfer", "V-shading", { 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
@@ -312,12 +312,12 @@ void runServer()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Global Illumination", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Global Illumination", "", { 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Rendered scene", "", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
 
@@ -363,7 +363,7 @@ void runClient()
     // ============================ //
     if (renderMode == RenderMode::HybridRender) {
         pipeline->setPresets({
-            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 })
+            RenderingPipeline::PresetData("Camera Data Transfer GPU-CPU", "V-shading", { 1, 1, 1, 1, 1, 1, 1, 1, 1 })
             });
     }
     else if (renderMode == RenderMode::RemoteRender) {

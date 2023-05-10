@@ -80,6 +80,7 @@ void ServerRayTracingReflectionPass::initScene(RenderContext* pRenderContext, Sc
 
 void ServerRayTracingReflectionPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipSRT) return;
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
 

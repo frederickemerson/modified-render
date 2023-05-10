@@ -29,7 +29,7 @@
 
 bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
 {
-    int sizeToAllocateOutputBuffer = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN;
+    int sizeToAllocateOutputBuffer = VIS_TEX_LEN + AO_TEX_LEN;
     outputBuffer = new char[sizeToAllocateOutputBuffer];
     outputBufferNVENC = new char[sizeToAllocateOutputBuffer];
     
@@ -38,6 +38,10 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
 
     mNumOfTextures = mHybridMode ? 1 : 1;
 
+    /*
+    * Currently the H264 functions are not set to work properly with the new textures, so may
+    * need some debugging to implement properly.
+    */ 
     if (mCodecType == H264) {
         if (mMode == Mode::Compression) {
             if (mHybridMode) {
@@ -50,13 +54,6 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
         else if (mMode == Mode::Decompression) {
             if (mHybridMode) {
                 initialiseH264Decoders();
-                // 24 out of 32 bits are unused for AO, so we just keep them as 0.
-                //uint8_t* pOutputBuffer = (uint8_t*)outputBuffer + VIS_TEX_LEN;
-                //for (int i = 0; i < VIS_TEX_LEN; i++) {
-                //    if (i % 4 == 0) continue;
-                //    pOutputBuffer[i] = 0;
-                //}
-
             }
             else {
                 initialiseH264RemoteDecoder();
@@ -67,6 +64,15 @@ bool CompressionPass::initialize(RenderContext* pRenderContext, ResourceManager:
     return true;
 }
 
+//-------- H264 initialization starts here ---------------------
+
+/*
+* The first two functions are entry points into the ffmpeg initialization.
+* The next four functions initialize the relevant encoder/decoder based on our current rendering 
+* method. Please refer to the docs on ffmpeg on how to initialize the encoders/decoders. Currently 
+* unused as the optimal settings are unknown for optimal compression. It seems to only work efficiently
+* when converting RGB -> YUV. Other color conversions take very slow when tested previously.
+*/
 bool CompressionPass::initialiseH264HybridEncoder(CodecParams* codecParams) {
     AVCodec* h264enc;
     if (isUsingCPU) {
@@ -99,6 +105,8 @@ bool CompressionPass::initialiseH264HybridEncoder(CodecParams* codecParams) {
 
     AVDictionary* param = nullptr;
     av_dict_set(&param, "crf", "0", 0);
+    
+    // The parameters below affect the resulting quality / speed. 
     if (isUsingCPU) {
         av_dict_set(&param, "profile:v", "high", 0);
         av_dict_set(&param, "preset", "slower", 0);
@@ -126,6 +134,7 @@ bool CompressionPass::initialiseH264HybridEncoder(CodecParams* codecParams) {
         OutputDebugStringA(msg);
     }
 
+    // H264 usually works best with YUV format, so colour conversion is useful here.
     if (codecParams->isColorConvertNeeded) {
         /* Initialise the color converter */
         mpSwsContexts.push_back(sws_getContext(
@@ -344,6 +353,8 @@ bool CompressionPass::initialiseH264Decoders() {
     return true;
 }
 
+//-------- H264 initialization ends here ---------------------
+
 void CompressionPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene)
 {
 }
@@ -372,14 +383,16 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
 
         // Parameters for Compression
         const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
-
-        // Very hacky solution, should fix by using a 8bit per pixel texture.
-        char* const s1 = reinterpret_cast<char* const>(mGetInputBuffer()) + VIS_TEX_LEN + REF_TEX_LEN;
-
-        // Compress AO buffer into quarter its size, since only every 4 indices are filled.
-        compBufWithOffset(s1, s1, AO_TEX_LEN / 4, 4);
         
-        int sourceBufferSize = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN / 4;
+        /*
+        * TODO: Currently, AO texture uses only 8 bits out of the 32 bits allocated for it 
+        * in the texture. This is because the functions responsible for converting data in buffers
+        * to textures can only handle 32 bpp. See: MemoryTransferPassClientCPU_GPU.cpp, apiInitPub()
+        * Creating a version that handles 8 bpp can reduce the wasted space which have been shown 
+        * to reduce the compressed frame size. Using memcpy to shrink the data takes too much time.
+        */
+
+        int sourceBufferSize = mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN : VIS_TEX_LEN;
 
         // Compress buffer
         int compressedSize = LZ4_compress_default(sourceBuffer , outputBuffer, sourceBufferSize, sourceBufferSize);
@@ -405,7 +418,7 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         // Parameters for Decompression
         const char* const sourceBuffer = reinterpret_cast<const char* const>(mGetInputBuffer());
         int sourceBufferSize = mGetInputBufferSize();
-        int maxDecompressedSize = VIS_TEX_LEN + REF_TEX_LEN + AO_TEX_LEN / 4;
+        int maxDecompressedSize = mHybridMode ? VIS_TEX_LEN + AO_TEX_LEN : VIS_TEX_LEN;
 
         if (sourceBufferSize == maxDecompressedSize) {
             OutputDebugString(L"Skipping decompression, texture didnt change");
@@ -415,10 +428,6 @@ void CompressionPass::executeLZ4(RenderContext* pRenderContext)
         // Decompress buffer
         int decompressedSize = LZ4_decompress_safe(sourceBuffer, (char*)outputBuffer, sourceBufferSize, maxDecompressedSize);
         
-        // Decompress AO buffer into its original size
-        char* const out2 = outputBuffer + VIS_TEX_LEN + REF_TEX_LEN;
-        decompBufWithOffset(out2, out2, AO_TEX_LEN, 4);
-
         if (decompressedSize <= 0) {
             OutputDebugString(L"\nError: Decompression failed\n");
         }
@@ -607,7 +616,12 @@ void CompressionPass::renderGui(Gui::Window* pPassWindow)
     if (dirty) setRefreshFlag();
 }
 
-// Custom memcpy to copy data with offset between each value
+/*
+* Custom memcpy to copy data with offset between each value.
+* This was originally used to shrink the AO texture to take 8bpp instead of 32bpp.
+* However, the time taken results in much lower fps (~10 fps less) so it's not viable 
+* in this state.
+*/ 
 void CompressionPass::compBufWithOffset(char* dest, const char* src, size_t len, int offset) {
     for (int i = 0; i < len; i++) {
         dest[i] = src[i * offset];
@@ -620,7 +634,11 @@ void CompressionPass::decompBufWithOffset(char* dest, const char* src, size_t le
     }
 }
 
-// The functions below are used for NVENC hardware encoding, but do not really work.
+/*
+* The functions below are used for NVENC hardware encoding, but do not work 
+* in their current state. Also, hardware encoding resulted in worse quality than CPU encoding,
+* so quality is also an issue if hardware encoding was to be revisited again.
+*/ 
 
 void CompressionPass::executeNVENC(RenderContext* pRenderContext)
 {

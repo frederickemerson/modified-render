@@ -18,6 +18,18 @@
 
 #include "GGXServerGlobalIllumPass.h"
 
+/*
+* GI is done via sending the following: RGB8 (24 bits) for indirect colour and 8 bits
+* for light index (for the client to compute direct colour). This gives us
+* 32 bpp, but sending colour data is too slow, and the random light index chosen  
+* also makes compression harder.
+* 
+* It might be interesting to test if replacing the current visibility bitmap with 
+* a random light index would improve performance. The reduction from 32 bits to 8 bits 
+* and an ability to support more lights (255 > 32) might counteract the randomness of 
+* selecting light indices.
+*/
+
 // Some global vars, used to simplify changing shader location & entry points
 namespace {
     // Where is our shaders located?

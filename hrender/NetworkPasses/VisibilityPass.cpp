@@ -20,6 +20,13 @@
 
 using namespace std;
 
+/*
+* As mentioned in GGXServerGlobalIllumPass.cpp, it might be interesting to replace this visibility
+* pass with sending a light index, similar to what is done for direct colour in GI. This would potentially
+* replace the need for bitmaps and cone distribution for soft shadows. SVGF could be done on the client
+* to smoothen the shadows.
+*/
+
 namespace {
     // // Where is our environment map and scene located?
     // const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
@@ -85,6 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipShadows) return;
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
 

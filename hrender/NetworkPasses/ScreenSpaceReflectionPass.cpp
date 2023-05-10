@@ -55,6 +55,7 @@ void ScreenSpaceReflectionPass::initScene(RenderContext* pRenderContext, Scene::
 
 void ScreenSpaceReflectionPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipSSR) return;
     pRenderContext->clearFbo(mpSSRFbo.get(), float4(0.0f), 1.0f, 0);
 
     Camera::SharedPtr cam = mpScene->getCamera();

@@ -32,9 +32,8 @@ bool MemoryTransferPassClientCPU_GPU::initialize(RenderContext* pRenderContext, 
     // store index of texture(s) we will be transferring to
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-        mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
+        //mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
         mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
-        //mGIIndex = mpResManager->requestTextureResource("ClientGlobalIllum", ResourceFormat::RGBA8Uint);
     }
     else {
         // Intermediate texture used when remote rendering.
@@ -67,7 +66,7 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     }
 
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
-    Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
+    //Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
     
     pRenderContext->flush(true);
@@ -76,10 +75,10 @@ void MemoryTransferPassClientCPU_GPU::execute(RenderContext* pRenderContext)
     
     visTex->apiInitPub(mGetInputBuffer(), true);
 
-    char* pReflectionTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
-    srtReflectionTex->apiInitPub(pReflectionTex, true);
+    //char* pReflectionTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
+    //srtReflectionTex->apiInitPub(pReflectionTex, true);
 
-    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN + REF_TEX_LEN]);
+    char* pAOTex = &(mGetInputBuffer()[VIS_TEX_LEN]);
     AOTex->apiInitPub(pAOTex, true);
 
     Regression::addNonSeqFrame((int*)mGetInputBuffer());

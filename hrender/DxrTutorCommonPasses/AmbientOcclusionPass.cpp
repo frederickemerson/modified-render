@@ -87,6 +87,7 @@ void AmbientOcclusionPass::renderGui(Gui::Window* pPassWindow)
 
 void AmbientOcclusionPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipAo) return;
     // Get our output buffer; clear it to black.
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
     // Do we have all the resources we need to render?  If not, return

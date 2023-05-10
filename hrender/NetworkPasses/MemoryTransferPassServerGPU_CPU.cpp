@@ -32,10 +32,10 @@ bool MemoryTransferPassServerGPU_CPU::initialize(RenderContext* pRenderContext, 
     // store index of texture(s) we will be transferring from
     if (mHybridMode) {
         mVisibilityIndex = mpResManager->getTextureIndex("VisibilityBitmap");
-        mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
+        //mSRTReflectionsIndex = mpResManager->getTextureIndex("SRTReflection");
         mAOIndex = mpResManager->getTextureIndex("AmbientOcclusion");
 
-        outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN + REF_TEX_LEN];
+        outputBuffer = new uint8_t[VIS_TEX_LEN + AO_TEX_LEN];
         
         //mGIIndex = mpResManager->getTextureIndex("ServerGlobalIllum");
     }
@@ -66,7 +66,7 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     }
     
     Texture::SharedPtr visTex = mpResManager->getTexture(mVisibilityIndex);
-    Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
+    //Texture::SharedPtr srtReflectionTex = mpResManager->getTexture(mSRTReflectionsIndex);
     Texture::SharedPtr AOTex = mpResManager->getTexture(mAOIndex);
 
     // OLD METHOD: use if bugs start appearing
@@ -77,13 +77,12 @@ void MemoryTransferPassServerGPU_CPU::execute(RenderContext* pRenderContext)
     // as a result, the location of this data (the ptr) changes with each call to getTextureData2;
 
     uint8_t* pVisTex = visTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    uint8_t* pSRTReflectionTex = srtReflectionTex->getTextureData2(pRenderContext, 0, 0, nullptr);
-    // NOTE: for now, AO texture must be the last texture since it is resized in compression pass. 
+    //uint8_t* pSRTReflectionTex = srtReflectionTex->getTextureData2(pRenderContext, 0, 0, nullptr);
     uint8_t* pAOTex = AOTex->getTextureData2(pRenderContext, 0, 0, nullptr);
 
     memcpy(outputBuffer, pVisTex, VIS_TEX_LEN);
-    memcpy(&outputBuffer[VIS_TEX_LEN], pSRTReflectionTex, REF_TEX_LEN);
-    memcpy(&outputBuffer[VIS_TEX_LEN + REF_TEX_LEN], pAOTex, AO_TEX_LEN);
+    //memcpy(&outputBuffer[VIS_TEX_LEN], pSRTReflectionTex, REF_TEX_LEN);
+    memcpy(&outputBuffer[VIS_TEX_LEN], pAOTex, AO_TEX_LEN);
 
     std::lock_guard lock(ServerNetworkManager::mMutexServerVisTexRead);
 
