@@ -41,9 +41,12 @@
 #include "NetworkPasses/NetworkClientSendPass.h"
 #include "NetworkPasses/NetworkServerRecvPass.h"
 #include "NetworkPasses/NetworkServerSendPass.h"
+#include "NetworkPasses/PredictionPass.h"
+#include "NetworkPasses/ScreenSpaceReflectionPass.h"
+#include "NetworkPasses/ServerRayTracingReflectionPass.h"
+#include "NetworkPasses/ReflectionCompositePass.h"
 #include "DxrTutorSharedUtils/CompressionPass.h"
 #include "DxrTutorSharedUtils/RenderConfig.h"
-#include "NetworkPasses/PredictionPass.h"
 
 void runServer();
 void runClient();

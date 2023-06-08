@@ -15,25 +15,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Regression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
-    <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
@@ -48,7 +47,11 @@
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
+    <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
@@ -71,7 +74,6 @@
     <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
-    <ClInclude Include="hrender.h" />
     <ClInclude Include="NetworkPasses\ClientNetworkManager.h" />
     <ClInclude Include="NetworkPasses\FrameData.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
@@ -87,8 +89,12 @@
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
+     <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
+	<ClInclude Include="resource.h" />
+	<ClInclude Include="hrender.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">

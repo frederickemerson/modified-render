@@ -1,7 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
@@ -20,20 +31,8 @@
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
       <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
-      <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>
@@ -101,6 +100,16 @@
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp">
       <Filter>SharedUtils\Compression</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp">
+      <Filter>NetworkPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hrender.h" />
@@ -212,6 +221,15 @@
     </ClInclude>
     <ClInclude Include="DxrTutorSharedUtils\Compression.h">
       <Filter>SharedUtils\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h">
+      <Filter>NetworkPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h">
+      <Filter>NetworkPasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -355,9 +373,15 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\PredictionPass.ps.hlsl">
       <Filter>NetworkPasses\Shaders</Filter>
     </ShaderSource>
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl" />
-    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ReflectionCompositePass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\screenSpaceReflectionPass.ps.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\ServerRayTracingReflectionPass.rt.hlsl">
+      <Filter>NetworkPasses\Shaders</Filter>
+    </ShaderSource>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hrender.rc" />

@@ -2,4 +2,5 @@
 .vs/*
 .vscode/
 /hrender/Data
+/hrender/*.aps
 /Video_Codec_SDK_11010

@@ -50,7 +50,10 @@ enum RenderConfigPass : uint8_t {
     CopyToOutputPass,
     SimpleAccumulationPass,
     SimulateDelayPass,
-    PredictionPass
+    PredictionPass,
+    ScreenSpaceReflectionPass,
+    ServerRayTracingReflectionPass,
+    ReflectionCompositePass
 };
 
 
