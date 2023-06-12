@@ -1,0 +1,6 @@
+﻿  Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppEncode/AppEncD3D12/CMakeLists.txt
+  AppEncD3D12.cpp
+  NvEncoder.cpp
+  NvEncoderD3D12.cpp
+  Generating Code...
+  AppEncD3D12.vcxproj -> C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\Release\AppEncD3D12.exe

@@ -1,0 +1,504 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D8EBED24-54EC-3231-8CA7-9672C211C7EB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>AppDecGL</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AppDecGL.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AppDecGL</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AppDecGL.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AppDecGL</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">AppDecGL.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">AppDecGL</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">AppDecGL.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">AppDecGL</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>	</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/FFmpeg/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Debug/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/GL/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Debug/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avcodec.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avformat.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avutil.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\swresample.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_static.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_staticd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglutd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/Debug/AppDecGL.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Debug/AppDecGL.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>	</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/FFmpeg/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Release/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/GL/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Release/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avcodec.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avformat.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avutil.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\swresample.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_static.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_staticd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglutd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/Release/AppDecGL.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Release/AppDecGL.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>	</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/FFmpeg/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/MinSizeRel/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/GL/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/MinSizeRel/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avcodec.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avformat.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avutil.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\swresample.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_static.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_staticd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglutd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/MinSizeRel/AppDecGL.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/MinSizeRel/AppDecGL.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External\FFmpeg\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\..\..\External;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <PostBuildEvent>
+      <Message>	</Message>
+      <Command>setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/FFmpeg/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/RelWithDebInfo/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -E copy_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/../../External/GL/lib/x64/ C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/RelWithDebInfo/
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+    </PostBuildEvent>
+    <Link>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avcodec.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avformat.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\avutil.lib;..\..\..\AppDecode\AppDecGL\..\..\External\FFmpeg\lib\x64\swresample.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_static.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglut_staticd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\freeglutd.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32.lib;..\..\..\AppDecode\AppDecGL\..\..\External\GL\lib\x64\glew32s.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/RelWithDebInfo/AppDecGL.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/RelWithDebInfo/AppDecGL.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\ColorSpace.cu">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building NVCC (Device) object AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/AppDecGL_generated_ColorSpace.cu.obj.Debug.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.Debug.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\$(Configuration)\AppDecGL_generated_ColorSpace.cu.obj</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building NVCC (Device) object AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/AppDecGL_generated_ColorSpace.cu.obj.Release.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.Release.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\$(Configuration)\AppDecGL_generated_ColorSpace.cu.obj</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building NVCC (Device) object AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/AppDecGL_generated_ColorSpace.cu.obj.MinSizeRel.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.MinSizeRel.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\$(Configuration)\AppDecGL_generated_ColorSpace.cu.obj</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building NVCC (Device) object AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils
+if %errorlevel% neq 0 goto :cmEnd
+C:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/$(Configuration)/AppDecGL_generated_ColorSpace.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/AppDecGL.dir/__/__/Utils/AppDecGL_generated_ColorSpace.cu.obj.RelWithDebInfo.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.RelWithDebInfo.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\$(Configuration)\AppDecGL_generated_ColorSpace.cu.obj</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecGL/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecGL/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\AppDecGL_generated_ColorSpace.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppDecode\AppDecGL\CMakeFiles\AppDecGL.dir\__\__\Utils\$(Configuration)\AppDecGL_generated_ColorSpace.cu.obj" />
+    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\AppDecGL.cpp" />
+    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvDecoder\NvDecoder.cpp" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvDecoder\NvDecoder.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Interface\cuviddec.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Interface\nvcuvid.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\NvCodecUtils.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\FFmpegDemuxer.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\ColorSpace.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common\AppDecUtils.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\FramePresenter.h" />
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecGL\FramePresenterGLUT.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\ZERO_CHECK.vcxproj">
+      <Project>{381DC39B-A204-3833-9186-2D954FA200F8}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

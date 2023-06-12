@@ -41,27 +41,6 @@ Get the CUDA Toolkit here: https://developer.nvidia.com/cuda-toolkit. The projec
 
 Note: some errors may occur if the path is not set correctly for Visual Studio
 
-
-### NVIDIA Video Codec SDK
-
-- Download the NVIDIA Video Codec SDK for application developers here: https://developer.nvidia.com/nvidia-video-codec-sdk
-- Rename the folder to  `Video_Codec_SDK_11010`  and place it in the same folder as `hrender` (and `Falcor`)
-- The contents of `Video_Codec_SDK_11010` should look something like this:
-
-![image](https://user-images.githubusercontent.com/59093518/168444110-16119de3-fe68-49ab-a5a8-d6671c294421.png)
-
-- Follow the instructions in Read_Me.pdf to build the samples (make sure you have `CMake` installed)
-
-![image](https://user-images.githubusercontent.com/59093518/168444102-c1413d31-73a4-4a45-919d-4d9095ce5c3c.png)
-
-- Initially, projects `AppEncD3D12` and `AppDec` in the Falcor solution should be unavailable.
-    - After building, reload these two projects with dependencies
-    - Set both projects to build as static libraries under Project Properties
-
-![image](https://user-images.githubusercontent.com/59093518/168444108-84f4e853-77b1-4f56-9470-0b5f91cf7f45.png)
-
-- Lastly, when building the `Falcor` solution, if you run into a compile error saying that `ComPtr` is ambiguous in `NvEncoder.cpp` (or another file), fix it by changing all ComPtr in NvEncoder.cpp to `Microsoft::WRL::ComPtr`. There should be about 4 of these occurrences.
-
 ### Scene Data
 
 Download the scenes [here](https://drive.google.com/file/d/10kqUg_3rV2HZCc70UNt88UfnoMPAJEYu/view?usp=sharing). These files are large and so they are not on GitHub. Extract the zip file into the `hrender` folder. The scene files should appear under `hrender/Data`.
@@ -114,7 +93,3 @@ Go to `Project Properties`, and check under `Debugging > Command Arguments`.
 - The server fails to start with error message `Pre-Falcor Init - Bind failed with error code: 10048`.
 
     - Change the value of `DEFAULT_PORT_UDP` in **both** `hrender/NetworkPasses/ServerNetworkManager.h` and `hrender/NetworkPasses/ClientNetworkManager.h`. The default is 1505 but you may try values from 1500 to 1510. Make sure that your firewall allows UDP communication across the specified port numbers. 
-
-- When setting up the NVIDIA Video Codec SDK, you encountered an error stating that `CMakeLists.txt` cannot be found.
-    - Make sure you set up the directory correctly. 'cmake' should be run in the `Samples/build` folder.
-    - Do not edit `Video_Codec_SDK_11010` and its contents after building the samples.

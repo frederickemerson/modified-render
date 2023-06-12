@@ -1,0 +1,9 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindCUDA.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindCUDA/run_nvcc.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindCUDA/select_compute_arch.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.23/Modules/FindPackageMessage.cmake
+C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppDecode/AppDecImageProvider/CMakeLists.txt
+C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecImageProvider/CMakeFiles/AppDecImageProvider.dir/__/__/Utils/AppDecImageProvider_generated_ColorSpace.cu.obj.cmake.pre-gen
+C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppDecode/AppDecImageProvider/CMakeFiles/AppDecImageProvider.dir/__/__/Utils/AppDecImageProvider_generated_ColorSpace.cu.obj.depend

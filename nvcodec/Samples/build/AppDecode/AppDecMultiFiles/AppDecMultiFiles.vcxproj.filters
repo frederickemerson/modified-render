@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecMultiFiles\AppDecMultiFiles.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvDecoder\NvDecoder.cpp">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvDecoder\NvDecoder.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Interface\cuviddec.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Interface\nvcuvid.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\NvCodecUtils.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\FFmpegDemuxer.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\Common\AppDecUtils.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppDecode\AppDecMultiFiles\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="headers">
+      <UniqueIdentifier>{E4A92AB7-5046-31D3-9D66-5C8BD7DDCBC6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="sources">
+      <UniqueIdentifier>{5808A908-194F-3BCF-AE2A-A7C7090DE558}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

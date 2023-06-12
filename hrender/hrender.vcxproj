@@ -91,19 +91,19 @@
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
     <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
     <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
-     <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
-	<ClInclude Include="resource.h" />
-	<ClInclude Include="hrender.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="hrender.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
       <Project>{2c535635-e4c5-4098-a928-574f0e7cd5f9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppDecode\AppDec\AppDec.vcxproj">
+    <ProjectReference Include="..\nvcodec\Samples\build\AppDecode\AppDec\AppDec.vcxproj">
       <Project>{9cfc513b-7cda-341d-bc8b-ec936511b21a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj">
+    <ProjectReference Include="..\nvcodec\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj">
       <Project>{d28abd7e-c036-37bd-867b-cd36b013e741}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -207,12 +207,12 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
@@ -234,12 +234,12 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
@@ -263,14 +263,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
