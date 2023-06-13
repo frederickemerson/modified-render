@@ -259,7 +259,7 @@ void runDebug()
  */
 void runServer()
 {
-    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap });
+    RenderConfig::setConfiguration({ RenderConfig::BufferType::VisibilityBitmap, RenderConfig::BufferType::SRTReflection });
 
     // Define a set of mConfig / window parameters for our program
     SampleConfig config;
