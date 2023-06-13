@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{19235E7F-515B-3029-87BD-A9016AEAE668}</ProjectGuid>
+    <ProjectGuid>{5F7A2561-0310-3AA9-AF51-E1B6AE33ED8A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -59,25 +59,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AppEncLowLatency.dir\Debug\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AppEncLowLatency</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AppEncLowLatency.dir\Release\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AppEncLowLatency</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\MinSizeRel\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\MinSizeRel\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">AppEncLowLatency.dir\MinSizeRel\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">AppEncLowLatency</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">AppEncLowLatency.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">AppEncLowLatency</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.exe</TargetExt>
@@ -86,7 +86,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -103,10 +103,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -114,13 +114,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cuda.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvencodeapi.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/Debug/AppEncLowLatency.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Debug/AppEncLowLatency.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/Debug/AppEncLowLatency.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/Debug/AppEncLowLatency.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -129,7 +129,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -146,10 +146,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -157,13 +157,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cuda.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvencodeapi.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/Release/AppEncLowLatency.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/Release/AppEncLowLatency.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/Release/AppEncLowLatency.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/Release/AppEncLowLatency.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -172,7 +172,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -189,10 +189,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -200,13 +200,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cuda.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvencodeapi.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/MinSizeRel/AppEncLowLatency.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/MinSizeRel/AppEncLowLatency.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/MinSizeRel/AppEncLowLatency.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/MinSizeRel/AppEncLowLatency.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -215,7 +215,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -231,10 +231,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\include;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\include;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Interface;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -242,13 +242,13 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.1\lib\x64\cuda.lib;..\..\..\..\Lib\x64\nvencodeapi.lib;..\..\..\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cudart_static.lib;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.6\lib\x64\cuda.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvencodeapi.lib;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\..\Lib\x64\nvcuvid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/RelWithDebInfo/AppEncLowLatency.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/RelWithDebInfo/AppEncLowLatency.pdb</ProgramDataBaseFile>
+      <ImportLibrary>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/RelWithDebInfo/AppEncLowLatency.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/RelWithDebInfo/AppEncLowLatency.pdb</ProgramDataBaseFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <ProjectReference>
@@ -256,16 +256,16 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\Resize.cu">
+    <CustomBuild Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils\Resize.cu">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building NVCC (Device) object AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
+cd C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
 if %errorlevel% neq 0 goto :cmEnd
 C:
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.Debug.cmake
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.Debug.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -273,18 +273,18 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.Debug.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.Debug.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building NVCC (Device) object AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
+cd C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
 if %errorlevel% neq 0 goto :cmEnd
 C:
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.Release.cmake
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.Release.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -292,18 +292,18 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.Release.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.Release.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building NVCC (Device) object AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
+cd C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
 if %errorlevel% neq 0 goto :cmEnd
 C:
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.MinSizeRel.cmake
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.MinSizeRel.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -311,18 +311,18 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.MinSizeRel.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.MinSizeRel.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building NVCC (Device) object AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-cd C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
+cd C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils
 if %errorlevel% neq 0 goto :cmEnd
 C:
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
+"C:\Program Files\CMake\bin\cmake.exe" -E make_directory C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)
 if %errorlevel% neq 0 goto :cmEnd
-"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.RelWithDebInfo.cmake
+"C:\Program Files\CMake\bin\cmake.exe" -D verbose:BOOL=OFF -D "CCBIN:PATH=$(VCInstallDir)Tools/MSVC/$(VCToolsVersion)/bin/Host$(Platform)/$(PlatformTarget)" -D build_configuration:STRING=$(ConfigurationName) -D generated_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj -D generated_cubin_file:STRING=C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/$(Configuration)/AppEncLowLatency_generated_Resize.cu.obj.cubin.txt -P C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/AppEncLowLatency.dir/__/__/Utils/AppEncLowLatency_generated_Resize.cu.obj.RelWithDebInfo.cmake
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -330,17 +330,17 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.RelWithDebInfo.cmake;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.RelWithDebInfo.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppEncode\AppEncLowLatency\CMakeLists.txt">
+    <CustomBuild Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\AppEncode\AppEncLowLatency\CMakeLists.txt">
       <UseUtf8Encoding>Always</UseUtf8Encoding>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples -BC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -348,12 +348,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples -BC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -361,12 +361,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples -BC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -374,12 +374,12 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/AppEncode/AppEncLowLatency/CMakeLists.txt</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples -BC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncLowLatency/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
@@ -387,25 +387,25 @@ endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
 exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.23\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\run_nvcc.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindCUDA\select_compute_arch.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.26\Modules\FindPackageMessage.cmake;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.cmake.pre-gen;C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\AppEncLowLatency_generated_Resize.cu.obj.depend;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\generate.stamp</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <Object Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj" />
-    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\AppEncode\AppEncLowLatency\AppEncLowLatency.cpp" />
-    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoder.cpp" />
-    <ClCompile Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoderCuda.cpp" />
-    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoder.h" />
-    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoderCuda.h" />
-    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Interface\nvEncodeAPI.h" />
-    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\NvCodecUtils.h" />
-    <ClInclude Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\Utils\NvEncoderCLIOptions.h" />
+    <Object Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppEncLowLatency\CMakeFiles\AppEncLowLatency.dir\__\__\Utils\$(Configuration)\AppEncLowLatency_generated_Resize.cu.obj" />
+    <ClCompile Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\AppEncode\AppEncLowLatency\AppEncLowLatency.cpp" />
+    <ClCompile Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoder.cpp" />
+    <ClCompile Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoderCuda.cpp" />
+    <ClInclude Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoder.h" />
+    <ClInclude Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\NvCodec\NvEncoder\NvEncoderCuda.h" />
+    <ClInclude Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Interface\nvEncodeAPI.h" />
+    <ClInclude Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils\NvCodecUtils.h" />
+    <ClInclude Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\Utils\NvEncoderCLIOptions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\ZERO_CHECK.vcxproj">
-      <Project>{381DC39B-A204-3833-9186-2D954FA200F8}</Project>
+    <ProjectReference Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\ZERO_CHECK.vcxproj">
+      <Project>{5B746CAF-E8E6-3437-91B1-4073A0487A1C}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

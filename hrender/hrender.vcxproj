@@ -148,7 +148,7 @@
     <ProjectGuid>{3F318569-891B-4D35-952C-9162D29F97F7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hrender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
     <CudaToolkitCustomDir>
     </CudaToolkitCustomDir>
   </PropertyGroup>
@@ -219,7 +219,11 @@
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>
@@ -246,7 +250,11 @@
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>
@@ -277,7 +285,11 @@
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>

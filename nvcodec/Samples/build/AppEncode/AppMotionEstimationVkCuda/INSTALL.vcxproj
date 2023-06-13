@@ -22,7 +22,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3F3C3CA6-ACB5-3E07-865D-BEF7AC6CB909}</ProjectGuid>
+    <ProjectGuid>{E70D73EF-31C2-3386-B505-B9E5D4470644}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0.22000.0</WindowsTargetPlatformVersion>
     <Platform>x64</Platform>
@@ -125,7 +125,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\CMakeFiles\98e26dba64bef4e9d18ae080b7e67d1a\INSTALL_force.rule">
+    <CustomBuild Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\CMakeFiles\5d673abcd64660ab5d52f941630941c1\INSTALL_force.rule">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"> </Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
 cd .
@@ -137,7 +137,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</VerifyInputsAndOutputsExist>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'"> </Message>
@@ -151,7 +151,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</VerifyInputsAndOutputsExist>
       <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'"> </Message>
@@ -165,7 +165,7 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</VerifyInputsAndOutputsExist>
       <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'"> </Message>
@@ -179,20 +179,20 @@ exit /b %1
 :cmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\CMakeFiles\INSTALL_force</Outputs>
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
       <VerifyInputsAndOutputsExist Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</VerifyInputsAndOutputsExist>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\ZERO_CHECK.vcxproj">
-      <Project>{381DC39B-A204-3833-9186-2D954FA200F8}</Project>
+    <ProjectReference Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\ZERO_CHECK.vcxproj">
+      <Project>{5B746CAF-E8E6-3437-91B1-4073A0487A1C}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="C:\Users\Jeanette\Documents\hrender\hybrid\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\ALL_BUILD.vcxproj">
-      <Project>{635CEB35-DE7B-38B8-A1B2-33211B0AE169}</Project>
+    <ProjectReference Include="C:\Users\Jeanette\Desktop\hrender\nvcodec\Samples\build\AppEncode\AppMotionEstimationVkCuda\ALL_BUILD.vcxproj">
+      <Project>{A0BC2CB6-EEAC-33E2-A918-44730FC5551B}</Project>
       <Name>ALL_BUILD</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>

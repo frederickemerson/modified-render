@@ -32,7 +32,7 @@ set(NV_ENC_HDRS
 source_group( "headers" FILES ${NV_ENC_HDRS} )
 source_group( "sources" FILES ${APP_SOURCES} ${NV_ENC_SOURCES} )
 
-add_executable(${PROJECT_NAME}  ${APP_SOURCES} ${NV_ENC_SOURCES} ${NV_ENC_HDRS})
+add_library(${PROJECT_NAME}  ${APP_SOURCES} ${NV_ENC_SOURCES} ${NV_ENC_HDRS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
  ${NVCODEC_PUBLIC_INTERFACE_DIR}

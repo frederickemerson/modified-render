@@ -32,7 +32,7 @@ You may look at [Chris Wyman's DXR tutorial](http://cwyman.org/code/dxrTutors/dx
 ### For [Falcor](Falcor/README.md)
 - Windows 10 version 2004 (May 2020 Update) or newer
 - Visual Studio 2019
-- [Windows 10 SDK (10.0.19041.0) for Windows 10, version 2004](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/)
+- Windows SDK version 10.0.19041.0 or newer
 - A GPU which supports DirectX Raytracing, such as the NVIDIA Titan V or GeForce RTX (make sure you have the latest driver)
 
 ### CUDA Toolkit 11.6
@@ -68,7 +68,7 @@ Set the Solution Configuration to either `DebugD3D12` or `ReleaseD3D12`.
 
 ![Debug mode](docs/images/d3d12_mode.png)
 
-Right-click the solution name in Solution Explorer and build the solution.
+Right-click the solution name in Solution Explorer and build the solution. Reload projects `AppEncD3D12` and `AppDec` with dependencies then build again.
 
 ![Build solution](docs/images/build_solution.png)
 

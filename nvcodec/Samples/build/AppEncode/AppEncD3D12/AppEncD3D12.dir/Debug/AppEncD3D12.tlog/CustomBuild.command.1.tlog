@@ -1,6 +1,6 @@
-^C:\USERS\JEANETTE\DOCUMENTS\HRENDER\HYBRID\HRENDER\NVCODEC\SAMPLES\APPENCODE\APPENCD3D12\CMAKELISTS.TXT
+^C:\USERS\JEANETTE\DESKTOP\HRENDER\NVCODEC\SAMPLES\APPENCODE\APPENCD3D12\CMAKELISTS.TXT
 setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples -BC:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Documents/hrender/hybrid/hrender/nvcodec/Samples/build/AppEncode/AppEncD3D12/CMakeFiles/generate.stamp
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples -BC:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build --check-stamp-file C:/Users/Jeanette/Desktop/hrender/nvcodec/Samples/build/AppEncode/AppEncD3D12/CMakeFiles/generate.stamp
 if %errorlevel% neq 0 goto :cmEnd
 :cmEnd
 endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
