@@ -1,5 +1,5 @@
 ﻿*.user
 .vs/*
 .vscode/
-/hrender/Data
+/hrender/Data/
 /hrender/*.aps

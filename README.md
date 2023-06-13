@@ -43,7 +43,7 @@ Note: some errors may occur if the path is not set correctly for Visual Studio
 
 ### Scene Data
 
-Download the scenes [here](https://drive.google.com/file/d/10kqUg_3rV2HZCc70UNt88UfnoMPAJEYu/view?usp=sharing). These files are large and so they are not on GitHub. Extract the zip file into the `hrender` folder. The scene files should appear under `hrender/Data`.
+Download the scenes [here](https://drive.google.com/file/d/10kqUg_3rV2HZCc70UNt88UfnoMPAJEYu/view?usp=sharing). These files are large and so they are not on GitHub. Extract `Data.zip` into the `hrender` subfolder of your cloned or downloaded copy of this repository. The scene files should appear under `hrender/Data`.
 
 ### Optional
 
@@ -58,9 +58,11 @@ Download the scenes [here](https://drive.google.com/file/d/10kqUg_3rV2HZCc70UNt8
 
 ## Building the Solution
 
-Clone the repository or download it as a zip file. The solution file that contains the project is in the `Falcor` folder (i.e. `Falcor/Falcor.sln`). 
+The solution file that contains the project is in the `Falcor` folder (i.e. `Falcor/Falcor.sln`). 
 
-After opening the solution, in the Solution Explorer, right-click and set `hrender` as the startup project.
+After opening the solution, you should see that projects `AppEncD3D12` and `AppDec` are unavailable. We will build the solution for the first time to build these two projects.
+
+In the Solution Explorer, right-click and set `hrender` as the startup project.
 
 ![Set as startup project](docs/images/set_as_startup.png)
 
@@ -68,9 +70,11 @@ Set the Solution Configuration to either `DebugD3D12` or `ReleaseD3D12`.
 
 ![Debug mode](docs/images/d3d12_mode.png)
 
-Right-click the solution name in Solution Explorer and build the solution. Reload projects `AppEncD3D12` and `AppDec` with dependencies then build again.
+Right-click the solution name in Solution Explorer and build the solution.
 
 ![Build solution](docs/images/build_solution.png)
+
+Projects `AppEncD3D12` and `AppDec` should be available now. Reload them with dependencies and build the solution again.
 
 ## Running the Project
 
