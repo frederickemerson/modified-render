@@ -44,7 +44,7 @@ Note: some errors may occur if the path is not set correctly for Visual Studio
 
 ### NVIDIA Video Codec SDK
 
-- Download the NVIDIA Video Codec SDK for application developers here: https://developer.nvidia.com/nvidia-video-codec-sdk
+- Download the NVIDIA Video Codec SDK for application developers here: https://developer.nvidia.com/nvidia-video-codec-sdk. The project is currently using `version 11.1`, so make sure to get that version.
 - Rename the folder to  `Video_Codec_SDK_11010`  and place it in the same folder as `hrender` (and `Falcor`)
 - The contents of `Video_Codec_SDK_11010` should look something like this:
 
