@@ -142,10 +142,17 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
+
+            std::thread{ &ServerNetworkManager::SendTextureUdp, this, FrameData{ toSendSize, frameNum, timestamp },
+                           toSendData,
+                           clientIndex,
+                           mServerUdpSock }.detach();
+            /*
             SendTextureUdp({ toSendSize, frameNum, timestamp },
                            toSendData,
                            clientIndex,
                            mServerUdpSock);
+            */
         }
         
         // increase local count of frames rendered by server
@@ -185,7 +192,7 @@ void ClientNetworkManager::setArtificialLag(int milliseconds) {
 
 void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp)
 {
-
+    std::this_thread::sleep_for(artificialLag);
     // Variable splitSize controls the size of the split packets
     int32_t splitSize = UdpCustomPacket::maxPacketSize;
     int16_t numOfFramePackets = frameData.frameSize / splitSize +
@@ -195,29 +202,25 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     int currentOffset = 0;
     bool isFirst = true;
 
-    std::async(std::launch::async,[&]()
+    for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
-        std::this_thread::sleep_for(artificialLag);
-        for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
+        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
+        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
+                                        numOfFramePackets, frameData.timestamp, isFirst);
+        isFirst = false;
+
+        if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
         {
-            int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
-            UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
-                                            numOfFramePackets, frameData.timestamp, isFirst);
-            isFirst = false;
-
-            if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
-            {
-                char buffer[70];
-                sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
-                        texHeader.sequenceNumber);
-                OutputDebugStringA(buffer);
-                return;
-            }
-
-            serverSeqNum[clientIndex]++;
-            currentOffset += size;
+            char buffer[70];
+            sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
+                    texHeader.sequenceNumber);
+            OutputDebugStringA(buffer);
+            return;
         }
-    });
+
+        serverSeqNum[clientIndex]++;
+        currentOffset += size;
+    }
 
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
 }

@@ -171,7 +171,8 @@ public:
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp);
+    bool SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp);
+    void SendUdpCustomWithDelay(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp);
 
     // Client 
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
