@@ -38,6 +38,8 @@
 #include <chrono>
 #include "assert.h"
 #include "../DxrTutorSharedUtils/Compression.h"
+#include <thread>
+#include <future>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -187,11 +189,14 @@ public:
 
     float getTimeForOneSequentialFrame();
 
+    void setArtificialLag(int milliseconds);
+
 private:
     bool compression = false;
 
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
+    std::chrono::milliseconds artificialLag = std::chrono::milliseconds::zero();
 
     // A helper function to get the time from startTime
     std::chrono::milliseconds getComparisonTimestamp();

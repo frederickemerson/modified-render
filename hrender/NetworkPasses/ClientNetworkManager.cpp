@@ -351,6 +351,10 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
     return 1;
 }
 
+void ClientNetworkManager::setArtificialLag(int milliseconds) {
+    artificialLag = std::chrono::milliseconds(milliseconds);
+}
+
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
@@ -359,7 +363,16 @@ bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& s
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
     clientSeqNum++;
-    
+
+    std::async(std::launch::async,[&]()
+    {
+        std::this_thread::sleep_for(artificialLag);
+        SendUdpCustom(headerToSend, data, socketUdp);
+    });
+
+    return true;
+
+    /*
     bool wasDataSent = true;
     if (!SendUdpCustom(headerToSend, data, socketUdp))
     {
@@ -367,6 +380,7 @@ bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& s
         wasDataSent = false;
     }
     return wasDataSent;
+    */
 }
 
 bool ClientNetworkManager::RecvUdpCustom(

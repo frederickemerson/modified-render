@@ -39,6 +39,7 @@
 // for artificial delay
 #include <chrono>
 #include <thread>
+#include <future>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -189,6 +190,9 @@ public:
 
     bool CloseServerConnectionUdp();
 
+    void setArtificialLag(int milliseconds);
+
 private:
         bool compression = false;
+        std::chrono::milliseconds artificialLag = std::chrono::milliseconds::zero();
 };

@@ -179,6 +179,10 @@ bool ServerNetworkManager::CloseServerConnectionUdp()
     return true;
 }
 
+void ClientNetworkManager::setArtificialLag(int milliseconds) {
+    artificialLag = std::chrono::milliseconds(milliseconds);
+}
+
 void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp)
 {
 
@@ -190,25 +194,30 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     // Split the frame data and send
     int currentOffset = 0;
     bool isFirst = true;
-    for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
+
+    std::async(std::launch::async,[&]()
     {
-        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
-        UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
-                                        numOfFramePackets, frameData.timestamp, isFirst);
-        isFirst = false;
-
-        if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
+        std::this_thread::sleep_for(artificialLag);
+        for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
         {
-            char buffer[70];
-            sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
-                    texHeader.sequenceNumber);
-            OutputDebugStringA(buffer);
-            return;
-        }
+            int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
+            UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
+                                            numOfFramePackets, frameData.timestamp, isFirst);
+            isFirst = false;
 
-        serverSeqNum[clientIndex]++;
-        currentOffset += size;
-    }
+            if (!SendUdpCustom(texHeader, &sendTexData[currentOffset], clientIndex, socketUdp))
+            {
+                char buffer[70];
+                sprintf(buffer, "\n\n= SendTextureUdp: Failed to send packet %d =========",
+                        texHeader.sequenceNumber);
+                OutputDebugStringA(buffer);
+                return;
+            }
+
+            serverSeqNum[clientIndex]++;
+            currentOffset += size;
+        }
+    });
 
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
 }

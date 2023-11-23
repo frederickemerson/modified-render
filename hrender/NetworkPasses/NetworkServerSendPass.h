@@ -20,9 +20,11 @@ protected:
 		mTexHeight = texHeight;
 	}	
 	void execute(RenderContext* pRenderContext) override;
+    void renderGui(Gui::Window* pPassWindow) override;
 
 protected:
 	bool                                    firstServerSend = true; // Set off the server network thread on first send
 	int                                     mTexWidth = -1;            ///< The width of the texture we render, based on the client
 	int                                     mTexHeight = -1;           ///< The height of the texture we render, based on the client
+    int                                     mArtificialDelay = 0;
 };
