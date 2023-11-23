@@ -120,7 +120,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
         {
             std::lock_guard lock(mMutexServerVisTexRead);
-            char* toSendData = mGetInputBuffer();
+            char* data = mGetInputBuffer();
             // The size of the actual Buffer
             // that is given by Falcor is less then VIS_TEX_LEN
             // 
@@ -132,11 +132,16 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             if (compression) {
                 int compressedSize = Compression::executeLZ4Compress(mGetInputBuffer(), 
                     NetworkServerSendPass::intermediateBuffer, mGetInputBufferSize());
-                toSendData = NetworkServerSendPass::intermediateBuffer;
+                data = NetworkServerSendPass::intermediateBuffer;
                 toSendSize = compressedSize;
+
+                
                 //std::string frameMsg = std::string("\n\nCompressed texture to size: ") + std::to_string(compressedSize);
                 //OutputDebugString(string_2_wstring(frameMsg).c_str());
             }
+
+            char* toSendData = new char[toSendSize];
+            memcpy(data, toSendData, toSendSize);
 
             // Send the visBuffer back to the sender
             // Generate timestamp
@@ -144,7 +149,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
 
             std::thread{ &ServerNetworkManager::SendTextureUdp, this, FrameData{ toSendSize, frameNum, timestamp },
-                           toSendData,
+                           data,
                            clientIndex,
                            mServerUdpSock }.detach();
             /*
@@ -222,6 +227,7 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
         currentOffset += size;
     }
 
+    delete[] sendTexData;
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
 }
 

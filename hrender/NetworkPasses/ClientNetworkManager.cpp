@@ -358,12 +358,14 @@ void ClientNetworkManager::setArtificialLag(int milliseconds) {
 void ClientNetworkManager::SendUdpCustomWithDelay(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp) {
     std::this_thread::sleep_for(artificialLag);
     SendUdpCustom(dataHeader, dataToSend, socketUdp);
+    delete[] dataToSend;
 }
 
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
-    char* data = reinterpret_cast<char*>(&cameraData);
+    char* data = new char[sizeof(cameraData)];
+    memcpy(&cameraData, data, sizeof(cameraData));
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
