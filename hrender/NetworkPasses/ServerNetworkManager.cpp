@@ -186,11 +186,11 @@ bool ServerNetworkManager::CloseServerConnectionUdp()
     return true;
 }
 
-void ClientNetworkManager::setArtificialLag(int milliseconds) {
+void ServerNetworkManager::setArtificialLag(int milliseconds) {
     artificialLag = std::chrono::milliseconds(milliseconds);
 }
 
-void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp)
+void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp)
 {
     std::this_thread::sleep_for(artificialLag);
     // Variable splitSize controls the size of the split packets
@@ -444,7 +444,7 @@ bool ServerNetworkManager::RecvUdpCustomAndCheck(
     }
 }
 
-bool ServerNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, SOCKET& socketUdp)
+bool ServerNetworkManager::SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, const SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataHeader.createUdpPacket(dataToSend);
 
