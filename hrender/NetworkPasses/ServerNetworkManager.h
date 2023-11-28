@@ -119,6 +119,7 @@ public:
     std::map<ULONG, int> mapClientAddressToIndex;
 
     void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
+    void SendTextureUdpWithDelay(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
                            std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,

@@ -149,7 +149,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
                 char* toSendData = new char[toSendSize];
                 memcpy(toSendData, data, toSendSize);
 
-                std::thread{ &ServerNetworkManager::SendTextureUdp, this, FrameData{ toSendSize, frameNum, timestamp },
+                std::thread{ &ServerNetworkManager::SendTextureUdpWithDelay, this, FrameData{ toSendSize, frameNum, timestamp },
                                data,
                                clientIndex,
                                mServerUdpSock }.detach();
@@ -197,9 +197,15 @@ void ServerNetworkManager::setArtificialLag(int milliseconds) {
     artificialLag = std::chrono::milliseconds(milliseconds);
 }
 
+void ServerNetworkManager::SendTextureUdpWithDelay(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp) {
+    std::this_thread::sleep_for(artificialLag);
+    SendTextureUdp(frameData, sendTexData, clientIndex, socketUdp);
+    delete[] sendTexData;
+}
+
+
 void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp)
 {
-    std::this_thread::sleep_for(artificialLag);
     // Variable splitSize controls the size of the split packets
     int32_t splitSize = UdpCustomPacket::maxPacketSize;
     int16_t numOfFramePackets = frameData.frameSize / splitSize +
@@ -229,7 +235,6 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
         currentOffset += size;
     }
 
-    delete[] sendTexData;
     OutputDebugString(L"\n\n= SendTextureUdp: Sent texture =========");
 }
 
