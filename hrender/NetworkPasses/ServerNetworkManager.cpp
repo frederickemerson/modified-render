@@ -140,24 +140,26 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
                 //OutputDebugString(string_2_wstring(frameMsg).c_str());
             }
 
-            char* toSendData = new char[toSendSize];
-            memcpy(data, toSendData, toSendSize);
-
             // Send the visBuffer back to the sender
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
 
-            std::thread{ &ServerNetworkManager::SendTextureUdp, this, FrameData{ toSendSize, frameNum, timestamp },
-                           data,
-                           clientIndex,
-                           mServerUdpSock }.detach();
-            /*
-            SendTextureUdp({ toSendSize, frameNum, timestamp },
-                           toSendData,
-                           clientIndex,
-                           mServerUdpSock);
-            */
+            if (artificialLag > std::chrono::milliseconds::zero()) {
+                char* toSendData = new char[toSendSize];
+                memcpy(toSendData, data, toSendSize);
+
+                std::thread{ &ServerNetworkManager::SendTextureUdp, this, FrameData{ toSendSize, frameNum, timestamp },
+                               data,
+                               clientIndex,
+                               mServerUdpSock }.detach();
+            }
+            else {
+                SendTextureUdp({ toSendSize, frameNum, timestamp },
+                    data,
+                    clientIndex,
+                    mServerUdpSock);
+            }
         }
         
         // increase local count of frames rendered by server

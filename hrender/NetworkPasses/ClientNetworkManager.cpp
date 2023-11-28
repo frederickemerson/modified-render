@@ -364,26 +364,23 @@ void ClientNetworkManager::SendUdpCustomWithDelay(const UdpCustomPacketHeader& d
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
-    char* data = new char[sizeof(cameraData)];
-    memcpy(&cameraData, data, sizeof(cameraData));
+    char* byteData = reinterpret_cast<char*>(&cameraData);
+    
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
     clientSeqNum++;
 
-    std::thread{ &ClientNetworkManager::SendUdpCustomWithDelay, this, headerToSend, data, socketUdp }.detach();
+    if (artificialLag > std::chrono::milliseconds::zero()) {
+        char* data = new char[sizeof(cameraData)];
+        memcpy(data, byteData, sizeof(cameraData));
+        std::thread{ &ClientNetworkManager::SendUdpCustomWithDelay, this, headerToSend, data, socketUdp }.detach();
+    }
+    else {
+        SendUdpCustom(headerToSend, byteData, socketUdp);
+    }
 
     return true;
-
-    /*
-    bool wasDataSent = true;
-    if (!SendUdpCustom(headerToSend, data, socketUdp))
-    {
-        OutputDebugString(L"\n\n= SendCameraDataUdp: Failed to send =========");
-        wasDataSent = false;
-    }
-    return wasDataSent;
-    */
 }
 
 bool ClientNetworkManager::RecvUdpCustom(
