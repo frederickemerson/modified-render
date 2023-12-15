@@ -216,9 +216,19 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
         ? currCamData
         : camDataBuffer.at(1 - framesDifference);
 
+    // offset the camera to align closer to ray traced data
+    mCurrCamData = currCamData;
+    mustReturnCamera = true;
+    int minFrameDifference = ResourceManager::mClientNetworkManager->minNumFramesBehind;
+    const CameraData& renderCamData = minFrameDifference == 0
+        ? currCamData
+        : camDataBuffer.at(1 - minFrameDifference);
+    mpScene->getCamera()->setPosition(renderCamData.posW);
+    mpScene->getCamera()->setTarget(renderCamData.target);
+    mpScene->getCamera()->setUpVector(renderCamData.up);
+
     // Store current camera data in the circular buffer
     camDataBuffer.push_back(currCamData);
-
 
     // We run the PredictionPass shader to get the motion vectors
     // Need to retrieve camera data of the old frame

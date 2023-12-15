@@ -2,6 +2,7 @@
 #include "../DxrTutorSharedUtils/FullscreenLaunch.h"
 #include "../DxrTutorSharedUtils/RasterLaunch.h"
 #include "../DxrTutorSharedUtils/RenderPass.h"
+#include "../NetworkPasses/PredictionPass.h"
 
 /** Rasterized GBuffer pass.
 *       This GBuffer pass provides provides the option to render an environment map, and to use camera jitter for

@@ -30,6 +30,8 @@ public:
     }
 
     virtual ~PredictionPass() = default;
+    static CameraData mCurrCamData {};
+    static bool mustReturnCamera = false;
 
 protected:
     PredictionPass(int texWidth = -1, int texHeight = -1);

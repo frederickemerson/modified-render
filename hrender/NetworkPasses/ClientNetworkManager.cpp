@@ -146,6 +146,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 {
                     std::lock_guard lock(mMutexClientNumFramesBehind);
                     numFramesBehind = currentNumFramesBehind;
+                    if (minNumFramesBehind == 0) {
+                        minNumFramesBehind = numFramesBehind;
+                    }
+                    minNumFramesBehind = std::min(minNumFramesBehind, numFramesBehind);
                     numFramesChanged = true;
                 }
                 
