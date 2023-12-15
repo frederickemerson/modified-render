@@ -92,6 +92,10 @@ namespace {
     // const std::string sVarVisBufOriginalTex = "gVisBufferOrig";
 }
 
+CameraData PredictionPass::mCurrCamData;
+bool PredictionPass::mustReturnCamera = false;
+
+
 PredictionPass::PredictionPass(int texWidth, int texHeight) :
     ::RenderPass("Prediction Pass", "Prediction Pass Options"),
     mTexWidth(texWidth), mTexHeight(texHeight), camDataBuffer(camDataBufferSize)
@@ -220,15 +224,23 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
     mCurrCamData = currCamData;
     mustReturnCamera = true;
     int minFrameDifference = ResourceManager::mClientNetworkManager->minNumFramesBehind;
+    //int minFrameDifference = framesDifference;
     const CameraData& renderCamData = minFrameDifference == 0
         ? currCamData
-        : camDataBuffer.at(1 - minFrameDifference);
-    mpScene->getCamera()->setPosition(renderCamData.posW);
-    mpScene->getCamera()->setTarget(renderCamData.target);
-    mpScene->getCamera()->setUpVector(renderCamData.up);
+        : camDataBuffer.at(1 - minFrameDifference);;
 
     // Store current camera data in the circular buffer
     camDataBuffer.push_back(currCamData);
+
+    if (minFrameDifference > 0) {
+        char buffer[100];
+        sprintf(buffer, "\nminFrameDifference %d\n", minFrameDifference);
+        OutputDebugStringA(buffer);
+
+        mpScene->getCamera()->setPosition(renderCamData.posW);
+        mpScene->getCamera()->setTarget(renderCamData.target);
+        mpScene->getCamera()->setUpVector(renderCamData.up);
+    }
 
     // We run the PredictionPass shader to get the motion vectors
     // Need to retrieve camera data of the old frame

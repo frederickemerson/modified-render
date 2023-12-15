@@ -22,5 +22,5 @@ protected:
 
 protected:
 	bool                                    mFirstRender = true;       ///< If this is the first time rendering, need to send scene
-	int                                     mArtificialDelay = 0;
+	int                                     mArtificialDelay = 100;
 };

@@ -78,7 +78,7 @@ public:
     // buffer received, and the frame number of the current image
     // that is going to be rendered to the screen on the client
     std::atomic_int numFramesBehind = 0;
-    std::atomic_int minNumFramesBehind = 0;
+    int minNumFramesBehind = 0;
     std::atomic_bool numFramesChanged = false;
     // Mutex for updating number of frames behind
     static std::mutex mMutexClientNumFramesBehind;
