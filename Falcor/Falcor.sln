@@ -4,6 +4,7 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hrender", "..\hrender\hrender.vcxproj", "{3F318569-891B-4D35-952C-9162D29F97F7}"
 	ProjectSection(ProjectDependencies) = postProject
+		{8210572A-E33C-338A-807E-D9F43FCDD225} = {8210572A-E33C-338A-807E-D9F43FCDD225}
 		{F99CC965-1085-35CD-BA1A-875DA80C56C0} = {F99CC965-1085-35CD-BA1A-875DA80C56C0}
 	EndProjectSection
 EndProject
@@ -33,9 +34,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mogwai", "Source\Mogwai\Mog
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCompare", "Source\Tools\ImageCompare\ImageCompare.vcxproj", "{8F6B5FAB-30FA-45C6-B5EA-BCD1D26781C0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppEncD3D12", "..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj", "{F99CC965-1085-35CD-BA1A-875DA80C56C0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppEncD3D12", "..\nvcodec\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj", "{F99CC965-1085-35CD-BA1A-875DA80C56C0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppDec", "..\Video_Codec_SDK_11010\Samples\build\AppDecode\AppDec\AppDec.vcxproj", "{8210572A-E33C-338A-807E-D9F43FCDD225}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppDec", "..\nvcodec\Samples\build\AppDecode\AppDec\AppDec.vcxproj", "{8210572A-E33C-338A-807E-D9F43FCDD225}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -17,17 +17,14 @@
   <ItemGroup>
     <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp" />
-    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Regression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfigUtils.cpp" />
@@ -37,9 +34,11 @@
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderPass.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
-    <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
     <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
@@ -64,6 +63,7 @@
     <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
     <ClCompile Include="SVGFPasses\SVGFServerPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
+    <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
@@ -92,7 +92,6 @@
     <ClInclude Include="DxrTutorSharedUtils\RenderPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\ResourceManager.h" />
     <ClInclude Include="DxrTutorSharedUtils\SceneLoaderWrapper.h" />
-    <ClInclude Include="hrender.h" />
     <ClInclude Include="NetworkPasses\ClientNetworkManager.h" />
     <ClInclude Include="NetworkPasses\FrameData.h" />
     <ClInclude Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.h" />
@@ -119,15 +118,17 @@
     <ClInclude Include="SVGFPasses\SVGFPass.h" />
     <ClInclude Include="SVGFPasses\SVGFServerPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="hrender.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Falcor\Source\Falcor\Falcor.vcxproj">
       <Project>{2c535635-e4c5-4098-a928-574f0e7cd5f9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppDecode\AppDec\AppDec.vcxproj">
+    <ProjectReference Include="..\nvcodec\Samples\build\AppDecode\AppDec\AppDec.vcxproj">
       <Project>{9cfc513b-7cda-341d-bc8b-ec936511b21a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj">
+    <ProjectReference Include="..\nvcodec\Samples\build\AppEncode\AppEncD3D12\AppEncD3D12.vcxproj">
       <Project>{d28abd7e-c036-37bd-867b-cd36b013e741}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -199,9 +200,8 @@
     <ProjectGuid>{3F318569-891B-4D35-952C-9162D29F97F7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hrender</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <CudaToolkitCustomDir>
-    </CudaToolkitCustomDir>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <CudaToolkitCustomDir>$(CUDA_PATH_V11_6)</CudaToolkitCustomDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -258,19 +258,23 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;$(SolutionDir)..\ffmpeg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;$(SolutionDir)..\ffmpeg\lib;$(SolutionDir)..\ffmpeg\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib;swscale.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>
@@ -285,19 +289,23 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;$(SolutionDir)..\ffmpeg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>
@@ -314,21 +322,25 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions);_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;$(SolutionDir)..\ffmpeg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\lz4\lib;$(SolutionDir)..\nvcodec;$(SolutionDir)..\nvcodec\Interface;$(SolutionDir)..\nvcodec\Samples\NvCodec;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\Video_Codec_SDK_11010\Lib\x64;$(CudaToolkitLibDir);$(SolutionDir)..\Video_Codec_SDK_11010\Samples\build\AppEncode\AppEncDec\AppEncDec_dir\Debug;$(SolutionDir)..\Video_Codec_SDK_11010;$(SolutionDir)..\Video_Codec_SDK_11010\Interface;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\NvCodec;$(SolutionDir)..\Video_Codec_SDK_11010\Samples\External;$(SolutionDir)..\ffmpeg\lib;$(SolutionDir)..\ffmpeg\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib;swscale.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release;$(SolutionDir)..\nvcodec\Lib\x64;$(SolutionDir)..\nvcodec\Samples\External;$(CudaToolkitLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies);liblz4.lib;nvcuvid.lib;nvencodeapi.lib;cudart.lib;cuda.lib;FFmpeg\lib\x64\avcodec.lib;FFmpeg\lib\x64\avformat.lib;FFmpeg\lib\x64\avutil.lib;FFmpeg\lib\x64\swresample.lib</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>IF NOT EXIST "$(OutDir)\liblz4.dll" (
+      <Command>IF NOT EXIST "$(SolutionDir)..\nvcodec\Samples\build\CMakeCache.txt" (
+    cmake -B"$(SolutionDir)..\nvcodec\Samples\build" -S"$(SolutionDir)..\nvcodec\Samples" -G"Visual Studio 16 2019" -A"x64" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=.
+)
+
+IF NOT EXIST "$(OutDir)\liblz4.dll" (
     devenv "$(SolutionDir)..\lz4\build\VS2017\lz4.sln" /build "Release|x64" /project "liblz4-dll\liblz4-dll.vcxproj"
     xcopy /y /d "$(SolutionDir)..\lz4\build\VS2017\bin\x64_Release\liblz4.dll" "$(OutDir)"
 )</Command>

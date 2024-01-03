@@ -2,6 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="hrender.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
+      <Filter>CommonPasses</Filter>
+    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
@@ -20,20 +32,8 @@
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp">
       <Filter>SharedUtils</Filter>
     </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp">
       <Filter>SharedUtils</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp">
-      <Filter>CommonPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp">
-      <Filter>CommonPasses</Filter>
     </ClCompile>
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp">
       <Filter>TestPasses</Filter>

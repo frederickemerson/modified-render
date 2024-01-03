@@ -1,5 +1,5 @@
 ﻿*.user
 .vs/*
 .vscode/
-/hrender/Data
-/Video_Codec_SDK_11010
+/hrender/Data/
+/hrender/*.aps
