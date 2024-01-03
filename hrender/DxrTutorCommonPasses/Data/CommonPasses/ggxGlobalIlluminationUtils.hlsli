@@ -16,38 +16,32 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************************************************/
 
-import Utils.Color.ColorHelpers;
+import Experimental.Scene.Lights.LightHelpers;
+#ifndef __GI_UTILS__
+#define __GI_UTILS__
 
 // A helper to extract important light data from internal Falcor data structures.  What's going on isn't particularly
 //     important -- any framework you use will expose internal scene data in some way.  Use your framework's utilities.
 void getLightData(in int index, in float3 hitPos, out float3 toLight, out float3 lightIntensity, out float distToLight)
 {
-    // Use built-in Falcor functions and data structures to fill in a LightSample data structure
-    //   -> See "Lights.slang" for it's definition
-    LightSample ls;
+    LightData ld = gScene.getLight(index);
+    AnalyticLightSample ls;
+    evalLightApproximate(hitPos, ld, ls);
 
-    // Is it a directional light?
-    if (gScene.getLight(index).type == uint32_t(LightType.Directional))
-        ls = evalDirectionalLight(gScene.getLight(index), hitPos);
-
-    // No?  Must be a point light.
-    else
-        ls = evalPointLight(gScene.getLight(index), hitPos);
-
-    // Convert the LightSample structure into simpler data
-    toLight = normalize(ls.L);
-    lightIntensity = ls.diffuse;
+    toLight = ls.dir;
+    lightIntensity = ld.intensity;
     distToLight = length(ls.posW - hitPos);
 }
 
 // Encapsulates a bunch of Falcor stuff into one simpler function. 
 //    -> This can only be called within a closest hit or any hit shader
-ShadingData getHitShadingData(HitShaderParams hitParams, BuiltInTriangleIntersectionAttributes attribs, float3 cameraPos )
+ShadingData getHitShadingData(BuiltInTriangleIntersectionAttributes attribs)
 {
-    // Run a pair of Falcor helper functions to compute important data at the current hit point
-    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
-    uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
-
+    // Get the hit-point data
+    const GeometryInstanceID instanceID = getGeometryInstanceID();
+    VertexData v = getVertexData(instanceID, PrimitiveIndex(), attribs);
+    uint materialID = gScene.getMaterialID(instanceID);
+	
     return prepareShadingData(v, materialID, gScene.materials[materialID], gScene.materialResources[materialID], -WorldRayDirection(), 0);
 }
 
@@ -130,13 +124,19 @@ float3 getCosHemisphereSample(inout uint randSeed, float3 hitNorm)
 // This function tests if the alpha test fails, given the attributes of the current hit. 
 //   -> Can legally be called in a DXR any-hit shader or a DXR closest-hit shader, and 
 //      accesses Falcor helpers and data structures to extract and perform the alpha test.
-bool alphaTestFails(HitShaderParams hitParams, BuiltInTriangleIntersectionAttributes attribs)
+bool alphaTestFails(BuiltInTriangleIntersectionAttributes attribs)
 {
     // Run a Falcor helper to extract the current hit point's geometric data
-    VertexData v = getVertexData(hitParams, PrimitiveIndex(), attribs);
-    const uint materialID = gScene.getMaterialID(hitParams.getGlobalHitID());
+    GeometryInstanceID instanceID = getGeometryInstanceID();
+    VertexData v = getVertexData(instanceID, PrimitiveIndex(), attribs);
+    const uint materialID = gScene.getMaterialID(instanceID);
 
     return alphaTest(v, gScene.materials[materialID], gScene.materialResources[materialID], 0.f);
+}
+
+float luminance(float3 color)
+{
+    return dot(color, float3(0.299f, 0.587f, 0.114f));
 }
 
 // Our material has have both a diffuse and a specular lobe.  
@@ -147,3 +147,5 @@ float probabilityToSampleDiffuse(float3 difColor, float3 specColor)
     float lumSpecular = max(0.01f, luminance(specColor.rgb));
     return lumDiffuse / (lumDiffuse + lumSpecular);
 }
+
+#endif // __GI_UTILS__

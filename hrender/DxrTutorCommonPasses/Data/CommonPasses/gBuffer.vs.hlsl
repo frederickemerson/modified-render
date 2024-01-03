@@ -18,12 +18,31 @@
 
 // Falcor has a "default" vertex shader (see Raster.slang).  We're explicitly using
 //     that shader (by calling it in main()) rather than implicitly linking to it
+#include "../../../SVGFPasses/Data/SVGFPasses/svgfGBufData.hlsli"
+#define HAS_NORMAL
 
 // Invokes Slang to import the default vertex shader, it's inputs and outputs
 import Scene.Raster;
 
-// Define our main() entry point for our vertex shader, then simply call the default Falcor vertex shader
-VSOut main(VSIn vIn)
+//// Define our main() entry point for our vertex shader, then simply call the default Falcor vertex shader
+//VSOut main(VSIn vIn)
+//{
+//	return defaultVS(vIn);
+//}
+
+GBufVertexOut main(VSIn vIn)
 {
-	return defaultVS(vIn);
+    GBufVertexOut vOut;
+    vOut.base = defaultVS(vIn);       // Call the default Falcor vertex shader (see DefaultVS.slang)
+    //vOut.instanceID = vIn.meshInstanceID; // Pass down the current instance ID for use in our G-buffer
+
+    // Seems like this is never used?
+    #ifdef HAS_NORMAL
+        vOut.normalObj = vIn.unpack().
+    normal; // Our g-buffer is storing an object-space normal, so pass that down
+    #else
+        vOut.normalObj = 0;               //  .... Unless we don't have an object space normal.
+    #endif
+
+    return vOut;
 }

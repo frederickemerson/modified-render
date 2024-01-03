@@ -18,6 +18,56 @@
 #pragma once
 
 #include "microfacetBRDFUtils.hlsli"
+#include "ggxGlobalIlluminationUtils.hlsli"
+
+// Payload for our shadowrays. 
+struct ShadowRayPayload
+{
+    float isFullyLit;
+};
+
+// A utility function to trace a shadow ray and return 1 if no shadow and 0 if shadowed.
+//    -> Note:  This assumes the shadow hit programs and miss programs are index 0!
+float shadowRayVisibility(float3 origin, float3 direction, float minT, float maxT)
+{
+    // Setup our shadow ray
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = direction;
+    ray.TMin = minT;
+    ray.TMax = maxT;
+
+    // Our shadow rays are *assumed* to hit geometry; this miss shader changes this to 1.0 for "visible"
+    ShadowRayPayload rayPayload = { 0.0 };
+    TraceRay(gScene.rtAccel, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER,
+        0xFF, 0, rayTypeCount, 0, ray, rayPayload);
+    
+    // Check if anyone was closer than our maxT distance (in which case we're occluded)
+    return rayPayload.isFullyLit;
+}
+
+// What code is executed when our ray misses all geometry?
+[shader("miss")]
+void ShadowMiss(inout ShadowRayPayload rayData)
+{
+    // If we miss all geometry, then the light is visible
+    rayData.isFullyLit = 1.0f;
+}
+
+// What code is executed when our ray hits a potentially transparent surface?
+[shader("anyhit")]
+void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+{
+	// Is this a transparent part of the surface?  If so, ignore this hit
+    if (alphaTestFails(attribs))
+        IgnoreHit();
+}
+
+// What code is executed when we have a new closest hitpoint?
+[shader("closesthit")]
+void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+{
+}
 
 // The payload structure for our indirect rays
 struct IndirectRayPayload
@@ -43,7 +93,7 @@ float3 shootIndirectRay(float3 rayOrigin, float3 rayDir, float minT, uint curPat
     payload.rayDepth = curDepth + 1;
 
     // Trace our ray to get a color in the indirect direction.  Use hit group #1 and miss shader #1
-    TraceRay(gRtScene, 0, 0xFF, 1, hitProgramCount, 1, rayColor, payload);
+    TraceRay(gScene.rtAccel, 0, 0xFF, 1, rayTypeCount, 1, rayColor, payload);
 
     // Return the color we got from our ray
     return payload.color;
@@ -64,10 +114,10 @@ void IndirectMiss(inout IndirectRayPayload rayData)
 }
 
 [shader("anyhit")]
-void IndirectAnyHit(uniform HitShaderParams hitParams, inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void IndirectAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     // Is this a transparent part of the surface?  If so, ignore this hit
-    if (alphaTestFails(hitParams, attribs))
+    if (alphaTestFails(attribs))
         IgnoreHit();
 }
 
@@ -90,7 +140,7 @@ float3 lambertianDirect(inout uint rndSeed, float3 hit, float3 norm, float3 difC
 
     // Shoot our shadow ray to our randomly selected light
     float shadowMult = float(lightCount) * shadowRayVisibility(hit, toLight, gMinT, distToLight);
-
+    
     // Return the Lambertian shading color using the physically based Lambertian term (albedo / pi)
     return shadowMult * LdotN * lightIntensity * difColor / M_PI;
 }
@@ -143,6 +193,10 @@ void ggxDirect(inout uint rndSeed, float3 hit, float3 N, float3 V, float3 dif, f
 void ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, float3 V, float3 dif, float3 spec, float rough, uint rayDepth,
     out float3 indirectColor, out float3 indirectAlbedo)
 {
+    /* Many of the equations have been simplified to prevent precision errors (div by 0, etc.)
+     * Original terms have been commented out but the values calculated should be the same.
+     */
+    
     // We have to decide whether we sample our diffuse or specular/ggx lobe.
     float probDiffuse = probabilityToSampleDiffuse(dif, spec);
     float chooseDiffuse = (nextRand(rndSeed) < probDiffuse);
@@ -157,7 +211,8 @@ void ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, flo
         float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
 
         // Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-        //if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
+        if (dot(noNormalN, L) <= 0.0f)
+            bounceColor = float3(0.0f);
 
         // Accumulate the color: (NdotL * incomingLight * dif / pi) 
         // Probability of sampling:  (NdotL / pi) * probDiffuse
@@ -173,11 +228,12 @@ void ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, flo
         float3 bounceColor = shootIndirectRay(hit, L, gMinT, 0, rndSeed, rayDepth);
 
         // Check to make sure our randomly selected, normal mapped diffuse ray didn't go below the surface.
-        //if (dot(noNormalN, L) <= 0.0f) bounceColor = float3(0, 0, 0);
+        if (dot(noNormalN, L) <= 0.0f)
+            bounceColor = float3(0.0f);
 
         // Accumulate the color:  ggx-BRDF * incomingLight * NdotL / probability-of-sampling
         //    -> Should really simplify the math above.
-        indirectColor = NdotL * bounceColor * ggxBRDF / (indirectAlbedo * ggxProb * (1.0f - probDiffuse));
+        indirectColor = bounceColor * ggxBRDF / (indirectAlbedo * ggxProb * (1.0f - probDiffuse));
         //return NdotL * bounceColor * ggxBRDF / (ggxProb * (1.0f - probDiffuse));
     }
 
@@ -186,10 +242,10 @@ void ggxIndirect(inout uint rndSeed, float3 hit, float3 N, float3 noNormalN, flo
 }
 
 [shader("closesthit")]
-void IndirectClosestHit(uniform HitShaderParams hitParams, inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     // Run a helper functions to extract Falcor scene data for shading
-    ShadingData shadeData = getHitShadingData( hitParams, attribs, WorldRayOrigin() );
+    ShadingData shadeData = getHitShadingData( attribs );
 
     // Add emissive color
     rayData.color = gEmitMult * shadeData.emissive.rgb;

@@ -39,6 +39,7 @@
 // for artificial delay
 #include <chrono>
 #include <thread>
+#include <future>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -50,6 +51,7 @@
 #define DEFAULT_PORT_UDP "1505"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
+#define AO_TEX_LEN 8294400 // 4 * 1920 * 1080 
 #define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
 
 // While waiting for the first packet from the client, wait
@@ -116,7 +118,8 @@ public:
     std::queue<int> sendClientQueue;
     std::map<ULONG, int> mapClientAddressToIndex;
 
-    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp);
+    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
+    void SendTextureUdpWithDelay(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
                            std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
@@ -172,7 +175,7 @@ public:
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, SOCKET& socketUdp);
+    bool SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, const SOCKET& socketUdp);
 
     // Server
     // Set up UDP socket and listen for client's texture width/height
@@ -188,6 +191,9 @@ public:
 
     bool CloseServerConnectionUdp();
 
+    void setArtificialLag(int milliseconds);
+
 private:
-        bool compression = true;
+        bool compression = false;
+        std::chrono::milliseconds artificialLag = std::chrono::milliseconds::zero();
 };

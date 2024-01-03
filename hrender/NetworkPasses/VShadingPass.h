@@ -29,11 +29,14 @@ public:
     using SharedPtr = std::shared_ptr<VShadingPass>;
     using SharedConstPtr = std::shared_ptr<const VShadingPass>;
 
-    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel) { return SharedPtr(new VShadingPass(outBuf)); }
+    static SharedPtr create(const std::string& outBuf = ResourceManager::kOutputChannel, bool isHybridRendering = true) { return SharedPtr(new VShadingPass(outBuf, isHybridRendering)); }
     virtual ~VShadingPass() = default;
 
 protected:
-    VShadingPass(const std::string& outBuf) : ::RenderPass("Visibility-Shading Pass", "VShading Options") { mOutputTexName = outBuf; }
+    VShadingPass(const std::string& outBuf, bool isHybridRendering) : ::RenderPass("Visibility-Shading Pass", "VShading Options") { 
+        mOutputTexName = outBuf;
+        mHybridMode = isHybridRendering;
+    }
 
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
@@ -53,9 +56,14 @@ protected:
     int32_t                                 mOutputIndex;           ///< An index for our output buffer
     std::string                             mOutputTexName;         ///< Where do we want to store the results?
     bool                                    mSkipShadows = false;   ///< Should we skip shadow computation?
+    bool                                    mSkipAO = false;        ///< Should we skip ambient occlusion?
 
     bool                                    mDecodeMode = false;    ///< Do we perform shading, or just debug the visibility bitmap?
     int32_t                                 mDecodeBit = 0;         ///< If we are debugging visibility bitmap, which light should we see?
+    bool                                    mDecodeVis = true;      ///< True for Visibility, false for AO
 
     float                                   mAmbient = 0.5f;        ///< Scene-dependent variable to avoid perfectly dark shadows
+    int32_t                                 mNumAORays = 32;        ///< Number of AO rays shot per pixel
+
+    bool                                    mHybridMode = true;     ///< True if doing hybrid rendering, else remote rendering.
 };

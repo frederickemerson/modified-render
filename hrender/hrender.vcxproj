@@ -15,13 +15,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DxrTutorCommonPasses\AmbientOcclusionPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\ClientRemoteConverter.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\JitteredGBufferPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\LambertianPlusShadowPass.cpp" />
+    <ClCompile Include="DxrTutorCommonPasses\ServerRemoteConverter.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\SimpleAccumulationPass.cpp" />
     <ClCompile Include="DxrTutorCommonPasses\CopyToOutputPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\FullscreenLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Regression.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderConfig.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\RenderConfigUtils.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
+    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RasterLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RayLaunch.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\RenderingPipeline.cpp" />
@@ -29,10 +37,8 @@
     <ClCompile Include="DxrTutorSharedUtils\CompressionPass.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\ResourceManager.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\SceneLoaderWrapper.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\Semaphore.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\NvDecoder.cpp" />
     <ClCompile Include="DxrTutorSharedUtils\Compression.cpp" />
-    <ClCompile Include="DxrTutorSharedUtils\UdpCustomPacket.cpp" />
     <ClCompile Include="NetworkPasses\ClientNetworkManager.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassClientCPU_GPU.cpp" />
     <ClCompile Include="NetworkPasses\MemoryTransferPassServerGPU_CPU.cpp" />
@@ -43,20 +49,31 @@
     <ClCompile Include="NetworkPasses\NetworkServerSendPass.cpp" />
     <ClCompile Include="NetworkPasses\NetworkUtils.cpp" />
     <ClCompile Include="NetworkPasses\PredictionPass.cpp" />
+    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\ServerNetworkManager.cpp" />
+    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
     <ClCompile Include="NetworkPasses\SimulateDelayPass.cpp" />
     <ClCompile Include="NetworkPasses\VisibilityPass.cpp" />
     <ClCompile Include="NetworkPasses\VShadingPass.cpp" />
-    <ClCompile Include="NetworkPasses\ScreenSpaceReflectionPass.cpp" />
-    <ClCompile Include="NetworkPasses\ServerRayTracingReflectionPass.cpp" />
-    <ClCompile Include="NetworkPasses\ReflectionCompositePass.cpp" />
+    <ClCompile Include="SVGFPasses\DistrSVGFPass.cpp" />
+    <ClCompile Include="SVGFPasses\GBufferForSVGF.cpp" />
+    <ClCompile Include="SVGFPasses\GGXGlobalIlluminationDemod.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFClientPass.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFPass.cpp" />
+    <ClCompile Include="SVGFPasses\SVGFServerPass.cpp" />
     <ClCompile Include="TestPasses\DecodeGBufferPass.cpp" />
     <ClCompile Include="hrender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DxrTutorCommonPasses\AmbientOcclusionPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\ClientRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\CopyToOutputPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\GGXClientGlobalIllumPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\GGXServerGlobalIllumPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\JitteredGBufferPass.h" />
     <ClInclude Include="DxrTutorCommonPasses\LambertianPlusShadowPass.h" />
+    <ClInclude Include="DxrTutorCommonPasses\ServerRemoteConverter.h" />
     <ClInclude Include="DxrTutorCommonPasses\SimpleAccumulationPass.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.h" />
     <ClInclude Include="DxrTutorSharedUtils\CircularBuffer.hpp" />
@@ -66,6 +83,7 @@
     <ClInclude Include="DxrTutorSharedUtils\NvDecoder.h" />
     <ClInclude Include="DxrTutorSharedUtils\Regression.h" />
     <ClInclude Include="DxrTutorSharedUtils\RenderConfig.h" />
+    <ClInclude Include="DxrTutorSharedUtils\RenderConfigUtils.h" />
     <ClInclude Include="DxrTutorSharedUtils\UdpCustomPacket.h" />
     <ClInclude Include="DxrTutorSharedUtils\Semaphore.h" />
     <ClInclude Include="DxrTutorSharedUtils\RasterLaunch.h" />
@@ -85,13 +103,20 @@
     <ClInclude Include="NetworkPasses\NetworkServerSendPass.h" />
     <ClInclude Include="NetworkPasses\NetworkUtils.h" />
     <ClInclude Include="NetworkPasses\PredictionPass.h" />
+    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
     <ClInclude Include="NetworkPasses\ServerNetworkManager.h" />
+    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
     <ClInclude Include="NetworkPasses\SimulateDelayPass.h" />
     <ClInclude Include="NetworkPasses\VisibilityPass.h" />
     <ClInclude Include="NetworkPasses\VShadingPass.h" />
-    <ClInclude Include="NetworkPasses\ScreenSpaceReflectionPass.h" />
-    <ClInclude Include="NetworkPasses\ServerRayTracingReflectionPass.h" />
-    <ClInclude Include="NetworkPasses\ReflectionCompositePass.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SVGFPasses\DistrSVGFPass.h" />
+    <ClInclude Include="SVGFPasses\GBufferForSVGF.h" />
+    <ClInclude Include="SVGFPasses\GGXGlobalIlluminationDemod.h" />
+    <ClInclude Include="SVGFPasses\SVGFClientPass.h" />
+    <ClInclude Include="SVGFPasses\SVGFPass.h" />
+    <ClInclude Include="SVGFPasses\SVGFServerPass.h" />
     <ClInclude Include="TestPasses\DecodeGBufferPass.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="hrender.h" />
@@ -112,10 +137,13 @@
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoCommonUtils.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\aoTracing.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\floatConvert.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.ps.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\gBuffer.vs.hlsl" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxClientGlobalIllumination.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIllumination.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxGlobalIlluminationUtils.hlsli" />
+    <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\ggxServerGlobalIllumination.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\indirectRay.hlsli" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadows.rt.hlsl" />
     <ShaderSource Include="DxrTutorCommonPasses\Data\CommonPasses\lambertianPlusShadowsUtils.hlsli" />
@@ -138,6 +166,30 @@
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\visibilityPass.rt.hlsl" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\networkUtils.hlsli" />
     <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpass.hlsl" />
+    <ShaderSource Include="NetworkPasses\Data\NetworkPasses\vshadingpassYUV.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\clearGBuffer.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\DistrSVGFReproject.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\gBufferSVGF.vs.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemod.rt.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\ggxGlobalIlluminationDemodUtils.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFClientModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFCommon.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFEdgeStoppingFunctions.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFFilterMoments.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\svgfGBufData.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFPackNormal.hlsli" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFReproject.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerAtrous.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGFServerModulate.ps.hlsl" />
+    <ShaderSource Include="SVGFPasses\Data\SVGFPasses\SVGF1ColorReproject.ps.hlsl" />
     <ShaderSource Include="TestPasses\Data\TestPasses\DecodeGBufferPass.ps.hlsl" />
     <ShaderSource Include="TestPasses\GBufferComponents.slang" />
   </ItemGroup>
@@ -149,8 +201,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hrender</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
-    <CudaToolkitCustomDir>
-    </CudaToolkitCustomDir>
+    <CudaToolkitCustomDir>$(CUDA_PATH_V11_6)</CudaToolkitCustomDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

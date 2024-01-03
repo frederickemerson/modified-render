@@ -30,6 +30,11 @@ bool JitteredGBufferPass::initialize(RenderContext* pRenderContext, ResourceMana
     mpResManager->requestTextureResource("__TextureData",       ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight); // Stores 16 x uint8
     mpResManager->requestTextureResource("Z-Buffer",            ResourceFormat::D24UnormS8, ResourceManager::kDepthBufferFlags, mTexWidth, mTexHeight);
 
+    // These textures are used for SVGF denoising
+    mpResManager->requestTextureResource("SVGF_LinearZ", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SVGF_MotionVecs", ResourceFormat::RGBA16Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    mpResManager->requestTextureResource("SVGF_CompactNormDepth", ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
+    
     // // Set default environment map and scene
     // mpResManager->updateEnvironmentMap(kEnvironmentMap);
     // mpResManager->setDefaultSceneName(kDefaultScene);
@@ -85,21 +90,23 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
 
     // Create a framebuffer for rendering.  (Creating once per frame is for simplicity, not performance).
     Fbo::SharedPtr outputFbo = mpResManager->createManagedFbo(
-        { "WorldPosition", "WorldNormal", "__TextureData" }, 
+        { "WorldPosition", "WorldNormal", "__TextureData", "SVGF_LinearZ", "SVGF_MotionVecs", "SVGF_CompactNormDepth" },
         "Z-Buffer");                                                                                      
 
     // Failed to create a valid FBO?  We're done.
     if (!outputFbo) return;
-    
+
     // Are we jittering?  If so, update our camera with the current jitter
+    float xOff = 0;
+    float yOff = 0;
     if (mUseJitter && mpScene && mpScene->getCamera())
     {
         // Increase our frame count
         mFrameCount++;
 
         // Determine our offset in the pixel in the range [-0.5...0.5]
-        float xOff = mUseRandom ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][0]*0.0625f;
-        float yOff = mUseRandom ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1]*0.0625f;
+        xOff = mUseRandom ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][0]*0.0625f;
+        yOff = mUseRandom ? mRngDist(mRng) - 0.5f : kMSAA[mFrameCount % 8][1]*0.0625f;
 
         // Give our jitter to the scene camera
         mpScene->getCamera()->setJitter( xOff / float(outputFbo->getWidth()), yOff / float(outputFbo->getHeight()));
@@ -133,8 +140,20 @@ void JitteredGBufferPass::execute(RenderContext* pRenderContext)
         mpClearGBuf->execute(pRenderContext, outputFbo); 
     }
     
+    // Pass down our output size to the G-buffer shader
+    auto shaderVars = mpRaster->getVars();
+    float2 fboSize = float2(outputFbo->getWidth(), outputFbo->getHeight());
+    shaderVars["GBufCB"]["gBufSize"] = float4(fboSize.x, fboSize.y, 1.0f / fboSize.x, 1.0f / fboSize.y);
+
     // Execute our rasterization pass.  Note: Falcor will populate many built-in shader variables
     mpRaster->execute(pRenderContext, mpGfxState, outputFbo);
 
     //OutputDebugString(L"\n\n= JitteredGBuffer: Finished executing =========");
+
+    if (mpScene && mpScene->getCamera() && PredictionPass::mustReturnCamera) {
+        mpScene->getCamera()->setPosition(PredictionPass::mCurrCamData.posW);
+        mpScene->getCamera()->setTarget(PredictionPass::mCurrCamData.target);
+        mpScene->getCamera()->setUpVector(PredictionPass::mCurrCamData.up);
+        mpScene->getCamera()->setJitter( xOff / float(outputFbo->getWidth()), yOff / float(outputFbo->getHeight()));
+    }
 }

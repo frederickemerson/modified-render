@@ -80,6 +80,7 @@ void ServerRayTracingReflectionPass::initScene(RenderContext* pRenderContext, Sc
 
 void ServerRayTracingReflectionPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipSRT) return;
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
 
@@ -90,6 +91,9 @@ void ServerRayTracingReflectionPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipSRT"] = mSkipSRT;
+    rayVars["RayGenCB"]["gRoughnessThreshold"] = mRoughnessThreshold;
+    rayVars["RayGenCB"]["gLumThreshold"] = mLumThreshold;
+    rayVars["RayGenCB"]["gUseThresholds"] = mUseThresholds;
     rayVars["gVshading"] = mpResManager->getTexture("V-shading");
     rayVars["gVisibility"] = mpResManager->getTexture("VisibilityBitmap");
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
@@ -108,6 +112,9 @@ void ServerRayTracingReflectionPass::renderGui(Gui::Window* pPassWindow)
 
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip SRT computation", mSkipSRT, false);
+    dirty |= (int)pPassWindow->checkbox("Use thresholds to limit reflections", mUseThresholds, false);
+    dirty |= (int)pPassWindow->var("Luminance threshold", mLumThreshold, 0.01f, 1.0f, mRoughnessThreshold * 0.01f);
+    dirty |= (int)pPassWindow->var("Roughness threshold", mRoughnessThreshold, 0.01f, 1.0f, mRoughnessThreshold * 0.01f);
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();

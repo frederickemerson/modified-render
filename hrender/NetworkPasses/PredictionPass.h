@@ -30,6 +30,8 @@ public:
     }
 
     virtual ~PredictionPass() = default;
+    static CameraData mCurrCamData;
+    static bool mustReturnCamera;
 
 protected:
     PredictionPass(int texWidth = -1, int texHeight = -1);
@@ -55,6 +57,8 @@ protected:
     int32_t                                 mMotionVecIndex;                ///< An index for our output buffer
     int32_t                                 mVisBufOrigIndex;               ///< An index for the original visibility buffer
     int32_t                                 mVisBufOffsetIndex;             ///< An index for the offset visibility buffer
+    int32_t                                 mAOBufOrigIndex;               ///< An index for the original AO buffer
+    int32_t                                 mAOBufOffsetIndex;             ///< An index for the offset AO buffer
     int32_t                                 mRefBufOrigIndex;              ///< An index for the original RayTracing Reflection buffer
     int32_t                                 mRefBufOffsetIndex;             ///< An index for the offset RayTracing Reflection buffer
     int32_t                                 mWorldPosIndex;                 ///< An index for the world position

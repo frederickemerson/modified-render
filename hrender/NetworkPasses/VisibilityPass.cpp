@@ -20,6 +20,13 @@
 
 using namespace std;
 
+/*
+* As mentioned in GGXServerGlobalIllumPass.cpp, it might be interesting to replace this visibility
+* pass with sending a light index, similar to what is done for direct colour in GI. This would potentially
+* replace the need for bitmaps and cone distribution for soft shadows. SVGF could be done on the client
+* to smoothen the shadows.
+*/
+
 namespace {
     // // Where is our environment map and scene located?
     // const char* kEnvironmentMap = "MonValley_G_DirtRoad_3k.hdr";
@@ -41,7 +48,7 @@ bool VisibilityPass::initialize(RenderContext* pRenderContext, ResourceManager::
     mpResManager = pResManager;
 
     // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(Falcor::int2(300, 70));
+    setGuiSize(Falcor::int2(350, 200));
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mPosIndex = mpResManager->requestTextureResource(mPosBufName, ResourceFormat::RGBA32Float, ResourceManager::kDefaultFlags, mTexWidth, mTexHeight);
@@ -85,6 +92,7 @@ void VisibilityPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr p
 
 void VisibilityPass::execute(RenderContext* pRenderContext)
 {
+    if (mSkipShadows) return;
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
 
@@ -95,6 +103,9 @@ void VisibilityPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
+    rayVars["RayGenCB"]["gFrameCount"] = mFrameCount++;
+    rayVars["RayGenCB"]["gUseConeSampling"] = mUseConeSampling; 
+    rayVars["RayGenCB"]["gCosThetaMax"] = cos(mThetaMax); 
     rayVars["gPos"] = mpResManager->getTexture(mPosIndex);
     rayVars["gOutput"] = pDstTex;
 
@@ -107,6 +118,10 @@ void VisibilityPass::renderGui(Gui::Window* pPassWindow)
     int dirty = 0;
 
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
+    dirty |= (int)pPassWindow->checkbox(
+        mUseConeSampling ? "Sampling shadow rays with cone" : "Sampling shadow rays directly to light",
+        mUseConeSampling, false);
+    dirty |= (int)pPassWindow->var("Maximum cone angle", mThetaMax, 1e-4f, (float)M_PI / 2, mThetaMax * 0.01f);
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
     if (dirty) setRefreshFlag();

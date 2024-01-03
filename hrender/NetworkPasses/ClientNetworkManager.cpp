@@ -57,13 +57,17 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
 {
     int32_t latestFrameRecv = 0;
 
+    // Below is used to get a gauge of the packet loss in the network
+    int32_t totalFrames = 0;
+    int32_t successFrames = 0;
+    int32_t maxFrames = -1; // Stops the client after n frames received. -1 to run forever.
     while (true)
     {
         std::chrono::time_point startOfFrame = std::chrono::system_clock::now();
 
         // Await server to send back the visibility pass texture
         OutputDebugString(L"\n\n= Awaiting visTex receiving over network... =========");
-        int visTexLen = VIS_TEX_LEN + REF_TEX_LEN;
+        int visTexLen = VIS_TEX_LEN + AO_TEX_LEN;
         FrameData rcvdFrameData = { visTexLen, latestFrameRecv, 0 };
         
         char* toRecvData = NetworkClientRecvPass::clientWriteBuffer;
@@ -94,7 +98,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                     static_cast<int>(timeDifference.count()));
             OutputDebugStringA(fasterMessage);
         }
-        
+        totalFrames++;
         if (recvStatus == 0)
         {
             char frameDataMessage[90];
@@ -104,6 +108,7 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
         }
         else // recvStatus == 1
         {
+            successFrames++;
             OutputDebugString(L"\n\n= visTex received over network =========");
             char frameDataMessage[89];
             sprintf(frameDataMessage, "\nFrameData: Number: %d, Size: %d, Time: %d\n",
@@ -141,6 +146,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 {
                     std::lock_guard lock(mMutexClientNumFramesBehind);
                     numFramesBehind = currentNumFramesBehind;
+                    if (minNumFramesBehind == 0) {
+                        minNumFramesBehind = currentNumFramesBehind;
+                    }
+                    minNumFramesBehind = std::min(minNumFramesBehind, currentNumFramesBehind);
                     numFramesChanged = true;
                 }
                 
@@ -157,6 +166,14 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
             if (clientFrameNum % pollNetworkPingFrequency == 0) {
                 updateTimeForFrame(rcvdFrameData.frameNumber, endOfFrame);
             }
+        }
+
+        if (maxFrames > 0 && totalFrames == maxFrames) {
+            char printData[102];
+            sprintf(printData, "\n\n= ListenClientUdp - %d frames sent, %d frames received. %.4f %% success rate. =========", totalFrames, successFrames, (float)successFrames * 100 / totalFrames);
+            OutputDebugStringA(printData);
+            // Do not remove the break point below. Break happens when maxFrames have been received.
+            break;
         }
 
         if (!executeForever)
@@ -338,22 +355,36 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
     return 1;
 }
 
+void ClientNetworkManager::setArtificialLag(int milliseconds) {
+    artificialLag = std::chrono::milliseconds(milliseconds);
+}
+
+void ClientNetworkManager::SendUdpCustomWithDelay(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp) {
+    std::this_thread::sleep_for(artificialLag);
+    SendUdpCustom(dataHeader, dataToSend, socketUdp);
+    delete[] dataToSend;
+}
+
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
-    char* data = reinterpret_cast<char*>(&cameraData);
+    char* byteData = reinterpret_cast<char*>(&cameraData);
+    
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
     clientSeqNum++;
-    
-    bool wasDataSent = true;
-    if (!SendUdpCustom(headerToSend, data, socketUdp))
-    {
-        OutputDebugString(L"\n\n= SendCameraDataUdp: Failed to send =========");
-        wasDataSent = false;
+
+    if (artificialLag > std::chrono::milliseconds::zero()) {
+        char* data = new char[sizeof(cameraData)];
+        memcpy(data, byteData, sizeof(cameraData));
+        std::thread{ &ClientNetworkManager::SendUdpCustomWithDelay, this, headerToSend, data, socketUdp }.detach();
     }
-    return wasDataSent;
+    else {
+        SendUdpCustom(headerToSend, byteData, socketUdp);
+    }
+
+    return true;
 }
 
 bool ClientNetworkManager::RecvUdpCustom(
@@ -452,7 +483,7 @@ bool ClientNetworkManager::RecvUdpCustom(
     return true;
 }
 
-bool ClientNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp)
+bool ClientNetworkManager::SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataHeader.createUdpPacket(dataToSend);
 

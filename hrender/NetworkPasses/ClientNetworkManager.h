@@ -38,6 +38,8 @@
 #include <chrono>
 #include "assert.h"
 #include "../DxrTutorSharedUtils/Compression.h"
+#include <thread>
+#include <future>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -49,6 +51,7 @@
 #define DEFAULT_PORT_UDP "1505"
 #define POS_TEX_LEN 33177600 // 16 * 1920 * 1080 //32593920
 #define VIS_TEX_LEN 8294400 // 4 * 1920 * 1080 //800000
+#define AO_TEX_LEN  8294400 // 4 * 1920 * 1080 
 #define REF_TEX_LEN 8294400 // 4 * 1920 * 1080
 
 // While listening for a specific sequence number with texture data,
@@ -75,6 +78,7 @@ public:
     // buffer received, and the frame number of the current image
     // that is going to be rendered to the screen on the client
     std::atomic_int numFramesBehind = 0;
+    int minNumFramesBehind = 0;
     std::atomic_bool numFramesChanged = false;
     // Mutex for updating number of frames behind
     static std::mutex mMutexClientNumFramesBehind;
@@ -168,7 +172,8 @@ public:
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp);
+    bool SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp);
+    void SendUdpCustomWithDelay(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp);
 
     // Client 
     bool SetUpClientUdp(PCSTR serverName, PCSTR serverPort);
@@ -186,11 +191,14 @@ public:
 
     float getTimeForOneSequentialFrame();
 
+    void setArtificialLag(int milliseconds);
+
 private:
-    bool compression = true;
+    bool compression = false;
 
     // The time when the client first receives a rendered frame from the server
     std::chrono::milliseconds startTime = std::chrono::milliseconds::zero();
+    std::chrono::milliseconds artificialLag = std::chrono::milliseconds::zero();
 
     // A helper function to get the time from startTime
     std::chrono::milliseconds getComparisonTimestamp();

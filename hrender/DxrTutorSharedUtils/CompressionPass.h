@@ -13,6 +13,11 @@
 #include <wrl.h>
 #include "../Utils/FFmpegDemuxer.h"
 
+extern "C"
+{
+#include "libswscale/swscale.h"
+}
+
 class UploadInput
 {
 public:
@@ -194,6 +199,18 @@ private:
     std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> vUploadBfr;
 };
 
+
+// Contains parameters for H264 encoding/decoding a texture
+struct CodecParams {
+    AVCodecID codecID;
+    char* codecName; // Used when ID not available
+    AVPixelFormat inPixFmt; // Source buffer pixel format
+    AVPixelFormat outPixFmt; // Output buffer pixel format
+    bool isColorConvertNeeded;  // Makes use of dstPixFmt if true.
+    int width;
+    int height;
+};
+
 /**
  * Transfer data from server to client or client to server
  * based on the configuration setting.
@@ -213,30 +230,33 @@ public:
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;
-    std::function<int ()> mGetInputBufferSize;
+    std::function<int()> mGetInputBufferSize;
 
-    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int ()> getInputBufferSize) {
+    static SharedPtr create(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize, bool isHybridRendering) {
         if (mode == Mode::Compression) {
-            return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, "Compression Pass", "Compression Pass Gui", isHybridRendering));
         }
         else {
-            return SharedPtr(new CompressionPass(mode, getInputBuffer, getInputBufferSize, "Decompression Pass", "Decompression Pass Gui"));
+            return SharedPtr(new CompressionPass(mode, getInputBuffer, getInputBufferSize, "Decompression Pass", "Decompression Pass Gui", isHybridRendering));
         }
     }
     char* getOutputBuffer() { return outputBuffer; }
     int getOutputBufferSize() { return outputBufferSize; }
 
 protected:
-    CompressionPass(Mode mode, std::function<char*()> getInputBuffer, const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+    CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, const std::string name = "<Unknown render pass>",
+        const std::string guiName = "<Unknown gui group>", bool isHybridRendering = true) :RenderPass(name, guiName) {
         mMode = mode;
         mGetInputBuffer = getInputBuffer;
+        mHybridMode = isHybridRendering;
     }
 
     CompressionPass(Mode mode, std::function<char* ()> getInputBuffer, std::function<int()> getInputBufferSize,
-        const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>") :RenderPass(name, guiName) {
+        const std::string name = "<Unknown render pass>", const std::string guiName = "<Unknown gui group>", bool isHybridRendering = true) :RenderPass(name, guiName) {
         mMode = mode;
         mGetInputBuffer = getInputBuffer;
         mGetInputBufferSize = getInputBufferSize;
+        mHybridMode = isHybridRendering;
     }
 
     // Buffer for storing output of compression/decompression
@@ -248,14 +268,26 @@ protected:
     // Implementation of RenderPass interface
     bool initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager) override;
     bool initialiseEncoder();
+
+    bool initialiseH264Encoders();
+    bool initialiseH264Decoders();
+
+    bool initialiseH264HybridEncoder(CodecParams* codecParams);
+    bool initialiseH264HybridDecoder(CodecParams* codecParams);
+    bool initialiseH264RemoteEncoder();
+    bool initialiseH264RemoteDecoder();
     bool initialiseDecoder();
     bool initialiseDecoder2();
     void DecodeMediaFile();
     void initScene(RenderContext* pRenderContext, Scene::SharedPtr pScene) override;
     void execute(RenderContext* pRenderContext) override;
     void executeLZ4(RenderContext* pRenderContext);
+    void executeH264(RenderContext* pRenderContext);
     void executeNVENC(RenderContext* pRenderContext);
     void renderGui(Gui::Window* pPassWindow) override;
+
+    void compBufWithOffset(char* dest, const char* src, size_t len, int offset);
+    void decompBufWithOffset(char* dest, const char* src, size_t len, int offset);
 
     Mode                                    mMode;                     ///< Whether this pass runs as compression or decompression
 
@@ -283,4 +315,29 @@ protected:
     int nHeight = 1080;
     int nSize = nWidth * nHeight * 4;
     char msg[100];
+
+    // Each different buffer has different encoder settings.
+    AVFrame* mpFrame = nullptr;
+    AVPacket* mpPacket = nullptr;
+
+    std::vector<struct SwsContext*> mpSwsContexts;
+    std::vector<AVCodecContext*> mpCodecContexts;
+
+    struct SwsContext* mpSwsContext = nullptr;
+    AVCodecContext* mpCodecContext = nullptr;
+
+    Gui::DropdownList mDisplayableBuffers;
+    bool isUsingCPU = true;
+    bool isRemoteRendering = false;                               ///< True if rendering whole scene on server
+    uint32_t mCodecType = LZ4;                                    ///< H264 by default
+    enum CodecType : uint32_t {
+        LZ4,
+        H264
+    };
+
+    // The parameters below are used for H264, but have not been updated for the current version of the project.
+    bool mHybridMode = true;                                       ///< True if doing hybrid rendering, else remote rendering.
+    int mNumOfTextures = -1;                                       ///< Number of textures to encode each frame
+    int mBufferOffsets[2] = { 0, VIS_TEX_LEN };                    ///< Offset before next buffer
+    int mBufferSizes[2] = { VIS_TEX_LEN, AO_TEX_LEN };             ///< Size of each buffer 
 };

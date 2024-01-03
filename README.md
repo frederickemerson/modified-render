@@ -95,5 +95,4 @@ Go to `Project Properties`, and check under `Debugging > Command Arguments`.
 ## Frequently Encountered Errors
 
 - The server fails to start with error message `Pre-Falcor Init - Bind failed with error code: 10048`.
-
     - Change the value of `DEFAULT_PORT_UDP` in **both** `hrender/NetworkPasses/ServerNetworkManager.h` and `hrender/NetworkPasses/ClientNetworkManager.h`. The default is 1505 but you may try values from 1500 to 1510. Make sure that your firewall allows UDP communication across the specified port numbers. 

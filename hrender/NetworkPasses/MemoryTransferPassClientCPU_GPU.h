@@ -32,14 +32,15 @@ public:
     using SharedPtr = std::shared_ptr<MemoryTransferPassClientCPU_GPU>;
     using SharedConstPtr = std::shared_ptr<const MemoryTransferPassClientCPU_GPU>;
 
-    static SharedPtr create(std::function<char* ()> getInputBuffer) { 
-        return SharedPtr(new MemoryTransferPassClientCPU_GPU(getInputBuffer)); 
+    static SharedPtr create(std::function<char* ()> getInputBuffer, bool isHybridRendering) { 
+        return SharedPtr(new MemoryTransferPassClientCPU_GPU(getInputBuffer, isHybridRendering)); 
     }
     virtual ~MemoryTransferPassClientCPU_GPU() = default;
 
 protected:
-    MemoryTransferPassClientCPU_GPU(std::function<char* ()> getInputBuffer) : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") {
+    MemoryTransferPassClientCPU_GPU(std::function<char* ()> getInputBuffer, bool isHybridRendering) : ::RenderPass("Memory Transfer Pass Client CPU-GPU", "Memory Transfer Pass Options") {
         mGetInputBuffer = getInputBuffer;
+        mHybridMode = isHybridRendering;
     }
 
     // Implementation of RenderPass interface
@@ -55,12 +56,17 @@ protected:
     bool requiresScene() override { return true; }
 
     // Rendering state
-    Scene::SharedPtr                        mpScene;                ///< Our scene file (passed in from app)
+    Scene::SharedPtr mpScene;                      ///< Our scene file (passed in from app)
 
     // index of textures we will be accessing
-    int32_t mVisibilityIndex = -1;                                  ///< index of visibility texture, to be obtained in initialization
-    int32_t mSRTReflectionsIndex = -1;                      ///< index of reflections texture, to be obtained in initialization
+    int32_t mVisibilityIndex = -1;                 ///< index of visibility texture, to be obtained in initialization
+    int32_t mSRTReflectionsIndex = -1;             ///< index of reflections texture, to be obtained in initialization
+    int32_t mAOIndex = -1;                         ///< index of ambient occlusion texture, to be obtained in initialization
+    int32_t mVShadingIndex = -1;                   ///< index of v-shading, to be obtained in initialization only for remote
+    int32_t mGIIndex = -1;                         ///< index of global illumination texture, currently unused.
 
     // Function for getting input buffers
     std::function<char* ()> mGetInputBuffer;
+
+    bool mHybridMode = true;                       ///< True if doing hybrid rendering, else remote rendering.
 };

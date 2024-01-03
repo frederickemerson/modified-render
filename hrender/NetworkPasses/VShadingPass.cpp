@@ -19,14 +19,14 @@
 #include "VShadingPass.h"
 
 namespace {
-    // Where is our shaders located?
-    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
-
     // What are the entry points in that shader for various ray tracing shaders?
     const char* kEntryPointRayGen = "VShadowsRayGen";
 
     // The visibility bitmap to use for the V-Shading Pass
     const std::string kVisBuffer = "OffsetVisibilityBitmap";
+
+    // The ambient occlusion texture to calculation occlusion factor
+    const std::string kAOtex = "OffsetAmbientOcclusion";
 };
 
 bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::SharedPtr pResManager)
@@ -35,12 +35,16 @@ bool VShadingPass::initialize(RenderContext* pRenderContext, ResourceManager::Sh
     mpResManager = pResManager;
 
     // Our GUI needs less space than other passes, so shrink the GUI window.
-    setGuiSize(int2(300, 70));
+    setGuiSize(int2(350, 250));
+
+    // Where is our shaders located?
+    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
 
     // Note that we some buffers from the G-buffer, plus the standard output buffer
     mpResManager->requestTextureResource("WorldPosition");
     mpResManager->requestTextureResource("WorldNormal");
     mpResManager->requestTextureResource(kVisBuffer);
+    mpResManager->requestTextureResource(kAOtex);
     mpResManager->requestTextureResource("__TextureData");
     mOutputIndex = mpResManager->requestTextureResource(mOutputTexName);
 
@@ -62,6 +66,9 @@ void VShadingPass::initScene(RenderContext* pRenderContext, Scene::SharedPtr pSc
     mpScene = pScene;
     if (!mpScene) return;
 
+    // Where is our shaders located?
+    const char* kFileRayTrace = "Samples\\hrender\\NetworkPasses\\Data\\NetworkPasses\\vshadingpass.hlsl";
+
     // Create our wrapper around a ray tracing pass.  Tell it where our ray generation shader and ray-specific shaders are
     mpRays = RayLaunch::create(0, 1, kFileRayTrace, kEntryPointRayGen);
 
@@ -75,7 +82,7 @@ void VShadingPass::execute(RenderContext* pRenderContext)
 {
     // Get the output buffer we're writing into
     Texture::SharedPtr pDstTex = mpResManager->getClearedTexture(mOutputIndex, float4(0.0f));
-
+    //Texture::SharedPtr pDstTex = mpResManager->getTexture(mOutputIndex);
     // Do we have all the resources we need to render?  If not, return
     if (!pDstTex || !mpRays || !mpRays->readyToRender()) return;
 
@@ -83,12 +90,16 @@ void VShadingPass::execute(RenderContext* pRenderContext)
     auto rayVars = mpRays->getRayVars();
     rayVars["RayGenCB"]["gMinT"] = mpResManager->getMinTDist();
     rayVars["RayGenCB"]["gSkipShadows"] = mSkipShadows;
+    rayVars["RayGenCB"]["gSkipAO"] = mSkipAO;
     rayVars["RayGenCB"]["gDecodeMode"] = mDecodeMode;
     rayVars["RayGenCB"]["gDecodeBit"] = mDecodeBit;
+    rayVars["RayGenCB"]["gDecodeVis"] = mDecodeVis;
     rayVars["RayGenCB"]["gAmbient"] = mAmbient;
+    rayVars["RayGenCB"]["gNumAORays"] = mNumAORays;
     rayVars["gPos"] = mpResManager->getTexture("WorldPosition");
     rayVars["gNorm"] = mpResManager->getTexture("WorldNormal");
     rayVars["gVisibility"] = mpResManager->getTexture(kVisBuffer);
+    rayVars["gAO"] = mpResManager->getTexture(kAOtex);
     rayVars["gTexData"] = mpResManager->getTexture("__TextureData");
     rayVars["gOutput"] = pDstTex;
 
@@ -102,14 +113,20 @@ void VShadingPass::renderGui(Gui::Window* pPassWindow)
 
     // Window is marked dirty if any of the configuration is changed.
     dirty |= (int)pPassWindow->checkbox("Skip shadow computation", mSkipShadows, false);
+    dirty |= (int)pPassWindow->checkbox("Skip ambient occlusion", mSkipAO, false);
     dirty |= (int)pPassWindow->checkbox("Debug visibility bitmap mode", mDecodeMode, false);
+    //dirty |= (int)pPassWindow->checkbox("Debug global illumination mode", mDecodeMode, false);
 
     if (mDecodeMode)
     {
-        dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
+        if (mDecodeVis)
+            dirty |= (int)pPassWindow->var("Visibility bitmap bit", mDecodeBit, 0, 31, 0.1f);
+        dirty |= (int)pPassWindow->checkbox(
+            mDecodeVis ? "Decoding Visibility buffer" : "Decoding Ambient Occlusion", mDecodeVis, false);
     }
     else {
         dirty |= (int)pPassWindow->var("Ambient term", mAmbient, 0.0f, 1.0f, 0.01f);
+        dirty |= (int)pPassWindow->var("Number of AO rays", mNumAORays, 0, 64, 0.1f);
     }
 
     // If any of our UI parameters changed, let the pipeline know we're doing something different next frame
