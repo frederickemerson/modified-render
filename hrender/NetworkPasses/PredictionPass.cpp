@@ -222,8 +222,8 @@ void PredictionPass::execute(Falcor::RenderContext* pRenderContext)
 
     // offset the camera to align closer to ray traced data
     mCurrCamData = currCamData;
-    mustReturnCamera = true;
-    int minFrameDifference = ResourceManager::mClientNetworkManager->minNumFramesBehind;
+    mustReturnCamera = false; // CHANGE to true
+    int minFrameDifference = 0; // CHANGE to this //ResourceManager::mClientNetworkManager->minNumFramesBehind;
     //int minFrameDifference = framesDifference;
     const CameraData& renderCamData = minFrameDifference == 0
         ? currCamData
