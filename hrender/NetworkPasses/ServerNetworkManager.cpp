@@ -120,7 +120,7 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
 
         {
             std::lock_guard lock(mMutexServerVisTexRead);
-            char* toSendData = mGetInputBuffer();
+            char* data = mGetInputBuffer();
             // The size of the actual Buffer
             // that is given by Falcor is less then VIS_TEX_LEN
             // 
@@ -132,8 +132,10 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             if (compression) {
                 int compressedSize = Compression::executeLZ4Compress(mGetInputBuffer(), 
                     NetworkServerSendPass::intermediateBuffer, mGetInputBufferSize());
-                toSendData = NetworkServerSendPass::intermediateBuffer;
+                data = NetworkServerSendPass::intermediateBuffer;
                 toSendSize = compressedSize;
+
+                
                 //std::string frameMsg = std::string("\n\nCompressed texture to size: ") + std::to_string(compressedSize);
                 //OutputDebugString(string_2_wstring(frameMsg).c_str());
             }
@@ -142,10 +144,22 @@ void ServerNetworkManager::SendWhenReadyServerUdp(
             // Generate timestamp
             std::chrono::milliseconds currentTime = getCurrentTime();
             int timestamp = static_cast<int>((currentTime - timeOfFirstFrame).count());
-            SendTextureUdp({ toSendSize, frameNum, timestamp },
-                           toSendData,
-                           clientIndex,
-                           mServerUdpSock);
+
+            if (artificialLag > std::chrono::milliseconds::zero()) {
+                char* toSendData = new char[toSendSize];
+                memcpy(toSendData, data, toSendSize);
+
+                std::thread{ &ServerNetworkManager::SendTextureUdpWithDelay, this, FrameData{ toSendSize, frameNum, timestamp },
+                               data,
+                               clientIndex,
+                               mServerUdpSock }.detach();
+            }
+            else {
+                SendTextureUdp({ toSendSize, frameNum, timestamp },
+                    data,
+                    clientIndex,
+                    mServerUdpSock);
+            }
         }
         
         // increase local count of frames rendered by server
@@ -179,9 +193,19 @@ bool ServerNetworkManager::CloseServerConnectionUdp()
     return true;
 }
 
-void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp)
-{
+void ServerNetworkManager::setArtificialLag(int milliseconds) {
+    artificialLag = std::chrono::milliseconds(milliseconds);
+}
 
+void ServerNetworkManager::SendTextureUdpWithDelay(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp) {
+    std::this_thread::sleep_for(artificialLag);
+    SendTextureUdp(frameData, sendTexData, clientIndex, socketUdp);
+    delete[] sendTexData;
+}
+
+
+void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp)
+{
     // Variable splitSize controls the size of the split packets
     int32_t splitSize = UdpCustomPacket::maxPacketSize;
     int16_t numOfFramePackets = frameData.frameSize / splitSize +
@@ -190,9 +214,10 @@ void ServerNetworkManager::SendTextureUdp(FrameData frameData, char* sendTexData
     // Split the frame data and send
     int currentOffset = 0;
     bool isFirst = true;
+
     for (int32_t amountLeft = frameData.frameSize; amountLeft > 0; amountLeft -= splitSize)
     {
-        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);     
+        int32_t size = std::min(amountLeft, UdpCustomPacket::maxPacketSize);
         UdpCustomPacketHeader texHeader(serverSeqNum[clientIndex], size, frameData.frameNumber,
                                         numOfFramePackets, frameData.timestamp, isFirst);
         isFirst = false;
@@ -432,7 +457,7 @@ bool ServerNetworkManager::RecvUdpCustomAndCheck(
     }
 }
 
-bool ServerNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, SOCKET& socketUdp)
+bool ServerNetworkManager::SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, const SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataHeader.createUdpPacket(dataToSend);
 

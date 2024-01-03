@@ -146,6 +146,10 @@ void ClientNetworkManager::ListenClientUdp(bool isFirstReceive, bool executeFore
                 {
                     std::lock_guard lock(mMutexClientNumFramesBehind);
                     numFramesBehind = currentNumFramesBehind;
+                    if (minNumFramesBehind == 0) {
+                        minNumFramesBehind = currentNumFramesBehind;
+                    }
+                    minNumFramesBehind = std::min(minNumFramesBehind, currentNumFramesBehind);
                     numFramesChanged = true;
                 }
                 
@@ -351,22 +355,36 @@ int ClientNetworkManager::RecvTextureUdp(FrameData& frameDataOut, char* outRecvT
     return 1;
 }
 
+void ClientNetworkManager::setArtificialLag(int milliseconds) {
+    artificialLag = std::chrono::milliseconds(milliseconds);
+}
+
+void ClientNetworkManager::SendUdpCustomWithDelay(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp) {
+    std::this_thread::sleep_for(artificialLag);
+    SendUdpCustom(dataHeader, dataToSend, socketUdp);
+    delete[] dataToSend;
+}
+
 bool ClientNetworkManager::SendCameraDataUdp(Camera::SharedPtr camera, SOCKET& socketUdp)
 {
     std::array<float3, 3> cameraData = { camera->getPosition(), camera->getUpVector(), camera->getTarget() };
-    char* data = reinterpret_cast<char*>(&cameraData);
+    char* byteData = reinterpret_cast<char*>(&cameraData);
+    
     // Assumes client sending to server
     UdpCustomPacketHeader headerToSend(clientSeqNum, sizeof(cameraData), clientFrameNum);
     
     clientSeqNum++;
-    
-    bool wasDataSent = true;
-    if (!SendUdpCustom(headerToSend, data, socketUdp))
-    {
-        OutputDebugString(L"\n\n= SendCameraDataUdp: Failed to send =========");
-        wasDataSent = false;
+
+    if (artificialLag > std::chrono::milliseconds::zero()) {
+        char* data = new char[sizeof(cameraData)];
+        memcpy(data, byteData, sizeof(cameraData));
+        std::thread{ &ClientNetworkManager::SendUdpCustomWithDelay, this, headerToSend, data, socketUdp }.detach();
     }
-    return wasDataSent;
+    else {
+        SendUdpCustom(headerToSend, byteData, socketUdp);
+    }
+
+    return true;
 }
 
 bool ClientNetworkManager::RecvUdpCustom(
@@ -465,7 +483,7 @@ bool ClientNetworkManager::RecvUdpCustom(
     return true;
 }
 
-bool ClientNetworkManager::SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, SOCKET& socketUdp)
+bool ClientNetworkManager::SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, const SOCKET& socketUdp)
 {
     std::unique_ptr<char[]> udpToSend = dataHeader.createUdpPacket(dataToSend);
 

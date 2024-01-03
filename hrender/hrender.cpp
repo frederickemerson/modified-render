@@ -57,7 +57,6 @@
 #include "NetworkPasses/ServerRayTracingReflectionPass.h"
 #include "NetworkPasses/ReflectionCompositePass.h"
 
-
 void runServer();
 void runClient();
 void runDebug();

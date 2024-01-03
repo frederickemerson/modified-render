@@ -39,6 +39,7 @@
 // for artificial delay
 #include <chrono>
 #include <thread>
+#include <future>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -117,7 +118,8 @@ public:
     std::queue<int> sendClientQueue;
     std::map<ULONG, int> mapClientAddressToIndex;
 
-    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, SOCKET& socketUdp);
+    void SendTextureUdp(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
+    void SendTextureUdpWithDelay(FrameData frameData, char* sendTexData, int clientIndex, const SOCKET& socketUdp);
     // Use UDP to receive and send camera data
     bool RecvCameraDataUdp(std::vector<std::array<float3, 3>>& cameraData,
                            std::array<std::mutex, MAX_NUM_CLIENT>& mutexCameraData,
@@ -173,7 +175,7 @@ public:
 
     // SendUdpCustom assumes that the packet to send is smaller than
     // the specified maximum size in UdpCustomPacket::maxPacketSize
-    bool SendUdpCustom(UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, SOCKET& socketUdp);
+    bool SendUdpCustom(const UdpCustomPacketHeader& dataHeader, char* dataToSend, int clientIndex, const SOCKET& socketUdp);
 
     // Server
     // Set up UDP socket and listen for client's texture width/height
@@ -189,6 +191,9 @@ public:
 
     bool CloseServerConnectionUdp();
 
+    void setArtificialLag(int milliseconds);
+
 private:
         bool compression = false;
+        std::chrono::milliseconds artificialLag = std::chrono::milliseconds::zero();
 };
