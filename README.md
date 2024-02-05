@@ -60,7 +60,7 @@ Download the scenes [here](https://drive.google.com/file/d/10kqUg_3rV2HZCc70UNt8
 
 The solution file that contains the project is in the `Falcor` folder (i.e. `Falcor/Falcor.sln`). 
 
-After opening the solution, you should see that projects `AppEncD3D12` and `AppDec` are unavailable. We will build the solution for the first time to build these two projects.
+After opening the solution, you should see that projects `AppEncD3D12` and `AppDec` are not found. We will build the solution for the first time to build these two projects.
 
 In the Solution Explorer, right-click and set `hrender` as the startup project.
 
@@ -93,6 +93,11 @@ Go to `Project Properties`, and check under `Debugging > Command Arguments`.
 - Currently, we do not have a way to dynamically load a new scene, so to use a different scene, change `sceneIndex` in the struct `RenderConfiguration renderConfiguration` that is found in `hrender.cpp`.
 
 ## Frequently Encountered Errors
+- The solution fails to build with error message `Cannot open include file: 'glm/glm.hpp': No such file or directory`.
+    - Some files cannot be downloaded (probably due to firewall restrictions).
+    - Right-click the `Falcor` project in Solution Explorer and click `Properties`. Under `Build Events` -> `Pre-Build Event`, set `Use In Build` to `No` and click `Apply`.
+    - Download Falcor dependencies [here](https://drive.google.com/file/d/1-9kzI_gp7D4LQShJplJE0S9fp7qPtI2o/view?usp=sharing). Move `Media` into the `Falcor` subfolder and `.packman` into `Falcor/Source/Externals`
+    - Download the Pink Room scene [here](https://drive.google.com/file/d/1qIgRt5-yYMwujyhIkZfm0PvHbNMplX7A/view?usp=sharing) and extract it into `hrender/Data`.
 
 - The server fails to start with error message `Pre-Falcor Init - Bind failed with error code: 10048`.
     - Change the value of `DEFAULT_PORT_UDP` in **both** `hrender/NetworkPasses/ServerNetworkManager.h` and `hrender/NetworkPasses/ClientNetworkManager.h`. The default is 1505 but you may try values from 1500 to 1510. Make sure that your firewall allows UDP communication across the specified port numbers. 
