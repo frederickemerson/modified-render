@@ -95,7 +95,7 @@ Go to `Project Properties`, and check under `Debugging > Command Arguments`.
 ## Frequently Encountered Errors
 - The solution fails to build with error message `Cannot open include file: 'glm/glm.hpp': No such file or directory`.
     - Some files cannot be downloaded (probably due to firewall restrictions).
-    - Right-click the `Falcor` project in Solution Explorer and click `Properties`. Under `Build Events` -> `Pre-Build Event`, set `Use In Build` to `No` and click `Apply`.
+    - Right-click the `Falcor` project in Solution Explorer and click `Properties`. Under `Configuration`, select `All Configurations`. Under `Build Events` -> `Pre-Build Event`, set `Use In Build` to `No` and click `Apply`.
     - Download Falcor dependencies [here](https://drive.google.com/file/d/1-9kzI_gp7D4LQShJplJE0S9fp7qPtI2o/view?usp=sharing). Move `Media` into the `Falcor` subfolder and `.packman` into `Falcor/Source/Externals`
     - Download the Pink Room scene [here](https://drive.google.com/file/d/1qIgRt5-yYMwujyhIkZfm0PvHbNMplX7A/view?usp=sharing) and extract it into `hrender/Data`.
 

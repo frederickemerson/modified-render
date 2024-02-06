@@ -301,7 +301,7 @@ void PredictionPass::renderGui(Gui::Window* pPassWindow)
 
     // Determine the extent of the offset
     // 0.0f is the minimum value of the offset and 2.0f is the maximum value
-    dirty |= (int)pPassWindow->slider("Offset factor", mOffsetFactor, 0.0f, 0.1f);
+    dirty |= (int)pPassWindow->slider("Offset factor", mOffsetFactor, 0.0f, 2.0f);
 
     pPassWindow->text("Perceived number of frames behind: " + std::to_string(mPercvDelay));
 
